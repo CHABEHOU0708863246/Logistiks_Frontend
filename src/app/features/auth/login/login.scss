@@ -1,0 +1,736 @@
+// Variables modernes
+$primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+$dark-gradient: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+$glass-bg: rgba(255, 255, 255, 0.08);
+$glass-border: rgba(255, 255, 255, 0.12);
+$neon-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+$card-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+
+// Reset et styles de base
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: 'Public Sans', 'Segoe UI', sans-serif;
+  background: $dark-gradient;
+  color: #e2e8f0;
+  height: 100vh;
+  overflow: hidden;
+  overflow-x: hidden;
+  width: 100vw;
+  position: relative;
+}
+
+// Conteneur principal
+.logistiks-premium-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  position: relative;
+  overflow: hidden;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
+    #0f172a;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+    z-index: 2;
+  }
+}
+
+// Grille de points d'arrière-plan
+.background-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
+  background-size: 40px 40px;
+  opacity: 0.4;
+  overflow: hidden;
+}
+
+// Effet glow qui reste dans les limites
+.bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  filter: blur(100px);
+  top: -150px;
+  right: -150px;
+  opacity: 0.5;
+  z-index: 0;
+  pointer-events: none;
+}
+
+// Carte principale
+.main-glass-card {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  max-width: 1100px;
+  width: calc(100% - 30px);
+  max-height: 90vh;
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid $glass-border;
+  border-radius: 24px;
+  box-shadow: $card-shadow;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  animation: cardFloat 0.8s ease-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent);
+    pointer-events: none;
+  }
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    max-height: 95vh;
+  }
+}
+
+// Section branding (gauche)
+.brand-side {
+  padding: 30px 25px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+  border-right: 1px solid $glass-border;
+  position: relative;
+  overflow: hidden;
+
+  @media (max-width: 992px) {
+    border-right: none;
+    border-bottom: 1px solid $glass-border;
+    padding: 25px 20px;
+  }
+}
+
+// Logo et branding
+.logo-section {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.logo-3d-wrapper {
+  perspective: 1000px;
+  margin: 0 auto 15px;
+  width: 80px;
+  height: 80px;
+
+  .cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: cubeFloat 20s infinite linear;
+
+    .face {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(99, 102, 241, 0.1);
+      backdrop-filter: blur(5px);
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        background: $primary-gradient;
+        opacity: 0.8;
+      }
+    }
+
+    .front  { transform: translateZ(40px); }
+    .back   { transform: rotateY(180deg) translateZ(40px); }
+    .right  { transform: rotateY(90deg) translateZ(40px); }
+    .left   { transform: rotateY(-90deg) translateZ(40px); }
+    .top    { transform: rotateX(90deg) translateZ(40px); }
+    .bottom { transform: rotateX(-90deg) translateZ(40px); }
+  }
+}
+
+.brand-title {
+  margin-top: 10px;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: $primary-gradient;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+  }
+
+  .tagline {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Cartes de fonctionnalités
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature-card {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: $neon-glow;
+
+    .feature-icon {
+      transform: scale(1.1);
+    }
+  }
+
+  .feature-icon {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    color: #6366f1;
+    transition: transform 0.3s ease;
+  }
+
+  h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #f8fafc;
+  }
+
+  p {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+}
+
+// Section formulaire (droite)
+.form-side {
+  padding: 30px 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.7);
+  overflow-y: auto;
+  max-height: 90vh;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 10px;
+  }
+
+  @media (max-width: 992px) {
+    padding: 25px 20px;
+  }
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #f8fafc;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+  }
+}
+
+// Cartes de formulaire
+.form-card {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 0;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+.input-group-card {
+  margin-bottom: 18px;
+
+  &:last-of-type {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .input-with-icon {
+    position: relative;
+
+    i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6366f1;
+      font-size: 1.1rem;
+      z-index: 1;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 15px 14px 45px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid $glass-border;
+      border-radius: 10px;
+      color: #f8fafc;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+
+      &::placeholder {
+        color: #64748b;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      }
+
+      &:hover {
+        border-color: rgba(99, 102, 241, 0.3);
+      }
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #6366f1;
+      }
+    }
+  }
+}
+
+// Options du formulaire
+.form-options-card {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #6366f1;
+      cursor: pointer;
+    }
+
+    label {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+  }
+
+  .forgot-link {
+    color: #6366f1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #818cf8;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Bouton principal
+.btn-primary-card {
+  width: 100%;
+  padding: 14px;
+  background: $primary-gradient;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .btn-icon {
+    font-size: 1.1rem;
+  }
+
+  .btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+  }
+
+  &:hover .btn-shine {
+    left: 100%;
+  }
+}
+
+// Carte de démo
+.demo-card {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  i {
+    font-size: 1.1rem;
+    color: #6366f1;
+  }
+
+  span {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+
+    strong {
+      color: #f8fafc;
+      font-weight: 600;
+    }
+  }
+}
+
+// Footer avec cartes
+.footer-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 25px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.footer-card {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+
+  i {
+    font-size: 1.5rem;
+    color: #6366f1;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+}
+
+// Animations
+@keyframes cardFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cubeFloat {
+  0% {
+    transform: rotateX(0) rotateY(0);
+  }
+  25% {
+    transform: rotateX(20deg) rotateY(90deg);
+  }
+  50% {
+    transform: rotateX(0) rotateY(180deg);
+  }
+  75% {
+    transform: rotateX(-20deg) rotateY(270deg);
+  }
+  100% {
+    transform: rotateX(0) rotateY(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .logistiks-premium-container {
+    padding: 10px;
+  }
+
+  .main-glass-card {
+    border-radius: 20px;
+    max-height: 95vh;
+  }
+
+  .brand-side, .form-side {
+    padding: 20px 15px;
+  }
+
+  .form-card {
+    padding: 20px;
+  }
+}
+
+
+// login.scss
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.logistiks-premium-container {
+  position: relative;
+  height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  overflow: hidden;
+}
+
+// Messages d'erreur
+.error-message {
+  margin-top: 5px;
+  color: #ef4444;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  i {
+    font-size: 14px;
+  }
+}
+
+.input-error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+// État de chargement
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: inherit;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(99, 102, 241, 0.3);
+  border-radius: 50%;
+  border-top-color: #6366f1;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Bouton désactivé
+.btn-primary-card:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+
+  .btn-shine {
+    animation: none;
+  }
+}
+
+// Animation pour le bouton de mot de passe
+.password-toggle {
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #6366f1;
+  }
+}
+
+// Form footer
+.form-footer {
+  margin-top: 20px;
+  text-align: center;
+
+  .support-text {
+    color: #94a3b8;
+    font-size: 14px;
+
+    i {
+      margin-right: 5px;
+      color: #6366f1;
+    }
+
+    a {
+      color: #6366f1;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .main-glass-card {
+    flex-direction: column;
+    max-width: 90%;
+  }
+
+  .brand-side, .form-side {
+    width: 100%;
+  }
+
+  .brand-side {
+    margin-bottom: 40px;
+  }
+}

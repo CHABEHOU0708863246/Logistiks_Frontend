@@ -1,0 +1,186 @@
+<div class="logistiks-premium-container">
+  <!-- Grille de fond -->
+  <div class="background-grid"></div>
+
+  <!-- Effets lumineux -->
+  <div class="bg-glow" style="
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    filter: blur(100px);
+    top: -200px;
+    right: -200px;
+    opacity: 0.5;
+    z-index: 0;
+  "></div>
+
+  <!-- Carte principale -->
+  <div class="main-glass-card">
+    <!-- Section gauche : Branding et fonctionnalités -->
+    <div class="brand-side">
+      <!-- Logo -->
+      <div class="logo-section">
+        <div class="logo-3d-wrapper">
+          <div class="cube">
+            <div class="face front"></div>
+            <div class="face back"></div>
+            <div class="face right"></div>
+            <div class="face left"></div>
+            <div class="face top"></div>
+            <div class="face bottom"></div>
+          </div>
+        </div>
+
+        <div class="brand-title">
+          <h1>LOGISTIKS</h1>
+          <p class="tagline">ERP Intelligent Transport & Logistique</p>
+        </div>
+      </div>
+
+      <!-- Cartes de fonctionnalités -->
+      <div class="features-grid">
+        <div class="feature-card">
+          <i class='bx bx-bolt feature-icon'></i>
+          <h3>Temps Réel</h3>
+          <p>Suivi en direct de toutes vos opérations logistiques</p>
+        </div>
+
+        <div class="feature-card">
+          <i class='bx bx-layer feature-icon'></i>
+          <h3>Multi-Flotte</h3>
+          <p>Gérez plusieurs flottes de véhicules simultanément</p>
+        </div>
+
+        <div class="feature-card">
+          <i class='bx bx-bar-chart-alt feature-icon'></i>
+          <h3>Analytics</h3>
+          <p>Tableaux de bord détaillés et rapports intelligents</p>
+        </div>
+
+        <div class="feature-card">
+          <i class='bx bx-shield-alt feature-icon'></i>
+          <h3>Sécurité</h3>
+          <p>Protection des données et authentification avancée</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section droite : Formulaire -->
+    <div class="form-side">
+      <!-- En-tête du formulaire -->
+      <div class="form-header">
+        <h2>Bienvenue 👋</h2>
+        <p>Accédez à votre espace sécurisé</p>
+      </div>
+
+      <!-- Carte du formulaire -->
+      <div class="form-card">
+        <!-- Formulaire Angular avec gestion des événements -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+          <!-- Email -->
+          <div class="input-group-card">
+            <label for="email">Email</label>
+            <div class="input-with-icon">
+              <i class='bx bx-envelope'></i>
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                placeholder="nom@entreprise.ci"
+                [class.input-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                required>
+            </div>
+
+            <!-- Messages d'erreur pour l'email -->
+            @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+              <div class="error-message">
+                @if (loginForm.get('email')?.errors?.['required']) {
+                  <span><i class='bx bx-error'></i> L'email est requis</span>
+                }
+                @if (loginForm.get('email')?.errors?.['email']) {
+                  <span><i class='bx bx-error'></i> Format d'email invalide</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Mot de passe -->
+          <div class="input-group-card">
+            <label for="password">Mot de passe</label>
+            <div class="input-with-icon">
+              <i class='bx bx-lock-alt'></i>
+              <input
+                [type]="hidePassword ? 'password' : 'text'"
+                id="password"
+                formControlName="password"
+                placeholder="••••••••"
+                [class.input-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                required>
+              <i
+                class='bx password-toggle'
+                [class.bx-hide]="hidePassword"
+                [class.bx-show]="!hidePassword"
+                (click)="togglePasswordVisibility()">
+              </i>
+            </div>
+
+            <!-- Messages d'erreur pour le mot de passe -->
+            @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+              <div class="error-message">
+                @if (loginForm.get('password')?.errors?.['required']) {
+                  <span><i class='bx bx-error'></i> Le mot de passe est requis</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Options -->
+          <div class="form-options-card">
+            <div class="remember-me">
+              <input
+                type="checkbox"
+                id="remember"
+                formControlName="rememberMe">
+              <label for="remember">Se souvenir de moi</label>
+            </div>
+            <a
+              href="#"
+              class="forgot-link"
+              (click)="goToForgotPassword(); $event.preventDefault()">
+              Mot de passe oublié ?
+            </a>
+          </div>
+
+          <!-- Bouton de connexion -->
+          <button
+            type="submit"
+            class="btn-primary-card"
+            [disabled]="loginForm.invalid || isLoading">
+
+            @if (isLoading) {
+              <i class='bx bx-loader-alt bx-spin btn-icon'></i>
+              <span>CONNEXION EN COURS...</span>
+            } @else {
+              <i class='bx bx-log-in btn-icon'></i>
+              <span>CONNEXION</span>
+            }
+
+            <span class="btn-shine"></span>
+          </button>
+
+          <!-- Message d'état du chargement -->
+          @if (isLoading) {
+            <div class="loading-overlay">
+              <div class="loading-spinner"></div>
+            </div>
+          }
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Component -->
+  <app-notification></app-notification>
+</div>

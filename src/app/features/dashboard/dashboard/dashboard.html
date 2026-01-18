@@ -1,0 +1,599 @@
+<div class="layout-wrapper">
+  <div class="layout-container">
+    <!-- SIDEBAR COMPLÈTE -->
+    <aside class="layout-menu" id="sidebar">
+      <div class="app-brand">
+        <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+        <div>
+          <span class="app-brand-text">Logistiks</span>
+          <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+        </div>
+      </div>
+
+      <ul class="menu-inner">
+        <!-- DASHBOARD -->
+        <li class="menu-item active">
+          <a [routerLink]="['/dashboard']" class="menu-link" onclick="showDashboard()">
+            <i class="menu-icon bx bx-home-circle"></i>
+            <div>Dashboard</div>
+          </a>
+        </li>
+
+        <!-- NIVEAU 1 : RÉFÉRENTIELS FONDAMENTAUX -->
+        <li class="menu-header">
+          <span>RÉFÉRENTIELS</span>
+        </li>
+
+        <!-- Module Tiers -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-group"></i>
+            <div>Tiers</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+                <div>Tous les tiers</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+                <div>Documents à valider</div>
+                <!-- Badge dynamique pour documents en attente -->
+                <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                  {{ dashboardStats.documentsPending }}
+                </span>
+              </a>
+            </li>
+          <li class="menu-item">
+              <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+                <div>Gestion des documents</div>
+                <span class="badge badge-info"><i class='bx bx-upload'></i>
+                 {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+                </span>
+              </a>
+          </li>
+            <li class="menu-item">
+              <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+                <div>Nouveau tier</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Module Véhicules -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-car"></i>
+            <div>Véhicules</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('tous-vehicules')">
+                <div>Tous les véhicules</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('vehicules-disponibles')">
+                <div>Disponibles</div>
+                <span class="badge badge-success">28</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('vehicules-loues')">
+                <div>Loués</div>
+                <span class="badge badge-primary">12</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('vehicules-maintenance')">
+                <div>En maintenance</div>
+                <span class="badge badge-warning">5</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('suivi-entretien')">
+                <div>Suivi entretien</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Module Documents -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-folder"></i>
+            <div>Documents</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('tous-documents')">
+                <div>Tous les documents</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('contrats-signes')">
+                <div>Contrats signés</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('pieces-identite')">
+                <div>Pièces d'identité</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('factures-fournisseurs')">
+                <div>Factures fournisseurs</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- NIVEAU 2 : CŒUR MÉTIER LOCATION -->
+        <li class="menu-header">
+          <span>CŒUR MÉTIER</span>
+        </li>
+
+        <!-- Module Contrats -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-file"></i>
+            <div>Contrats</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('tous-contrats')">
+                <div>Tous les contrats</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('contrats-actifs')">
+                <div>Contrats actifs</div>
+                <span class="badge badge-success">12</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('contrats-expiration')">
+                <div>À expiration</div>
+                <span class="badge badge-warning">3</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('nouveau-contrat')">
+                <div>Nouveau contrat</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Module Calendrier/Échéances -->
+        <li class="menu-item">
+          <a href="#" class="menu-link" onclick="loadContent('calendrier')">
+            <i class="menu-icon bx bx-calendar"></i>
+            <div>Calendrier & Échéances</div>
+          </a>
+        </li>
+
+        <!-- NIVEAU 3 : FINANCE OPÉRATIONNELLE -->
+        <li class="menu-header">
+          <span>FINANCE & COMPTABILITÉ</span>
+        </li>
+
+        <!-- Module Comptes -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-credit-card"></i>
+            <div>Comptes</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('comptes-bancaires')">
+                <div>Comptes bancaires</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('comptes-mobile')">
+                <div>Mobile Money</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('soldes')">
+                <div>Soldes & Bilans</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Module Paiements -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-wallet"></i>
+            <div>Paiements</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('tous-paiements')">
+                <div>Tous les paiements</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('paiements-retard')">
+                <div>En retard</div>
+                <span class="badge badge-danger">5</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('paiements-attente')">
+                <div>En attente</div>
+                <span class="badge badge-warning">8</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('nouveau-paiement')">
+                <div>Nouveau paiement</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Module Charges -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-dollar-circle"></i>
+            <div>Charges & Dépenses</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('toutes-charges')">
+                <div>Toutes les charges</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('maintenance-vehicules')">
+                <div>Maintenance véhicules</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('charges-generales')">
+                <div>Charges générales</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- NIVEAU 4 : RENTABILITÉ & PILOTAGE -->
+        <li class="menu-header">
+          <span>ANALYSE & RAPPORTS</span>
+        </li>
+
+        <!-- Module ROI -->
+        <li class="menu-item">
+          <a href="#" class="menu-link" onclick="loadContent('roi')">
+            <i class="menu-icon bx bx-line-chart"></i>
+            <div>Rentabilité & ROI</div>
+          </a>
+        </li>
+
+        <!-- Module Dashboard -->
+        <li class="menu-item">
+          <a href="#" class="menu-link" onclick="loadContent('dashboards')">
+            <i class="menu-icon bx bx-bar-chart-alt"></i>
+            <div>Tableaux de bord</div>
+          </a>
+        </li>
+
+        <!-- Module Reporting -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-printer"></i>
+            <div>Reporting</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('rapports-financiers')">
+                <div>Rapports financiers</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('rapports-operations')">
+                <div>Rapports opérationnels</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('export-data')">
+                <div>Export données</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- NIVEAU 5 : SERVICES TRANSVERSES -->
+        <li class="menu-header">
+          <span>SERVICES</span>
+        </li>
+
+        <!-- Module Notifications -->
+        <li class="menu-item">
+          <a href="#" class="menu-link" onclick="loadContent('notifications')">
+            <i class="menu-icon bx bx-bell"></i>
+            <div>Notifications</div>
+          </a>
+        </li>
+
+        <!-- Module Audit -->
+        <li class="menu-item">
+          <a href="#" class="menu-link" onclick="loadContent('audit')">
+            <i class="menu-icon bx bx-history"></i>
+            <div>Audit & Traçabilité</div>
+          </a>
+        </li>
+
+        <!-- NIVEAU 6 : ADMINISTRATION -->
+        <li class="menu-header">
+          <span>ADMINISTRATION</span>
+        </li>
+
+        <!-- Module Utilisateurs -->
+        <li class="menu-item">
+          <a href="#" class="menu-link" onclick="loadContent('utilisateurs')">
+            <i class="menu-icon bx bx-user"></i>
+            <div>Utilisateurs</div>
+          </a>
+        </li>
+
+        <!-- Module Paramétrage -->
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
+            <i class="menu-icon bx bx-cog"></i>
+            <div>Paramétrage</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('parametres-generaux')">
+                <div>Paramètres généraux</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('types-vehicules')">
+                <div>Types de véhicules</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('tarifs-location')">
+                <div>Tarifs de location</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="menu-link" onclick="loadContent('config-notifications')">
+                <div>Configuration notifications</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Module Intégrations -->
+        <li class="menu-item">
+          <a href="#" class="menu-link" onclick="loadContent('integrations')">
+            <i class="menu-icon bx bx-plug"></i>
+            <div>Intégrations</div>
+          </a>
+        </li>
+
+        <!-- Déconnexion -->
+        <li class="menu-item" style="margin-top: 2rem;">
+          <a class="menu-link" (click)="logout()">
+            <i class="menu-icon bx bx-log-out"></i>
+            <div>Déconnexion</div>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="layout-page">
+      <!-- NAVBAR -->
+      <nav class="layout-navbar">
+        <div class="d-flex align-items-center">
+          <button class="menu-toggle-btn" (click)="toggleSidebar()">
+            <i class='bx bx-menu'></i>
+          </button>
+        </div>
+
+        <ul class="navbar-nav">
+
+          <!-- User dropdown avec photo dynamique -->
+          <li class="nav-item dropdown" (click)="toggleUserMenu()">
+            <div class="avatar dropdown-toggle">
+              <!-- Photo dynamique de l'utilisateur -->
+              <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+                (error)="userPhotoUrl = getDefaultAvatar()" />
+
+              <!-- Avatar par défaut si pas de photo -->
+              <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+                {{ getUserInitials() }}
+              </div>
+            </div>
+
+            <!-- Menu dropdown -->
+            <div class="dropdown-menu" [class.show]="showUserMenu" id="userMenu">
+              <div style="padding: 1rem;">
+                <div class="fw-bold">{{ userName }}</div>
+                <div class="text-muted fs-sm">
+                  {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+                </div>
+                <hr style="margin: 0.5rem 0;">
+                <a [routerLink]="['/profile']" class="dropdown-item">
+                  <i class='bx bx-user mr-2'></i> Mon profil
+                </a>
+                <a [routerLink]="['/settings']" class="dropdown-item">
+                  <i class='bx bx-cog mr-2'></i> Paramètres
+                </a>
+                <hr style="margin: 0.5rem 0;">
+                <a (click)="logout()" class="dropdown-item logout-item">
+                  <i class='bx bx-log-out mr-2'></i> Déconnexion
+                </a>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- DASHBOARD PRINCIPAL -->
+      <div class="content-wrapper" id="main-content">
+        <!-- SECTION BIENVENUE DYNAMIQUE -->
+        <div class="welcome-section">
+          <!-- Nom d'utilisateur dynamique -->
+          <h1 class="welcome-title">Bonjour, {{ userName }} 👋</h1>
+
+          <!-- Message de bienvenue dynamique -->
+          <p class="welcome-subtitle">
+            Bienvenue sur votre tableau de bord Logistiks.
+            <strong *ngIf="dashboardStats.documentsPending > 0">
+              {{ dashboardStats.documentsPending }} document{{ dashboardStats.documentsPending > 1 ? 's' : '' }}
+            </strong>
+            <span *ngIf="dashboardStats.documentsPending > 0">attendent votre validation,</span>
+
+            <strong *ngIf="dashboardStats.paymentsOverdue > 0">
+              {{ dashboardStats.paymentsOverdue }} paiement{{ dashboardStats.paymentsOverdue > 1 ? 's' : '' }}
+            </strong>
+            <span *ngIf="dashboardStats.paymentsOverdue > 0">sont en retard,</span>
+
+            <strong *ngIf="dashboardStats.vehiclesNeedingAttention > 0">
+              {{ dashboardStats.vehiclesNeedingAttention }} véhicule{{ dashboardStats.vehiclesNeedingAttention > 1 ? 's'
+              : '' }}
+            </strong>
+            <span *ngIf="dashboardStats.vehiclesNeedingAttention > 0">nécessitent votre attention aujourd'hui.</span>
+          </p>
+
+          <!-- Quick actions -->
+          <div class="quick-actions">
+            <a [routerLink]="['/contrats/nouveau']" class="quick-action-btn">
+              <i class='bx bx-plus'></i>
+              Nouveau Contrat
+            </a>
+            <a [routerLink]="['/paiements/nouveau']" class="quick-action-btn">
+              <i class='bx bx-dollar-circle'></i>
+              Enregistrer Paiement
+            </a>
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="quick-action-btn">
+              <i class='bx bx-check-circle'></i>
+              Valider Documents
+            </a>
+            <a [routerLink]="['/paiements/retards']" class="quick-action-btn">
+              <i class='bx bx-time'></i>
+              Voir Retards
+            </a>
+          </div>
+        </div>
+
+        <!-- KPI PRINCIPAUX - Premier card TIERS ACTIFS dynamique -->
+        <div class="row">
+          <!-- CARD 1: TIERS ACTIFS (Dynamique) -->
+          <div class="col-3">
+            <div class="card">
+              <div class="card-body">
+                <div class="stat-card">
+                  <div class="stat-icon primary">
+                    <i class='bx bx-group'></i>
+                  </div>
+                  <div class="stat-content">
+                    <!-- Nombre dynamique de tiers actifs -->
+                    <h3>{{ getFormattedNumber(dashboardStats.activeTiers) }}</h3>
+                    <p>Tiers Actifs</p>
+                    <!-- Calcul dynamique du pourcentage -->
+                    <div class="stat-trend" [class.trend-up]="getTiersTrend() >= 0"
+                      [class.trend-down]="getTiersTrend() < 0">
+                      <i class='bx' [class.bx-up-arrow-alt]="getTiersTrend() >= 0"
+                        [class.bx-down-arrow-alt]="getTiersTrend() < 0">
+                      </i>
+                      <!-- Pourcentage dynamique -->
+                      {{ getTiersTrend() >= 0 ? '+' : '' }}{{ getTiersTrend() }}% ce mois
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 2: VÉHICULES OPÉRATIONNELS (Statique pour l'instant) -->
+          <div class="col-3">
+            <div class="card">
+              <div class="card-body">
+                <div class="stat-card">
+                  <div class="stat-icon success">
+                    <i class='bx bx-car'></i>
+                  </div>
+                  <div class="stat-content">
+                    <h3>42</h3>
+                    <p>Véhicules Opérationnels</p>
+                    <div class="stat-trend trend-up">
+                      <i class='bx bx-up-arrow-alt'></i>
+                      +5% ce mois
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 3: CONTRATS ACTIFS (Dynamique) -->
+          <div class="col-3">
+            <div class="card">
+              <div class="card-body">
+                <div class="stat-card">
+                  <div class="stat-icon warning">
+                    <i class='bx bx-file'></i>
+                  </div>
+                  <div class="stat-content">
+                    <!-- Nombre dynamique de contrats actifs -->
+                    <h3>{{ getFormattedNumber(dashboardStats.activeContracts) }}</h3>
+                    <p>Contrats Actifs</p>
+                    <div class="stat-trend trend-up">
+                      <i class='bx bx-up-arrow-alt'></i>
+                      +8% ce mois
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 4: TAUX DE RECOUVREMENT (Dynamique) -->
+          <div class="col-3">
+            <div class="card">
+              <div class="card-body">
+                <div class="stat-card">
+                  <div class="stat-icon danger">
+                    <i class='bx bx-wallet'></i>
+                  </div>
+                  <div class="stat-content">
+                    <!-- Taux de recouvrement dynamique -->
+                    <h3>{{ dashboardStats.recoveryRate }}%</h3>
+                    <p>Taux de Recouvrement</p>
+                    <div class="stat-trend trend-down">
+                      <i class='bx bx-down-arrow-alt'></i>
+                      -3% ce mois
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="content-footer">
+          <div class="footer-text">
+            © 2026 Logistiks - Version 1.0.0
+            <span style="margin: 0 8px;">•</span>
+            <a href="#" style="color: #696cff; text-decoration: none;" onclick="loadContent('aide')">Aide & Support</a>
+            <span style="margin: 0 8px;">•</span>
+            <a href="#" style="color: #696cff; text-decoration: none;" onclick="loadContent('apropos')">À propos</a>
+            <span style="margin: 0 8px;">•</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>

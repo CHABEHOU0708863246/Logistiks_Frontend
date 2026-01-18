@@ -1,0 +1,757 @@
+<div class="layout-wrapper">
+  <!-- SIDEBAR COMPLÈTE -->
+  <aside class="layout-menu" id="sidebar" [class.collapsed]="isSidebarCollapsed">
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistiks</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
+    </div>
+
+    <ul class="menu-inner">
+      <!-- DASHBOARD -->
+      <li class="menu-item">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 1 : RÉFÉRENTIELS FONDAMENTAUX -->
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
+
+      <!-- Module Tiers -->
+      <li class="menu-item" [class.open]="isTiersMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('tiers')">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isTiersMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+              <span class="badge badge-primary" *ngIf="stats.total > 0">{{ stats.total }}</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+              <div>Gestion des documents</div>
+              <span class="badge badge-info"><i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Véhicules -->
+      <li class="menu-item" [class.open]="isVehiculesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('vehicules')">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isVehiculesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Disponibles</div>
+              <span class="badge badge-success">28</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Loués</div>
+              <span class="badge badge-primary">12</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En maintenance</div>
+              <span class="badge badge-warning">5</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Suivi entretien</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Documents -->
+      <li class="menu-item" [class.open]="isDocumentsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('documents')">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isDocumentsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Contrats signés</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Pièces d'identité</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 2 : CŒUR MÉTIER LOCATION -->
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
+
+      <!-- Module Contrats -->
+      <li class="menu-item" [class.open]="isContratsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('contrats')">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isContratsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Contrats actifs</div>
+              <span class="badge badge-success">12</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>À expiration</div>
+              <span class="badge badge-warning">3</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Calendrier/Échéances -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 3 : FINANCE OPÉRATIONNELLE -->
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
+
+      <!-- Module Comptes -->
+      <li class="menu-item" [class.open]="isComptesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('comptes')">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isComptesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Paiements -->
+      <li class="menu-item" [class.open]="isPaiementsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('paiements')">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isPaiementsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En retard</div>
+              <span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En attente</div>
+              <span class="badge badge-warning">8</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Nouveau paiement</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Charges -->
+      <li class="menu-item" [class.open]="isChargesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('charges')">
+          <i class="menu-icon bx bx-dollar-circle"></i>
+          <div>Charges & Dépenses</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isChargesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Toutes les charges</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Maintenance véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Charges générales</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 4 : RENTABILITÉ & PILOTAGE -->
+      <li class="menu-header">
+        <span>ANALYSE & RAPPORTS</span>
+      </li>
+
+      <!-- Module ROI -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-line-chart"></i>
+          <div>Rentabilité & ROI</div>
+        </a>
+      </li>
+
+      <!-- Module Dashboard -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-bar-chart-alt"></i>
+          <div>Tableaux de bord</div>
+        </a>
+      </li>
+
+      <!-- Module Reporting -->
+      <li class="menu-item" [class.open]="isReportingMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('reporting')">
+          <i class="menu-icon bx bx-printer"></i>
+          <div>Reporting</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isReportingMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Rapports financiers</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Rapports opérationnels</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Export données</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 5 : SERVICES TRANSVERSES -->
+      <li class="menu-header">
+        <span>SERVICES</span>
+      </li>
+
+      <!-- Module Notifications -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-bell"></i>
+          <div>Notifications</div>
+        </a>
+      </li>
+
+      <!-- Module Audit -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-history"></i>
+          <div>Audit & Traçabilité</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 6 : ADMINISTRATION -->
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
+
+      <!-- Module Utilisateurs -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+      </li>
+
+      <!-- Module Paramétrage -->
+      <li class="menu-item" [class.open]="isParametrageMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('parametrage')">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isParametrageMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tarifs de location</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Configuration notifications</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Intégrations -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-plug"></i>
+          <div>Intégrations</div>
+        </a>
+      </li>
+
+      <!-- Déconnexion -->
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+    <!-- NAVBAR -->
+    <nav class="layout-navbar">
+      <div class="d-flex align-items-center">
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <h3 class="mb-0 ms-3">Création d'un Nouveau Tier</h3>
+      </div>
+
+      <ul class="navbar-nav">
+        <!-- User dropdown avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+
+    <div class="content-wrapper">
+      <!-- FORMULAIRE DE CREATION -->
+      <!-- INSTRUCTIONS -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-title mb-3">
+                <i class='bx bx-help-circle me-2'></i> Instructions
+              </h6>
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2">
+                  <i class='bx bx-check-circle text-success me-2'></i>
+                  Les champs marqués d'un astérisque (*) sont obligatoires
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-info-circle text-primary me-2'></i>
+                  Les documents d'identité peuvent être ajoutés après la création
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-time text-warning me-2'></i>
+                  Le tier sera créé avec le statut "En attente de validation"
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-save text-info me-2'></i>
+                  Vous pouvez enregistrer le formulaire comme brouillon et le compléter plus tard
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-shield text-danger me-2'></i>
+                  Un tiers ne peut être modifié, veuillez vérifier toutes les informations avant de soumettre le
+                  formulaire
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-shield text-danger me-2'></i>
+                  Toutes les informations seront vérifiées avant activation
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Informations du Tier</h5>
+              <div class="text-muted fs-sm">
+                Remplissez toutes les informations obligatoires (*)
+              </div>
+            </div>
+
+            <form [formGroup]="tierForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+              <div class="card-body">
+
+                <!-- PROGRESS BAR -->
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fs-sm">Progression du formulaire</span>
+                    <span class="fw-semibold">{{ getFormProgress() }}%</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar sky-blue-progress" role="progressbar" [style.width.%]="getFormProgress()"
+                      aria-valuenow="getFormProgress()" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- INFORMATIONS PERSONNELLES -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-user-circle me-2'></i> Informations Personnelles
+                  </h6>
+                  <div class="row">
+                    <!-- Nom -->
+                    <div class="col-md-6 mb-3">
+                      <label for="lastName" class="form-label">Nom *</label>
+                      <input type="text" class="form-control" id="lastName" formControlName="lastName"
+                        [class.is-invalid]="submitted && f['lastName'].errors" placeholder="Doe">
+                      <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
+                        <span *ngIf="f['lastName'].errors['required']">Le nom est obligatoire</span>
+                        <span *ngIf="f['lastName'].errors['minlength']">Le nom doit avoir au moins 2 caractères</span>
+                      </div>
+                    </div>
+
+                    <!-- Prénom -->
+                    <div class="col-md-6 mb-3">
+                      <label for="firstName" class="form-label">Prénom *</label>
+                      <input type="text" class="form-control" id="firstName" formControlName="firstName"
+                        [class.is-invalid]="submitted && f['firstName'].errors" placeholder="John">
+                      <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
+                        <span *ngIf="f['firstName'].errors['required']">Le prénom est obligatoire</span>
+                        <span *ngIf="f['firstName'].errors['minlength']">Le prénom doit avoir au moins 2
+                          caractères</span>
+                      </div>
+                    </div>
+
+                    <!-- Nom de l'entreprise (Optionnel) -->
+                    <div class="col-md-6 mb-3">
+                      <label for="companyName" class="form-label">Nom de l'entreprise</label>
+                      <input type="text" class="form-control" id="companyName" formControlName="companyName"
+                        placeholder="Logistiks SARL">
+                    </div>
+
+                    <!-- Date de naissance -->
+                    <div class="col-md-6 mb-3">
+                      <label for="birthDate" class="form-label">Date de naissance</label>
+                      <input type="date" class="form-control" id="birthDate" formControlName="birthDate"
+                        [max]="maxBirthDate">
+                    </div>
+
+                    <!-- Lieu de naissance -->
+                    <div class="col-md-6 mb-3">
+                      <label for="placeOfBirth" class="form-label">Lieu de naissance</label>
+                      <input type="text" class="form-control" id="placeOfBirth" formControlName="placeOfBirth"
+                        placeholder="Paris">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- INFORMATIONS D'IDENTIFICATION -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-id-card me-2'></i> Informations d'Identification
+                  </h6>
+                  <div class="row">
+                    <!-- Type de pièce d'identité -->
+                    <div class="col-md-6 mb-3">
+                      <label for="identityType" class="form-label">Type de pièce d'identité *</label>
+                      <select class="form-select" id="identityType" formControlName="identityType"
+                        [class.is-invalid]="submitted && f['identityType'].errors">
+                        <option value="">Sélectionner un type</option>
+                        <option [value]="identityTypeOptions.CNI">Carte Nationale d'Identité</option>
+                        <option [value]="identityTypeOptions.Passport">Passeport</option>
+                        <option [value]="identityTypeOptions.ResidenceCard">Permis de séjour</option>
+                        <option [value]="identityTypeOptions.Passport">Passeport</option>
+                        <option [value]="identityTypeOptions.Other">Autre</option>
+                      </select>
+                      <div *ngIf="submitted && f['identityType'].errors" class="invalid-feedback">
+                        Le type de pièce d'identité est obligatoire
+                      </div>
+                    </div>
+
+                    <!-- Numéro de pièce d'identité -->
+                    <div class="col-md-6 mb-3">
+                      <label for="identityNumber" class="form-label">Numéro de pièce d'identité *</label>
+                      <input type="text" class="form-control" id="identityNumber" formControlName="identityNumber"
+                        [class.is-invalid]="submitted && f['identityNumber'].errors" placeholder="XXXXX000XXXX">
+                      <div *ngIf="submitted && f['identityNumber'].errors" class="invalid-feedback">
+                        <span *ngIf="f['identityNumber'].errors['required']">Le numéro d'identité est obligatoire</span>
+                        <span *ngIf="f['identityNumber'].errors['minlength']">Le numéro doit avoir au moins 5
+                          caractères</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COORDONNEES -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-phone me-2'></i> Coordonnées
+                  </h6>
+                  <div class="row">
+                    <!-- Téléphone principal -->
+                    <div class="col-md-6 mb-3">
+                      <label for="phone" class="form-label">Téléphone principal *</label>
+                      <div class="input-group">
+                        <span class="input-group-text">+225</span>
+                        <input type="tel" class="form-control" id="phone" formControlName="phone"
+                          [class.is-invalid]="submitted && f['phone'].errors" placeholder="0700000000" maxlength="10">
+                      </div>
+                      <div *ngIf="submitted && f['phone'].errors" class="invalid-feedback d-block">
+                        <span *ngIf="f['phone'].errors['required']">Le téléphone est obligatoire</span>
+                        <span *ngIf="f['phone'].errors['pattern']">Format invalide (ex: 0700000000)</span>
+                      </div>
+                    </div>
+
+                    <!-- Téléphone secondaire -->
+                    <div class="col-md-6 mb-3">
+                      <label for="secondaryPhone" class="form-label">Téléphone secondaire</label>
+                      <div class="input-group">
+                        <span class="input-group-text">+225</span>
+                        <input type="tel" class="form-control" id="secondaryPhone" formControlName="secondaryPhone"
+                          placeholder="0700000001" maxlength="10">
+                      </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6 mb-3">
+                      <label for="email" class="form-label">Email</label>
+                      <input type="email" class="form-control" id="email" formControlName="email"
+                        [class.is-invalid]="submitted && f['email'].errors" placeholder="john.doe@example.com">
+                      <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+                        Format d'email invalide
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ADRESSE -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-home me-2'></i> Adresse
+                  </h6>
+                  <div class="row">
+                    <!-- Rue -->
+                    <div class="col-md-6 mb-3">
+                      <label for="street" class="form-label">Rue</label>
+                      <input type="text" class="form-control" id="street" formControlName="street"
+                        placeholder="123 Avenue de la République">
+                    </div>
+
+                    <!-- Ville -->
+                    <div class="col-md-6 mb-3">
+                      <label for="city" class="form-label">Ville</label>
+                      <input type="text" class="form-control" id="city" formControlName="city" placeholder="Abidjan">
+                    </div>
+
+                    <!-- Pays -->
+                    <div class="col-md-6 mb-3">
+                      <label for="country" class="form-label">Pays</label>
+                      <select class="form-select" id="country" formControlName="country">
+                        <option value="">Sélectionner un pays</option>
+                        <option value="CI">Côte d'Ivoire</option>
+                        <option value="FR">France</option>
+                        <option value="SN">Sénégal</option>
+                        <option value="ML">Mali</option>
+                        <option value="BF">Burkina Faso</option>
+                        <option value="GN">Guinée</option>
+                      </select>
+                    </div>
+
+                    <!-- Code postal -->
+                    <div class="col-md-6 mb-3">
+                      <label for="zipCode" class="form-label">Code postal</label>
+                      <input type="text" class="form-control" id="zipCode" formControlName="zipCode"
+                        placeholder="22500">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ROLES -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-briefcase me-2'></i> Rôles *
+                  </h6>
+                  <div class="alert alert-info">
+                    <i class='bx bx-info-circle me-2'></i>
+                    Sélectionnez au moins un rôle pour définir le type de tier.
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-3" *ngFor="let role of availableRoles">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" [id]="'role-' + role.value" [value]="role.value"
+                          (change)="onRoleChange($event)">
+                        <label class="form-check-label d-flex align-items-center" [for]="'role-' + role.value">
+                          <i [class]="role.icon + ' me-2'"></i>
+                          <div>
+                            <div class="fw-semibold">{{ role.label }}</div>
+                            <small class="text-muted">{{ role.description }}</small>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="submitted && selectedRoles.length === 0" class="alert alert-danger mt-3">
+                    <i class='bx bx-error-circle me-2'></i>
+                    Au moins un rôle doit être sélectionné
+                  </div>
+                </div>
+
+                <!-- INFORMATIONS SUPPLEMENTAIRES -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-note me-2'></i> Informations Supplémentaires
+                  </h6>
+                  <div class="mb-3">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea class="form-control" id="notes" formControlName="notes" rows="3"
+                      placeholder="Notes additionnelles concernant le tier..."></textarea>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- CARD FOOTER -->
+              <div class="card-footer bg-transparent border-top-0">
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+                    <i class='bx bx-x me-1'></i> Annuler
+                  </button>
+
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary" (click)="saveAsDraft()" [disabled]="loading">
+                      <i class='bx bx-save me-1'></i> Enregistrer comme brouillon
+                    </button>
+
+                    <button type="submit" class="btn btn-primary" [disabled]="loading">
+                      <i class='bx bx-check me-1'></i>
+                      <span *ngIf="!loading">Créer le tier</span>
+                      <span *ngIf="loading">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Création en cours...
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>

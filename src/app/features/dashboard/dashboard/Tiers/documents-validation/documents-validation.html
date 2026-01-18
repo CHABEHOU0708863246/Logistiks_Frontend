@@ -1,0 +1,807 @@
+<div class="layout-wrapper">
+  <!-- SIDEBAR COMPLÈTE -->
+  <aside class="layout-menu" id="sidebar" [class.collapsed]="isSidebarCollapsed">
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistiks</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
+    </div>
+
+    <ul class="menu-inner">
+      <!-- DASHBOARD -->
+      <li class="menu-item">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 1 : RÉFÉRENTIELS FONDAMENTAUX -->
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
+
+      <!-- Module Tiers -->
+      <li class="menu-item" [class.open]="isTiersMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('tiers')">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isTiersMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+              <span class="badge badge-primary" *ngIf="stat.total > 0">{{ stat.total }}</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item">
+              <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+                <div>Gestion des documents</div>
+                <span class="badge badge-info"><i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+                </span>
+              </a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Véhicules -->
+      <li class="menu-item" [class.open]="isVehiculesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('vehicules')">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isVehiculesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Disponibles</div>
+              <span class="badge badge-success">28</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Loués</div>
+              <span class="badge badge-primary">12</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En maintenance</div>
+              <span class="badge badge-warning">5</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Suivi entretien</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Documents -->
+      <li class="menu-item" [class.open]="isDocumentsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('documents')">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isDocumentsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Contrats signés</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Pièces d'identité</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 2 : CŒUR MÉTIER LOCATION -->
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
+
+      <!-- Module Contrats -->
+      <li class="menu-item" [class.open]="isContratsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('contrats')">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isContratsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Contrats actifs</div>
+              <span class="badge badge-success">12</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>À expiration</div>
+              <span class="badge badge-warning">3</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Calendrier/Échéances -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 3 : FINANCE OPÉRATIONNELLE -->
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
+
+      <!-- Module Comptes -->
+      <li class="menu-item" [class.open]="isComptesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('comptes')">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isComptesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Paiements -->
+      <li class="menu-item" [class.open]="isPaiementsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('paiements')">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isPaiementsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En retard</div>
+              <span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En attente</div>
+              <span class="badge badge-warning">8</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Nouveau paiement</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Charges -->
+      <li class="menu-item" [class.open]="isChargesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('charges')">
+          <i class="menu-icon bx bx-dollar-circle"></i>
+          <div>Charges & Dépenses</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isChargesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Toutes les charges</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Maintenance véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Charges générales</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 4 : RENTABILITÉ & PILOTAGE -->
+      <li class="menu-header">
+        <span>ANALYSE & RAPPORTS</span>
+      </li>
+
+      <!-- Module ROI -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-line-chart"></i>
+          <div>Rentabilité & ROI</div>
+        </a>
+      </li>
+
+      <!-- Module Dashboard -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-bar-chart-alt"></i>
+          <div>Tableaux de bord</div>
+        </a>
+      </li>
+
+      <!-- Module Reporting -->
+      <li class="menu-item" [class.open]="isReportingMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('reporting')">
+          <i class="menu-icon bx bx-printer"></i>
+          <div>Reporting</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isReportingMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Rapports financiers</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Rapports opérationnels</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Export données</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 5 : SERVICES TRANSVERSES -->
+      <li class="menu-header">
+        <span>SERVICES</span>
+      </li>
+
+      <!-- Module Notifications -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-bell"></i>
+          <div>Notifications</div>
+        </a>
+      </li>
+
+      <!-- Module Audit -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-history"></i>
+          <div>Audit & Traçabilité</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 6 : ADMINISTRATION -->
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
+
+      <!-- Module Utilisateurs -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+      </li>
+
+      <!-- Module Paramétrage -->
+      <li class="menu-item" [class.open]="isParametrageMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('parametrage')">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isParametrageMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tarifs de location</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Configuration notifications</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Intégrations -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-plug"></i>
+          <div>Intégrations</div>
+        </a>
+      </li>
+
+      <!-- Déconnexion -->
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+    <!-- NAVBAR -->
+    <nav class="layout-navbar">
+      <div class="d-flex align-items-center">
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <h3 class="mb-0 ms-3">Validation des Documents</h3>
+      </div>
+
+      <ul class="navbar-nav">
+        <!-- User dropdown avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); showUserMenu = !showUserMenu">
+          <div class="avatar dropdown-toggle">
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <!-- SECTION STATISTIQUES EN TEMPS RÉEL -->
+      <div class="dashboard-header mb-4">
+        <div class="welcome-section">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="welcome-title">Validation des Documents</h1>
+              <p class="welcome-subtitle mb-0">
+                Gestion centralisée des documents en attente de validation. Validez, rejetez ou prévisualisez
+                les pièces jointes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION PRINCIPALE -->
+      <div class="row">
+        <!-- COLONNE GAUCHE - FILTRES ET ACTIONS -->
+        <div class="col-12 col-lg-4 mb-4">
+          <!-- CARD FILTRES AVANCÉS -->
+          <div class="card filters-card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class='bx bx-filter-alt me-2'></i>Filtres avancés
+              </h5>
+              <button class="btn btn-sm btn-link text-muted" (click)="resetFilters()">
+                <i class='bx bx-reset'></i> Réinitialiser
+              </button>
+            </div>
+            <div class="card-body">
+              <!-- BARRE DE RECHERCHE RAPIDE -->
+              <div class="search-container mb-4">
+                <form [formGroup]="searchForm">
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class='bx bx-search'></i>
+                    </span>
+                    <input type="text" class="form-control" formControlName="searchTerm"
+                      placeholder="Rechercher par nom, téléphone, numéro tier...">
+                    <button class="btn btn-primary" (click)="applySearch()" [disabled]="isLoading">
+                      <i class='bx bx-search'></i>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- FORMULAIRE DE FILTRES -->
+              <form [formGroup]="filterForm">
+                <div class="mb-3">
+                  <label class="form-label">Type de document</label>
+                  <select class="form-select" formControlName="documentType">
+                    <option [ngValue]="null">Tous les types</option>
+                    <option *ngFor="let type of documentTypes" [ngValue]="type">
+                      <!-- {{ getDocumentTypeLabel(type) }} -->
+                    </option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Statut du document</label>
+                  <select class="form-select" formControlName="documentStatus">
+                    <option *ngFor="let status of documentStatuses" [ngValue]="status">
+                      {{ getDocumentStatusLabel(status) }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Rôle du tier</label>
+                  <select class="form-select" formControlName="tierRole">
+                    <option [ngValue]="null">Tous les rôles</option>
+                    <option *ngFor="let role of tierRoles" [ngValue]="role">
+                      {{ role }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Statut du tier</label>
+                  <select class="form-select" formControlName="tierStatus">
+                    <option [ngValue]="null">Tous les statuts</option>
+                    <option *ngFor="let status of tierStatuses" [ngValue]="status">
+                      {{ status }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" formControlName="hasExpiredOnly" id="expiredOnly">
+                  <label class="form-check-label" for="expiredOnly">
+                    Afficher uniquement les documents expirés
+                  </label>
+                </div>
+
+                <div class="d-grid gap-2">
+                  <button type="button" class="btn btn-primary" (click)="applySearch()" [disabled]="isLoading">
+                    <i class='bx bx-filter me-1'></i> Appliquer les filtres
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- CARD ACTIONS RAPIDES -->
+          <!-- <div class="card quick-actions-card mt-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class='bx bx-bolt me-2'></i>Actions rapides
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button class="btn btn-outline-primary" (click)="goToTierPage(selectedTier?.id || '')"
+                  [disabled]="!selectedTier">
+                  <i class='bx bx-user me-1'></i> Voir le tier
+                </button>
+                <button class="btn btn-outline-success" (click)="validateAllDocumentsForTier(selectedTier!)"
+                  [disabled]="!selectedTier || !hasDocumentsToValidate(selectedTier)">
+                  <i class='bx bx-check-double me-1'></i> Tout valider
+                </button>
+                <button class="btn btn-outline-danger" (click)="exportDocuments('csv')" [disabled]="isExporting">
+                  <i class='bx bx-download me-1'></i> Exporter CSV
+                </button>
+              </div>
+            </div>
+          </div> -->
+        </div>
+
+        <!-- COLONNE DROITE - LISTE DES DOCUMENTS -->
+        <div class="col-12 col-lg-8 mb-4">
+          <div class="card documents-list-card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class='bx bx-file me-2'></i>Documents à valider
+                <span class="badge bg-primary ms-2">{{ documentsToValidate.length }}</span>
+              </h5>
+              <div class="sort-options">
+                <select class="form-select form-select-sm" style="width: auto;"
+                  (change)="sortDocuments($any($event.target).value)">
+                  <option value="uploadedAt">Date d'upload</option>
+                  <option value="expiryDate">Date d'expiration</option>
+                  <option value="type">Type de document</option>
+                  <option value="tier.firstName">Nom du tier</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ÉTAT DE CHARGEMENT -->
+            <div *ngIf="isLoading" class="card-body text-center py-5">
+              <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+              <p class="text-muted">Chargement des documents...</p>
+            </div>
+
+            <!-- LISTE DES DOCUMENTS -->
+            <div *ngIf="!isLoading" class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th width="40">
+                        <input type="checkbox" class="form-check-input">
+                      </th>
+                      <th>Tier</th>
+                      <th>Type</th>
+                      <th>Statut</th>
+                      <th>Expiration</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let doc of documentsToValidate" [class.table-active]="selectedDocument?.id === doc.id"
+                      (click)="selectDocumentForValidation(doc, doc.tier!)">
+                      <td>
+                        <input type="checkbox" class="form-check-input">
+                      </td>
+                      <td>
+                        <div class="tier-info">
+                          <strong>{{ doc.tier?.firstName }} {{ doc.tier?.lastName }}</strong>
+                          <div class="text-muted fs-sm">{{ doc.tier?.tierNumber }}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="document-type-badge" [class]="'type-' + doc.type">
+                          <i class='bx bx-file'></i>
+                          {{ getDocumentTypeLabel(doc.type) }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="status-badge" [class]="getDocumentStatusClass(doc.status)">
+                          <i class='bx bx-circle fs-xs me-1'></i>
+                          {{ getDocumentStatusLabel(doc.status) }}
+                        </span>
+                      </td>
+                      <td>
+                        <div [class]="getExpirationClass(doc)">
+                          <span *ngIf="doc.expiryDate">
+                            {{ doc.expiryDate | date:'dd/MM/yyyy' }}
+                            <span class="badge bg-warning ms-1" *ngIf="getDaysUntilExpiry(doc) !== null">
+                              {{ getDaysUntilExpiry(doc) }}j
+                            </span>
+                          </span>
+                          <span *ngIf="!doc.expiryDate" class="text-muted">-</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <button class="btn btn-outline-primary"
+                            (click)="previewDocument(doc); $event.stopPropagation()">
+                            <i class='bx bx-show'></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- PAGINATION -->
+              <div *ngIf="documentsToValidate.length > 0" class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="text-muted">
+                    Affichage de {{ documentsToValidate.length }} documents
+                  </div>
+                  <nav aria-label="Pagination">
+                    <ul class="pagination pagination-sm mb-0">
+                      <li class="page-item" [class.disabled]="currentPage === 1">
+                        <a class="page-link" (click)="goToPage(currentPage - 1)">
+                          <i class='bx bx-chevron-left'></i>
+                        </a>
+                      </li>
+                      <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+                        <a class="page-link" (click)="goToPage(page)">{{ page }}</a>
+                      </li>
+                      <li class="page-item" [class.disabled]="currentPage === totalPages">
+                        <a class="page-link" (click)="goToPage(currentPage + 1)">
+                          <i class='bx bx-chevron-right'></i>
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+
+              <!-- AUCUN DOCUMENT -->
+              <div *ngIf="documentsToValidate.length === 0 && !isLoading" class="text-center py-5">
+                <i class='bx bx-file-find display-1 text-muted mb-3'></i>
+                <h5 class="text-muted">Aucun document trouvé</h5>
+                <p class="text-muted mb-0">Aucun document ne correspond aux critères de recherche.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL DE PRÉVISUALISATION -->
+      <div class="modal-backdrop" *ngIf="isPreviewModalOpen" (click)="closePreview()"></div>
+      <div class="modal-preview" *ngIf="isPreviewModalOpen">
+        <div class="modal-preview-header">
+          <h5>Prévisualisation du document</h5>
+          <button class="btn-close" (click)="closePreview()">
+            <i class='bx bx-x'></i>
+          </button>
+        </div>
+        <div class="modal-preview-body">
+          <div class="preview-container" *ngIf="documentPreviewUrl">
+            <iframe [src]="documentPreviewUrl" class="preview-iframe" *ngIf="documentPreviewUrl"></iframe>
+            <div class="preview-unavailable" *ngIf="!documentPreviewUrl">
+              <i class='bx bx-file display-1 text-muted mb-3'></i>
+              <p class="text-muted">Prévisualisation non disponible</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-preview-footer">
+          <button class="btn btn-secondary" (click)="closePreview()">
+            <i class='bx bx-x me-1'></i> Fermer
+          </button>
+        </div>
+      </div>
+
+      <!-- PANEL DE VALIDATION LATERAL -->
+      <div class="validation-sidebar" [class.active]="selectedDocument">
+        <div class="validation-header">
+          <h5>Validation du document</h5>
+          <button class="btn-close" (click)="selectedDocument = null; selectedTier = null">
+            <i class='bx bx-x'></i>
+          </button>
+        </div>
+
+        <div class="validation-body" *ngIf="selectedDocument && selectedTier">
+          <!-- INFO DOCUMENT -->
+          <div class="document-info-card mb-4">
+            <div class="document-icon">
+              <i class='bx bx-file'></i>
+            </div>
+            <div>
+              <h6>{{ getDocumentTypeLabel(selectedDocument.type) }}</h6>
+              <p class="text-muted mb-1">{{ selectedDocument.fileName }}</p>
+              <small class="text-muted">{{ formatFileSize(selectedDocument.fileSize) }}</small>
+            </div>
+          </div>
+
+          <!-- INFO TIER -->
+          <div class="tier-info-card mb-4">
+            <div class="d-flex align-items-center">
+              <div class="tier-avatar me-3">
+                {{ selectedTier.firstName.charAt(0) }}{{ selectedTier.lastName.charAt(0) }}
+              </div>
+              <div>
+                <h6>{{ selectedTier.firstName }} {{ selectedTier.lastName }}</h6>
+                <p class="text-muted mb-0">{{ selectedTier.phone }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORMULAIRE DE VALIDATION -->
+          <form [formGroup]="validationForm" class="mb-4">
+            <div class="mb-3">
+              <label class="form-label">Commentaires (optionnel)</label>
+              <textarea class="form-control" formControlName="comments" rows="3"
+                placeholder="Ajoutez un commentaire pour la validation..."></textarea>
+            </div>
+            <button type="button" class="btn btn-success w-100 mb-2" (click)="validateDocument()"
+              [disabled]="selectedDocument.status !== 1">
+              <i class='bx bx-check me-1'></i> Valider le document
+            </button>
+          </form>
+
+          <!-- FORMULAIRE DE REJET -->
+          <form [formGroup]="rejectionForm" class="rejection-form">
+            <h6 class="text-danger mb-3">
+              <i class='bx bx-error-circle me-1'></i>Rejeter le document
+            </h6>
+            <div class="mb-3">
+              <label class="form-label">Motif du rejet *</label>
+              <input type="text" class="form-control" formControlName="reason"
+                placeholder="Ex: Document illisible, informations manquantes...">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Commentaires</label>
+              <textarea class="form-control" formControlName="comments" rows="2"
+                placeholder="Détails supplémentaires..."></textarea>
+            </div>
+            <button type="button" class="btn btn-outline-danger w-100" (click)="rejectDocument()"
+              [disabled]="!rejectionForm.valid || selectedDocument.status !== 1">
+              <i class='bx bx-x me-1'></i> Rejeter le document
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="content-footer">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          © 2024 Logistiks. Tous droits réservés.
+        </div>
+        <div class="text-muted">
+          <span class="badge bg-light text-dark">
+            <i class='bx bx-time me-1'></i> {{ currentUser ? 'Connecté' : 'Déconnecté' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

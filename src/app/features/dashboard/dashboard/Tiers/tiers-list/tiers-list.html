@@ -1,0 +1,719 @@
+<div class="layout-wrapper">
+  <!-- SIDEBAR COMPLÈTE -->
+  <aside class="layout-menu" id="sidebar" [class.collapsed]="isSidebarCollapsed">
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistiks</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
+    </div>
+
+    <ul class="menu-inner">
+      <!-- DASHBOARD -->
+      <li class="menu-item">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 1 : RÉFÉRENTIELS FONDAMENTAUX -->
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
+
+      <!-- Module Tiers -->
+      <li class="menu-item" [class.open]="isTiersMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('tiers')">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isTiersMenuOpen ? 'block' : 'none'">
+          <li class="menu-item active">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+              <span class="badge badge-primary" *ngIf="stats.total > 0">{{ stats.total }}</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+                    <li class="menu-item">
+              <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+                <div>Gestion des documents</div>
+                <span class="badge badge-info"><i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+                </span>
+              </a>
+          </li>
+          <li class="menu-item">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Véhicules -->
+      <li class="menu-item" [class.open]="isVehiculesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('vehicules')">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isVehiculesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Disponibles</div>
+              <span class="badge badge-success">28</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Loués</div>
+              <span class="badge badge-primary">12</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En maintenance</div>
+              <span class="badge badge-warning">5</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Suivi entretien</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Documents -->
+      <li class="menu-item" [class.open]="isDocumentsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('documents')">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isDocumentsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Contrats signés</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Pièces d'identité</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 2 : CŒUR MÉTIER LOCATION -->
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
+
+      <!-- Module Contrats -->
+      <li class="menu-item" [class.open]="isContratsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('contrats')">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isContratsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Contrats actifs</div>
+              <span class="badge badge-success">12</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>À expiration</div>
+              <span class="badge badge-warning">3</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Calendrier/Échéances -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 3 : FINANCE OPÉRATIONNELLE -->
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
+
+      <!-- Module Comptes -->
+      <li class="menu-item" [class.open]="isComptesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('comptes')">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isComptesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Paiements -->
+      <li class="menu-item" [class.open]="isPaiementsMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('paiements')">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isPaiementsMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En retard</div>
+              <span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>En attente</div>
+              <span class="badge badge-warning">8</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Nouveau paiement</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Charges -->
+      <li class="menu-item" [class.open]="isChargesMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('charges')">
+          <i class="menu-icon bx bx-dollar-circle"></i>
+          <div>Charges & Dépenses</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isChargesMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Toutes les charges</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Maintenance véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Charges générales</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 4 : RENTABILITÉ & PILOTAGE -->
+      <li class="menu-header">
+        <span>ANALYSE & RAPPORTS</span>
+      </li>
+
+      <!-- Module ROI -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-line-chart"></i>
+          <div>Rentabilité & ROI</div>
+        </a>
+      </li>
+
+      <!-- Module Dashboard -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-bar-chart-alt"></i>
+          <div>Tableaux de bord</div>
+        </a>
+      </li>
+
+      <!-- Module Reporting -->
+      <li class="menu-item" [class.open]="isReportingMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('reporting')">
+          <i class="menu-icon bx bx-printer"></i>
+          <div>Reporting</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isReportingMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Rapports financiers</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Rapports opérationnels</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Export données</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- NIVEAU 5 : SERVICES TRANSVERSES -->
+      <li class="menu-header">
+        <span>SERVICES</span>
+      </li>
+
+      <!-- Module Notifications -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-bell"></i>
+          <div>Notifications</div>
+        </a>
+      </li>
+
+      <!-- Module Audit -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-history"></i>
+          <div>Audit & Traçabilité</div>
+        </a>
+      </li>
+
+      <!-- NIVEAU 6 : ADMINISTRATION -->
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
+
+      <!-- Module Utilisateurs -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+      </li>
+
+      <!-- Module Paramétrage -->
+      <li class="menu-item" [class.open]="isParametrageMenuOpen">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu('parametrage')">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub" [style.display]="isParametrageMenuOpen ? 'block' : 'none'">
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Tarifs de location</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <div>Configuration notifications</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Intégrations -->
+      <li class="menu-item">
+        <a href="#" class="menu-link">
+          <i class="menu-icon bx bx-plug"></i>
+          <div>Intégrations</div>
+        </a>
+      </li>
+
+      <!-- Déconnexion -->
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+    <!-- NAVBAR -->
+    <nav class="layout-navbar">
+      <div class="d-flex align-items-center">
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <h3 class="mb-0 ms-3">Gestion des Tiers</h3>
+      </div>
+
+      <ul class="navbar-nav">
+        <!-- User dropdown avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <!-- SECTION STATISTIQUES -->
+      <div class="row mb-4">
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon primary">
+              <i class='bx bx-group'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.total }}</h3>
+              <p>Total Tiers</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon success">
+              <i class='bx bx-check-circle'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.active }}</h3>
+              <p>Tiers Actifs</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon warning">
+              <i class='bx bx-time'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.pending }}</h3>
+              <p>En attente</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon danger">
+              <i class='bx bx-block'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.blocked }}</h3>
+              <p>Tiers Bloqués</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION RECHERCHE ET FILTRES -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0">
+                  <i class='bx bx-search'></i>
+                </span>
+                <input type="text" class="form-control border-start-0" [(ngModel)]="searchTerm"
+                  (keyup.enter)="onSearch()" placeholder="Rechercher un tier...">
+                <button class="btn btn-primary" (click)="onSearch()">
+                  <i class='bx bx-search me-1'></i> Rechercher
+                </button>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 d-flex justify-content-md-end">
+              <div class="d-flex gap-2 flex-wrap">
+                <!-- <button class="btn btn-outline-primary" (click)="exportToExcel()">
+                  <i class='bx bx-export me-1'></i> Exporter
+                </button> -->
+                <button class="btn btn-primary" (click)="toggleFiltersSidebar()">
+                  <i class='bx bx-filter-alt me-1'></i> Filtres
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTRES EN LIGNE -->
+      <div class="row mb-4" *ngIf="!sidebarVisible">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex flex-wrap gap-3 align-items-center">
+                <div class="filter-group">
+                  <label class="form-label mb-1">Filtrer par rôle :</label>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button *ngFor="let role of roles" class="btn btn-sm"
+                      [class.btn-primary]="selectedRole === role.value"
+                      [class.btn-outline-primary]="selectedRole !== role.value" (click)="onFilterByRole(role.value)">
+                      <i [class]="role.icon + ' me-1'"></i> {{ role.label }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByRole()">
+                      Tous les rôles
+                    </button>
+                  </div>
+                </div>
+                <div class="filter-group">
+                  <label class="form-label mb-1">Filtrer par statut :</label>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button *ngFor="let status of statuses" class="btn btn-sm"
+                      [class.btn-primary]="selectedStatus === status.value"
+                      [class.btn-outline-primary]="selectedStatus !== status.value"
+                      (click)="onFilterByStatus(status.value)">
+                      <i [class]="status.icon + ' me-1'"></i> {{ status.label }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByStatus()">
+                      Tous les statuts
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION PRINCIPALE -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Liste des Tiers</h5>
+              <div class="d-flex align-items-center gap-2">
+                <div class="form-group mb-0">
+                  <select class="form-select form-select-sm" (change)="onPageSizeChange($event)" style="width: auto;">
+                    <option *ngFor="let size of pageSizeOptions" [value]="size">
+                      {{ size }} par page
+                    </option>
+                  </select>
+                </div>
+                <div class="text-muted fs-sm">
+                  {{ pagination.totalCount }} résultats
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <!-- LOADING -->
+              <div *ngIf="loading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p class="mt-2">Chargement des tiers...</p>
+              </div>
+
+              <!-- ERROR -->
+              <div *ngIf="error && !loading" class="alert alert-danger">
+                <i class='bx bx-error-circle me-2'></i> {{ error }}
+              </div>
+
+              <!-- TABLE DES TIERS -->
+              <div *ngIf="!loading && !error" class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">#</th>
+                      <th (click)="onSortChange('tierNumber')" style="cursor: pointer;">
+                        Numéro Tier <i class='bx bx-sort' *ngIf="selectedSort !== 'tierNumber'"></i>
+                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'tierNumber' && !sortDescending"></i>
+                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'tierNumber' && sortDescending"></i>
+                      </th>
+                      <th (click)="onSortChange('lastName')" style="cursor: pointer;">
+                        Nom & Prénom <i class='bx bx-sort' *ngIf="selectedSort !== 'lastName'"></i>
+                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'lastName' && !sortDescending"></i>
+                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'lastName' && sortDescending"></i>
+                      </th>
+                      <th>Téléphone</th>
+                      <th>Rôles</th>
+                      <th (click)="onSortChange('status')" style="cursor: pointer;">
+                        Statut <i class='bx bx-sort' *ngIf="selectedSort !== 'status'"></i>
+                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'status' && !sortDescending"></i>
+                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'status' && sortDescending"></i>
+                      </th>
+                      <th>Documents</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let tier of tiers; let i = index">
+                      <td class="text-muted">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
+                      <td>
+                        <strong>{{ tier.tierNumber }}</strong>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="avatar me-3">
+                            <div class="avatar-default">
+                              {{ getInitialsFromName(tier) }}
+                            </div>
+                          </div>
+                          <div>
+                            <div class="fw-semibold">{{ getFullName(tier) }}</div>
+                            <small class="text-muted">{{ tier.email }}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        {{ formatPhoneNumber(tier.phone) }}
+                      </td>
+                      <td>
+                        <div class="d-flex flex-wrap gap-1">
+                          <span *ngFor="let role of getActiveRoles(tier)" class="badge"
+                            [ngClass]="getRoleBadgeClass(role)">
+                            {{ getRoleText(role) }}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="status-badge" [ngClass]="'status-' + getStatusIcon(tier.status)">
+                          <i [class]="getStatusIcon(tier.status)"></i>
+                          {{ getStatusText(tier.status) }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <span *ngIf="hasExpiredDocuments(tier)" class="text-danger" title="Documents expirés">
+                            <i class='bx bx-error-circle'></i>
+                          </span>
+                          <span *ngIf="canSignContract(tier)" class="text-success" title="Peut signer un contrat">
+                            <i class='bx bx-check-circle'></i>
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <!-- <button class="btn btn-sm btn-outline-primary" [routerLink]="['/tiers', tier.id]"
+                            title="Voir détails">
+                            <i class='bx bx-show'></i>
+                          </button> -->
+                          <button class="btn btn-sm btn-outline-danger" (click)="blockTier(tier)" title="Bloquer">
+                            <i class='bx bx-block'></i>
+                          </button>
+                          <button *ngIf="tier.status === TierStatus.PendingValidation"
+                            class="btn btn-sm btn-outline-success" (click)="validateTier(tier)" title="Valider">
+                            <i class='bx bx-check'></i>
+                          </button>
+                          <button *ngIf="tier.status === TierStatus.Blocked" class="btn btn-sm btn-outline-success"
+                            (click)="activateTier(tier)" title="Activer">
+                            <i class='bx bx-power-off'></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- PAGINATION -->
+              <div *ngIf="!loading && !error && pagination.totalPages > 1"
+                class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted fs-sm">
+                  Page {{ pagination.currentPage }} sur {{ pagination.totalPages }}
+                  ({{ pagination.totalCount }} tiers)
+                </div>
+                <nav>
+                  <ul class="pagination mb-0">
+                    <li class="page-item" [class.disabled]="!pagination.hasPreviousPage">
+                      <a class="page-link" (click)="onPageChange(pagination.currentPage - 1)">
+                        <i class='bx bx-chevron-left'></i>
+                      </a>
+                    </li>
+                    <li *ngFor="let page of visiblePages" class="page-item"
+                      [class.active]="page === pagination.currentPage">
+                      <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="!pagination.hasNextPage">
+                      <a class="page-link" (click)="onPageChange(pagination.currentPage + 1)">
+                        <i class='bx bx-chevron-right'></i>
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
