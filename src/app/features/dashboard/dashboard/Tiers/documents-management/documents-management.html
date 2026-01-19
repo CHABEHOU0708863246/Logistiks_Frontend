@@ -1,395 +1,311 @@
 <div class="layout-wrapper">
   <div class="layout-container">
     <!-- SIDEBAR COMPLÈTE -->
-    <aside class="layout-menu" id="sidebar">
-      <div class="app-brand">
-        <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-        <div>
-          <span class="app-brand-text">Logistiks</span>
-          <div class="app-brand-subtitle">Gestion de flotte et locations</div>
-        </div>
-      </div>
+<aside class="layout-menu" id="sidebar">
+  <div class="app-brand">
+    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+    <div>
+      <span class="app-brand-text">Logistiks</span>
+      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+    </div>
+  </div>
 
-      <ul class="menu-inner">
-        <!-- DASHBOARD -->
-        <li class="menu-item active">
-          <a [routerLink]="['/dashboard']" class="menu-link" onclick="showDashboard()">
-            <i class="menu-icon bx bx-home-circle"></i>
-            <div>Dashboard</div>
+  <ul class="menu-inner">
+    <li class="menu-item" routerLinkActive="active">
+      <a [routerLink]="['/dashboard']" class="menu-link">
+        <i class="menu-icon bx bx-home-circle"></i>
+        <div>Dashboard</div>
+      </a>
+    </li>
+
+    <li class="menu-header">
+      <span>RÉFÉRENTIELS</span>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-group"></i>
+        <div>Tiers</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+            <div>Tous les tiers</div>
           </a>
         </li>
-
-        <!-- NIVEAU 1 : RÉFÉRENTIELS FONDAMENTAUX -->
-        <li class="menu-header">
-          <span>RÉFÉRENTIELS</span>
-        </li>
-
-        <!-- Module Tiers -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-            <i class="menu-icon bx bx-group"></i>
-            <div>Tiers</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-                <div>Tous les tiers</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-                <div>Documents à valider</div>
-                <!-- Badge dynamique pour documents en attente -->
-                <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-                  {{ dashboardStats.documentsPending }}
-                </span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-                <div>Gestion des documents</div>
-                <span class="badge badge-info"><i class='bx bx-upload'></i>
-                  {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-                </span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-                <div>Nouveau tier</div>
-                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Module Véhicules -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-car"></i>
-            <div>Véhicules</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('tous-vehicules')">
-                <div>Tous les véhicules</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('vehicules-disponibles')">
-                <div>Disponibles</div>
-                <span class="badge badge-success">28</span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('vehicules-loues')">
-                <div>Loués</div>
-                <span class="badge badge-primary">12</span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('vehicules-maintenance')">
-                <div>En maintenance</div>
-                <span class="badge badge-warning">5</span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('suivi-entretien')">
-                <div>Suivi entretien</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Module Documents -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-folder"></i>
-            <div>Documents</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('tous-documents')">
-                <div>Tous les documents</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('contrats-signes')">
-                <div>Contrats signés</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('pieces-identite')">
-                <div>Pièces d'identité</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('factures-fournisseurs')">
-                <div>Factures fournisseurs</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- NIVEAU 2 : CŒUR MÉTIER LOCATION -->
-        <li class="menu-header">
-          <span>CŒUR MÉTIER</span>
-        </li>
-
-        <!-- Module Contrats -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-file"></i>
-            <div>Contrats</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('tous-contrats')">
-                <div>Tous les contrats</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('contrats-actifs')">
-                <div>Contrats actifs</div>
-                <span class="badge badge-success">12</span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('contrats-expiration')">
-                <div>À expiration</div>
-                <span class="badge badge-warning">3</span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('nouveau-contrat')">
-                <div>Nouveau contrat</div>
-                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Module Calendrier/Échéances -->
-        <li class="menu-item">
-          <a href="#" class="menu-link" onclick="loadContent('calendrier')">
-            <i class="menu-icon bx bx-calendar"></i>
-            <div>Calendrier & Échéances</div>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+            <div>Documents à valider</div>
+            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+              {{ dashboardStats.documentsPending }}
+            </span>
           </a>
         </li>
-
-        <!-- NIVEAU 3 : FINANCE OPÉRATIONNELLE -->
-        <li class="menu-header">
-          <span>FINANCE & COMPTABILITÉ</span>
-        </li>
-
-        <!-- Module Comptes -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-credit-card"></i>
-            <div>Comptes</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('comptes-bancaires')">
-                <div>Comptes bancaires</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('comptes-mobile')">
-                <div>Mobile Money</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('soldes')">
-                <div>Soldes & Bilans</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Module Paiements -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-wallet"></i>
-            <div>Paiements</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('tous-paiements')">
-                <div>Tous les paiements</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('paiements-retard')">
-                <div>En retard</div>
-                <span class="badge badge-danger">5</span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('paiements-attente')">
-                <div>En attente</div>
-                <span class="badge badge-warning">8</span>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('nouveau-paiement')">
-                <div>Nouveau paiement</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Module Charges -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-dollar-circle"></i>
-            <div>Charges & Dépenses</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('toutes-charges')">
-                <div>Toutes les charges</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('maintenance-vehicules')">
-                <div>Maintenance véhicules</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('charges-generales')">
-                <div>Charges générales</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- NIVEAU 4 : RENTABILITÉ & PILOTAGE -->
-        <li class="menu-header">
-          <span>ANALYSE & RAPPORTS</span>
-        </li>
-
-        <!-- Module ROI -->
-        <li class="menu-item">
-          <a href="#" class="menu-link" onclick="loadContent('roi')">
-            <i class="menu-icon bx bx-line-chart"></i>
-            <div>Rentabilité & ROI</div>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+            <div>Gestion des documents</div>
+            <span class="badge badge-info">
+              <i class='bx bx-upload'></i>
+              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+            </span>
           </a>
         </li>
-
-        <!-- Module Dashboard -->
-        <li class="menu-item">
-          <a href="#" class="menu-link" onclick="loadContent('dashboards')">
-            <i class="menu-icon bx bx-bar-chart-alt"></i>
-            <div>Tableaux de bord</div>
-          </a>
-        </li>
-
-        <!-- Module Reporting -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-printer"></i>
-            <div>Reporting</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('rapports-financiers')">
-                <div>Rapports financiers</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('rapports-operations')">
-                <div>Rapports opérationnels</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('export-data')">
-                <div>Export données</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- NIVEAU 5 : SERVICES TRANSVERSES -->
-        <li class="menu-header">
-          <span>SERVICES</span>
-        </li>
-
-        <!-- Module Notifications -->
-        <li class="menu-item">
-          <a href="#" class="menu-link" onclick="loadContent('notifications')">
-            <i class="menu-icon bx bx-bell"></i>
-            <div>Notifications</div>
-          </a>
-        </li>
-
-        <!-- Module Audit -->
-        <li class="menu-item">
-          <a href="#" class="menu-link" onclick="loadContent('audit')">
-            <i class="menu-icon bx bx-history"></i>
-            <div>Audit & Traçabilité</div>
-          </a>
-        </li>
-
-        <!-- NIVEAU 6 : ADMINISTRATION -->
-        <li class="menu-header">
-          <span>ADMINISTRATION</span>
-        </li>
-
-        <!-- Module Utilisateurs -->
-        <li class="menu-item">
-          <a href="#" class="menu-link" onclick="loadContent('utilisateurs')">
-            <i class="menu-icon bx bx-user"></i>
-            <div>Utilisateurs</div>
-          </a>
-        </li>
-
-        <!-- Module Paramétrage -->
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleMenu(this)">
-            <i class="menu-icon bx bx-cog"></i>
-            <div>Paramétrage</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('parametres-generaux')">
-                <div>Paramètres généraux</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('types-vehicules')">
-                <div>Types de véhicules</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('tarifs-location')">
-                <div>Tarifs de location</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="#" class="menu-link" onclick="loadContent('config-notifications')">
-                <div>Configuration notifications</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Module Intégrations -->
-        <li class="menu-item">
-          <a href="#" class="menu-link" onclick="loadContent('integrations')">
-            <i class="menu-icon bx bx-plug"></i>
-            <div>Intégrations</div>
-          </a>
-        </li>
-
-        <!-- Déconnexion -->
-        <li class="menu-item" style="margin-top: 2rem;">
-          <a class="menu-link" (click)="logout()">
-            <i class="menu-icon bx bx-log-out"></i>
-            <div>Déconnexion</div>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+            <div>Nouveau tier</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
           </a>
         </li>
       </ul>
-    </aside>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-car"></i>
+        <div>Véhicules</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+            <div>Tous les véhicules</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/disponibles']" class="menu-link">
+            <div>Disponibles</div>
+            <span class="badge badge-success">28</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/loues']" class="menu-link">
+            <div>Loués</div>
+            <span class="badge badge-primary">12</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/maintenance']" class="menu-link">
+            <div>En maintenance</div>
+            <span class="badge badge-warning">5</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
+            <div>Suivi entretien</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-folder"></i>
+        <div>Documents</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents']" class="menu-link">
+            <div>Tous les documents</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
+            <div>Contrats signés</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
+            <div>Pièces d'identité</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+            <div>Factures fournisseurs</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-header">
+      <span>CŒUR MÉTIER</span>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-file"></i>
+        <div>Contrats</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+            <div>Tous les contrats</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
+            <div>Contrats actifs</div>
+            <span class="badge badge-success">12</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
+            <div>À expiration</div>
+            <span class="badge badge-warning">3</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+            <div>Nouveau contrat</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active">
+      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+        <i class="menu-icon bx bx-calendar"></i>
+        <div>Calendrier & Échéances</div>
+      </a>
+    </li>
+
+    <li class="menu-header">
+      <span>FINANCE & COMPTABILITÉ</span>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-credit-card"></i>
+        <div>Comptes</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+            <div>Comptes bancaires</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+            <div>Mobile Money</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+            <div>Soldes & Bilans</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-wallet"></i>
+        <div>Paiements</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+            <div>Tous les paiements</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+            <div>En retard</div><span class="badge badge-danger">5</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+            <div>En attente</div><span class="badge badge-warning">8</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-header">
+      <span>ADMINISTRATION</span>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-user"></i>
+        <div>Utilisateurs</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+            <div>Liste utilisateurs</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+            <div>Détail utilisateur</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+            <div>Formulaire utilisateur</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+            <div>Gestion rôles</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+            <div>Permissions</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+            <div>Profil utilisateur</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+            <div>Sessions</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+            <div>Activité</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+            <div>Groupes</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-cog"></i>
+        <div>Paramétrage</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+            <div>Paramètres généraux</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+            <div>Types de véhicules</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-item" style="margin-top: 2rem;">
+      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+        <i class="menu-icon bx bx-log-out"></i>
+        <div>Déconnexion</div>
+      </a>
+    </li>
+  </ul>
+</aside>
 
     <!-- MAIN CONTENT -->
     <div class="layout-page">

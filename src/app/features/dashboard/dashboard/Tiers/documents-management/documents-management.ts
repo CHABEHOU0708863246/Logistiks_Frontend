@@ -108,29 +108,13 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   };
   showToast: any;
 
-  toggleMenu(event: MouseEvent): void {
-    const element = event.currentTarget as HTMLElement;
-    if (element && element.parentElement) {
-      element.parentElement.classList.toggle('open');
-    }
-  }
+
 
   // Gestion utilisateur
   currentUser: any = null;
   userName: string = 'Utilisateur';
   userPhotoUrl: string = '';
   showUserMenu: boolean = false;
-
-  // États des sous-menus ouverts
-  isTiersMenuOpen: boolean = true;
-  isVehiculesMenuOpen: boolean = false;
-  isDocumentsMenuOpen: boolean = false;
-  isContratsMenuOpen: boolean = false;
-  isComptesMenuOpen: boolean = false;
-  isPaiementsMenuOpen: boolean = false;
-  isChargesMenuOpen: boolean = false;
-  isReportingMenuOpen: boolean = false;
-  isParametrageMenuOpen: boolean = false;
 
   // Gestion sidebar
   isSidebarCollapsed: boolean = false;
@@ -171,6 +155,13 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+    toggleMenu(event: MouseEvent): void {
+    const element = event.currentTarget as HTMLElement;
+    if (element && element.parentElement) {
+      element.parentElement.classList.toggle('open');
+    }
   }
 
   /**

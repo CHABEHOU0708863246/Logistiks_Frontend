@@ -35,17 +35,6 @@ export class DocumentsValidation implements OnInit, OnDestroy {
   isUploading: boolean = false;
   uploadForm!: FormGroup;
 
-  // États des sous-menus ouverts
-  isTiersMenuOpen: boolean = true;
-  isVehiculesMenuOpen: boolean = false;
-  isDocumentsMenuOpen: boolean = true;
-  isContratsMenuOpen: boolean = false;
-  isComptesMenuOpen: boolean = false;
-  isPaiementsMenuOpen: boolean = false;
-  isChargesMenuOpen: boolean = false;
-  isReportingMenuOpen: boolean = false;
-  isParametrageMenuOpen: boolean = false;
-
   dashboardStats = {
     totalTiers: 0,
     activeTiers: 0,
@@ -986,35 +975,10 @@ export class DocumentsValidation implements OnInit, OnDestroy {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
-  toggleMenu(menu: string): void {
-    switch (menu) {
-      case 'tiers':
-        this.isTiersMenuOpen = !this.isTiersMenuOpen;
-        break;
-      case 'vehicules':
-        this.isVehiculesMenuOpen = !this.isVehiculesMenuOpen;
-        break;
-      case 'documents':
-        this.isDocumentsMenuOpen = !this.isDocumentsMenuOpen;
-        break;
-      case 'contrats':
-        this.isContratsMenuOpen = !this.isContratsMenuOpen;
-        break;
-      case 'comptes':
-        this.isComptesMenuOpen = !this.isComptesMenuOpen;
-        break;
-      case 'paiements':
-        this.isPaiementsMenuOpen = !this.isPaiementsMenuOpen;
-        break;
-      case 'charges':
-        this.isChargesMenuOpen = !this.isChargesMenuOpen;
-        break;
-      case 'reporting':
-        this.isReportingMenuOpen = !this.isReportingMenuOpen;
-        break;
-      case 'parametrage':
-        this.isParametrageMenuOpen = !this.isParametrageMenuOpen;
-        break;
+      toggleMenu(event: MouseEvent): void {
+    const element = event.currentTarget as HTMLElement;
+    if (element && element.parentElement) {
+      element.parentElement.classList.toggle('open');
     }
   }
 }

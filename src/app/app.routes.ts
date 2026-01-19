@@ -22,5 +22,13 @@ export const routes: Routes = [
     loadChildren: () => import('./features/dashboard/dashboard/Tiers/tiers.routes').then((m) => m.TIERS_ROUTES),
     canActivate: [authGuard]
   },
-  { path: '**', component: NotFound },
+  {
+    path: 'dashboard/vehicules',
+    loadChildren: () => import('./features/dashboard/dashboard/Vehicules/vehicules.routes').then((m) => m.VEHICULES_ROUTES),
+    canActivate: [authGuard]
+  },
+  {
+    path: '**',
+    component: NotFound
+  },
 ];

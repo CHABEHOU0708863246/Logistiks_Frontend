@@ -39,17 +39,6 @@ export class TierForm implements OnInit, OnDestroy {
   // Gestion sidebar
   isSidebarCollapsed: boolean = false;
 
-  // États des sous-menus ouverts
-  isTiersMenuOpen: boolean = true;
-  isVehiculesMenuOpen: boolean = false;
-  isDocumentsMenuOpen: boolean = false;
-  isContratsMenuOpen: boolean = false;
-  isComptesMenuOpen: boolean = false;
-  isPaiementsMenuOpen: boolean = false;
-  isChargesMenuOpen: boolean = false;
-  isReportingMenuOpen: boolean = false;
-  isParametrageMenuOpen: boolean = false;
-
   // Options pour les selects
   identityTypeOptions = IdentityType;
 
@@ -525,35 +514,10 @@ export class TierForm implements OnInit, OnDestroy {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
-  toggleMenu(menuName: string): void {
-    switch (menuName) {
-      case 'tiers':
-        this.isTiersMenuOpen = !this.isTiersMenuOpen;
-        break;
-      case 'vehicules':
-        this.isVehiculesMenuOpen = !this.isVehiculesMenuOpen;
-        break;
-      case 'documents':
-        this.isDocumentsMenuOpen = !this.isDocumentsMenuOpen;
-        break;
-      case 'contrats':
-        this.isContratsMenuOpen = !this.isContratsMenuOpen;
-        break;
-      case 'comptes':
-        this.isComptesMenuOpen = !this.isComptesMenuOpen;
-        break;
-      case 'paiements':
-        this.isPaiementsMenuOpen = !this.isPaiementsMenuOpen;
-        break;
-      case 'charges':
-        this.isChargesMenuOpen = !this.isChargesMenuOpen;
-        break;
-      case 'reporting':
-        this.isReportingMenuOpen = !this.isReportingMenuOpen;
-        break;
-      case 'parametrage':
-        this.isParametrageMenuOpen = !this.isParametrageMenuOpen;
-        break;
+      toggleMenu(event: MouseEvent): void {
+    const element = event.currentTarget as HTMLElement;
+    if (element && element.parentElement) {
+      element.parentElement.classList.toggle('open');
     }
   }
 
