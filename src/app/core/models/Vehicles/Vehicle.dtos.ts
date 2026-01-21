@@ -40,6 +40,7 @@ export interface AssignVehicleRequest {
 }
 
 export interface VehicleDto {
+  showActionsMenu: boolean;
   id: string;
   code: string;
   type: VehicleType;
@@ -87,15 +88,38 @@ export interface VehicleSearchCriteria {
   sortDescending: boolean;
 }
 
+/**
+ * Statistiques du parc véhicules
+ */
 export interface VehicleStatistics {
   totalVehicles: number;
   availableVehicles: number;
   rentedVehicles: number;
   inMaintenanceVehicles: number;
   outOfServiceVehicles: number;
+  reservedVehicles: number;
+
   totalFleetValue: number;
+  averageVehicleValue: number;
+
   vehiclesWithExpiredInsurance: number;
+  vehiclesWithExpiringInsurance: number; // < 30 jours
+
   averageVehicleAge: number;
-  vehiclesByType: Record<VehicleType, number>; // Utilisation de Record pour le Dictionary C#
-  vehiclesByFuelType: Record<FuelType, number>;
+  totalDistanceTraveled: number;
+  averageMileage: number;
+
+  // Utilisation de Record pour simuler les Dictionnaires C#
+  vehiclesByType: Record<string, number>;
+  vehiclesByFuelType: Record<string, number>;
+  vehiclesByStatus: Record<string, number>;
+
+  // Statistiques de location
+  activeContracts: number;
+  totalMonthlyRevenue: number;
+  averageUtilizationRate: number; // Pourcentage
+
+  // Alertes
+  alerts: string[];
+  generatedAt: Date;
 }

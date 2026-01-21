@@ -27,6 +27,15 @@ export class DocumentsValidation implements OnInit, OnDestroy {
   userPhotoUrl: string = '';
   showUserMenu: boolean = false;
 
+  showConfirmDialog: boolean = false;
+  confirmDialogConfig = {
+    title: 'Confirmation',
+    message: 'Êtes-vous sûr de vouloir effectuer cette action ?',
+    details: '',
+    confirmText: 'Confirmer',
+    cancelText: 'Annuler'
+  };
+
   selectedTierForUpload: Tier | null = null;
   isUploadModalOpen: boolean = false;
   isDragOver: boolean = false;

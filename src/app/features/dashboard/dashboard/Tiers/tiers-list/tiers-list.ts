@@ -3,30 +3,117 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+
+// Modèles
 import { PaginatedResponse } from '../../../../../core/models/Common/PaginatedResponse';
 import { TierRoleType, TierStatus } from '../../../../../core/models/Enums/Logistiks-enums';
 import { Tier } from '../../../../../core/models/Tiers/Tiers';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
+
+// Services
 import { Tiers } from '../../../../../core/services/Tiers/tiers';
-import { Notification } from '../../../../../core/services/Notification/notification';
 import { Auth } from '../../../../../core/services/Auth/auth';
 import { Token } from '../../../../../core/services/Token/token';
+import { NotificationService } from '../../../../../core/services/Notification/notification-service';
+
+// Composants
+import { Sidebar } from "../../../../../core/components/sidebar/sidebar";
+import { ConfirmDialog } from "../../../../../core/components/confirm-dialog/confirm-dialog";
+import { ConfirmDialogWithInput } from "../../../../../core/components/confirm-dialog-with-input/confirm-dialog-with-input";
+
+// Environnement
 import { environment } from '../../../../../../environments/environment.development';
 
+/**
+ * Composant de gestion de la liste des tiers (clients, fournisseurs, partenaires)
+ * @class TiersList
+ * @implements {OnInit, OnDestroy}
+ */
 @Component({
   selector: 'app-tiers-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ConfirmDialog,
+    ConfirmDialogWithInput
+  ],
   templateUrl: './tiers-list.html',
   styleUrls: ['./tiers-list.scss']
 })
 export class TiersList implements OnInit, OnDestroy {
-  // Export des enums pour utilisation dans le template
+  // ===========================================================================
+  // CONSTANTES ET CONFIGURATION
+  // ===========================================================================
+
+  /** Enums exportés pour utilisation dans le template */
   TierStatus = TierStatus;
   TierRoleType = TierRoleType;
 
-  // Données
+  /** Options de pagination disponibles */
+  pageSizeOptions = [10, 25, 50, 100];
+
+  /** Options de tri disponibles */
+  sortOptions = [
+    { value: 'updatedAt', label: 'Date de modification', icon: 'bx bx-calendar' },
+    { value: 'createdAt', label: 'Date de création', icon: 'bx bx-plus-circle' },
+    { value: 'lastName', label: 'Nom', icon: 'bx bx-sort-a-z' },
+    { value: 'tierNumber', label: 'Numéro de tier', icon: 'bx bx-hash' },
+    { value: 'status', label: 'Statut', icon: 'bx bx-check-circle' }
+  ];
+
+  /** Rôles disponibles pour le filtrage */
+  roles = [
+    { value: TierRoleType.ClientParticulier, label: 'Client Particulier', icon: 'bx bx-user', color: 'primary' },
+    { value: TierRoleType.Supplier, label: 'Fournisseur', icon: 'bx bx-truck', color: 'info' },
+    { value: TierRoleType.ClientLivreur, label: 'Client/Livreur', icon: 'bx bx-briefcase', color: 'warning' },
+    { value: TierRoleType.Partner, label: 'Partenaire', icon: 'bx bx-handshake', color: 'success' }
+  ];
+
+  /** Statuts disponibles pour le filtrage */
+  statuses = [
+    { value: TierStatus.Active, label: 'Actif', badge: 'success', icon: 'bx bx-check-circle' },
+    { value: TierStatus.PendingValidation, label: 'En attente', badge: 'warning', icon: 'bx bx-time' },
+    { value: TierStatus.Blocked, label: 'Bloqué', badge: 'danger', icon: 'bx bx-block' },
+    { value: TierStatus.Inactive, label: 'Inactif', badge: 'default', icon: 'bx bx-minus-circle' }
+  ];
+
+  /** Classes pour les couleurs des avatars */
+  private avatarColors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
+
+  // ===========================================================================
+  // ÉTATS DE L'APPLICATION
+  // ===========================================================================
+
+  // États de chargement et erreurs
+  loading = false;
+  error: string | null = null;
+
+  // États de la sidebar et menus
+  sidebarVisible = false;
+  isSidebarCollapsed: boolean = false;
+  showUserMenu: boolean = false;
+
+  // États des boîtes de dialogue
+  confirmDialogVisible = false;
+  confirmDialogTitle = '';
+  confirmDialogMessage = '';
+  confirmDialogDetails = '';
+  confirmAction: (() => void) | null = null;
+
+  showBlockConfirmDialog = false;
+  blockReason = '';
+  tierToBlock: Tier | null = null;
+
+  // ===========================================================================
+  // DONNÉES ET FILTRES
+  // ===========================================================================
+
+  // Données principales
   tiers: Tier[] = [];
+
+  /** Configuration de pagination */
   pagination: PaginatedResponse<Tier> = {
     data: [],
     currentPage: 1,
@@ -41,47 +128,13 @@ export class TiersList implements OnInit, OnDestroy {
   searchTerm: string = '';
   selectedRole?: TierRoleType;
   selectedStatus?: TierStatus;
-  pageSizeOptions = [10, 25, 50, 100];
-
-  // États
-  loading = false;
-  error: string | null = null;
-  sidebarVisible = false;
+  selectedSort = this.sortOptions[0].value;
+  sortDescending = true;
 
   // Gestion utilisateur
   currentUser: User | null = null;
   userName: string = 'Utilisateur';
   userPhotoUrl: string = '';
-  showUserMenu: boolean = false;
-  isSidebarCollapsed: boolean = false;
-
-  // Options de tri
-  sortOptions = [
-    { value: 'updatedAt', label: 'Date de modification', icon: 'bx bx-calendar' },
-    { value: 'createdAt', label: 'Date de création', icon: 'bx bx-plus-circle' },
-    { value: 'lastName', label: 'Nom', icon: 'bx bx-sort-a-z' },
-    { value: 'tierNumber', label: 'Numéro de tier', icon: 'bx bx-hash' },
-    { value: 'status', label: 'Statut', icon: 'bx bx-check-circle' }
-  ];
-
-  selectedSort = this.sortOptions[0].value;
-  sortDescending = true;
-
-  // Rôles disponibles
-  roles = [
-    { value: TierRoleType.ClientParticulier, label: 'Client Particulier', icon: 'bx bx-user', color: 'primary' },
-    { value: TierRoleType.Supplier, label: 'Fournisseur', icon: 'bx bx-truck', color: 'info' },
-    { value: TierRoleType.ClientLivreur, label: 'Client/Livreur', icon: 'bx bx-briefcase', color: 'warning' },
-    { value: TierRoleType.Partner, label: 'Partenaire', icon: 'bx bx-handshake', color: 'success' }
-  ];
-
-  // Statuts disponibles
-  statuses = [
-    { value: TierStatus.Active, label: 'Actif', badge: 'success', icon: 'bx bx-check-circle' },
-    { value: TierStatus.PendingValidation, label: 'En attente', badge: 'warning', icon: 'bx bx-time' },
-    { value: TierStatus.Blocked, label: 'Bloqué', badge: 'danger', icon: 'bx bx-block' },
-    { value: TierStatus.Inactive, label: 'Inactif', badge: 'default', icon: 'bx bx-minus-circle' }
-  ];
 
   // Statistiques
   stats = {
@@ -105,41 +158,60 @@ export class TiersList implements OnInit, OnDestroy {
     totalSuppliers: 0
   };
 
-  // Pagination
+  /** Pages visibles dans la pagination */
   visiblePages: number[] = [];
 
+  // ===========================================================================
+  // SUBJECTS ET SERVICES
+  // ===========================================================================
+
   private destroy$ = new Subject<void>();
-  Math: any;
 
   constructor(
     private tiersService: Tiers,
-    private notificationService: Notification,
+    private notificationService: NotificationService,
     private authService: Auth,
     private tokenService: Token,
     private router: Router
   ) { }
 
-  ngOnInit() {
-    // Vérifier le token
-    const token = this.tokenService.getToken();
-    if (!token) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
+  // ===========================================================================
+  // LIFECYCLE HOOKS
+  // ===========================================================================
 
+  /**
+   * Initialisation du composant
+   */
+  ngOnInit(): void {
+    this.verifyAuthentication();
     this.loadCurrentUser();
     this.loadTiers();
   }
 
-  ngOnDestroy() {
+  /**
+   * Nettoyage à la destruction du composant
+   */
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  // === GESTION UTILISATEUR ===
+  // ===========================================================================
+  // GESTION DE L'AUTHENTIFICATION ET UTILISATEUR
+  // ===========================================================================
 
   /**
-   * Charger l'utilisateur connecté
+   * Vérifie l'authentification de l'utilisateur
+   */
+  verifyAuthentication(): void {
+    const token = this.tokenService.getToken();
+    if (!token) {
+      this.router.navigate(['/auth/login']);
+    }
+  }
+
+  /**
+   * Charge les informations de l'utilisateur connecté
    */
   loadCurrentUser(): void {
     this.authService.getCurrentUser()
@@ -161,11 +233,23 @@ export class TiersList implements OnInit, OnDestroy {
       });
   }
 
-  private setDefaultUser(): void {
+  getDefaultAvatar(): string {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+  }
+
+  /**
+   * Définit un utilisateur par défaut en cas d'erreur
+   */
+  setDefaultUser(): void {
     this.userName = 'Utilisateur Logistiks';
     this.userPhotoUrl = this.generateAvatarUrl({ firstName: 'Utilisateur' } as User);
   }
 
+  /**
+   * Formate le nom d'utilisateur pour l'affichage
+   * @param user - Utilisateur à formater
+   * @returns Nom formaté
+   */
   formatUserName(user: User): string {
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
@@ -180,9 +264,12 @@ export class TiersList implements OnInit, OnDestroy {
   }
 
   /**
-   * Construction de l'URL de la photo
+   * Obtient l'URL de la photo de l'utilisateur
+   * @param user - Utilisateur
+   * @returns URL de la photo
    */
   getUserPhotoUrl(user: User): string {
+    // Si photoUrl est un ID MongoDB
     if (user.photoUrl && /^[0-9a-fA-F]{24}$/.test(user.photoUrl)) {
       return `${environment.apiUrl}/api/User/photo/${user.photoUrl}`;
     }
@@ -196,34 +283,39 @@ export class TiersList implements OnInit, OnDestroy {
     return this.generateAvatarUrl(user);
   }
 
+  /**
+   * Génère un avatar à partir du nom de l'utilisateur
+   * @param user - Utilisateur
+   * @returns URL de l'avatar généré
+   */
   generateAvatarUrl(user: User): string {
     const name = this.formatUserName(user);
-    const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
-    const colorIndex = name.length % colors.length;
-
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
-  }
-
-  getUserInitials(): string {
-    const name = this.userName;
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
-    }
-    return name.charAt(0).toUpperCase();
-  }
-
-  getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    const colorIndex = name.length % this.avatarColors.length;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${this.avatarColors[colorIndex]}&color=fff&size=128`;
   }
 
   /**
-   * Toggle du menu utilisateur
+   * Obtient les initiales de l'utilisateur
+   * @returns Initiales de l'utilisateur
+   */
+  getUserInitials(): string {
+    const parts = this.userName.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+    return this.userName.charAt(0).toUpperCase();
+  }
+
+  /**
+   * Basculer l'affichage du menu utilisateur
    */
   toggleUserMenu(): void {
     this.showUserMenu = !this.showUserMenu;
   }
 
+  /**
+   * Ferme le menu utilisateur lors d'un clic à l'extérieur
+   */
   @HostListener('document:click', ['$event'])
   closeUserMenu(event: MouseEvent): void {
     const target = event.target as HTMLElement;
@@ -233,7 +325,7 @@ export class TiersList implements OnInit, OnDestroy {
   }
 
   /**
-   * Déconnexion
+   * Déconnecte l'utilisateur
    */
   logout(): void {
     this.tokenService.logout();
@@ -251,8 +343,13 @@ export class TiersList implements OnInit, OnDestroy {
       });
   }
 
-  // === GESTION DE LA SIDEBAR ===
+  // ===========================================================================
+  // GESTION DE LA SIDEBAR
+  // ===========================================================================
 
+  /**
+   * Basculer l'état de la sidebar principale
+   */
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
 
@@ -270,10 +367,140 @@ export class TiersList implements OnInit, OnDestroy {
     }
   }
 
-  // === GESTION DES TIERS ===
+  /**
+   * Basculer l'affichage de la sidebar des filtres (mobile)
+   */
+  toggleFiltersSidebar(): void {
+    this.sidebarVisible = !this.sidebarVisible;
+  }
 
-  // Chargement des tiers avec filtres
-  loadTiers(page: number = 1) {
+  /**
+   * Basculer l'affichage d'un menu déroulant
+   * @param event - Événement de clic
+   */
+  toggleMenu(event: MouseEvent): void {
+    const element = event.currentTarget as HTMLElement;
+    element?.parentElement?.classList.toggle('open');
+  }
+
+  // ===========================================================================
+  // GESTION DES BOÎTES DE DIALOGUE
+  // ===========================================================================
+
+  /**
+   * Ouvre une boîte de dialogue de confirmation
+   * @param title - Titre de la boîte de dialogue
+   * @param message - Message principal
+   * @param details - Détails supplémentaires
+   * @param onConfirm - Callback à exécuter sur confirmation
+   */
+  openConfirmDialog(
+    title: string,
+    message: string,
+    details: string = '',
+    onConfirm: () => void
+  ): void {
+    this.confirmDialogTitle = title;
+    this.confirmDialogMessage = message;
+    this.confirmDialogDetails = details;
+    this.confirmAction = onConfirm;
+    this.confirmDialogVisible = true;
+  }
+
+  /**
+   * Confirme l'action de la boîte de dialogue
+   */
+  onConfirmDialogConfirm(): void {
+    this.confirmAction?.();
+    this.resetConfirmDialog();
+  }
+
+  /**
+   * Annule l'action de la boîte de dialogue
+   */
+  onConfirmDialogCancel(): void {
+    this.resetConfirmDialog();
+  }
+
+  /**
+   * Réinitialise l'état de la boîte de dialogue
+   */
+  resetConfirmDialog(): void {
+    this.confirmDialogVisible = false;
+    this.confirmAction = null;
+    this.confirmDialogTitle = '';
+    this.confirmDialogMessage = '';
+    this.confirmDialogDetails = '';
+  }
+
+  /**
+   * Ouvre la boîte de dialogue de blocage d'un tier
+   * @param tier - Tier à bloquer
+   */
+  openBlockDialog(tier: Tier): void {
+    this.tierToBlock = tier;
+    this.blockReason = '';
+    this.showBlockConfirmDialog = true;
+  }
+
+  /**
+   * Confirme le blocage d'un tier
+   * @param reason - Raison du blocage
+   */
+  confirmBlockTier(reason: string): void {
+    if (!this.tierToBlock) return;
+
+    if (!reason?.trim()) {
+      this.notificationService.warning(
+        'Raison obligatoire',
+        'Veuillez saisir une raison de blocage'
+      );
+      return;
+    }
+
+    this.blockReason = reason.trim();
+
+    this.tiersService.blockTier(this.tierToBlock.id, { reason: this.blockReason })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.notificationService.warning(
+            'Tier bloqué',
+            `Le tier ${this.tierToBlock?.tierNumber} a été bloqué`
+          );
+
+          this.showBlockConfirmDialog = false;
+          this.tierToBlock = null;
+          this.blockReason = '';
+
+          this.loadTiers(this.pagination.currentPage);
+        },
+        error: (error) => {
+          const errorMessage = error?.error?.message || error?.message || 'Erreur inconnue';
+          this.notificationService.error('Erreur de blocage', errorMessage);
+          console.error('Erreur de blocage:', error);
+        }
+      });
+  }
+
+  /**
+   * Annule le blocage d'un tier
+   */
+  cancelBlockTier(): void {
+    this.showBlockConfirmDialog = false;
+    this.tierToBlock = null;
+    this.blockReason = '';
+  }
+
+  // ===========================================================================
+  // GESTION DES TIERS (CRUD ET ACTIONS)
+  // ===========================================================================
+
+  /**
+   * Charge la liste des tiers avec filtres
+   * @param page - Numéro de page
+   */
+  loadTiers(page: number = 1): void {
     this.loading = true;
     this.error = null;
 
@@ -296,7 +523,7 @@ export class TiersList implements OnInit, OnDestroy {
           this.loadStatistics();
         },
         error: (error) => {
-          this.error = error instanceof Error ? error.message : 'Erreur inconnue lors du chargement';
+          this.error = error instanceof Error ? error.message : 'Erreur inconnue';
           this.loading = false;
           console.error('Erreur de chargement des tiers:', error);
 
@@ -308,42 +535,121 @@ export class TiersList implements OnInit, OnDestroy {
       });
   }
 
-  // Charger les statistiques
-  loadStatistics() {
-    // Calculer les statistiques locales
-    this.stats.total = this.tiers.length;
-    this.stats.active = this.tiers.filter(t => t.status === TierStatus.Active).length;
-    this.stats.pending = this.tiers.filter(t => t.status === TierStatus.PendingValidation).length;
-    this.stats.blocked = this.tiers.filter(t => t.status === TierStatus.Blocked).length;
-    this.stats.clients = this.tiers.filter(t =>
-      t.roles.some(r => r.roleType === TierRoleType.ClientParticulier && r.isActive)
-    ).length;
-    this.stats.suppliers = this.tiers.filter(t =>
-      t.roles.some(r => r.roleType === TierRoleType.Supplier && r.isActive)
-    ).length;
+  /**
+   * Valide un tier
+   * @param tier - Tier à valider
+   */
+  validateTier(tier: Tier): void {
+    this.openConfirmDialog(
+      'Validation du tier',
+      `Voulez-vous valider le tier ${tier.tierNumber} ?`,
+      'Cette action est irréversible.',
+      () => {
+        this.tiersService.validateTier(tier.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.notificationService.success(
+                  'Validation réussie',
+                  `Le tier ${tier.tierNumber} a été validé avec succès`
+                );
+                this.loadTiers(this.pagination.currentPage);
+              } else {
+                let errorMessage = response.message || 'Échec de validation';
+                if (response.errors?.length) {
+                  errorMessage += `:\n${response.errors.join('\n')}`;
+                }
+                this.notificationService.error('Erreur de validation', errorMessage);
+              }
+            },
+            error: (error) => {
+              const apiError = error.error;
+              let message = apiError?.message || 'Erreur inconnue';
+              if (apiError?.errors?.length) {
+                message += `:\n${apiError.errors.join('\n')}`;
+              }
+              this.notificationService.error('Erreur de validation', message);
+            }
+          });
+      }
+    );
   }
 
-  // Recherche
-  onSearch() {
+  /**
+   * Bloque un tier (ouvre la boîte de dialogue)
+   * @param tier - Tier à bloquer
+   */
+  blockTier(tier: Tier): void {
+    this.openBlockDialog(tier);
+  }
+
+  /**
+   * Active un tier
+   * @param tier - Tier à activer
+   */
+  activateTier(tier: Tier): void {
+    this.openConfirmDialog(
+      'Activation du tier',
+      `Voulez-vous activer le tier ${tier.tierNumber} ?`,
+      '',
+      () => {
+        this.tiersService.activateTier(tier.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.notificationService.success(
+                'Tier activé',
+                `Le tier ${tier.tierNumber} a été activé`
+              );
+              this.loadTiers(this.pagination.currentPage);
+            },
+            error: (error) => {
+              const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+              this.notificationService.error('Erreur d’activation', errorMessage);
+            }
+          });
+      }
+    );
+  }
+
+  // ===========================================================================
+  // FILTRES ET TRI
+  // ===========================================================================
+
+  /**
+   * Lance une recherche
+   */
+  onSearch(): void {
     this.pagination.currentPage = 1;
     this.loadTiers();
   }
 
-  // Gestion des filtres
-  onFilterByRole(role?: TierRoleType) {
+  /**
+   * Filtre par rôle
+   * @param role - Rôle à filtrer
+   */
+  onFilterByRole(role?: TierRoleType): void {
     this.selectedRole = role;
     this.pagination.currentPage = 1;
     this.loadTiers();
   }
 
-  onFilterByStatus(status?: TierStatus) {
+  /**
+   * Filtre par statut
+   * @param status - Statut à filtrer
+   */
+  onFilterByStatus(status?: TierStatus): void {
     this.selectedStatus = status;
     this.pagination.currentPage = 1;
     this.loadTiers();
   }
 
-  // Gestion du tri
-  onSortChange(field: string) {
+  /**
+   * Change le critère de tri
+   * @param field - Champ de tri
+   */
+  onSortChange(field: string): void {
     if (this.selectedSort === field) {
       this.sortDescending = !this.sortDescending;
     } else {
@@ -353,21 +659,35 @@ export class TiersList implements OnInit, OnDestroy {
     this.loadTiers(this.pagination.currentPage);
   }
 
-  // Pagination
-  onPageChange(page: number) {
+  // ===========================================================================
+  // PAGINATION
+  // ===========================================================================
+
+  /**
+   * Change de page
+   * @param page - Numéro de page
+   */
+  onPageChange(page: number): void {
     if (page >= 1 && page <= this.pagination.totalPages) {
       this.loadTiers(page);
     }
   }
 
-  onPageSizeChange(event: Event) {
+  /**
+   * Change la taille de la page
+   * @param event - Événement de changement
+   */
+  onPageSizeChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.pagination.pageSize = parseInt(select.value, 10);
     this.pagination.currentPage = 1;
     this.loadTiers();
   }
 
-  updateVisiblePages() {
+  /**
+   * Met à jour la liste des pages visibles
+   */
+  updateVisiblePages(): void {
     const totalPages = this.pagination.totalPages;
     const currentPage = this.pagination.currentPage;
     const visiblePages: number[] = [];
@@ -401,164 +721,127 @@ export class TiersList implements OnInit, OnDestroy {
     this.visiblePages = visiblePages;
   }
 
-  // Méthode helper pour les confirmations avec promesse
-  private async showConfirmation(message: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      const result = confirm(message);
-      resolve(result);
-    });
+  // ===========================================================================
+  // STATISTIQUES
+  // ===========================================================================
+
+  /**
+   * Charge les statistiques à partir des données chargées
+   */
+  loadStatistics(): void {
+    this.stats.total = this.tiers.length;
+    this.stats.active = this.tiers.filter(t => t.status === TierStatus.Active).length;
+    this.stats.pending = this.tiers.filter(t => t.status === TierStatus.PendingValidation).length;
+    this.stats.blocked = this.tiers.filter(t => t.status === TierStatus.Blocked).length;
+    this.stats.clients = this.tiers.filter(t =>
+      t.roles.some(r => r.roleType === TierRoleType.ClientParticulier && r.isActive)
+    ).length;
+    this.stats.suppliers = this.tiers.filter(t =>
+      t.roles.some(r => r.roleType === TierRoleType.Supplier && r.isActive)
+    ).length;
   }
 
-  private async showPrompt(message: string): Promise<string | null> {
-    return new Promise((resolve) => {
-      const result = prompt(message);
-      resolve(result);
-    });
-  }
+  // ===========================================================================
+  // UTILITAIRES D'AFFICHAGE
+  // ===========================================================================
 
-    toggleMenu(event: MouseEvent): void {
-    const element = event.currentTarget as HTMLElement;
-    if (element && element.parentElement) {
-      element.parentElement.classList.toggle('open');
-    }
-  }
-
-  // Dans tiers-list.component.ts - méthode validateTier()
-  async validateTier(tier: Tier) {
-    const confirmed = await this.showConfirmation(`Valider le tier ${tier.tierNumber} ?`);
-
-    if (!confirmed) return;
-
-    this.tiersService.validateTier(tier.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.notificationService.success(
-              'Validation réussie',
-              `Le tier ${tier.tierNumber} a été validé avec succès`
-            );
-            this.loadTiers(this.pagination.currentPage);
-          } else {
-            // Afficher les erreurs détaillées
-            let errorMessage = response.message || 'Échec de validation';
-
-            if (response.errors && response.errors.length > 0) {
-              errorMessage += `:\n${response.errors.join('\n')}`;
-            }
-
-            this.notificationService.error(
-              'Erreur de validation',
-              errorMessage
-            );
-          }
-        },
-        error: (error) => {
-          // Traiter les erreurs HTTP
-          let errorMessage = 'Erreur inconnue';
-
-          if (error.error) {
-            // Si l'API retourne un objet d'erreur structuré
-            const apiError = error.error;
-            errorMessage = apiError.message || errorMessage;
-
-            if (apiError.errors && apiError.errors.length > 0) {
-              errorMessage += `:\n${apiError.errors.join('\n')}`;
-            }
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-
-          this.notificationService.error(
-            'Erreur de validation',
-            errorMessage
-          );
-          console.error('Erreur de validation détaillée:', error);
-        }
-      });
-  }
-
-  async blockTier(tier: Tier) {
-    const reason = await this.showPrompt('Raison du blocage :');
-
-    if (reason && reason.trim()) {
-      this.tiersService.blockTier(tier.id, { reason: reason.trim() })
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.notificationService.warning(
-              'Tier bloqué',
-              `Le tier ${tier.tierNumber} a été bloqué`
-            );
-            this.loadTiers(this.pagination.currentPage);
-          },
-          error: (error) => {
-            const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-            this.notificationService.error(
-              'Erreur de blocage',
-              errorMessage
-            );
-            console.error('Erreur de blocage:', error);
-          }
-        });
-    }
-  }
-
-  async activateTier(tier: Tier) {
-    const confirmed = await this.showConfirmation(`Activer le tier ${tier.tierNumber} ?`);
-
-    if (!confirmed) return;
-
-    this.tiersService.activateTier(tier.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.notificationService.success(
-            'Tier activé',
-            `Le tier ${tier.tierNumber} a été activé`
-          );
-          this.loadTiers(this.pagination.currentPage);
-        },
-        error: (error) => {
-          const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-          this.notificationService.error(
-            'Erreur d\'activation',
-            errorMessage
-          );
-          console.error('Erreur d\'activation:', error);
-        }
-      });
-  }
-
-  // Méthodes utilitaires
+  /**
+   * Obtient la classe CSS pour un badge de rôle
+   * @param roleType - Type de rôle
+   * @returns Classe CSS
+   */
   getRoleBadgeClass(roleType: TierRoleType): string {
     const role = this.roles.find(r => r.value === roleType);
     return role ? `badge-${role.color}` : 'badge-secondary';
   }
 
+  /**
+   * Obtient la classe CSS pour un badge de statut
+   * @param status - Statut du tier
+   * @returns Classe CSS
+   */
   getStatusBadgeClass(status: TierStatus): string {
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? `badge-${statusObj.badge}` : 'badge-secondary';
   }
 
+  /**
+   * Obtient le texte d'un statut
+   * @param status - Statut du tier
+   * @returns Texte du statut
+   */
   getStatusText(status: TierStatus): string {
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? statusObj.label : 'Inconnu';
   }
 
+  /**
+   * Obtient le texte d'un rôle
+   * @param roleType - Type de rôle
+   * @returns Texte du rôle
+   */
   getRoleText(roleType: TierRoleType): string {
     const role = this.roles.find(r => r.value === roleType);
     return role ? role.label : 'Inconnu';
   }
 
+  /**
+   * Obtient l'icône d'un statut
+   * @param status - Statut du tier
+   * @returns Classe de l'icône
+   */
+  getStatusIcon(status: TierStatus): string {
+    switch (status) {
+      case TierStatus.Active:
+        return 'bx bx-check-circle';
+      case TierStatus.PendingValidation:
+        return 'bx bx-time';
+      case TierStatus.Blocked:
+        return 'bx bx-block';
+      case TierStatus.Inactive:
+        return 'bx bx-minus-circle';
+      default:
+        return 'bx bx-question-mark';
+    }
+  }
+
+  /**
+   * Obtient le nom complet d'un tier
+   * @param tier - Tier
+   * @returns Nom complet
+   */
   getFullName(tier: Tier): string {
     return tier.fullName || `${tier.firstName} ${tier.lastName}`;
   }
 
+  /**
+   * Obtient les initiales d'un tier
+   * @param tier - Tier
+   * @returns Initiales
+   */
+  getInitialsFromName(tier: Tier): string {
+    const name = this.getFullName(tier);
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
+  }
+
+  /**
+   * Formate un numéro de téléphone
+   * @param phone - Numéro de téléphone
+   * @returns Numéro formaté
+   */
   formatPhoneNumber(phone: string): string {
     return this.tiersService.formatPhoneNumber(phone);
   }
 
+  /**
+   * Formate une date
+   * @param date - Date à formater
+   * @returns Date formatée
+   */
   formatDate(date: Date | string | undefined): string {
     if (!date) return 'N/A';
     try {
@@ -568,25 +851,47 @@ export class TiersList implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Obtient les rôles actifs d'un tier
+   * @param tier - Tier
+   * @returns Liste des rôles actifs
+   */
   getActiveRoles(tier: Tier): TierRoleType[] {
     return tier.roles
       .filter(role => role.isActive)
       .map(role => role.roleType);
   }
 
+  // ===========================================================================
+  // VÉRIFICATIONS ET VALIDATIONS
+  // ===========================================================================
+
+  /**
+   * Vérifie si un tier a des documents expirés
+   * @param tier - Tier
+   * @returns True si des documents sont expirés
+   */
   hasExpiredDocuments(tier: Tier): boolean {
     return this.tiersService.hasExpiredDocuments(tier);
   }
 
+  /**
+   * Vérifie si un tier peut signer des contrats
+   * @param tier - Tier
+   * @returns True si le tier peut signer
+   */
   canSignContract(tier: Tier): boolean {
     return this.tiersService.canTierSignContracts(tier);
   }
 
+  // ===========================================================================
+  // EXPORT
+  // ===========================================================================
 
   /**
-   * Export des tiers au format Excel
+   * Exporte les tiers au format Excel
    */
-  exportToExcel() {
+  exportToExcel(): void {
     this.tiersService.exportTiers({ format: 'xlsx' })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -604,43 +909,11 @@ export class TiersList implements OnInit, OnDestroy {
           );
           console.log('Export réussi');
         },
-        error: (error: { message: any; }) => {
+        error: (error: any) => {
           const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-          this.notificationService.error(
-            'Erreur d\'export',
-            errorMessage
-          );
+          this.notificationService.error('Erreur d\'export', errorMessage);
           console.error('Erreur d\'export:', error);
         }
       });
-  }
-
-  getStatusIcon(status: TierStatus): string {
-    switch (status) {
-      case TierStatus.Active:
-        return 'bx bx-check-circle';
-      case TierStatus.PendingValidation:
-        return 'bx bx-time';
-      case TierStatus.Blocked:
-        return 'bx bx-block';
-      case TierStatus.Inactive:
-        return 'bx bx-minus-circle';
-      default:
-        return 'bx bx-question-mark';
-    }
-  }
-
-  getInitialsFromName(tier: Tier): string {
-    const name = this.getFullName(tier);
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
-    }
-    return name.charAt(0).toUpperCase();
-  }
-
-  // Basculer la sidebar mobile (filtres)
-  toggleFiltersSidebar() {
-    this.sidebarVisible = !this.sidebarVisible;
   }
 }

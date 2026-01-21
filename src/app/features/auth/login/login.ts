@@ -2,11 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Auth } from '../../../core/services/Auth/auth';
-import { Notification } from '../../../core/services/Notification/notification';
-import { Notification as NotificationComponent } from '../../../core/components/notification/notification';
+import { Auth } from '../../../core/services/Auth/auth';;
 import { Token } from '../../../core/services/Token/token';
 import { jwtDecode } from 'jwt-decode';
+import { NotificationService } from '../../../core/services/Notification/notification-service';
+import { NotificationComponent } from "../../../core/components/notification-component/notification-component";
 
 @Component({
   selector: 'app-login',
@@ -24,7 +24,7 @@ export class Login {
     private fb: FormBuilder,
     private authService: Auth,
     private router: Router,
-    private notificationService: Notification
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {

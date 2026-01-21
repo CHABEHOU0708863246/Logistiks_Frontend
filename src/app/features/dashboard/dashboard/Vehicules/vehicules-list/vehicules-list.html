@@ -1,1 +1,1293 @@
-<p>vehicules-list works!</p>
+<div class="layout-wrapper">
+  <!-- SIDEBAR COMPLÈTE -->
+  <aside class="layout-menu" id="sidebar">
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistiks</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
+    </div>
+
+    <ul class="menu-inner">
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
+
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+              <div>Gestion des documents</div>
+              <span class="badge badge-info">
+                <i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+              <div>Ajouter vehicule</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
+              <div>Affectations</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
+              <div>Suivi entretien</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/assurances']" class="menu-link">
+              <div>Assurances</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents']" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
+              <div>Contrats signés</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
+              <div>Pièces d'identité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
+              <div>Contrats actifs</div>
+              <span class="badge badge-success">12</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
+              <div>À expiration</div>
+              <span class="badge badge-warning">3</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
+
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+              <div>En retard</div><span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+              <div>En attente</div><span class="badge badge-warning">8</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+              <div>Liste utilisateurs</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+              <div>Détail utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+              <div>Formulaire utilisateur</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+              <div>Gestion rôles</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+              <div>Permissions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+              <div>Profil utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+              <div>Sessions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+              <div>Activité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+              <div>Groupes</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+    <!-- NAVBAR -->
+    <nav class="layout-navbar">
+      <div class="d-flex align-items-center">
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <h3 class="mb-0 ms-3">Gestion du Parc Véhicules</h3>
+      </div>
+
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <!-- SECTION STATISTIQUES -->
+      <div class="row mb-4">
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon primary">
+              <i class='bx bx-car'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.totalVehicles }}</h3>
+              <p>Total Véhicules</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon success">
+              <i class='bx bx-check-circle'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.availableVehicles }}</h3>
+              <p>Disponibles</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon warning">
+              <i class='bx bx-key'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.rentedVehicles }}</h3>
+              <p>En Location</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon danger">
+              <i class='bx bx-error-circle'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.vehiclesWithExpiredInsurance }}</h3>
+              <p>Assurance Expirée</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION RÉSERVATIONS ACTIVES -->
+      <div class="row mb-4" *ngIf="activeReservations.length > 0">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">
+                <i class='bx bx-time me-2'></i>Réservations actives
+                <span class="badge bg-primary ms-2">{{ activeReservations.length }}</span>
+              </h5>
+              <button class="btn btn-sm btn-outline-primary" (click)="loadActiveReservations()">
+                <i class='bx bx-refresh'></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <div *ngIf="reservationsLoading" class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+                <p class="mt-2 mb-0">Chargement des réservations...</p>
+              </div>
+
+              <div *ngIf="!reservationsLoading" class="table-responsive">
+                <table class="table table-sm table-hover">
+                  <thead>
+                    <tr>
+                      <th>Véhicule</th>
+                      <th>Client</th>
+                      <th>Date début</th>
+                      <th>Date fin</th>
+                      <th>Statut</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let reservation of activeReservations">
+                      <td>
+                        <strong>{{ reservation.vehicleCode || 'Véhicule ' + reservation.vehicleId.substring(0, 8)
+                          }}</strong>
+                      </td>
+                      <td>
+                        <small>ID: {{ reservation.customerId.substring(0, 8) }}...</small>
+                      </td>
+                      <td>{{ formatReservationDate(reservation.expectedStartDate) }}</td>
+                      <td>{{ formatReservationDate(reservation.expiryDate) }}</td>
+                      <td>
+                        <span class="badge" [ngClass]="getReservationStatusBadge(reservation.status)">
+                          {{ getReservationStatusText(reservation.status) }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                          <button class="btn btn-outline-primary" *ngIf="reservation.status === 'Active'"
+                            (click)="openConfirmReservationModal(reservation)">
+                            <i class='bx bx-link'></i>
+                          </button>
+                          <button class="btn btn-outline-danger" *ngIf="reservation.status === 'Active'"
+                            (click)="openCancelReservationModal(reservation)">
+                            <i class='bx bx-x'></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION RECHERCHE ET FILTRES -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0">
+                  <i class='bx bx-search'></i>
+                </span>
+                <input type="text" class="form-control border-start-0" [(ngModel)]="searchTerm"
+                  (keyup.enter)="onSearch()" placeholder="Rechercher par code, plaque, marque...">
+                <button class="btn btn-primary" (click)="onSearch()">
+                  <i class='bx bx-search me-1'></i> Rechercher
+                </button>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 d-flex justify-content-md-end">
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-primary" (click)="exportToExcel()">
+                  <i class='bx bx-export me-1'></i> Exporter
+                </button>
+                <button class="btn btn-primary" (click)="toggleFiltersSidebar()">
+                  <i class='bx bx-filter-alt me-1'></i> Filtres
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTRES EN LIGNE -->
+      <div class="row mb-4" *ngIf="!sidebarVisible">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex flex-column gap-3">
+                <!-- Filtres par type -->
+                <div class="filter-group">
+                  <label class="form-label mb-1">Filtrer par type :</label>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button *ngFor="let type of vehicleTypes" class="btn btn-sm"
+                      [class.btn-primary]="selectedType === type.value"
+                      [class.btn-outline-primary]="selectedType !== type.value" (click)="onFilterByType(type.value)">
+                      <i [class]="type.icon + ' me-1'"></i> {{ type.label }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByType()">
+                      Tous les types
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Filtres par statut -->
+                <div class="filter-group">
+                  <label class="form-label mb-1">Filtrer par statut :</label>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button *ngFor="let status of statuses" class="btn btn-sm"
+                      [class.btn-primary]="selectedStatus === status.value"
+                      [class.btn-outline-primary]="selectedStatus !== status.value"
+                      (click)="onFilterByStatus(status.value)">
+                      <i [class]="status.icon + ' me-1'"></i> {{ status.label }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByStatus()">
+                      Tous les statuts
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Filtres par carburant -->
+                <div class="filter-group">
+                  <label class="form-label mb-1">Filtrer par carburant :</label>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button *ngFor="let fuel of fuelTypes" class="btn btn-sm"
+                      [class.btn-primary]="selectedFuelType === fuel.value"
+                      [class.btn-outline-primary]="selectedFuelType !== fuel.value"
+                      (click)="onFilterByFuelType(fuel.value)">
+                      <i [class]="fuel.icon + ' me-1'"></i> {{ fuel.label }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByFuelType()">
+                      Tous les carburants
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION PRINCIPALE -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Liste des Véhicules</h5>
+              <div class="d-flex align-items-center gap-2">
+                <div class="form-group mb-0">
+                  <select class="form-select form-select-sm" (change)="onPageSizeChange($event)" style="width: auto;">
+                    <option *ngFor="let size of pageSizeOptions" [value]="size">
+                      {{ size }} par page
+                    </option>
+                  </select>
+                </div>
+                <div class="text-muted fs-sm">
+                  {{ pagination.totalCount }} résultats
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <!-- LOADING -->
+              <div *ngIf="loading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p class="mt-2">Chargement des véhicules...</p>
+              </div>
+
+              <!-- ERROR -->
+              <div *ngIf="error && !loading" class="alert alert-danger">
+                <i class='bx bx-error-circle me-2'></i> {{ error }}
+              </div>
+
+              <!-- TABLE DES VÉHICULES -->
+              <div *ngIf="!loading && !error" class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">#</th>
+                      <th (click)="onSortChange('code')" style="cursor: pointer;">
+                        Code <i class='bx bx-sort' *ngIf="selectedSort !== 'code'"></i>
+                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'code' && !sortDescending"></i>
+                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'code' && sortDescending"></i>
+                      </th>
+                      <th>Véhicule</th>
+                      <th>Type</th>
+                      <th (click)="onSortChange('year')" style="cursor: pointer;">
+                        Année <i class='bx bx-sort' *ngIf="selectedSort !== 'year'"></i>
+                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'year' && !sortDescending"></i>
+                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'year' && sortDescending"></i>
+                      </th>
+                      <th>Plaque</th>
+                      <th (click)="onSortChange('currentMileage')" style="cursor: pointer;">
+                        Kilométrage <i class='bx bx-sort' *ngIf="selectedSort !== 'currentMileage'"></i>
+                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'currentMileage' && !sortDescending"></i>
+                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'currentMileage' && sortDescending"></i>
+                      </th>
+                      <th>Statut</th>
+                      <th>Assurance</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let vehicle of vehicles; let i = index">
+                      <td class="text-muted">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
+                      <td>
+                        <strong>{{ vehicle.code }}</strong>
+                      </td>
+                      <td>
+                        <div>
+                          <div class="fw-semibold">{{ vehicle.brand }} {{ vehicle.model }}</div>
+                          <small class="text-muted">{{ getFuelTypeText(vehicle.fuelType) }}</small>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge" [ngClass]="getTypeBadgeClass(vehicle.type)">
+                          {{ getTypeText(vehicle.type) }}
+                        </span>
+                      </td>
+                      <td>
+                        {{ vehicle.year }}
+                        <small class="text-muted d-block">{{ vehicle.ageInYears }} ans</small>
+                      </td>
+                      <td>
+                        <strong>{{ vehicle.plateNumber }}</strong>
+                      </td>
+                      <td>
+                        {{ vehicle.currentMileage | number:'1.0-0' }} km
+                      </td>
+                      <td>
+                        <span class="status-badge" [ngClass]="'status-' + getStatusIcon(vehicle.status)">
+                          <i [class]="getStatusIcon(vehicle.status)"></i>
+                          {{ getStatusText(vehicle.status) }}
+                        </span>
+                      </td>
+                      <td>
+                        <div [ngClass]="getInsuranceStatus(vehicle).class">
+                          <i class='bx bx-shield' *ngIf="!vehicle.isInsuranceExpired"></i>
+                          <i class='bx bx-error-circle' *ngIf="vehicle.isInsuranceExpired"></i>
+                          {{ getInsuranceStatus(vehicle).text }}
+                        </div>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <!-- Bouton principal avec dropdown -->
+                          <div class="dropdown" [class.show]="vehicle.showActionsMenu">
+                            <button class="btn btn-sm btn-primary dropdown-toggle" type="button"
+                              (click)="toggleActionsMenu(vehicle, $event)">
+                              <i class='bx bx-cog'></i> Actions
+                            </button>
+                            <ul class="dropdown-menu" [class.show]="vehicle.showActionsMenu">
+                              <li>
+                                <hr class="dropdown-divider">
+                              </li>
+
+                              <!-- VÉHICULE DISPONIBLE -->
+                              <ng-container *ngIf="vehicle.status === VehicleStatus.Available">
+                                <li>
+                                  <a class="dropdown-item" (click)="assignToRental(vehicle)">
+                                    <i class='bx bx-key text-success'></i> Louer
+                                  </a>
+                                </li>
+                                <li>
+                                  <!-- ⭐ MODIFIÉ : Appelle maintenant openReservationModal() -->
+                                  <a class="dropdown-item" (click)="openReservationModal(vehicle)">
+                                    <i class='bx bx-time text-primary'></i> Réserver
+                                  </a>
+                                </li>
+                                <li>
+                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
+                                    <i class='bx bx-wrench text-info'></i> Mettre en maintenance
+                                  </a>
+                                </li>
+                              </ng-container>
+
+                              <!-- VÉHICULE LOUÉ -->
+                              <ng-container *ngIf="vehicle.status === VehicleStatus.Rented">
+                                <li>
+                                  <a class="dropdown-item" (click)="releaseVehicle(vehicle)">
+                                    <i class='bx bx-check-circle text-warning'></i> Libérer
+                                  </a>
+                                </li>
+                                <li>
+                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
+                                    <i class='bx bx-wrench text-info'></i> Mettre en maintenance
+                                  </a>
+                                </li>
+                              </ng-container>
+
+                              <!-- VÉHICULE RÉSERVÉ -->
+                              <ng-container *ngIf="vehicle.status === VehicleStatus.Reserved">
+                                <li>
+                                  <a class="dropdown-item" (click)="assignToRental(vehicle)">
+                                    <i class='bx bx-key text-success'></i> Confirmer la location
+                                  </a>
+                                </li>
+                                <li>
+                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Available)">
+                                    <i class='bx bx-x text-secondary'></i> Annuler la réservation
+                                  </a>
+                                </li>
+                              </ng-container>
+
+                              <!-- VÉHICULE EN MAINTENANCE -->
+                              <ng-container *ngIf="vehicle.status === VehicleStatus.Maintenance">
+                                <li>
+                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Available)">
+                                    <i class='bx bx-check text-success'></i> Marquer comme disponible
+                                  </a>
+                                </li>
+                              </ng-container>
+
+                              <!-- VÉHICULE HORS SERVICE -->
+                              <ng-container *ngIf="vehicle.status === VehicleStatus.OutOfService">
+                                <li>
+                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Available)">
+                                    <i class='bx bx-refresh text-success'></i> Réactiver
+                                  </a>
+                                </li>
+                              </ng-container>
+
+                              <!-- METTRE HORS SERVICE (sauf si déjà hors service) -->
+                              <ng-container *ngIf="vehicle.status !== VehicleStatus.OutOfService">
+                                <li>
+                                  <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                  <a class="dropdown-item text-danger"
+                                    (click)="changeStatus(vehicle, VehicleStatus.OutOfService)">
+                                    <i class='bx bx-block'></i> Mettre hors service
+                                  </a>
+                                </li>
+                              </ng-container>
+
+                              <!-- VOIR LES DÉTAILS -->
+                              <li>
+                                <hr class="dropdown-divider">
+                              </li>
+                              <li>
+                                <a class="dropdown-item" (click)="showVehicleDetails(vehicle)">
+                                  <i class='bx bx-show text-info'></i> Voir les détails
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- PAGINATION -->
+              <div *ngIf="!loading && !error && pagination.totalPages > 1"
+                class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted fs-sm">
+                  Page {{ pagination.currentPage }} sur {{ pagination.totalPages }}
+                  ({{ pagination.totalCount }} véhicules)
+                </div>
+                <nav>
+                  <ul class="pagination mb-0">
+                    <li class="page-item" [class.disabled]="!pagination.hasPreviousPage">
+                      <a class="page-link" (click)="onPageChange(pagination.currentPage - 1)">
+                        <i class='bx bx-chevron-left'></i>
+                      </a>
+                    </li>
+                    <li *ngFor="let page of visiblePages" class="page-item"
+                      [class.active]="page === pagination.currentPage">
+                      <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="!pagination.hasNextPage">
+                      <a class="page-link" (click)="onPageChange(pagination.currentPage + 1)">
+                        <i class='bx bx-chevron-right'></i>
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- MODAL DE DÉTAILS DU VÉHICULE -->
+      <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
+
+      <div class="vehicle-details-modal" *ngIf="showDetailsModal" [class.show]="showDetailsModal">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+
+          <!-- HEADER -->
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class='bx bx-car me-2'></i>
+              Détails du Véhicule
+            </h5>
+            <button type="button" class="btn-close" (click)="closeDetailsModal()" aria-label="Close">
+              <i class='bx bx-x'></i>
+            </button>
+          </div>
+
+          <!-- BODY -->
+          <div class="modal-body">
+            <div *ngIf="vehicleDetailsLoading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+              <p class="mt-3">Chargement des détails...</p>
+            </div>
+
+            <div *ngIf="!vehicleDetailsLoading && selectedVehicle" class="vehicle-details">
+
+              <!-- EN-TÊTE AVEC INFO PRINCIPALE -->
+              <div class="vehicle-header mb-4">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="vehicle-icon">
+                    <i [class]="getVehicleIcon(selectedVehicle.type)"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-1">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h4>
+                    <div class="d-flex align-items-center gap-3">
+                      <span class="badge" [ngClass]="getTypeBadgeClass(selectedVehicle.type)">
+                        {{ getTypeText(selectedVehicle.type) }}
+                      </span>
+                      <span class="badge bg-secondary">{{ selectedVehicle.year }}</span>
+                      <span class="badge bg-info">{{ selectedVehicle.code }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STATUT ET ACTIONS -->
+              <div class="status-section mb-4 p-3 rounded" [ngClass]="getStatusSectionClass(selectedVehicle.status)">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">Statut actuel</h6>
+                    <span class="status-badge" [ngClass]="'status-' + getStatusIcon(selectedVehicle.status)">
+                      <i [class]="getStatusIcon(selectedVehicle.status)"></i>
+                      {{ getStatusText(selectedVehicle.status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- INFORMATIONS EN 2 COLONNES -->
+              <div class="row">
+                <!-- COLONNE GAUCHE -->
+                <div class="col-md-6">
+
+                  <!-- IDENTIFICATION -->
+                  <div class="card mb-3">
+                    <div class="card-header">
+                      <h6 class="mb-0"><i class='bx bx-id-card me-2'></i> Identification</h6>
+                    </div>
+                    <div class="card-body">
+                      <table class="table table-sm table-borderless">
+                        <tr>
+                          <td class="text-muted" style="width: 140px;">Plaque :</td>
+                          <td><strong>{{ selectedVehicle.plateNumber }}</strong></td>
+                        </tr>
+                        <tr *ngIf="selectedVehicle.chassisNumber">
+                          <td class="text-muted">Châssis :</td>
+                          <td><code>{{ selectedVehicle.chassisNumber }}</code></td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Couleur :</td>
+                          <td>
+                            <span *ngIf="selectedVehicle.color; else noColor">
+                              <span class="color-dot" [style.backgroundColor]="selectedVehicle.color"></span>
+                              {{ selectedVehicle.color }}
+                            </span>
+                            <ng-template #noColor>-</ng-template>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- CARACTÉRISTIQUES -->
+                  <div class="card mb-3">
+                    <div class="card-header">
+                      <h6 class="mb-0"><i class='bx bx-cog me-2'></i> Caractéristiques</h6>
+                    </div>
+                    <div class="card-body">
+                      <table class="table table-sm table-borderless">
+                        <tr>
+                          <td class="text-muted">Carburant :</td>
+                          <td>{{ getFuelTypeText(selectedVehicle.fuelType) }}</td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Kilométrage :</td>
+                          <td>
+                            <strong>{{ selectedVehicle.currentMileage | number:'1.0-0' }} km</strong>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Âge :</td>
+                          <td>{{ selectedVehicle.ageInYears }} ans</td>
+                        </tr>
+                        <tr *ngIf="selectedVehicle.features.engineCapacity">
+                          <td class="text-muted">Cylindrée :</td>
+                          <td>{{ selectedVehicle.features.engineCapacity }} cm³</td>
+                        </tr>
+                        <tr *ngIf="selectedVehicle.features.fuelCapacity">
+                          <td class="text-muted">Réservoir :</td>
+                          <td>{{ selectedVehicle.features.fuelCapacity }} L</td>
+                        </tr>
+                        <tr *ngIf="selectedVehicle.features.transmission">
+                          <td class="text-muted">Transmission :</td>
+                          <td>{{ selectedVehicle.features.transmission }}</td>
+                        </tr>
+                      </table>
+
+                      <!-- ÉQUIPEMENTS -->
+                      <div *ngIf="selectedVehicle.features" class="mt-3">
+                        <h6 class="fs-sm text-muted mb-2">Équipements :</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                          <span *ngIf="selectedVehicle.features.hasGps" class="badge bg-info">
+                            <i class='bx bx-navigation me-1'></i> GPS
+                          </span>
+                          <span *ngIf="selectedVehicle.features.hasAirConditioning" class="badge bg-info">
+                            <i class='bx bx-wind me-1'></i> Climatisation
+                          </span>
+                          <span *ngFor="let feature of selectedVehicle.features.additionalFeatures"
+                            class="badge bg-light text-dark">
+                            {{ feature }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COLONNE DROITE -->
+                <div class="col-md-6">
+
+                  <!-- ASSURANCE -->
+                  <div class="card mb-3">
+                    <div class="card-header" [ngClass]="getInsuranceCardClass(selectedVehicle)">
+                      <h6 class="mb-0"><i class='bx bx-shield-alt me-2'></i> Assurance</h6>
+                    </div>
+                    <div class="card-body">
+                      <div *ngIf="!selectedVehicle.insurance" class="text-center text-muted py-3">
+                        <i class='bx bx-error-circle fs-1 mb-2'></i>
+                        <p>Aucune assurance enregistrée</p>
+                      </div>
+
+                      <div *ngIf="selectedVehicle.insurance">
+                        <table class="table table-sm table-borderless">
+                          <tr>
+                            <td class="text-muted" style="width: 140px;">Compagnie :</td>
+                            <td><strong>{{ selectedVehicle.insurance.company }}</strong></td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">Police n° :</td>
+                            <td><code>{{ selectedVehicle.insurance.policyNumber }}</code></td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">Couverture :</td>
+                            <td>{{ selectedVehicle.insurance.coverageType }}</td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">Période :</td>
+                            <td>
+                              {{ formatDate(selectedVehicle.insurance.startDate) }}
+                              <i class='bx bx-right-arrow-alt mx-1'></i>
+                              {{ formatDate(selectedVehicle.insurance.endDate) }}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">Prime annuelle :</td>
+                            <td>{{ formatCurrency(selectedVehicle.insurance.annualPremium) }}</td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">État :</td>
+                            <td>
+                              <span [ngClass]="getInsuranceStatus(selectedVehicle).class">
+                                <i class='bx' [class.bx-check-circle]="!selectedVehicle.isInsuranceExpired"
+                                  [class.bx-error-circle]="selectedVehicle.isInsuranceExpired"></i>
+                                {{ getInsuranceStatus(selectedVehicle).text }}
+                              </span>
+                              <span *ngIf="selectedVehicle.daysUntilInsuranceExpiry !== undefined"
+                                class="ms-2 text-muted fs-sm">
+                                ({{ selectedVehicle.daysUntilInsuranceExpiry }} jours)
+                              </span>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- FINANCES -->
+                  <div class="card mb-3">
+                    <div class="card-header">
+                      <h6 class="mb-0"><i class='bx bx-dollar-circle me-2'></i> Informations financières</h6>
+                    </div>
+                    <div class="card-body">
+                      <table class="table table-sm table-borderless">
+                        <tr>
+                          <td class="text-muted">Date d'acquisition :</td>
+                          <td>{{ formatDate(selectedVehicle.acquisitionDate) }}</td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Coût d'acquisition :</td>
+                          <td>{{ formatCurrency(selectedVehicle.acquisitionCost) }}</td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Prix d'achat :</td>
+                          <td>{{ formatCurrency(selectedVehicle.purchasePrice) }}</td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Valeur actuelle :</td>
+                          <td>
+                            <strong>{{ formatCurrency(calculateCurrentValue(selectedVehicle)) }}</strong>
+                            <small class="text-muted d-block fs-sm">(Estimation)</small>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- LOCALISATION -->
+                  <div class="card mb-3" *ngIf="selectedVehicle.currentLocation?.address">
+                    <div class="card-header">
+                      <h6 class="mb-0"><i class='bx bx-map me-2'></i> Localisation</h6>
+                    </div>
+                    <div class="card-body">
+                      <p class="mb-2">
+                        <i class='bx bx-map-pin me-1'></i>
+                        {{ selectedVehicle.currentLocation?.latitude }}, {{ selectedVehicle.currentLocation?.longitude
+                        }}
+                      </p>
+                      <small class="text-muted">
+                        <i class='bx bx-time me-1'></i>
+                        Dernière mise à jour : {{ formatDate(selectedVehicle.updatedAt || selectedVehicle.createdAt) }}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTES -->
+              <div class="card" *ngIf="selectedVehicle.notes">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-note me-2'></i> Notes</h6>
+                </div>
+                <div class="card-body">
+                  <p class="mb-0">{{ selectedVehicle.notes }}</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="modal-footer">
+            <div class="d-flex justify-content-between w-100">
+              <div>
+                <small class="text-muted">
+                  Créé le {{ formatDate(selectedVehicle?.createdAt) }}
+                  <span *ngIf="selectedVehicle?.updatedAt">
+                    • Modifié le {{ formatDate(selectedVehicle?.updatedAt) }}
+                  </span>
+                </small>
+              </div>
+              <div>
+                <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL DE RÉSERVATION -->
+      <div class="modal-backdrop" *ngIf="showReservationModal" (click)="closeReservationModal()"></div>
+
+      <div class="modal" *ngIf="showReservationModal" [class.show]="showReservationModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title">
+                <i class='bx bx-time me-2'></i>Réserver un véhicule
+              </h5>
+              <button type="button" class="btn-close btn-close-white" (click)="closeReservationModal()"></button>
+            </div>
+
+            <div class="modal-body">
+              <div *ngIf="reservationVehicle" class="alert alert-info mb-3">
+                <i class='bx bx-info-circle me-2'></i>
+                Vous allez réserver : <strong>{{ reservationVehicle.code }}</strong> ({{ reservationVehicle.plateNumber
+                }})
+              </div>
+
+              <form [formGroup]="reservationForm" (ngSubmit)="onReservationSubmit()">
+                <!-- Véhicule (caché) -->
+                <input type="hidden" formControlName="vehicleId">
+
+                <!-- Client -->
+                <!-- Client -->
+                <div class="mb-3">
+                  <label class="form-label">Client / Tiers *</label>
+
+                  <div class="position-relative">
+                    <input type="text" class="form-control"
+                      placeholder="Rechercher un client par nom, téléphone ou numéro..."
+                      (input)="filterTiers($event.target.value)" [disabled]="tiersLoading">
+
+                    <div *ngIf="tiersLoading" class="position-absolute top-50 end-0 translate-middle-y me-3">
+                      <span class="spinner-border spinner-border-sm text-primary"></span>
+                    </div>
+                  </div>
+
+                  <select class="form-select mt-2" formControlName="customerId" size="5" [disabled]="tiersLoading">
+                    <option value="" disabled>-- Sélectionnez un client --</option>
+                    <option *ngFor="let tier of filteredTiers" [value]="tier.id">
+                      {{ tiersService.getFullName(tier) }} - {{ tier.phone }}
+                      <span *ngIf="tier.tierNumber">({{ tier.tierNumber }})</span>
+                    </option>
+                  </select>
+
+                  <div class="form-text">
+                    <i class='bx bx-info-circle me-1'></i>
+                    Sélectionnez le client dans la liste ci-dessus
+                  </div>
+
+                  <div *ngIf="rf['customerId'].invalid && reservationSubmitted" class="text-danger small">
+                    <i class='bx bx-error-circle me-1'></i>
+                    Veuillez sélectionner un client
+                  </div>
+
+                  <!-- Affichage du client sélectionné -->
+                  <!-- Affichage du client sélectionné -->
+                  <div *ngIf="rf['customerId'].value && getSelectedTier()" class="alert alert-success mt-2 py-2">
+                    <i class='bx bx-check-circle me-2'></i>
+                    <strong>Client sélectionné :</strong>
+                    {{ getSelectedTierName() }}
+                  </div>
+                </div>
+
+                <!-- Date de début -->
+                <div class="mb-3">
+                  <label class="form-label">Date de début *</label>
+                  <input type="date" class="form-control" formControlName="expectedStartDate"
+                    [min]="today | date:'yyyy-MM-dd'">
+                  <div *ngIf="rf['expectedStartDate'].invalid && reservationSubmitted" class="text-danger small">
+                    Date invalide
+                  </div>
+                </div>
+
+                <!-- Durée -->
+                <div class="mb-3">
+                  <label class="form-label">Durée de réservation (jours) *</label>
+                  <input type="number" class="form-control" formControlName="reservationDurationDays" min="1" max="30"
+                    step="1">
+                  <div class="form-text">
+                    Entre 1 et 30 jours. Défaut: 7 jours
+                  </div>
+                  <div *ngIf="rf['reservationDurationDays'].invalid && reservationSubmitted" class="text-danger small">
+                    Durée invalide (1-30 jours)
+                  </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-3">
+                  <label class="form-label">Notes (optionnel)</label>
+                  <textarea class="form-control" formControlName="notes" rows="3"
+                    placeholder="Ex: Client Bamba Keita - Téléphone: 07000007"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" (click)="closeReservationModal()">
+                    Annuler
+                  </button>
+                  <button type="submit" class="btn btn-primary" [disabled]="reservationLoading">
+                    <span *ngIf="reservationLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i class='bx bx-check me-1'></i> Confirmer la réservation
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL D'ANNULATION DE RÉSERVATION -->
+      <div class="modal-backdrop" *ngIf="showCancelReservationModal" (click)="showCancelReservationModal = false"></div>
+
+      <div class="modal" *ngIf="showCancelReservationModal" [class.show]="showCancelReservationModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header bg-warning text-dark">
+              <h5 class="modal-title">
+                <i class='bx bx-x-circle me-2'></i>Annuler une réservation
+              </h5>
+              <button type="button" class="btn-close" (click)="showCancelReservationModal = false"></button>
+            </div>
+
+            <div class="modal-body">
+              <p class="mb-3">Veuillez indiquer le motif de l'annulation :</p>
+              <form [formGroup]="cancelReservationForm" (ngSubmit)="onCancelReservationSubmit()">
+                <div class="mb-3">
+                  <textarea class="form-control" formControlName="reason" rows="4"
+                    placeholder="Ex: Client a changé d'avis, véhicule en panne, etc. (minimum 5 caractères)"></textarea>
+                  <div class="form-text">
+                    Le motif sera enregistré dans l'historique
+                  </div>
+                  <div *ngIf="cf['reason'].invalid && cancelReservationSubmitted" class="text-danger small">
+                    Minimum 5 caractères requis
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" (click)="showCancelReservationModal = false">
+                    Retour
+                  </button>
+                  <button type="submit" class="btn btn-danger" [disabled]="cancelReservationLoading">
+                    <span *ngIf="cancelReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i class='bx bx-trash me-1'></i> Annuler la réservation
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL DE CONFIRMATION DE RÉSERVATION -->
+      <div class="modal-backdrop" *ngIf="showConfirmReservationModal" (click)="showConfirmReservationModal = false">
+      </div>
+
+      <div class="modal" *ngIf="showConfirmReservationModal" [class.show]="showConfirmReservationModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title">
+                <i class='bx bx-check-circle me-2'></i>Confirmer une réservation
+              </h5>
+              <button type="button" class="btn-close btn-close-white"
+                (click)="showConfirmReservationModal = false"></button>
+            </div>
+
+            <div class="modal-body">
+              <p class="mb-3">Veuillez saisir l'ID du contrat pour confirmer cette réservation :</p>
+              <form [formGroup]="confirmReservationForm" (ngSubmit)="onConfirmReservationSubmit()">
+                <div class="mb-3">
+                  <label class="form-label">ID du contrat *</label>
+                  <input type="text" class="form-control" formControlName="contractId"
+                    placeholder="Ex: 697001a2052f25ba4c98fae0">
+                  <div class="form-text">
+                    Format: ObjectId MongoDB (24 caractères hexa)
+                  </div>
+                  <div *ngIf="conf['contractId'].invalid && confirmReservationSubmitted" class="text-danger small">
+                    ID contrat invalide
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" (click)="showConfirmReservationModal = false">
+                    Retour
+                  </button>
+                  <button type="submit" class="btn btn-success" [disabled]="confirmReservationLoading">
+                    <span *ngIf="confirmReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i class='bx bx-link me-1'></i> Lier au contrat
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+</div>

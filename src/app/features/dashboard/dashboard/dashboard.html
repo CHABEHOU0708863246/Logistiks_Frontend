@@ -1,6 +1,8 @@
 <div class="layout-wrapper">
   <div class="layout-container">
     <!-- SIDEBAR COMPLÈTE -->
+<!-- <app-sidebar></app-sidebar> -->
+<!-- SIDEBAR COMPLÈTE -->
 <aside class="layout-menu" id="sidebar">
   <div class="app-brand">
     <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
@@ -71,26 +73,24 @@
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/disponibles']" class="menu-link">
-            <div>Disponibles</div>
-            <span class="badge badge-success">28</span>
+          <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+            <div>Ajouter vehicule</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/loues']" class="menu-link">
-            <div>Loués</div>
-            <span class="badge badge-primary">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/maintenance']" class="menu-link">
-            <div>En maintenance</div>
-            <span class="badge badge-warning">5</span>
+          <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
+            <div>Affectations</div>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
             <div>Suivi entretien</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/assurances']" class="menu-link">
+            <div>Assurances</div>
           </a>
         </li>
       </ul>

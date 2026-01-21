@@ -1,315 +1,344 @@
+<!--
+  COMPOSANT : Formulaire de création de Tier
+  DESCRIPTION : Interface de création d'un nouveau tier (client, fournisseur, partenaire)
+  VERSION : 1.0.0
+  AUTEUR : CHABEHOU AFFERY AUXENCE DELORS
+-->
+
 <div class="layout-wrapper">
-    <!-- SIDEBAR COMPLÈTE -->
-<aside class="layout-menu" id="sidebar">
-  <div class="app-brand">
-    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-    <div>
-      <span class="app-brand-text">Logistiks</span>
-      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+  <!-- =========================================================================== -->
+  <!-- SECTION : SIDEBAR PRINCIPALE (NAVIGATION) -->
+  <!-- =========================================================================== -->
+  <aside class="layout-menu" id="sidebar">
+    <!-- En-tête de la sidebar -->
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistiks</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
     </div>
-  </div>
 
-  <ul class="menu-inner">
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard']" class="menu-link">
-        <i class="menu-icon bx bx-home-circle"></i>
-        <div>Dashboard</div>
-      </a>
-    </li>
+    <!-- Menu de navigation -->
+    <ul class="menu-inner">
+      <!-- Section : Accueil -->
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
 
-    <li class="menu-header">
-      <span>RÉFÉRENTIELS</span>
-    </li>
+      <!-- Section : Référentiels -->
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-group"></i>
-        <div>Tiers</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-            <div>Tous les tiers</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-            <div>Documents à valider</div>
-            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-              {{ dashboardStats.documentsPending }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-            <div>Gestion des documents</div>
-            <span class="badge badge-info">
-              <i class='bx bx-upload'></i>
-              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-            <div>Nouveau tier</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Tiers -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+              <div>Gestion des documents</div>
+              <span class="badge badge-info">
+                <i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-car"></i>
-        <div>Véhicules</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-            <div>Tous les véhicules</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/disponibles']" class="menu-link">
-            <div>Disponibles</div>
-            <span class="badge badge-success">28</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/loues']" class="menu-link">
-            <div>Loués</div>
-            <span class="badge badge-primary">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/maintenance']" class="menu-link">
-            <div>En maintenance</div>
-            <span class="badge badge-warning">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
-            <div>Suivi entretien</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Véhicules -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+              <div>Ajouter vehicule</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
+              <div>Affectations</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
+              <div>Suivi entretien</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/assurances']" class="menu-link">
+              <div>Assurances</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-folder"></i>
-        <div>Documents</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents']" class="menu-link">
-            <div>Tous les documents</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
-            <div>Contrats signés</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
-            <div>Pièces d'identité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-            <div>Factures fournisseurs</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Documents -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents']" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
+              <div>Contrats signés</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
+              <div>Pièces d'identité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-header">
-      <span>CŒUR MÉTIER</span>
-    </li>
+      <!-- Section : Cœur Métier -->
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-file"></i>
-        <div>Contrats</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-            <div>Tous les contrats</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
-            <div>Contrats actifs</div>
-            <span class="badge badge-success">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
-            <div>À expiration</div>
-            <span class="badge badge-warning">3</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-            <div>Nouveau contrat</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Contrats -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
+              <div>Contrats actifs</div>
+              <span class="badge badge-success">12</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
+              <div>À expiration</div>
+              <span class="badge badge-warning">3</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-        <i class="menu-icon bx bx-calendar"></i>
-        <div>Calendrier & Échéances</div>
-      </a>
-    </li>
+      <!-- Item : Calendrier -->
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
 
-    <li class="menu-header">
-      <span>FINANCE & COMPTABILITÉ</span>
-    </li>
+      <!-- Section : Finance & Comptabilité -->
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-credit-card"></i>
-        <div>Comptes</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-            <div>Comptes bancaires</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-            <div>Mobile Money</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-            <div>Soldes & Bilans</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Comptes -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-wallet"></i>
-        <div>Paiements</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-            <div>Tous les paiements</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-            <div>En retard</div><span class="badge badge-danger">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-            <div>En attente</div><span class="badge badge-warning">8</span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Paiements -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+              <div>En retard</div><span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+              <div>En attente</div><span class="badge badge-warning">8</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-header">
-      <span>ADMINISTRATION</span>
-    </li>
+      <!-- Section : Administration -->
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-user"></i>
-        <div>Utilisateurs</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-            <div>Liste utilisateurs</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-            <div>Détail utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-            <div>Formulaire utilisateur</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-            <div>Gestion rôles</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-            <div>Permissions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-            <div>Profil utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-            <div>Sessions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-            <div>Activité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-            <div>Groupes</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Utilisateurs -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+              <div>Liste utilisateurs</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+              <div>Détail utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+              <div>Formulaire utilisateur</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+              <div>Gestion rôles</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+              <div>Permissions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+              <div>Profil utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+              <div>Sessions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+              <div>Activité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+              <div>Groupes</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-cog"></i>
-        <div>Paramétrage</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-            <div>Paramètres généraux</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-            <div>Types de véhicules</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Paramétrage -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" style="margin-top: 2rem;">
-      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-        <i class="menu-icon bx bx-log-out"></i>
-        <div>Déconnexion</div>
-      </a>
-    </li>
-  </ul>
-</aside>
+      <!-- Item : Déconnexion -->
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+    </ul>
+  </aside>
 
-  <!-- MAIN CONTENT -->
+  <!-- =========================================================================== -->
+  <!-- SECTION : CONTENU PRINCIPAL -->
+  <!-- =========================================================================== -->
   <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
-    <!-- NAVBAR -->
+    <!-- =========================================================== -->
+    <!-- SOUS-SECTION : NAVBAR (EN-TÊTE) -->
+    <!-- =========================================================== -->
     <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
       <div class="d-flex align-items-center">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
           <i class='bx bx-menu'></i>
@@ -317,12 +346,15 @@
         <h3 class="mb-0 ms-3">Création d'un Nouveau Tier</h3>
       </div>
 
+      <!-- Menu utilisateur -->
       <ul class="navbar-nav">
-        <!-- User dropdown avec photo dynamique -->
         <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
           <div class="avatar dropdown-toggle">
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar utilisateur dynamique -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
             <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
               {{ getUserInitials() }}
             </div>
@@ -350,11 +382,13 @@
       </ul>
     </nav>
 
-    <!-- CONTENT WRAPPER -->
-
+    <!-- =========================================================== -->
+    <!-- SOUS-SECTION : CONTENU DE LA PAGE -->
+    <!-- =========================================================== -->
     <div class="content-wrapper">
-      <!-- FORMULAIRE DE CREATION -->
-      <!-- INSTRUCTIONS -->
+      <!-- =========================================================== -->
+      <!-- SECTION : INSTRUCTIONS -->
+      <!-- =========================================================== -->
       <div class="row mt-4">
         <div class="col-12">
           <div class="card">
@@ -376,13 +410,8 @@
                   Le tier sera créé avec le statut "En attente de validation"
                 </li>
                 <li class="mb-2">
-                  <i class='bx bx-save text-info me-2'></i>
-                  Vous pouvez enregistrer le formulaire comme brouillon et le compléter plus tard
-                </li>
-                <li class="mb-2">
                   <i class='bx bx-shield text-danger me-2'></i>
-                  Un tiers ne peut être modifié, veuillez vérifier toutes les informations avant de soumettre le
-                  formulaire
+                  Un tiers ne peut être modifié, veuillez vérifier toutes les informations avant de soumettre le formulaire
                 </li>
                 <li class="mb-2">
                   <i class='bx bx-shield text-danger me-2'></i>
@@ -393,9 +422,14 @@
           </div>
         </div>
       </div>
+
+      <!-- =========================================================== -->
+      <!-- SECTION : FORMULAIRE DE CRÉATION -->
+      <!-- =========================================================== -->
       <div class="row">
         <div class="col-12">
           <div class="card">
+            <!-- En-tête du formulaire -->
             <div class="card-header">
               <h5 class="card-title mb-0">Informations du Tier</h5>
               <div class="text-muted fs-sm">
@@ -403,90 +437,117 @@
               </div>
             </div>
 
+            <!-- Formulaire principal -->
             <form [formGroup]="tierForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
               <div class="card-body">
-
-                <!-- PROGRESS BAR -->
+                <!-- ================================================= -->
+                <!-- SOUS-SECTION : BARRE DE PROGRESSION -->
+                <!-- ================================================= -->
                 <div class="mb-4">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="text-muted fs-sm">Progression du formulaire</span>
                     <span class="fw-semibold">{{ getFormProgress() }}%</span>
                   </div>
                   <div class="progress" style="height: 8px;">
-                    <div class="progress-bar sky-blue-progress" role="progressbar" [style.width.%]="getFormProgress()"
-                      aria-valuenow="getFormProgress()" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar sky-blue-progress"
+                         role="progressbar"
+                         [style.width.%]="getFormProgress()"
+                         aria-valuenow="getFormProgress()"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
                     </div>
                   </div>
                 </div>
 
-                <!-- INFORMATIONS PERSONNELLES -->
+                <!-- ================================================= -->
+                <!-- SOUS-SECTION : INFORMATIONS PERSONNELLES -->
+                <!-- ================================================= -->
                 <div class="mb-5">
                   <h6 class="section-title mb-3">
                     <i class='bx bx-user-circle me-2'></i> Informations Personnelles
                   </h6>
                   <div class="row">
-                    <!-- Nom -->
+                    <!-- Champ : Nom -->
                     <div class="col-md-6 mb-3">
                       <label for="lastName" class="form-label">Nom *</label>
-                      <input type="text" class="form-control" id="lastName" formControlName="lastName"
-                        [class.is-invalid]="submitted && f['lastName'].errors" placeholder="Doe">
+                      <input type="text"
+                             class="form-control"
+                             id="lastName"
+                             formControlName="lastName"
+                             [class.is-invalid]="submitted && f['lastName'].errors"
+                             placeholder="Doe">
                       <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
                         <span *ngIf="f['lastName'].errors['required']">Le nom est obligatoire</span>
                         <span *ngIf="f['lastName'].errors['minlength']">Le nom doit avoir au moins 2 caractères</span>
                       </div>
                     </div>
 
-                    <!-- Prénom -->
+                    <!-- Champ : Prénom -->
                     <div class="col-md-6 mb-3">
                       <label for="firstName" class="form-label">Prénom *</label>
-                      <input type="text" class="form-control" id="firstName" formControlName="firstName"
-                        [class.is-invalid]="submitted && f['firstName'].errors" placeholder="John">
+                      <input type="text"
+                             class="form-control"
+                             id="firstName"
+                             formControlName="firstName"
+                             [class.is-invalid]="submitted && f['firstName'].errors"
+                             placeholder="John">
                       <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
                         <span *ngIf="f['firstName'].errors['required']">Le prénom est obligatoire</span>
-                        <span *ngIf="f['firstName'].errors['minlength']">Le prénom doit avoir au moins 2
-                          caractères</span>
+                        <span *ngIf="f['firstName'].errors['minlength']">Le prénom doit avoir au moins 2 caractères</span>
                       </div>
                     </div>
 
-                    <!-- Nom de l'entreprise (Optionnel) -->
+                    <!-- Champ : Nom de l'entreprise (Optionnel) -->
                     <div class="col-md-6 mb-3">
                       <label for="companyName" class="form-label">Nom de l'entreprise</label>
-                      <input type="text" class="form-control" id="companyName" formControlName="companyName"
-                        placeholder="Logistiks SARL">
+                      <input type="text"
+                             class="form-control"
+                             id="companyName"
+                             formControlName="companyName"
+                             placeholder="Logistiks SARL">
                     </div>
 
-                    <!-- Date de naissance -->
+                    <!-- Champ : Date de naissance -->
                     <div class="col-md-6 mb-3">
                       <label for="birthDate" class="form-label">Date de naissance</label>
-                      <input type="date" class="form-control" id="birthDate" formControlName="birthDate"
-                        [max]="maxBirthDate">
+                      <input type="date"
+                             class="form-control"
+                             id="birthDate"
+                             formControlName="birthDate"
+                             [max]="maxBirthDate">
                     </div>
 
-                    <!-- Lieu de naissance -->
+                    <!-- Champ : Lieu de naissance -->
                     <div class="col-md-6 mb-3">
                       <label for="placeOfBirth" class="form-label">Lieu de naissance</label>
-                      <input type="text" class="form-control" id="placeOfBirth" formControlName="placeOfBirth"
-                        placeholder="Paris">
+                      <input type="text"
+                             class="form-control"
+                             id="placeOfBirth"
+                             formControlName="placeOfBirth"
+                             placeholder="Paris">
                     </div>
                   </div>
                 </div>
 
-                <!-- INFORMATIONS D'IDENTIFICATION -->
+                <!-- ================================================= -->
+                <!-- SOUS-SECTION : INFORMATIONS D'IDENTIFICATION -->
+                <!-- ================================================= -->
                 <div class="mb-5">
                   <h6 class="section-title mb-3">
                     <i class='bx bx-id-card me-2'></i> Informations d'Identification
                   </h6>
                   <div class="row">
-                    <!-- Type de pièce d'identité -->
+                    <!-- Champ : Type de pièce d'identité -->
                     <div class="col-md-6 mb-3">
                       <label for="identityType" class="form-label">Type de pièce d'identité *</label>
-                      <select class="form-select" id="identityType" formControlName="identityType"
-                        [class.is-invalid]="submitted && f['identityType'].errors">
+                      <select class="form-select"
+                              id="identityType"
+                              formControlName="identityType"
+                              [class.is-invalid]="submitted && f['identityType'].errors">
                         <option value="">Sélectionner un type</option>
                         <option [value]="identityTypeOptions.CNI">Carte Nationale d'Identité</option>
                         <option [value]="identityTypeOptions.Passport">Passeport</option>
                         <option [value]="identityTypeOptions.ResidenceCard">Permis de séjour</option>
-                        <option [value]="identityTypeOptions.Passport">Passeport</option>
                         <option [value]="identityTypeOptions.Other">Autre</option>
                       </select>
                       <div *ngIf="submitted && f['identityType'].errors" class="invalid-feedback">
@@ -494,33 +555,43 @@
                       </div>
                     </div>
 
-                    <!-- Numéro de pièce d'identité -->
+                    <!-- Champ : Numéro de pièce d'identité -->
                     <div class="col-md-6 mb-3">
                       <label for="identityNumber" class="form-label">Numéro de pièce d'identité *</label>
-                      <input type="text" class="form-control" id="identityNumber" formControlName="identityNumber"
-                        [class.is-invalid]="submitted && f['identityNumber'].errors" placeholder="XXXXX000XXXX">
+                      <input type="text"
+                             class="form-control"
+                             id="identityNumber"
+                             formControlName="identityNumber"
+                             [class.is-invalid]="submitted && f['identityNumber'].errors"
+                             placeholder="XXXXX000XXXX">
                       <div *ngIf="submitted && f['identityNumber'].errors" class="invalid-feedback">
                         <span *ngIf="f['identityNumber'].errors['required']">Le numéro d'identité est obligatoire</span>
-                        <span *ngIf="f['identityNumber'].errors['minlength']">Le numéro doit avoir au moins 5
-                          caractères</span>
+                        <span *ngIf="f['identityNumber'].errors['minlength']">Le numéro doit avoir au moins 5 caractères</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- COORDONNEES -->
+                <!-- ================================================= -->
+                <!-- SOUS-SECTION : COORDONNÉES -->
+                <!-- ================================================= -->
                 <div class="mb-5">
                   <h6 class="section-title mb-3">
                     <i class='bx bx-phone me-2'></i> Coordonnées
                   </h6>
                   <div class="row">
-                    <!-- Téléphone principal -->
+                    <!-- Champ : Téléphone principal -->
                     <div class="col-md-6 mb-3">
                       <label for="phone" class="form-label">Téléphone principal *</label>
                       <div class="input-group">
                         <span class="input-group-text">+225</span>
-                        <input type="tel" class="form-control" id="phone" formControlName="phone"
-                          [class.is-invalid]="submitted && f['phone'].errors" placeholder="0700000000" maxlength="10">
+                        <input type="tel"
+                               class="form-control"
+                               id="phone"
+                               formControlName="phone"
+                               [class.is-invalid]="submitted && f['phone'].errors"
+                               placeholder="0700000000"
+                               maxlength="10">
                       </div>
                       <div *ngIf="submitted && f['phone'].errors" class="invalid-feedback d-block">
                         <span *ngIf="f['phone'].errors['required']">Le téléphone est obligatoire</span>
@@ -528,21 +599,29 @@
                       </div>
                     </div>
 
-                    <!-- Téléphone secondaire -->
+                    <!-- Champ : Téléphone secondaire -->
                     <div class="col-md-6 mb-3">
                       <label for="secondaryPhone" class="form-label">Téléphone secondaire</label>
                       <div class="input-group">
                         <span class="input-group-text">+225</span>
-                        <input type="tel" class="form-control" id="secondaryPhone" formControlName="secondaryPhone"
-                          placeholder="0700000001" maxlength="10">
+                        <input type="tel"
+                               class="form-control"
+                               id="secondaryPhone"
+                               formControlName="secondaryPhone"
+                               placeholder="0700000001"
+                               maxlength="10">
                       </div>
                     </div>
 
-                    <!-- Email -->
+                    <!-- Champ : Email -->
                     <div class="col-md-6 mb-3">
                       <label for="email" class="form-label">Email</label>
-                      <input type="email" class="form-control" id="email" formControlName="email"
-                        [class.is-invalid]="submitted && f['email'].errors" placeholder="john.doe@example.com">
+                      <input type="email"
+                             class="form-control"
+                             id="email"
+                             formControlName="email"
+                             [class.is-invalid]="submitted && f['email'].errors"
+                             placeholder="john.doe@example.com">
                       <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
                         Format d'email invalide
                       </div>
@@ -550,26 +629,35 @@
                   </div>
                 </div>
 
-                <!-- ADRESSE -->
+                <!-- ================================================= -->
+                <!-- SOUS-SECTION : ADRESSE -->
+                <!-- ================================================= -->
                 <div class="mb-5">
                   <h6 class="section-title mb-3">
                     <i class='bx bx-home me-2'></i> Adresse
                   </h6>
                   <div class="row">
-                    <!-- Rue -->
+                    <!-- Champ : Rue -->
                     <div class="col-md-6 mb-3">
                       <label for="street" class="form-label">Rue</label>
-                      <input type="text" class="form-control" id="street" formControlName="street"
-                        placeholder="123 Avenue de la République">
+                      <input type="text"
+                             class="form-control"
+                             id="street"
+                             formControlName="street"
+                             placeholder="123 Avenue de la République">
                     </div>
 
-                    <!-- Ville -->
+                    <!-- Champ : Ville -->
                     <div class="col-md-6 mb-3">
                       <label for="city" class="form-label">Ville</label>
-                      <input type="text" class="form-control" id="city" formControlName="city" placeholder="Abidjan">
+                      <input type="text"
+                             class="form-control"
+                             id="city"
+                             formControlName="city"
+                             placeholder="Abidjan">
                     </div>
 
-                    <!-- Pays -->
+                    <!-- Champ : Pays -->
                     <div class="col-md-6 mb-3">
                       <label for="country" class="form-label">Pays</label>
                       <select class="form-select" id="country" formControlName="country">
@@ -583,16 +671,21 @@
                       </select>
                     </div>
 
-                    <!-- Code postal -->
+                    <!-- Champ : Code postal -->
                     <div class="col-md-6 mb-3">
                       <label for="zipCode" class="form-label">Code postal</label>
-                      <input type="text" class="form-control" id="zipCode" formControlName="zipCode"
-                        placeholder="22500">
+                      <input type="text"
+                             class="form-control"
+                             id="zipCode"
+                             formControlName="zipCode"
+                             placeholder="22500">
                     </div>
                   </div>
                 </div>
 
-                <!-- ROLES -->
+                <!-- ================================================= -->
+                <!-- SOUS-SECTION : RÔLES -->
+                <!-- ================================================= -->
                 <div class="mb-5">
                   <h6 class="section-title mb-3">
                     <i class='bx bx-briefcase me-2'></i> Rôles *
@@ -603,10 +696,14 @@
                   </div>
 
                   <div class="row">
+                    <!-- Cases à cocher : Rôles disponibles -->
                     <div class="col-md-6 mb-3" *ngFor="let role of availableRoles">
                       <div class="form-check">
-                        <input class="form-check-input" type="checkbox" [id]="'role-' + role.value" [value]="role.value"
-                          (change)="onRoleChange($event)">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               [id]="'role-' + role.value"
+                               [value]="role.value"
+                               (change)="onRoleChange($event)">
                         <label class="form-check-label d-flex align-items-center" [for]="'role-' + role.value">
                           <i [class]="role.icon + ' me-2'"></i>
                           <div>
@@ -618,43 +715,56 @@
                     </div>
                   </div>
 
+                  <!-- Message d'erreur si aucun rôle sélectionné -->
                   <div *ngIf="submitted && selectedRoles.length === 0" class="alert alert-danger mt-3">
                     <i class='bx bx-error-circle me-2'></i>
                     Au moins un rôle doit être sélectionné
                   </div>
                 </div>
 
-                <!-- INFORMATIONS SUPPLEMENTAIRES -->
+                <!-- ================================================= -->
+                <!-- SOUS-SECTION : INFORMATIONS SUPPLÉMENTAIRES -->
+                <!-- ================================================= -->
                 <div class="mb-5">
                   <h6 class="section-title mb-3">
                     <i class='bx bx-note me-2'></i> Informations Supplémentaires
                   </h6>
                   <div class="mb-3">
                     <label for="notes" class="form-label">Notes</label>
-                    <textarea class="form-control" id="notes" formControlName="notes" rows="3"
-                      placeholder="Notes additionnelles concernant le tier..."></textarea>
+                    <textarea class="form-control"
+                              id="notes"
+                              formControlName="notes"
+                              rows="3"
+                              placeholder="Notes additionnelles concernant le tier..."></textarea>
                   </div>
                 </div>
 
               </div>
 
-              <!-- CARD FOOTER -->
+              <!-- ================================================= -->
+              <!-- SECTION : PIED DE PAGE DU FORMULAIRE -->
+              <!-- ================================================= -->
               <div class="card-footer bg-transparent border-top-0">
                 <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+                  <!-- Bouton : Annuler -->
+                  <button type="button"
+                          class="btn btn-outline-secondary"
+                          (click)="onCancel()">
                     <i class='bx bx-x me-1'></i> Annuler
                   </button>
 
+                  <!-- Boutons d'action -->
                   <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline-primary" (click)="saveAsDraft()" [disabled]="loading">
-                      <i class='bx bx-save me-1'></i> Enregistrer comme brouillon
-                    </button>
-
-                    <button type="submit" class="btn btn-primary" [disabled]="loading">
+                    <!-- Bouton : Soumettre le formulaire -->
+                    <button type="submit"
+                            class="btn btn-primary"
+                            [disabled]="loading">
                       <i class='bx bx-check me-1'></i>
                       <span *ngIf="!loading">Créer le tier</span>
                       <span *ngIf="loading">
-                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        <span class="spinner-border spinner-border-sm me-1"
+                              role="status"
+                              aria-hidden="true"></span>
                         Création en cours...
                       </span>
                     </button>
@@ -665,8 +775,6 @@
           </div>
         </div>
       </div>
-
-
     </div>
   </div>
 </div>

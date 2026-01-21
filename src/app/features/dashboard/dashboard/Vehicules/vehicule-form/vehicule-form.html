@@ -1,1 +1,884 @@
-<p>vehicule-form works!</p>
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+  <aside class="layout-menu" id="sidebar">
+    <!-- Brand/Logo de l'application -->
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistiks</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
+    </div>
+
+    <!-- Menu principal -->
+    <ul class="menu-inner">
+      <!-- Dashboard principal -->
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
+
+      <!-- ========================================== -->
+      <!-- SECTION 1.1: RÉFÉRENTIELS -->
+      <!-- ========================================== -->
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
+
+      <!-- Module Tiers -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+              <div>Gestion des documents</div>
+              <span class="badge badge-info">
+                <i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Véhicules -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+              <div>Ajouter vehicule</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
+              <div>Affectations</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
+              <div>Suivi entretien</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/assurances']" class="menu-link">
+              <div>Assurances</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Documents -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents']" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
+              <div>Contrats signés</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
+              <div>Pièces d'identité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- ========================================== -->
+      <!-- SECTION 1.2: CŒUR MÉTIER -->
+      <!-- ========================================== -->
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
+
+      <!-- Module Contrats -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
+              <div>Contrats actifs</div>
+              <span class="badge badge-success">12</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
+              <div>À expiration</div>
+              <span class="badge badge-warning">3</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Calendrier -->
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
+
+      <!-- ========================================== -->
+      <!-- SECTION 1.3: FINANCE & COMPTABILITÉ -->
+      <!-- ========================================== -->
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
+
+      <!-- Module Comptes -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Paiements -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+              <div>En retard</div>
+              <span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+              <div>En attente</div>
+              <span class="badge badge-warning">8</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- ========================================== -->
+      <!-- SECTION 1.4: ADMINISTRATION -->
+      <!-- ========================================== -->
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
+
+      <!-- Module Utilisateurs -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+              <div>Liste utilisateurs</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+              <div>Détail utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+              <div>Formulaire utilisateur</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+              <div>Gestion rôles</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+              <div>Permissions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+              <div>Profil utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+              <div>Sessions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+              <div>Activité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+              <div>Groupes</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Module Paramétrage -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Déconnexion -->
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">Ajout d'un Nouveau Véhicule</h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
+    <!-- ========================================== -->
+    <div class="content-wrapper">
+
+      <!-- SECTION 2.2.1: INSTRUCTIONS -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-title mb-3">
+                <i class='bx bx-help-circle me-2'></i> Instructions
+              </h6>
+              <!-- Liste des instructions -->
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2">
+                  <i class='bx bx-check-circle text-success me-2'></i>
+                  Les champs marqués d'un astérisque (*) sont obligatoires
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-info-circle text-primary me-2'></i>
+                  Le véhicule sera créé avec le statut "Disponible" par défaut
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-time text-warning me-2'></i>
+                  L'assurance doit être valide (date d'expiration future)
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-shield text-danger me-2'></i>
+                  La plaque d'immatriculation doit être unique dans le système
+                </li>
+                <li class="mb-2">
+                  <i class='bx bx-shield text-danger me-2'></i>
+                  Toutes les informations seront vérifiées avant activation
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2.2.2: FORMULAIRE PRINCIPAL -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <!-- En-tête du formulaire -->
+            <div class="card-header">
+              <h5 class="card-title mb-0">Informations du Véhicule</h5>
+              <div class="text-muted fs-sm">
+                Remplissez toutes les informations obligatoires (*)
+              </div>
+            </div>
+
+            <!-- Formulaire réactif -->
+            <form [formGroup]="vehicleForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+              <div class="card-body">
+
+                <!-- ========================================== -->
+                <!-- SECTION 2.2.2.1: BARRE DE PROGRESSION -->
+                <!-- ========================================== -->
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fs-sm">Progression du formulaire</span>
+                    <span class="fw-semibold">{{ getFormProgress() }}%</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar sky-blue-progress" role="progressbar"
+                         [style.width.%]="getFormProgress()"
+                         aria-valuenow="getFormProgress()"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- SECTION 2.2.2.2: INFORMATIONS GÉNÉRALES -->
+                <!-- ========================================== -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-car me-2'></i> Informations Générales
+                  </h6>
+                  <div class="row">
+                    <!-- Type de véhicule -->
+                    <div class="col-md-4 mb-3">
+                      <label for="type" class="form-label">Type de véhicule *</label>
+                      <select class="form-select" id="type" formControlName="type"
+                              [class.is-invalid]="submitted && f['type'].errors">
+                        <option value="">Sélectionner un type</option>
+                        <option [value]="vehicleType.Motorcycle">Moto</option>
+                        <option [value]="vehicleType.Car">Voiture</option>
+                        <option [value]="vehicleType.Tricycle">Tricycle</option>
+                        <option [value]="vehicleType.Scooter">Scooter</option>
+                        <option [value]="vehicleType.Van">Camionnette</option>
+                      </select>
+                      <div *ngIf="submitted && f['type'].errors" class="invalid-feedback">
+                        Le type de véhicule est obligatoire
+                      </div>
+                    </div>
+
+                    <!-- Marque -->
+                    <div class="col-md-4 mb-3">
+                      <label for="brand" class="form-label">Marque *</label>
+                      <input type="text" class="form-control" id="brand" formControlName="brand"
+                        [class.is-invalid]="submitted && f['brand'].errors"
+                        placeholder="Toyota">
+                      <div *ngIf="submitted && f['brand'].errors" class="invalid-feedback">
+                        <span *ngIf="f['brand'].errors['required']">La marque est obligatoire</span>
+                        <span *ngIf="f['brand'].errors['minlength']">La marque doit avoir au moins 2 caractères</span>
+                      </div>
+                    </div>
+
+                    <!-- Modèle -->
+                    <div class="col-md-4 mb-3">
+                      <label for="model" class="form-label">Modèle *</label>
+                      <input type="text" class="form-control" id="model" formControlName="model"
+                        [class.is-invalid]="submitted && f['model'].errors"
+                        placeholder="Corolla">
+                      <div *ngIf="submitted && f['model'].errors" class="invalid-feedback">
+                        <span *ngIf="f['model'].errors['required']">Le modèle est obligatoire</span>
+                        <span *ngIf="f['model'].errors['minlength']">Le modèle doit avoir au moins 2 caractères</span>
+                      </div>
+                    </div>
+
+                    <!-- Année -->
+                    <div class="col-md-4 mb-3">
+                      <label for="year" class="form-label">Année *</label>
+                      <input type="number" class="form-control" id="year" formControlName="year"
+                        [class.is-invalid]="submitted && f['year'].errors"
+                        [min]="currentYear - 30"
+                        [max]="currentYear + 1"
+                        placeholder="2023">
+                      <div *ngIf="submitted && f['year'].errors" class="invalid-feedback">
+                        <span *ngIf="f['year'].errors['required']">L'année est obligatoire</span>
+                        <span *ngIf="f['year'].errors['min']">L'année doit être supérieure à {{ currentYear - 30 }}</span>
+                        <span *ngIf="f['year'].errors['max']">L'année ne peut pas dépasser {{ currentYear + 1 }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Couleur -->
+                    <div class="col-md-4 mb-3">
+                      <label for="color" class="form-label">Couleur</label>
+                      <input type="text" class="form-control" id="color" formControlName="color"
+                        placeholder="Noir">
+                    </div>
+
+                    <!-- Type de carburant -->
+                    <div class="col-md-4 mb-3">
+                      <label for="fuelType" class="form-label">Type de carburant *</label>
+                      <select class="form-select" id="fuelType" formControlName="fuelType"
+                        [class.is-invalid]="submitted && f['fuelType'].errors">
+                        <option value="">Sélectionner un type</option>
+                        <option [value]="fuelType.Gasoline">Essence</option>
+                        <option [value]="fuelType.Diesel">Diesel</option>
+                        <option [value]="fuelType.Electric">Électrique</option>
+                        <option [value]="fuelType.Hybrid">Hybride</option>
+                      </select>
+                      <div *ngIf="submitted && f['fuelType'].errors" class="invalid-feedback">
+                        Le type de carburant est obligatoire
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- SECTION 2.2.2.3: IDENTIFICATION & IMMATRICULATION -->
+                <!-- ========================================== -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-id-card me-2'></i> Identification & Immatriculation
+                  </h6>
+                  <div class="row">
+                    <!-- Plaque d'immatriculation -->
+                    <div class="col-md-6 mb-3">
+                      <label for="plateNumber" class="form-label">Plaque d'immatriculation *</label>
+                      <input type="text" class="form-control" id="plateNumber" formControlName="plateNumber"
+                        [class.is-invalid]="submitted && f['plateNumber'].errors"
+                        (blur)="checkPlateNumberAvailability()"
+                        placeholder="AB-123-CD">
+                      <div *ngIf="submitted && f['plateNumber'].errors" class="invalid-feedback">
+                        <span *ngIf="f['plateNumber'].errors['required']">La plaque d'immatriculation est obligatoire</span>
+                        <span *ngIf="f['plateNumber'].errors['minlength']">La plaque doit avoir au moins 5 caractères</span>
+                      </div>
+                      <div *ngIf="plateNumberExists" class="text-danger mt-1 fs-sm">
+                        <i class='bx bx-error-circle me-1'></i> Cette plaque d'immatriculation existe déjà
+                      </div>
+                    </div>
+
+                    <!-- Numéro de châssis -->
+                    <div class="col-md-6 mb-3">
+                      <label for="chassisNumber" class="form-label">Numéro de châssis (VIN)</label>
+                      <input type="text" class="form-control" id="chassisNumber" formControlName="chassisNumber"
+                        placeholder="1HGCM82633A123456">
+                    </div>
+
+                    <!-- Numéro de moteur -->
+                    <div class="col-md-6 mb-3">
+                      <label for="engineNumber" class="form-label">Numéro de moteur</label>
+                      <input type="text" class="form-control" id="engineNumber" formControlName="engineNumber"
+                        placeholder="2AZ1234567">
+                    </div>
+
+                    <!-- Kilométrage actuel -->
+                    <div class="col-md-6 mb-3">
+                      <label for="currentMileage" class="form-label">Kilométrage actuel (km) *</label>
+                      <input type="number" class="form-control" id="currentMileage" formControlName="currentMileage"
+                        [class.is-invalid]="submitted && f['currentMileage'].errors"
+                        [min]="0"
+                        placeholder="15000">
+                      <div *ngIf="submitted && f['currentMileage'].errors" class="invalid-feedback">
+                        <span *ngIf="f['currentMileage'].errors['required']">Le kilométrage est obligatoire</span>
+                        <span *ngIf="f['currentMileage'].errors['min']">Le kilométrage ne peut pas être négatif</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- SECTION 2.2.2.4: ACQUISITION & COÛTS -->
+                <!-- ========================================== -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-dollar-circle me-2'></i> Acquisition & Coûts
+                  </h6>
+                  <div class="row">
+                    <!-- Date d'acquisition -->
+                    <div class="col-md-4 mb-3">
+                      <label for="acquisitionDate" class="form-label">Date d'acquisition *</label>
+                      <input type="date" class="form-control" id="acquisitionDate" formControlName="acquisitionDate"
+                        [class.is-invalid]="submitted && f['acquisitionDate'].errors"
+                        [max]="currentDate">
+                      <div *ngIf="submitted && f['acquisitionDate'].errors" class="invalid-feedback">
+                        La date d'acquisition est obligatoire
+                      </div>
+                    </div>
+
+                    <!-- Coût d'acquisition -->
+                    <div class="col-md-4 mb-3">
+                      <label for="acquisitionCost" class="form-label">Coût d'acquisition (FCFA) *</label>
+                      <input type="number" class="form-control" id="acquisitionCost" formControlName="acquisitionCost"
+                        [class.is-invalid]="submitted && f['acquisitionCost'].errors"
+                        [min]="0"
+                        placeholder="5000000">
+                      <div *ngIf="submitted && f['acquisitionCost'].errors" class="invalid-feedback">
+                        <span *ngIf="f['acquisitionCost'].errors['required']">Le coût d'acquisition est obligatoire</span>
+                        <span *ngIf="f['acquisitionCost'].errors['min']">Le coût ne peut pas être négatif</span>
+                      </div>
+                    </div>
+
+                    <!-- Prix d'achat -->
+                    <div class="col-md-4 mb-3">
+                      <label for="purchasePrice" class="form-label">Prix d'achat (FCFA) *</label>
+                      <input type="number" class="form-control" id="purchasePrice" formControlName="purchasePrice"
+                        [class.is-invalid]="submitted && f['purchasePrice'].errors"
+                        [min]="0"
+                        placeholder="5500000">
+                      <div *ngIf="submitted && f['purchasePrice'].errors" class="invalid-feedback">
+                        <span *ngIf="f['purchasePrice'].errors['required']">Le prix d'achat est obligatoire</span>
+                        <span *ngIf="f['purchasePrice'].errors['min']">Le prix ne peut pas être négatif</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- SECTION 2.2.2.5: ASSURANCE -->
+                <!-- ========================================== -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-shield-alt me-2'></i> Assurance
+                  </h6>
+                  <div class="alert alert-info">
+                    <i class='bx bx-info-circle me-2'></i>
+                    Les informations d'assurance sont obligatoires pour pouvoir louer le véhicule.
+                  </div>
+                  <div class="row">
+                    <!-- Compagnie d'assurance -->
+                    <div class="col-md-6 mb-3">
+                      <label for="insuranceCompany" class="form-label">Compagnie d'assurance *</label>
+                      <input type="text" class="form-control" id="insuranceCompany"
+                        formControlName="insuranceCompany"
+                        [class.is-invalid]="submitted && f['insuranceCompany'].errors"
+                        placeholder="NSIA Assurance">
+                      <div *ngIf="submitted && f['insuranceCompany'].errors" class="invalid-feedback">
+                        La compagnie d'assurance est obligatoire
+                      </div>
+                    </div>
+
+                    <!-- Numéro de police -->
+                    <div class="col-md-6 mb-3">
+                      <label for="insurancePolicyNumber" class="form-label">Numéro de police *</label>
+                      <input type="text" class="form-control" id="insurancePolicyNumber"
+                        formControlName="insurancePolicyNumber"
+                        [class.is-invalid]="submitted && f['insurancePolicyNumber'].errors"
+                        placeholder="POL-2024-00123">
+                      <div *ngIf="submitted && f['insurancePolicyNumber'].errors" class="invalid-feedback">
+                        Le numéro de police est obligatoire
+                      </div>
+                    </div>
+
+                    <!-- Date de début -->
+                    <div class="col-md-4 mb-3">
+                      <label for="insuranceStartDate" class="form-label">Date de début *</label>
+                      <input type="date" class="form-control" id="insuranceStartDate"
+                        formControlName="insuranceStartDate"
+                        [class.is-invalid]="submitted && f['insuranceStartDate'].errors">
+                      <div *ngIf="submitted && f['insuranceStartDate'].errors" class="invalid-feedback">
+                        La date de début est obligatoire
+                      </div>
+                    </div>
+
+                    <!-- Date d'expiration -->
+                    <div class="col-md-4 mb-3">
+                      <label for="insuranceEndDate" class="form-label">Date d'expiration *</label>
+                      <input type="date" class="form-control" id="insuranceEndDate"
+                        formControlName="insuranceEndDate"
+                        [class.is-invalid]="submitted && f['insuranceEndDate'].errors"
+                        [min]="insuranceStartDateValue">
+                      <div *ngIf="submitted && f['insuranceEndDate'].errors" class="invalid-feedback">
+                        <span *ngIf="f['insuranceEndDate'].errors['required']">La date d'expiration est obligatoire</span>
+                        <span *ngIf="f['insuranceEndDate'].errors['min']">La date d'expiration doit être après la date de début</span>
+                      </div>
+                    </div>
+
+                    <!-- Type de couverture -->
+                    <div class="col-md-4 mb-3">
+                      <label for="insuranceCoverageType" class="form-label">Type de couverture *</label>
+                      <select class="form-select" id="insuranceCoverageType"
+                        formControlName="insuranceCoverageType"
+                        [class.is-invalid]="submitted && f['insuranceCoverageType'].errors">
+                        <option value="">Sélectionner un type</option>
+                        <option value="Tous risques">Tous risques</option>
+                        <option value="Tiers">Tiers</option>
+                        <option value="Tiers + Vol/Incendie">Tiers + Vol/Incendie</option>
+                        <option value="Tiers + Collision">Tiers + Collision</option>
+                      </select>
+                      <div *ngIf="submitted && f['insuranceCoverageType'].errors" class="invalid-feedback">
+                        Le type de couverture est obligatoire
+                      </div>
+                    </div>
+
+                    <!-- Prime annuelle -->
+                    <div class="col-md-6 mb-3">
+                      <label for="insuranceAnnualPremium" class="form-label">Prime annuelle (FCFA) *</label>
+                      <input type="number" class="form-control" id="insuranceAnnualPremium"
+                        formControlName="insuranceAnnualPremium"
+                        [class.is-invalid]="submitted && f['insuranceAnnualPremium'].errors"
+                        [min]="0"
+                        placeholder="300000">
+                      <div *ngIf="submitted && f['insuranceAnnualPremium'].errors" class="invalid-feedback">
+                        <span *ngIf="f['insuranceAnnualPremium'].errors['required']">La prime annuelle est obligatoire</span>
+                        <span *ngIf="f['insuranceAnnualPremium'].errors['min']">La prime ne peut pas être négative</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- SECTION 2.2.2.6: CARACTÉRISTIQUES TECHNIQUES -->
+                <!-- ========================================== -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-cog me-2'></i> Caractéristiques Techniques
+                  </h6>
+                  <div class="row">
+                    <!-- Capacité moteur -->
+                    <div class="col-md-4 mb-3">
+                      <label for="engineCapacity" class="form-label">Cylindrée (cm³)</label>
+                      <input type="number" class="form-control" id="engineCapacity"
+                        formControlName="engineCapacity"
+                        [min]="0"
+                        placeholder="1500">
+                    </div>
+
+                    <!-- Capacité carburant -->
+                    <div class="col-md-4 mb-3">
+                      <label for="fuelCapacity" class="form-label">Capacité réservoir (L)</label>
+                      <input type="number" class="form-control" id="fuelCapacity"
+                        formControlName="fuelCapacity"
+                        [min]="0"
+                        placeholder="50">
+                    </div>
+
+                    <!-- Transmission -->
+                    <div class="col-md-4 mb-3">
+                      <label for="transmission" class="form-label">Transmission</label>
+                      <select class="form-select" id="transmission" formControlName="transmission">
+                        <option value="">Sélectionner</option>
+                        <option value="Manuelle">Manuelle</option>
+                        <option value="Automatique">Automatique</option>
+                        <option value="Semi-automatique">Semi-automatique</option>
+                      </select>
+                    </div>
+
+                    <!-- Équipements -->
+                    <div class="col-12 mb-3">
+                      <label class="form-label">Équipements</label>
+                      <div class="row">
+                        <div class="col-md-4 mb-2">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="hasGps" formControlName="hasGps">
+                            <label class="form-check-label" for="hasGps">
+                              <i class='bx bx-navigation me-1'></i> GPS
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="hasAirConditioning"
+                                   formControlName="hasAirConditioning">
+                            <label class="form-check-label" for="hasAirConditioning">
+                              <i class='bx bx-wind me-1'></i> Climatisation
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Autres caractéristiques -->
+                    <div class="col-12 mb-3">
+                      <label for="additionalFeatures" class="form-label">Autres caractéristiques</label>
+                      <textarea class="form-control" id="additionalFeatures"
+                        formControlName="additionalFeatures"
+                        rows="2"
+                        placeholder="Vitres électriques, régulateur de vitesse, caméra de recul... (séparer par des virgules)"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- SECTION 2.2.2.7: LOCALISATION & NOTES -->
+                <!-- ========================================== -->
+                <div class="mb-5">
+                  <h6 class="section-title mb-3">
+                    <i class='bx bx-map me-2'></i> Localisation & Notes
+                  </h6>
+                  <div class="row">
+                    <!-- Adresse -->
+                    <div class="col-md-6 mb-3">
+                      <label for="currentLocationAddress" class="form-label">Adresse actuelle</label>
+                      <input type="text" class="form-control" id="currentLocationAddress"
+                        formControlName="currentLocationAddress"
+                        placeholder="123 Boulevard de la République, Abidjan">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="col-12 mb-3">
+                      <label for="notes" class="form-label">Notes additionnelles</label>
+                      <textarea class="form-control" id="notes" formControlName="notes" rows="3"
+                        placeholder="Informations supplémentaires, historique, particularités..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ========================================== -->
+              <!-- SECTION 2.2.3: PIED DE CARTE - BOUTONS D'ACTION -->
+              <!-- ========================================== -->
+              <div class="card-footer bg-transparent border-top-0">
+                <div class="d-flex justify-content-between">
+                  <!-- Bouton Annuler -->
+                  <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+                    <i class='bx bx-x me-1'></i> Annuler
+                  </button>
+
+                  <!-- Bouton Soumettre -->
+                  <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"
+                            [disabled]="loading || plateNumberExists">
+                      <i class='bx bx-check me-1'></i>
+                      <span *ngIf="!loading">Créer le véhicule</span>
+                      <span *ngIf="loading">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Création en cours...
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -17,6 +17,33 @@ export class Token {
   }
 
   /**
+   * CORRECTION CRITIQUE: Récupère l'ID utilisateur depuis le token
+   */
+  getUserId(): string | null {
+  const payload = this.getPayload();
+
+  if (!payload) {
+    console.warn('⚠️ getUserId: Aucun payload disponible');
+    return null;
+  }
+
+  // Essayer dans cet ordre de priorité :
+  const userId =
+    payload.userId || // Propriété directe
+    (payload as any).id || // Votre API semble utiliser "id"
+    (payload as any)['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+  if (!userId) {
+    console.error('❌ User ID introuvable dans le token');
+    console.log('📋 Payload complet:', JSON.stringify(payload, null, 2));
+    return null;
+  }
+
+  console.log('✅ User ID récupéré:', userId);
+  return userId;
+}
+
+  /**
    * Sauvegarde les données d'authentification
    */
   saveToken(token: string, role: string, refreshToken?: string): void {
@@ -26,13 +53,16 @@ export class Token {
     if (refreshToken) {
       localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
     }
+
+    // Debug: afficher le payload du token sauvegardé
+    this.debugToken();
   }
 
   /**
    * Récupère le token brut pour les intercepteurs HTTP
    */
   getToken(): string | null {
-    // 1️⃣ Vérifier d'abord dans logistiks_auth_data
+    // 1️⃣ Vérifier dans logistiks_auth_data
     const authData = localStorage.getItem(this.STORAGE_KEY);
     if (authData) {
       try {
@@ -45,11 +75,13 @@ export class Token {
       }
     }
 
-    // 2️⃣ Fallback sur l'ancien système 'token' si présent
+    // 2️⃣ Fallback sur l'ancien système
     const legacyToken = localStorage.getItem('token');
     if (legacyToken) {
+      console.warn('⚠️ Utilisation du token legacy');
       return legacyToken;
     }
+
     return null;
   }
 
@@ -85,7 +117,27 @@ export class Token {
   }
 
   /**
-   * Décodage sécurisé du Payload
+   * Décode le token JWT (méthode manuelle)
+   */
+  decodeToken(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Erreur décodage token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Décodage sécurisé du Payload avec jwtDecode
    */
   getPayload(): LogistiksJwtPayload | null {
     const token = this.getToken();
@@ -117,8 +169,8 @@ export class Token {
 
     if (isExpired) {
       console.warn('⚠️ Token expiré:', {
-        exp: new Date(payload.exp * 1000),
-        now: new Date(currentTime * 1000)
+        exp: new Date(payload.exp * 1000).toLocaleString(),
+        now: new Date(currentTime * 1000).toLocaleString()
       });
     }
 
@@ -129,6 +181,7 @@ export class Token {
    * Déconnexion complète
    */
   logout(): void {
+
     // Supprimer toutes les clés liées à l'auth
     localStorage.removeItem(this.STORAGE_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
@@ -225,5 +278,20 @@ export class Token {
       return false;
     }
     return true;
+  }
+
+  /**
+   * DEBUG: Affiche le contenu complet du token
+   */
+  debugToken(): void {
+    const token = this.getToken();
+    if (!token) {
+      return;
+    }
+
+    const payload = this.getPayload();
+    if (!payload) {
+      return;
+    }
   }
 }

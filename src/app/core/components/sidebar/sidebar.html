@@ -1,0 +1,243 @@
+<aside class="layout-menu" id="sidebar">
+  <!-- BRAND -->
+  <div class="app-brand">
+    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+    <div>
+      <span class="app-brand-text">Logistiks</span>
+      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="isLoading" class="menu-loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- MENU ITEMS -->
+  <ul class="menu-inner" *ngIf="!isLoading">
+
+    <!-- BOUCLE SUR LES ITEMS DE MENU FILTRÉS -->
+    <ng-container *ngFor="let item of menuItems">
+
+      <!-- DASHBOARD (item simple sans sous-menu) -->
+      <li class="menu-item" routerLinkActive="active"
+          *ngIf="item.route === '/dashboard' && !item.subItems.length && isMenuItemVisible(item)">
+        <a [routerLink]="[item.route]" class="menu-link">
+          <i class="menu-icon" [ngClass]="item.icon" *ngIf="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+      </li>
+
+      <!-- HEADER RÉFÉRENTIELS (après Dashboard) -->
+      <li class="menu-header" *ngIf="item.label === 'Tiers' && hasVisibleSubItems(item)">
+        <span>RÉFÉRENTIELS</span>
+      </li>
+
+      <!-- TIERS -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Tiers' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+                <span *ngIf="subItem.route === '/dashboard/tiers/documents-validation' && dashboardStats.documentsPending > 0"
+                      class="badge badge-warning">{{ dashboardStats.documentsPending }}</span>
+                <span *ngIf="subItem.route === '/dashboard/tiers/documents-management'"
+                      class="badge badge-info">
+                  <i class='bx bx-upload'></i>
+                  {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+                </span>
+                <span *ngIf="subItem.route === '/dashboard/tiers/new'"
+                      class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+      <!-- VÉHICULES -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Véhicules' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+                <span *ngIf="subItem.route === '/dashboard/vehicules/disponibles'"
+                      class="badge badge-success">{{ dashboardStats.vehiclesAvailable }}</span>
+                <span *ngIf="subItem.route === '/dashboard/vehicules/loues'"
+                      class="badge badge-primary">{{ dashboardStats.vehiclesRented }}</span>
+                <span *ngIf="subItem.route === '/dashboard/vehicules/maintenance'"
+                      class="badge badge-warning">{{ dashboardStats.vehiclesMaintenance }}</span>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+      <!-- DOCUMENTS -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Documents' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+      <!-- HEADER CŒUR MÉTIER -->
+      <li class="menu-header" *ngIf="item.label === 'Contrats' && hasVisibleSubItems(item)">
+        <span>CŒUR MÉTIER</span>
+      </li>
+
+      <!-- CONTRATS -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Contrats' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+                <span *ngIf="subItem.route === '/dashboard/contrats/actifs'"
+                      class="badge badge-success">{{ dashboardStats.activeContracts }}</span>
+                <span *ngIf="subItem.route === '/dashboard/contrats/expiration'"
+                      class="badge badge-warning">{{ dashboardStats.expiringContracts }}</span>
+                <span *ngIf="subItem.route === '/dashboard/contrats/new'"
+                      class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+      <!-- CALENDRIER -->
+      <li class="menu-item" routerLinkActive="active"
+          *ngIf="item.route === '/dashboard/calendrier' && !item.subItems.length && isMenuItemVisible(item)">
+        <a [routerLink]="[item.route]" class="menu-link">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+      </li>
+
+      <!-- HEADER FINANCE & COMPTABILITÉ -->
+      <li class="menu-header" *ngIf="item.label === 'Comptes' && hasVisibleSubItems(item)">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
+
+      <!-- COMPTES -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Comptes' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+      <!-- PAIEMENTS -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Paiements' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+                <span *ngIf="subItem.route === '/dashboard/finance/paiements/retard'"
+                      class="badge badge-danger">{{ dashboardStats.paymentsOverdue }}</span>
+                <span *ngIf="subItem.route === '/dashboard/finance/paiements/attente'"
+                      class="badge badge-warning">8</span>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+      <!-- HEADER ADMINISTRATION -->
+      <li class="menu-header" *ngIf="item.label === 'Utilisateurs' && hasVisibleSubItems(item)">
+        <span>ADMINISTRATION</span>
+      </li>
+
+      <!-- UTILISATEURS -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Utilisateurs' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+                <span *ngIf="subItem.route === '/dashboard/admin/user-form'"
+                      class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+      <!-- PARAMÉTRAGE -->
+      <li class="menu-item" routerLinkActive="active open"
+          *ngIf="item.label === 'Paramétrage' && hasVisibleSubItems(item)">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon" [ngClass]="item.icon"></i>
+          <div>{{ item.label }}</div>
+        </a>
+        <ul class="menu-sub">
+          <ng-container *ngFor="let subItem of getVisibleSubItems(item)">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="[subItem.route]" class="menu-link">
+                <div>{{ subItem.label }}</div>
+              </a>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+
+    </ng-container>
+
+    <!-- BOUTON DÉCONNEXION -->
+    <li class="menu-item" style="margin-top: 2rem;">
+      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+        <i class="menu-icon bx bx-log-out"></i>
+        <div>Déconnexion</div>
+      </a>
+    </li>
+  </ul>
+</aside>

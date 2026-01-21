@@ -431,15 +431,12 @@ export class Dashboard implements OnInit, OnDestroy {
    * Logout
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
-
     // 1. Nettoyer le localStorage d'abord
     this.tokenService.logout();
 
     // 2. Appeler l'API de déconnexion (optionnel)
     this.authService.logout().subscribe({
       next: () => {
-        console.log('✅ Déconnexion API réussie');
       },
       error: (error) => {
         console.warn('⚠️ Erreur API déconnexion (ignorée):', error);

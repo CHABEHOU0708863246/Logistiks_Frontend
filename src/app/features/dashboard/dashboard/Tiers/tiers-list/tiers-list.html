@@ -1,315 +1,344 @@
+<!--
+  COMPOSANT : Liste des Tiers
+  DESCRIPTION : Interface principale de gestion des tiers (clients, fournisseurs, partenaires)
+  VERSION : 1.0.0
+  AUTEUR : CHABEHOU AFFERY AUXENCE DELORS
+-->
+
 <div class="layout-wrapper">
-    <!-- SIDEBAR COMPLÈTE -->
-<aside class="layout-menu" id="sidebar">
-  <div class="app-brand">
-    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-    <div>
-      <span class="app-brand-text">Logistiks</span>
-      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+  <!-- =========================================================================== -->
+  <!-- SECTION : SIDEBAR PRINCIPALE (NAVIGATION) -->
+  <!-- =========================================================================== -->
+  <aside class="layout-menu" id="sidebar">
+    <!-- En-tête de la sidebar -->
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistiks</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
     </div>
-  </div>
 
-  <ul class="menu-inner">
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard']" class="menu-link">
-        <i class="menu-icon bx bx-home-circle"></i>
-        <div>Dashboard</div>
-      </a>
-    </li>
+    <!-- Menu de navigation -->
+    <ul class="menu-inner">
+      <!-- Section : Accueil -->
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
 
-    <li class="menu-header">
-      <span>RÉFÉRENTIELS</span>
-    </li>
+      <!-- Section : Référentiels -->
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-group"></i>
-        <div>Tiers</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-            <div>Tous les tiers</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-            <div>Documents à valider</div>
-            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-              {{ dashboardStats.documentsPending }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-            <div>Gestion des documents</div>
-            <span class="badge badge-info">
-              <i class='bx bx-upload'></i>
-              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-            <div>Nouveau tier</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Tiers -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+              <div>Gestion des documents</div>
+              <span class="badge badge-info">
+                <i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-car"></i>
-        <div>Véhicules</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-            <div>Tous les véhicules</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/disponibles']" class="menu-link">
-            <div>Disponibles</div>
-            <span class="badge badge-success">28</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/loues']" class="menu-link">
-            <div>Loués</div>
-            <span class="badge badge-primary">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/maintenance']" class="menu-link">
-            <div>En maintenance</div>
-            <span class="badge badge-warning">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
-            <div>Suivi entretien</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Véhicules -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+              <div>Ajouter vehicule</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
+              <div>Affectations</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
+              <div>Suivi entretien</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/assurances']" class="menu-link">
+              <div>Assurances</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-folder"></i>
-        <div>Documents</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents']" class="menu-link">
-            <div>Tous les documents</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
-            <div>Contrats signés</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
-            <div>Pièces d'identité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-            <div>Factures fournisseurs</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Documents -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents']" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
+              <div>Contrats signés</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
+              <div>Pièces d'identité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-header">
-      <span>CŒUR MÉTIER</span>
-    </li>
+      <!-- Section : Cœur Métier -->
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-file"></i>
-        <div>Contrats</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-            <div>Tous les contrats</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
-            <div>Contrats actifs</div>
-            <span class="badge badge-success">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
-            <div>À expiration</div>
-            <span class="badge badge-warning">3</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-            <div>Nouveau contrat</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Contrats -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
+              <div>Contrats actifs</div>
+              <span class="badge badge-success">12</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
+              <div>À expiration</div>
+              <span class="badge badge-warning">3</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-        <i class="menu-icon bx bx-calendar"></i>
-        <div>Calendrier & Échéances</div>
-      </a>
-    </li>
+      <!-- Item : Calendrier -->
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
 
-    <li class="menu-header">
-      <span>FINANCE & COMPTABILITÉ</span>
-    </li>
+      <!-- Section : Finance & Comptabilité -->
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-credit-card"></i>
-        <div>Comptes</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-            <div>Comptes bancaires</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-            <div>Mobile Money</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-            <div>Soldes & Bilans</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Comptes -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-wallet"></i>
-        <div>Paiements</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-            <div>Tous les paiements</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-            <div>En retard</div><span class="badge badge-danger">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-            <div>En attente</div><span class="badge badge-warning">8</span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Paiements -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+              <div>En retard</div><span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+              <div>En attente</div><span class="badge badge-warning">8</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-header">
-      <span>ADMINISTRATION</span>
-    </li>
+      <!-- Section : Administration -->
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-user"></i>
-        <div>Utilisateurs</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-            <div>Liste utilisateurs</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-            <div>Détail utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-            <div>Formulaire utilisateur</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-            <div>Gestion rôles</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-            <div>Permissions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-            <div>Profil utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-            <div>Sessions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-            <div>Activité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-            <div>Groupes</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Utilisateurs -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+              <div>Liste utilisateurs</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+              <div>Détail utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+              <div>Formulaire utilisateur</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+              <div>Gestion rôles</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+              <div>Permissions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+              <div>Profil utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+              <div>Sessions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+              <div>Activité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+              <div>Groupes</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-cog"></i>
-        <div>Paramétrage</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-            <div>Paramètres généraux</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-            <div>Types de véhicules</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- Sous-section : Paramétrage -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" style="margin-top: 2rem;">
-      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-        <i class="menu-icon bx bx-log-out"></i>
-        <div>Déconnexion</div>
-      </a>
-    </li>
-  </ul>
-</aside>
+      <!-- Item : Déconnexion -->
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+    </ul>
+  </aside>
 
-  <!-- MAIN CONTENT -->
+  <!-- =========================================================================== -->
+  <!-- SECTION : CONTENU PRINCIPAL -->
+  <!-- =========================================================================== -->
   <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
-    <!-- NAVBAR -->
+    <!-- =========================================================== -->
+    <!-- SOUS-SECTION : NAVBAR (EN-TÊTE) -->
+    <!-- =========================================================== -->
     <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
       <div class="d-flex align-items-center">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
           <i class='bx bx-menu'></i>
@@ -317,12 +346,15 @@
         <h3 class="mb-0 ms-3">Gestion des Tiers</h3>
       </div>
 
+      <!-- Menu utilisateur -->
       <ul class="navbar-nav">
-        <!-- User dropdown avec photo dynamique -->
         <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
           <div class="avatar dropdown-toggle">
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar utilisateur dynamique -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
             <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
               {{ getUserInitials() }}
             </div>
@@ -350,10 +382,15 @@
       </ul>
     </nav>
 
-    <!-- CONTENT WRAPPER -->
+    <!-- =========================================================== -->
+    <!-- SOUS-SECTION : CONTENU DE LA PAGE -->
+    <!-- =========================================================== -->
     <div class="content-wrapper">
-      <!-- SECTION STATISTIQUES -->
+      <!-- =========================================================== -->
+      <!-- SECTION : STATISTIQUES -->
+      <!-- =========================================================== -->
       <div class="row mb-4">
+        <!-- Carte : Total Tiers -->
         <div class="col-12 col-md-6 col-lg-3 mb-3">
           <div class="card stat-card">
             <div class="stat-icon primary">
@@ -365,6 +402,8 @@
             </div>
           </div>
         </div>
+
+        <!-- Carte : Tiers Actifs -->
         <div class="col-12 col-md-6 col-lg-3 mb-3">
           <div class="card stat-card">
             <div class="stat-icon success">
@@ -376,6 +415,8 @@
             </div>
           </div>
         </div>
+
+        <!-- Carte : En attente -->
         <div class="col-12 col-md-6 col-lg-3 mb-3">
           <div class="card stat-card">
             <div class="stat-icon warning">
@@ -387,6 +428,8 @@
             </div>
           </div>
         </div>
+
+        <!-- Carte : Tiers Bloqués -->
         <div class="col-12 col-md-6 col-lg-3 mb-3">
           <div class="card stat-card">
             <div class="stat-icon danger">
@@ -400,27 +443,33 @@
         </div>
       </div>
 
-      <!-- SECTION RECHERCHE ET FILTRES -->
+      <!-- =========================================================== -->
+      <!-- SECTION : RECHERCHE ET FILTRES -->
+      <!-- =========================================================== -->
       <div class="card mb-4">
         <div class="card-body">
           <div class="row align-items-center">
+            <!-- Champ de recherche -->
             <div class="col-12 col-md-6 mb-3 mb-md-0">
               <div class="input-group">
                 <span class="input-group-text bg-transparent border-end-0">
                   <i class='bx bx-search'></i>
                 </span>
-                <input type="text" class="form-control border-start-0" [(ngModel)]="searchTerm"
-                  (keyup.enter)="onSearch()" placeholder="Rechercher un tier...">
+                <input type="text"
+                       class="form-control border-start-0"
+                       [(ngModel)]="searchTerm"
+                       (keyup.enter)="onSearch()"
+                       placeholder="Rechercher un tier...">
                 <button class="btn btn-primary" (click)="onSearch()">
                   <i class='bx bx-search me-1'></i> Rechercher
                 </button>
               </div>
             </div>
+
+            <!-- Boutons d'action -->
             <div class="col-12 col-md-6 d-flex justify-content-md-end">
               <div class="d-flex gap-2 flex-wrap">
-                <!-- <button class="btn btn-outline-primary" (click)="exportToExcel()">
-                  <i class='bx bx-export me-1'></i> Exporter
-                </button> -->
+                <!-- Bouton pour afficher/masquer les filtres -->
                 <button class="btn btn-primary" (click)="toggleFiltersSidebar()">
                   <i class='bx bx-filter-alt me-1'></i> Filtres
                 </button>
@@ -430,18 +479,23 @@
         </div>
       </div>
 
-      <!-- FILTRES EN LIGNE -->
+      <!-- =========================================================== -->
+      <!-- SECTION : FILTRES EN LIGNE -->
+      <!-- =========================================================== -->
       <div class="row mb-4" *ngIf="!sidebarVisible">
         <div class="col-12">
           <div class="card">
             <div class="card-body">
               <div class="d-flex flex-wrap gap-3 align-items-center">
+                <!-- Filtres par rôle -->
                 <div class="filter-group">
                   <label class="form-label mb-1">Filtrer par rôle :</label>
                   <div class="d-flex gap-2 flex-wrap">
-                    <button *ngFor="let role of roles" class="btn btn-sm"
-                      [class.btn-primary]="selectedRole === role.value"
-                      [class.btn-outline-primary]="selectedRole !== role.value" (click)="onFilterByRole(role.value)">
+                    <button *ngFor="let role of roles"
+                            class="btn btn-sm"
+                            [class.btn-primary]="selectedRole === role.value"
+                            [class.btn-outline-primary]="selectedRole !== role.value"
+                            (click)="onFilterByRole(role.value)">
                       <i [class]="role.icon + ' me-1'"></i> {{ role.label }}
                     </button>
                     <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByRole()">
@@ -449,13 +503,16 @@
                     </button>
                   </div>
                 </div>
+
+                <!-- Filtres par statut -->
                 <div class="filter-group">
                   <label class="form-label mb-1">Filtrer par statut :</label>
                   <div class="d-flex gap-2 flex-wrap">
-                    <button *ngFor="let status of statuses" class="btn btn-sm"
-                      [class.btn-primary]="selectedStatus === status.value"
-                      [class.btn-outline-primary]="selectedStatus !== status.value"
-                      (click)="onFilterByStatus(status.value)">
+                    <button *ngFor="let status of statuses"
+                            class="btn btn-sm"
+                            [class.btn-primary]="selectedStatus === status.value"
+                            [class.btn-outline-primary]="selectedStatus !== status.value"
+                            (click)="onFilterByStatus(status.value)">
                       <i [class]="status.icon + ' me-1'"></i> {{ status.label }}
                     </button>
                     <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByStatus()">
@@ -469,28 +526,36 @@
         </div>
       </div>
 
-      <!-- SECTION PRINCIPALE -->
+      <!-- =========================================================== -->
+      <!-- SECTION : LISTE DES TIERS -->
+      <!-- =========================================================== -->
       <div class="row">
         <div class="col-12">
           <div class="card">
+            <!-- En-tête de la table -->
             <div class="card-header">
               <h5 class="card-title mb-0">Liste des Tiers</h5>
               <div class="d-flex align-items-center gap-2">
+                <!-- Sélecteur de taille de page -->
                 <div class="form-group mb-0">
-                  <select class="form-select form-select-sm" (change)="onPageSizeChange($event)" style="width: auto;">
+                  <select class="form-select form-select-sm"
+                          (change)="onPageSizeChange($event)"
+                          style="width: auto;">
                     <option *ngFor="let size of pageSizeOptions" [value]="size">
                       {{ size }} par page
                     </option>
                   </select>
                 </div>
+                <!-- Compteur de résultats -->
                 <div class="text-muted fs-sm">
                   {{ pagination.totalCount }} résultats
                 </div>
               </div>
             </div>
 
+            <!-- Corps de la table -->
             <div class="card-body">
-              <!-- LOADING -->
+              <!-- État : Chargement -->
               <div *ngIf="loading" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
                   <span class="visually-hidden">Chargement...</span>
@@ -498,99 +563,154 @@
                 <p class="mt-2">Chargement des tiers...</p>
               </div>
 
-              <!-- ERROR -->
+              <!-- État : Erreur -->
               <div *ngIf="error && !loading" class="alert alert-danger">
                 <i class='bx bx-error-circle me-2'></i> {{ error }}
               </div>
 
-              <!-- TABLE DES TIERS -->
+              <!-- Table des tiers -->
               <div *ngIf="!loading && !error" class="table-responsive">
                 <table class="table table-hover">
                   <thead>
                     <tr>
+                      <!-- Colonne : Numéro d'ordre -->
                       <th style="width: 50px;">#</th>
+
+                      <!-- Colonne : Numéro Tier (triable) -->
                       <th (click)="onSortChange('tierNumber')" style="cursor: pointer;">
-                        Numéro Tier <i class='bx bx-sort' *ngIf="selectedSort !== 'tierNumber'"></i>
+                        Numéro Tier
+                        <!-- Icônes de tri -->
+                        <i class='bx bx-sort' *ngIf="selectedSort !== 'tierNumber'"></i>
                         <i class='bx bx-sort-up' *ngIf="selectedSort === 'tierNumber' && !sortDescending"></i>
                         <i class='bx bx-sort-down' *ngIf="selectedSort === 'tierNumber' && sortDescending"></i>
                       </th>
+
+                      <!-- Colonne : Nom & Prénom (triable) -->
                       <th (click)="onSortChange('lastName')" style="cursor: pointer;">
-                        Nom & Prénom <i class='bx bx-sort' *ngIf="selectedSort !== 'lastName'"></i>
+                        Nom & Prénom
+                        <!-- Icônes de tri -->
+                        <i class='bx bx-sort' *ngIf="selectedSort !== 'lastName'"></i>
                         <i class='bx bx-sort-up' *ngIf="selectedSort === 'lastName' && !sortDescending"></i>
                         <i class='bx bx-sort-down' *ngIf="selectedSort === 'lastName' && sortDescending"></i>
                       </th>
+
+                      <!-- Colonne : Téléphone -->
                       <th>Téléphone</th>
+
+                      <!-- Colonne : Rôles -->
                       <th>Rôles</th>
+
+                      <!-- Colonne : Statut (triable) -->
                       <th (click)="onSortChange('status')" style="cursor: pointer;">
-                        Statut <i class='bx bx-sort' *ngIf="selectedSort !== 'status'"></i>
+                        Statut
+                        <!-- Icônes de tri -->
+                        <i class='bx bx-sort' *ngIf="selectedSort !== 'status'"></i>
                         <i class='bx bx-sort-up' *ngIf="selectedSort === 'status' && !sortDescending"></i>
                         <i class='bx bx-sort-down' *ngIf="selectedSort === 'status' && sortDescending"></i>
                       </th>
+
+                      <!-- Colonne : Documents -->
                       <th>Documents</th>
+
+                      <!-- Colonne : Actions -->
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
+                    <!-- Ligne : Tier (répétée pour chaque tier) -->
                     <tr *ngFor="let tier of tiers; let i = index">
-                      <td class="text-muted">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
+                      <!-- Cellule : Numéro d'ordre -->
+                      <td class="text-muted">
+                        {{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}
+                      </td>
+
+                      <!-- Cellule : Numéro Tier -->
                       <td>
                         <strong>{{ tier.tierNumber }}</strong>
                       </td>
+
+                      <!-- Cellule : Informations du tier -->
                       <td>
                         <div class="d-flex align-items-center">
+                          <!-- Avatar du tier -->
                           <div class="avatar me-3">
                             <div class="avatar-default">
                               {{ getInitialsFromName(tier) }}
                             </div>
                           </div>
+                          <!-- Nom et email -->
                           <div>
                             <div class="fw-semibold">{{ getFullName(tier) }}</div>
                             <small class="text-muted">{{ tier.email }}</small>
                           </div>
                         </div>
                       </td>
+
+                      <!-- Cellule : Téléphone -->
                       <td>
                         {{ formatPhoneNumber(tier.phone) }}
                       </td>
+
+                      <!-- Cellule : Rôles (badges) -->
                       <td>
                         <div class="d-flex flex-wrap gap-1">
-                          <span *ngFor="let role of getActiveRoles(tier)" class="badge"
-                            [ngClass]="getRoleBadgeClass(role)">
+                          <span *ngFor="let role of getActiveRoles(tier)"
+                                class="badge"
+                                [ngClass]="getRoleBadgeClass(role)">
                             {{ getRoleText(role) }}
                           </span>
                         </div>
                       </td>
+
+                      <!-- Cellule : Statut -->
                       <td>
                         <span class="status-badge" [ngClass]="'status-' + getStatusIcon(tier.status)">
                           <i [class]="getStatusIcon(tier.status)"></i>
                           {{ getStatusText(tier.status) }}
                         </span>
                       </td>
+
+                      <!-- Cellule : Documents (icônes d'état) -->
                       <td>
                         <div class="d-flex align-items-center gap-2">
-                          <span *ngIf="hasExpiredDocuments(tier)" class="text-danger" title="Documents expirés">
+                          <!-- Document expiré -->
+                          <span *ngIf="hasExpiredDocuments(tier)"
+                                class="text-danger"
+                                title="Documents expirés">
                             <i class='bx bx-error-circle'></i>
                           </span>
-                          <span *ngIf="canSignContract(tier)" class="text-success" title="Peut signer un contrat">
+                          <!-- Peut signer un contrat -->
+                          <span *ngIf="canSignContract(tier)"
+                                class="text-success"
+                                title="Peut signer un contrat">
                             <i class='bx bx-check-circle'></i>
                           </span>
                         </div>
                       </td>
+
+                      <!-- Cellule : Actions -->
                       <td>
                         <div class="btn-group" role="group">
-                          <!-- <button class="btn btn-sm btn-outline-primary" [routerLink]="['/tiers', tier.id]"
-                            title="Voir détails">
-                            <i class='bx bx-show'></i>
-                          </button> -->
-                          <button class="btn btn-sm btn-outline-danger" (click)="blockTier(tier)" title="Bloquer">
+                          <!-- Bouton : Bloquer -->
+                          <button class="btn btn-sm btn-outline-danger"
+                                  (click)="blockTier(tier)"
+                                  title="Bloquer">
                             <i class='bx bx-block'></i>
                           </button>
+
+                          <!-- Bouton : Valider (si en attente) -->
                           <button *ngIf="tier.status === TierStatus.PendingValidation"
-                            class="btn btn-sm btn-outline-success" (click)="validateTier(tier)" title="Valider">
+                                  class="btn btn-sm btn-outline-success"
+                                  (click)="validateTier(tier)"
+                                  title="Valider">
                             <i class='bx bx-check'></i>
                           </button>
-                          <button *ngIf="tier.status === TierStatus.Blocked" class="btn btn-sm btn-outline-success"
-                            (click)="activateTier(tier)" title="Activer">
+
+                          <!-- Bouton : Activer (si bloqué) -->
+                          <button *ngIf="tier.status === TierStatus.Blocked"
+                                  class="btn btn-sm btn-outline-success"
+                                  (click)="activateTier(tier)"
+                                  title="Activer">
                             <i class='bx bx-power-off'></i>
                           </button>
                         </div>
@@ -600,24 +720,35 @@
                 </table>
               </div>
 
-              <!-- PAGINATION -->
+              <!-- =========================================================== -->
+              <!-- SECTION : PAGINATION -->
+              <!-- =========================================================== -->
               <div *ngIf="!loading && !error && pagination.totalPages > 1"
-                class="d-flex justify-content-between align-items-center mt-4">
+                   class="d-flex justify-content-between align-items-center mt-4">
+                <!-- Informations de pagination -->
                 <div class="text-muted fs-sm">
                   Page {{ pagination.currentPage }} sur {{ pagination.totalPages }}
                   ({{ pagination.totalCount }} tiers)
                 </div>
+
+                <!-- Contrôles de pagination -->
                 <nav>
                   <ul class="pagination mb-0">
+                    <!-- Bouton : Page précédente -->
                     <li class="page-item" [class.disabled]="!pagination.hasPreviousPage">
                       <a class="page-link" (click)="onPageChange(pagination.currentPage - 1)">
                         <i class='bx bx-chevron-left'></i>
                       </a>
                     </li>
-                    <li *ngFor="let page of visiblePages" class="page-item"
-                      [class.active]="page === pagination.currentPage">
+
+                    <!-- Numéros de page -->
+                    <li *ngFor="let page of visiblePages"
+                        class="page-item"
+                        [class.active]="page === pagination.currentPage">
                       <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
                     </li>
+
+                    <!-- Bouton : Page suivante -->
                     <li class="page-item" [class.disabled]="!pagination.hasNextPage">
                       <a class="page-link" (click)="onPageChange(pagination.currentPage + 1)">
                         <i class='bx bx-chevron-right'></i>
@@ -631,5 +762,34 @@
         </div>
       </div>
     </div>
+
+    <!-- =========================================================================== -->
+    <!-- SECTION : COMPOSANTS DE DIALOGUE -->
+    <!-- =========================================================================== -->
+
+    <!-- Dialogue de confirmation standard -->
+    <app-confirm-dialog
+      [title]="confirmDialogTitle"
+      [message]="confirmDialogMessage"
+      [details]="confirmDialogDetails"
+      [visible]="confirmDialogVisible"
+      (confirm)="onConfirmDialogConfirm()"
+      (cancel)="onConfirmDialogCancel()">
+    </app-confirm-dialog>
+
+    <!-- Dialogue de confirmation avec saisie (pour le blocage) -->
+    <app-confirm-dialog-with-input
+      [visible]="showBlockConfirmDialog"
+      [title]="'Blocage du tier'"
+      [message]="'Veuillez indiquer la raison du blocage'"
+      [confirmText]="'Bloquer'"
+      [cancelText]="'Annuler'"
+      [showInput]="true"
+      [inputPlaceholder]="'Raison du blocage...'"
+      [inputRequired]="true"
+      [inputErrorMessage]="'La raison du blocage est obligatoire'"
+      (confirm)="confirmBlockTier($event)"
+      (cancel)="cancelBlockTier()">
+    </app-confirm-dialog-with-input>
   </div>
 </div>

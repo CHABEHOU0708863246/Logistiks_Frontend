@@ -9,6 +9,9 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { CommonModule } from '@angular/common';
+
+// Modèles
 import {
   TierRoleType,
   TierStatus,
@@ -16,51 +19,175 @@ import {
   DocumentType,
 } from '../../../../../core/models/Enums/Logistiks-enums';
 import { Tier } from '../../../../../core/models/Tiers/Tiers';
+import { User } from '../../../../../core/models/Core/Users/Entities/User';
+
+// Services
 import { Auth } from '../../../../../core/services/Auth/auth';
 import { Tiers } from '../../../../../core/services/Tiers/tiers';
 import { Token } from '../../../../../core/services/Token/token';
-import { CommonModule } from '@angular/common';
-import { environment } from '../../../../../../environments/environment.development';
-import { User } from '../../../../../core/models/Core/Users/Entities/User';
 
+// Composants
+import { ConfirmDialog } from "../../../../../core/components/confirm-dialog/confirm-dialog";
+
+// Environnement
+import { environment } from '../../../../../../environments/environment.development';
+
+/**
+ * Composant de gestion des documents manquants des tiers
+ * @class DocumentsManagement
+ * @implements {OnInit, OnDestroy}
+ * @description Interface pour compléter et valider les documents manquants des tiers
+ */
 @Component({
   selector: 'app-documents-management',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, RouterLink, ConfirmDialog],
   templateUrl: './documents-management.html',
   styleUrl: './documents-management.scss',
 })
 export class DocumentsManagement implements OnInit, OnDestroy {
-  // Liste des tiers avec documents manquants
-  tiers: Tier[] = [];
-  selectedTier: Tier | null = null;
+  // ===========================================================================
+  // CONSTANTES ET CONFIGURATION
+  // ===========================================================================
+
+  /** Types de documents disponibles */
   DocumentType = DocumentType;
-  // Date pour affichage
+
+  /** Couleurs pour les avatars générés */
+  private avatarColors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
+
+  // ===========================================================================
+  // DONNÉES ET ÉTATS
+  // ===========================================================================
+
+  /** Liste des tiers avec documents manquants */
+  tiers: Tier[] = [];
+
+  /** Tier sélectionné pour traitement */
+  selectedTier: Tier | null = null;
+
+  /** Dates courantes pour affichage */
   today: Date = new Date();
   now: Date = new Date();
 
-  // Modale de validation de tier
-  showValidationConfirmModal: boolean = false;
-  showConfetti: boolean = false;
-  validatedTier: Tier | null = null;
-
-  // Modale de rejet/blocage
-  showRejectConfirmModal: boolean = false;
-  tierToReject: Tier | null = null;
-
-
-
-  showValidationSuccessModal: boolean = false;
-  validatedTierInfo: { name: string, id: string } | null = null;
-  showValidationErrorModal: boolean = false;
-  validationErrorMessage: string = '';
-
-  showUploadSuccessModal: boolean = false;
-  uploadedDocumentInfo: { tierName: string, documentType: string } | null = null;
-  showUploadErrorModal: boolean = false;
-  uploadErrorMessage: string = '';
-
+  /** Indicateur de vue mobile */
   isMobileView: boolean = false;
 
+  // ===========================================================================
+  // FORMULAIRES
+  // ===========================================================================
+
+  /** Formulaire d'upload de document */
+  uploadForm: FormGroup;
+
+  /** Formulaire de recherche */
+  searchForm: FormGroup;
+
+  /** Formulaire de filtres */
+  filterForm: FormGroup;
+
+  /** Filtres actuellement appliqués */
+  activeFilters = {
+    role: null as TierRoleType | null,
+    status: TierStatus.PendingValidation,
+    searchTerm: '',
+  };
+
+  // ===========================================================================
+  // ÉTATS D'INTERFACE
+  // ===========================================================================
+
+  /** État de chargement */
+  isLoading: boolean = false;
+
+  /** État d'affichage du modal d'upload */
+  showUploadModal: boolean = false;
+
+  /** État d'affichage du panneau de validation */
+  showValidationPanel: boolean = false;
+
+  /** État d'upload en cours */
+  isUploading: boolean = false;
+
+  /** Progression de l'upload */
+  uploadProgress: number = 0;
+
+  /** État d'affichage du menu utilisateur */
+  showUserMenu: boolean = false;
+
+  /** État de réduction de la sidebar */
+  isSidebarCollapsed: boolean = false;
+
+  // ===========================================================================
+  // FICHIERS ET UPLOAD
+  // ===========================================================================
+
+  /** Fichier sélectionné pour upload */
+  selectedFile: File | null = null;
+
+  // ===========================================================================
+  // DOCUMENTS EN TRAITEMENT
+  // ===========================================================================
+
+  /** Liste des IDs des documents en cours de traitement */
+  documentsBeingProcessed: string[] = [];
+
+  // ===========================================================================
+  // DIALOGUES ET MODALES
+  // ===========================================================================
+
+  /** État d'affichage du dialogue de confirmation */
+  showConfirmDialog = false;
+
+  /** Configuration du dialogue de confirmation */
+  confirmDialogConfig = {
+    title: '',
+    message: '',
+    details: '',
+    confirmText: 'Confirmer',
+    cancelText: 'Annuler',
+  };
+
+  /** Action à confirmer */
+  private confirmAction: (() => void) | null = null;
+
+  /** État d'affichage du modal de succès d'upload */
+  showUploadSuccessModal: boolean = false;
+
+  /** État d'affichage du modal d'erreur d'upload */
+  showUploadErrorModal: boolean = false;
+
+  /** État d'affichage du modal de succès de validation */
+  showValidationSuccessModal: boolean = false;
+
+  /** État d'affichage du modal d'erreur de validation */
+  showValidationErrorModal: boolean = false;
+
+  /** Informations sur le document uploadé */
+  uploadedDocumentInfo: { tierName: string, documentType: string } | null = null;
+
+  /** Informations sur le tier validé */
+  validatedTierInfo: { name: string, id: string } | null = null;
+
+  /** Message d'erreur d'upload */
+  uploadErrorMessage: string = '';
+
+  /** Message d'erreur de validation */
+  validationErrorMessage: string = '';
+
+  // ===========================================================================
+  // STATISTIQUES
+  // ===========================================================================
+
+  /** Statistiques des documents */
+  stats = {
+    totalTiers: 0,
+    tiersMissingDocuments: 0,
+    documentsRequired: 0,
+    documentsUploaded: 0,
+    documentsValidated: 0,
+  };
+
+  /** Statistiques du tableau de bord */
   dashboardStats = {
     totalTiers: 0,
     activeTiers: 0,
@@ -73,51 +200,25 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     totalSuppliers: 0,
   };
 
-  // États d'interface
-  isLoading: boolean = false;
-  showUploadModal: boolean = false;
-  showValidationPanel: boolean = false;
-
-  // Formulaires
-  uploadForm: FormGroup;
-  searchForm: FormGroup;
-
-  // Upload
-  selectedFile: File | null = null;
-  uploadProgress: number = 0;
-  isUploading: boolean = false;
-
-  // Filtres
-  filterForm: FormGroup;
-  activeFilters = {
-    role: null as TierRoleType | null,
-    status: TierStatus.PendingValidation,
-    searchTerm: '',
-  };
-
-  // Documents en cours de traitement
-  documentsBeingProcessed: string[] = [];
-
-  // Statistiques
-  stats = {
-    totalTiers: 0,
-    tiersMissingDocuments: 0,
-    documentsRequired: 0,
-    documentsUploaded: 0,
-    documentsValidated: 0,
-  };
+  /** Service de notification toast (non implémenté) */
   showToast: any;
 
+  // ===========================================================================
+  // GESTION UTILISATEUR
+  // ===========================================================================
 
-
-  // Gestion utilisateur
+  /** Utilisateur connecté */
   currentUser: any = null;
-  userName: string = 'Utilisateur';
-  userPhotoUrl: string = '';
-  showUserMenu: boolean = false;
 
-  // Gestion sidebar
-  isSidebarCollapsed: boolean = false;
+  /** Nom d'affichage de l'utilisateur */
+  userName: string = 'Utilisateur';
+
+  /** URL de la photo de l'utilisateur */
+  userPhotoUrl: string = '';
+
+  // ===========================================================================
+  // SUBJECTS ET SERVICES
+  // ===========================================================================
 
   private destroy$ = new Subject<void>();
 
@@ -129,22 +230,18 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     private fb: FormBuilder
   ) {
     // Initialisation des formulaires
-    this.uploadForm = this.fb.group({
-      documentType: [null, Validators.required],
-      expiryDate: [''],
-      description: ['', Validators.maxLength(500)],
-    });
-
-    this.searchForm = this.fb.group({
-      searchTerm: [''],
-    });
-
-    this.filterForm = this.fb.group({
-      role: [null],
-      status: [TierStatus.PendingValidation],
-    });
+    this.uploadForm = this.createUploadForm();
+    this.searchForm = this.createSearchForm();
+    this.filterForm = this.createFilterForm();
   }
 
+  // ===========================================================================
+  // LIFECYCLE HOOKS
+  // ===========================================================================
+
+  /**
+   * Initialisation du composant
+   */
   ngOnInit(): void {
     this.loadCurrentUser();
     this.checkToken();
@@ -152,21 +249,69 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     this.loadStats();
   }
 
+  /**
+   * Nettoyage à la destruction du composant
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-    toggleMenu(event: MouseEvent): void {
-    const element = event.currentTarget as HTMLElement;
-    if (element && element.parentElement) {
-      element.parentElement.classList.toggle('open');
-    }
+  // ===========================================================================
+  // INITIALISATION DES FORMULAIRES
+  // ===========================================================================
+
+  /**
+   * Crée le formulaire d'upload
+   */
+  private createUploadForm(): FormGroup {
+    return this.fb.group({
+      documentType: [null, Validators.required],
+      expiryDate: [''],
+      description: ['', Validators.maxLength(500)],
+    });
   }
 
   /**
- * Vérifier le token et rediriger si nécessaire
- */
+   * Crée le formulaire de recherche
+   */
+  private createSearchForm(): FormGroup {
+    return this.fb.group({
+      searchTerm: [''],
+    });
+  }
+
+  /**
+   * Crée le formulaire de filtres
+   */
+  private createFilterForm(): FormGroup {
+    return this.fb.group({
+      role: [null],
+      status: [TierStatus.PendingValidation],
+    });
+  }
+
+  /**
+   * Getter pour le contrôle de rôle
+   */
+  get roleControl(): FormControl {
+    return this.filterForm.get('role') as FormControl;
+  }
+
+  /**
+   * Getter pour le contrôle de statut
+   */
+  get statusControl(): FormControl {
+    return this.filterForm.get('status') as FormControl;
+  }
+
+  // ===========================================================================
+  // GESTION D'AUTHENTIFICATION
+  // ===========================================================================
+
+  /**
+   * Vérifie le token et redirige si nécessaire
+   */
   checkToken(): void {
     const token = this.tokenService.getToken();
     if (!token) {
@@ -174,8 +319,12 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     }
   }
 
+  // ===========================================================================
+  // CHARGEMENT DES DONNÉES
+  // ===========================================================================
+
   /**
-   * Charger les tiers avec documents manquants
+   * Charge les tiers avec documents manquants
    */
   loadTiersToComplete(): void {
     this.isLoading = true;
@@ -208,7 +357,31 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
-   * Vérifier si un tier a des documents manquants
+   * Charge les statistiques globales
+   */
+  loadStats(): void {
+    this.tiersService
+      .getTierStatistics()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (stats) => {
+          // Mettre à jour avec les stats réelles
+          // À implémenter selon la structure de retour du service
+        },
+        error: (error) => {
+          console.error('Erreur chargement stats:', error);
+        },
+      });
+  }
+
+  // ===========================================================================
+  // VÉRIFICATION DES DOCUMENTS
+  // ===========================================================================
+
+  /**
+   * Vérifie si un tier a des documents manquants
+   * @param tier - Tier à vérifier
+   * @returns True si le tier a des documents manquants
    */
   hasMissingDocuments(tier: Tier): boolean {
     if (!tier.roles || tier.roles.length === 0) return false;
@@ -234,7 +407,9 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtenir les documents requis pour un tier selon ses rôles
+   * Obtient les documents requis pour un tier selon ses rôles
+   * @param tier - Tier à analyser
+   * @returns Liste des documents requis
    */
   getRequiredDocumentsForTier(tier: Tier): { type: string; label: string }[] {
     const required: { type: string; label: string }[] = [];
@@ -244,16 +419,16 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     // ClientLivreur
     if (tier.roles.some((r) => r.roleType === TierRoleType.ClientLivreur && r.isActive)) {
       required.push(
-        { type: String(DocumentType.IdentityCard), label: 'CNI/Passeport' }, // IdentityCard = 1
-        { type: String(DocumentType.DriverLicense), label: 'Permis de conduire' } // DriverLicense = 2
+        { type: String(DocumentType.IdentityCard), label: 'CNI/Passeport' },
+        { type: String(DocumentType.DriverLicense), label: 'Permis de conduire' }
       );
     }
 
     // Supplier
     if (tier.roles.some((r) => r.roleType === TierRoleType.Supplier && r.isActive)) {
       required.push(
-        { type: String(DocumentType.IdentityCard), label: 'CNI/Passeport' }, // IdentityCard = 1
-        { type: String(DocumentType.BusinessLicense), label: 'Licence commerciale' } // BusinessLicense = 9
+        { type: String(DocumentType.IdentityCard), label: 'CNI/Passeport' },
+        { type: String(DocumentType.BusinessLicense), label: 'Licence commerciale' }
       );
     }
 
@@ -261,7 +436,9 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtenir les documents manquants pour un tier
+   * Obtient les documents manquants pour un tier
+   * @param tier - Tier à analyser
+   * @returns Liste des documents manquants
    */
   getMissingDocuments(tier: Tier): { type: string, label: string }[] {
     const required = this.getRequiredDocumentsForTier(tier);
@@ -282,19 +459,10 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     return missing;
   }
 
-
-
-
-
-  get roleControl(): FormControl {
-    return this.filterForm.get('role') as FormControl;
-  }
-
-  get statusControl(): FormControl {
-    return this.filterForm.get('status') as FormControl;
-  }
   /**
-   * Obtenir les documents existants avec statut
+   * Obtient les documents existants avec leurs statuts
+   * @param tier - Tier à analyser
+   * @returns Liste des documents avec statuts
    */
   getExistingDocumentsWithStatus(tier: Tier): any[] {
     if (!tier.documents) return [];
@@ -307,8 +475,13 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     }));
   }
 
+  // ===========================================================================
+  // GESTION DES DOCUMENTS
+  // ===========================================================================
+
   /**
-   * Sélectionner un tier pour traitement
+   * Sélectionne un tier pour traitement
+   * @param tier - Tier à sélectionner
    */
   selectTier(tier: Tier): void {
     this.selectedTier = tier;
@@ -318,7 +491,8 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
-   * Ouvrir le panneau de validation des documents
+   * Ouvre le panneau de validation des documents
+   * @param tier - Tier à valider
    */
   openValidationPanel(tier: Tier): void {
     this.selectedTier = tier;
@@ -326,7 +500,8 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
-   * Gérer la sélection de fichier
+   * Gère la sélection de fichier
+   * @param event - Événement de sélection de fichier
    */
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
@@ -351,29 +526,20 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
- * Uploader un document pour le tier sélectionné - CORRIGÉ
- */
+   * Upload un document pour le tier sélectionné
+   */
   uploadDocument(): void {
     if (!this.selectedTier || !this.selectedFile || !this.uploadForm.valid) {
-      // Utiliser un toast au lieu de alert()
-      this.showToast('error', 'Veuillez sélectionner un fichier et un type de document');
+      // Note: showToast n'est pas implémenté dans ce composant
+      console.error('Veuillez sélectionner un fichier et un type de document');
       return;
     }
 
     this.isUploading = true;
     this.uploadProgress = 0;
 
-    const formData = new FormData();
-    formData.append('File', this.selectedFile);
-
     const documentTypeValue = this.uploadForm.get('documentType')?.value;
-    formData.append('Type', String(documentTypeValue));
-
     const expiryDate = this.uploadForm.get('expiryDate')?.value;
-    if (expiryDate) {
-      const date = new Date(expiryDate);
-      formData.append('ExpiryDate', date.toISOString());
-    }
 
     this.tiersService.uploadDocument(
       this.selectedTier.id,
@@ -414,34 +580,10 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     });
   }
 
-  // Méthodes pour fermer les modales
-  closeUploadSuccessModal(): void {
-    this.showUploadSuccessModal = false;
-    this.uploadedDocumentInfo = null;
-  }
-
-  closeUploadErrorModal(): void {
-    this.showUploadErrorModal = false;
-    this.uploadErrorMessage = '';
-  }
-
-
-
   /**
-   * Suggérer la validation du tier
-   */
-  suggestValidation(tier: Tier): void {
-    if (
-      confirm(
-        `${tier.firstName} ${tier.lastName} a maintenant tous ses documents. Souhaitez-vous valider ce tier maintenant ?`
-      )
-    ) {
-      this.validateTier(tier.id);
-    }
-  }
-
-  /**
-   * Valider un document spécifique
+   * Valide un document spécifique
+   * @param tierId - ID du tier
+   * @param documentId - ID du document
    */
   validateDocument(tierId: string, documentId: string): void {
     this.documentsBeingProcessed.push(documentId);
@@ -467,60 +609,168 @@ export class DocumentsManagement implements OnInit, OnDestroy {
       });
   }
 
+  // ===========================================================================
+  // GESTION DES DIALOGUES DE CONFIRMATION
+  // ===========================================================================
+
   /**
-   * Valider un tier (changer son statut à Actif)
+   * Ouvre un dialogue de confirmation
+   * @param config - Configuration du dialogue
+   * @param action - Action à exécuter sur confirmation
+   */
+  openConfirmDialog(
+    config: {
+      title: string;
+      message: string;
+      details?: string;
+      confirmText?: string;
+      cancelText?: string;
+    },
+    action: () => void
+  ): void {
+    this.confirmDialogConfig = {
+      title: config.title,
+      message: config.message,
+      details: config.details || '',
+      confirmText: config.confirmText || 'Confirmer',
+      cancelText: config.cancelText || 'Annuler',
+    };
+
+    this.confirmAction = action;
+    this.showConfirmDialog = true;
+  }
+
+  /**
+   * Confirme l'action du dialogue
+   */
+  onConfirmDialog(): void {
+    if (this.confirmAction) {
+      this.confirmAction();
+    }
+    this.resetConfirmDialog();
+  }
+
+  /**
+   * Annule l'action du dialogue
+   */
+  onCancelDialog(): void {
+    this.resetConfirmDialog();
+  }
+
+  /**
+   * Réinitialise le dialogue de confirmation
+   */
+  private resetConfirmDialog(): void {
+    this.showConfirmDialog = false;
+    this.confirmAction = null;
+  }
+
+  // ===========================================================================
+  // VALIDATION DES TIERS
+  // ===========================================================================
+
+  /**
+   * Suggère la validation d'un tier
+   * @param tier - Tier à suggérer
+   */
+  suggestValidation(tier: Tier): void {
+    this.openConfirmDialog(
+      {
+        title: 'Documents complets',
+        message: `${tier.firstName} ${tier.lastName} a maintenant tous ses documents.`,
+        details: 'Souhaitez-vous valider ce tier maintenant ?',
+        confirmText: 'Oui, valider',
+        cancelText: 'Plus tard'
+      },
+      () => this.validateTier(tier.id)
+    );
+  }
+
+  /**
+   * Valide un tier (change son statut à Actif)
+   * @param tierId - ID du tier à valider
    */
   validateTier(tierId: string): void {
     const tier = this.tiers.find(t => t.id === tierId);
     if (!tier) return;
 
-    if (confirm(`Confirmez-vous la validation de ${tier.firstName} ${tier.lastName} ?`)) {
-      this.tiersService
-        .validateTier(tierId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            if (response.success) {
-              // Afficher le popup de succès au lieu de alert()
-              this.validatedTierInfo = {
-                name: `${tier.firstName} ${tier.lastName}`,
-                id: tier.tierNumber || tierId
-              };
-              this.showValidationSuccessModal = true;
-
-              // Recharger les données après un délai
-              setTimeout(() => {
+    this.openConfirmDialog(
+      {
+        title: 'Validation du tier',
+        message: `Confirmez-vous la validation de ${tier.firstName} ${tier.lastName} ?`,
+        details: 'Cette action activera définitivement ce compte.',
+        confirmText: 'Valider',
+        cancelText: 'Annuler'
+      },
+      () => {
+        this.tiersService
+          .validateTier(tierId)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.validatedTierInfo = {
+                  name: `${tier.firstName} ${tier.lastName}`,
+                  id: tier.tierNumber || tierId
+                };
+                this.showValidationSuccessModal = true;
                 this.loadTiersToComplete();
-              }, 1500);
-            } else {
-              this.validationErrorMessage = response.message || 'Erreur lors de la validation';
+              } else {
+                this.validationErrorMessage = response.message;
+                this.showValidationErrorModal = true;
+              }
+            },
+            error: (error) => {
+              this.validationErrorMessage = error.message;
               this.showValidationErrorModal = true;
             }
-          },
-          error: (error) => {
-            console.error('Erreur validation tier:', error);
-            this.validationErrorMessage = error.message || 'Erreur lors de la validation';
-            this.showValidationErrorModal = true;
-          },
-        });
-    }
+          });
+      }
+    );
+  }
+
+  // ===========================================================================
+  // GESTION DES MODALES
+  // ===========================================================================
+
+  /**
+   * Ferme le modal de succès d'upload
+   */
+  closeUploadSuccessModal(): void {
+    this.showUploadSuccessModal = false;
+    this.uploadedDocumentInfo = null;
   }
 
   /**
-   * Fermer les modales de validation
+   * Ferme le modal d'erreur d'upload
+   */
+  closeUploadErrorModal(): void {
+    this.showUploadErrorModal = false;
+    this.uploadErrorMessage = '';
+  }
+
+  /**
+   * Ferme le modal de succès de validation
    */
   closeValidationSuccessModal(): void {
     this.showValidationSuccessModal = false;
     this.validatedTierInfo = null;
   }
 
+  /**
+   * Ferme le modal d'erreur de validation
+   */
   closeValidationErrorModal(): void {
     this.showValidationErrorModal = false;
     this.validationErrorMessage = '';
   }
 
+  // ===========================================================================
+  // CALCUL DES STATISTIQUES
+  // ===========================================================================
+
   /**
-   * Calculer les statistiques
+   * Calcule les statistiques des documents
    */
   calculateStats(): void {
     this.stats.totalTiers = this.tiers.length;
@@ -545,39 +795,47 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     this.stats.documentsValidated = validated;
   }
 
-  /**
-   * Charger les statistiques globales
-   */
-  loadStats(): void {
-    this.tiersService
-      .getTierStatistics()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (stats) => {
-          // Mettre à jour avec les stats réelles
-        },
-        error: (error) => {
-          console.error('Erreur chargement stats:', error);
-        },
-      });
-  }
+  // ===========================================================================
+  // UTILITAIRES DE TRAITEMENT
+  // ===========================================================================
 
   /**
-   * Retirer un document de la liste de traitement
+   * Retire un document de la liste de traitement
+   * @param documentId - ID du document à retirer
    */
   removeFromProcessing(documentId: string): void {
     this.documentsBeingProcessed = this.documentsBeingProcessed.filter((id) => id !== documentId);
   }
 
   /**
-   * Naviguer vers la page de détail du tier
+   * Vérifie si un document est en cours de traitement
+   * @param documentId - ID du document à vérifier
+   * @returns True si le document est en cours de traitement
+   */
+  isDocumentBeingProcessed(documentId: string): boolean {
+    return this.documentsBeingProcessed.includes(documentId);
+  }
+
+  // ===========================================================================
+  // NAVIGATION
+  // ===========================================================================
+
+  /**
+   * Navigue vers la page de détail d'un tier
+   * @param tierId - ID du tier
    */
   goToTierDetail(tierId: string): void {
     this.router.navigate(['/dashboard/tiers', tierId]);
   }
 
+  // ===========================================================================
+  // UTILITAIRES D'AFFICHAGE
+  // ===========================================================================
+
   /**
-   * Obtenir le libellé du statut du document
+   * Obtient le libellé du statut d'un document
+   * @param status - Statut du document
+   * @returns Libellé du statut
    */
   getDocumentStatusLabel(status: DocumentStatus): string {
     switch (status) {
@@ -595,7 +853,9 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtenir la classe CSS du statut du document
+   * Obtient la classe CSS du statut d'un document
+   * @param status - Statut du document
+   * @returns Classe CSS
    */
   getDocumentStatusClass(status: DocumentStatus): string {
     switch (status) {
@@ -613,8 +873,10 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   }
 
   /**
- * Obtenir le libellé du type de document
- */
+   * Obtient le libellé du type d'un document
+   * @param type - Type de document
+   * @returns Libellé du type
+   */
   getDocumentTypeLabel(type: DocumentType): string {
     switch (type) {
       case DocumentType.IdentityCard:
@@ -642,6 +904,22 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     }
   }
 
+  // ===========================================================================
+  // GESTION DE L'INTERFACE UTILISATEUR
+  // ===========================================================================
+
+  /**
+   * Basculer l'affichage d'un menu déroulant
+   * @param event - Événement de clic
+   */
+  toggleMenu(event: MouseEvent): void {
+    const element = event.currentTarget as HTMLElement;
+    element?.parentElement?.classList.toggle('open');
+  }
+
+  /**
+   * Basculer l'état de la sidebar
+   */
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
 
@@ -663,19 +941,20 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Basculer l'affichage du menu utilisateur
+   */
   toggleUserMenu(): void {
     this.showUserMenu = !this.showUserMenu;
   }
 
+  // ===========================================================================
+  // GESTION UTILISATEUR
+  // ===========================================================================
+
   /**
-   * Vérifier si un document est en cours de traitement
+   * Charge l'utilisateur connecté
    */
-  isDocumentBeingProcessed(documentId: string): boolean {
-    return this.documentsBeingProcessed.includes(documentId);
-  }
-
-  // === GESTION UTILISATEUR ===
-
   loadCurrentUser(): void {
     this.authService
       .getCurrentUser()
@@ -697,11 +976,19 @@ export class DocumentsManagement implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Définit un utilisateur par défaut
+   */
   private setDefaultUser(): void {
     this.userName = 'Utilisateur Logistiks';
     this.userPhotoUrl = this.generateAvatarUrl({ firstName: 'Utilisateur' } as User);
   }
 
+  /**
+   * Formate le nom d'utilisateur
+   * @param user - Utilisateur
+   * @returns Nom formaté
+   */
   formatUserName(user: any): string {
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
@@ -715,10 +1002,14 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     return 'Utilisateur Logistiks';
   }
 
+  /**
+   * Obtient l'URL de la photo de l'utilisateur
+   * @param user - Utilisateur
+   * @returns URL de la photo
+   */
   getUserPhotoUrl(user: User): string {
-    // Si photoUrl est présent et c'est un ID MongoDB
+    // Si photoUrl est un ID MongoDB (24 caractères)
     if (user.photoUrl && user.photoUrl.length === 24) {
-      // URL CORRECTE pour récupérer la photo
       return `${environment.apiUrl}/api/User/photo/${user.photoUrl}`;
     }
 
@@ -731,30 +1022,43 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     return this.generateAvatarUrl(user);
   }
 
+  /**
+   * Génère un avatar URL
+   * @param user - Utilisateur
+   * @returns URL de l'avatar généré
+   */
   generateAvatarUrl(user: User): string {
     const name = this.formatUserName(user);
-    const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
-    const colorIndex = name.length % colors.length;
+    const colorIndex = name.length % this.avatarColors.length;
 
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]
-      }&color=fff&size=128`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${this.avatarColors[colorIndex]}&color=fff&size=128`;
   }
 
+  /**
+   * Obtient les initiales de l'utilisateur
+   * @returns Initiales de l'utilisateur
+   */
   getUserInitials(): string {
-    const name = this.userName;
-    const parts = name.split(' ');
+    const parts = this.userName.split(' ');
     if (parts.length >= 2) {
       return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
     }
-    return name.charAt(0).toUpperCase();
+    return this.userName.charAt(0).toUpperCase();
   }
 
+  /**
+   * Obtient l'URL d'avatar par défaut
+   * @returns URL de l'avatar par défaut
+   */
   getDefaultAvatar(): string {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
       this.userName
     )}&background=696cff&color=fff&size=128`;
   }
 
+  /**
+   * Déconnecte l'utilisateur
+   */
   logout(): void {
     console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();

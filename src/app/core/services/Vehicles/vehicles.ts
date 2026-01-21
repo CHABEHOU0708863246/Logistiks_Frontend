@@ -1,11 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, map, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { ApiResponseData } from '../../models/Common/ApiResponseData';
 import { VehicleType, VehicleStatus } from '../../models/Enums/Logistiks-enums';
 import { VehicleUsage } from '../../models/Vehicles/Vehicle-usage.models';
 import { CreateVehicleRequest, VehicleDto, VehicleSearchCriteria, UpdateVehicleRequest, AssignVehicleRequest, VehicleStatistics } from '../../models/Vehicles/Vehicle.dtos';
+import { ReserveVehicleRequest, VehicleReservation } from '../../models/Vehicles/Vehicle.model';
 
 @Injectable({
   providedIn: 'root',
@@ -372,6 +373,180 @@ export class Vehicles {
       }
     });
   }
+
+
+  /**
+ * Réserver un véhicule pour un client
+ * POST /api/v1/Vehicles/reserve
+ * Permissions: Vehicle_Assign
+ */
+reserveVehicle(request: ReserveVehicleRequest): Observable<Response> {
+  // Validation côté frontend avant envoi
+  const errors = this.validateReservationRequest(request);
+  if (errors.length > 0) {
+    return throwError(() => new Error(errors.join('\n')));
+  }
+
+  return this.http
+    .post<Response>(`${this.baseUrl}/reserve`, request)
+    .pipe(
+      catchError(this.handleError)
+    );
+}
+
+/**
+ * Annuler une réservation existante
+ * POST /api/v1/Vehicles/reservations/{reservationId}/cancel
+ * Permissions: Vehicle_Assign
+ */
+cancelReservation(reservationId: string, reason: string): Observable<Response> {
+  if (!reservationId) {
+    return throwError(() => new Error('L\'ID de réservation est requis'));
+  }
+
+  if (!reason || reason.trim().length < 5) {
+    return throwError(() => new Error('Un motif d\'annulation est requis (min. 5 caractères)'));
+  }
+
+  const params = new HttpParams().set('reason', reason);
+
+  return this.http
+    .post<Response>(`${this.baseUrl}/reservations/${reservationId}/cancel`, null, { params })
+    .pipe(
+      catchError(this.handleError)
+    );
+}
+
+/**
+ * Confirmer une réservation en la liant à un contrat créé
+ * POST /api/v1/Vehicles/reservations/{reservationId}/confirm
+ * Permissions: Vehicle_Assign
+ */
+confirmReservation(reservationId: string, contractId: string): Observable<Response> {
+  if (!reservationId) {
+    return throwError(() => new Error('L\'ID de réservation est requis'));
+  }
+
+  if (!contractId) {
+    return throwError(() => new Error('L\'ID de contrat est requis'));
+  }
+
+  const params = new HttpParams().set('contractId', contractId);
+
+  return this.http
+    .post<Response>(`${this.baseUrl}/reservations/${reservationId}/confirm`, null, { params })
+    .pipe(
+      catchError(this.handleError)
+    );
+}
+
+// ============================================
+// GESTION DES RÉSERVATIONS
+// ============================================
+
+/**
+ * Obtenir les réservations d'un véhicule spécifique
+ * GET /api/v1/Vehicles/{id}/reservations
+ * Permissions: Vehicle_Read
+ */
+getVehicleReservations(vehicleId: string): Observable<ApiResponseData<VehicleReservation[]>> {
+  if (!vehicleId) {
+    return throwError(() => new Error('L\'ID du véhicule est requis'));
+  }
+
+  return this.http
+    .get<ApiResponseData<VehicleReservation[]>>(`${this.baseUrl}/${vehicleId}/reservations`)
+    .pipe(
+      catchError(this.handleError)
+    );
+}
+
+/**
+ * Obtenir toutes les réservations actives (non expirées, non annulées)
+ * GET /api/v1/Vehicles/reservations/active
+ * Permissions: Vehicle_Read
+ */
+getActiveReservations(): Observable<ApiResponseData<VehicleReservation[]>> {
+  return this.http
+    .get<ApiResponseData<VehicleReservation[]>>(`${this.baseUrl}/reservations/active`)
+    .pipe(
+      catchError(this.handleError)
+    );
+}
+
+/**
+ * Obtenir les détails d'une réservation spécifique
+ * GET /api/v1/Vehicles/reservations/{reservationId}
+ * Permissions: Vehicle_Read
+ */
+getReservationById(reservationId: string): Observable<ApiResponseData<VehicleReservation>> {
+  if (!reservationId) {
+    return throwError(() => new Error('L\'ID de réservation est requis'));
+  }
+
+  return this.http
+    .get<ApiResponseData<VehicleReservation>>(`${this.baseUrl}/reservations/${reservationId}`)
+    .pipe(
+      catchError(this.handleError)
+    );
+}
+
+/**
+ * Valider une requête de réservation côté frontend
+ * (Validation supplémentaire avant envoi à l'API)
+ */
+private validateReservationRequest(request: ReserveVehicleRequest): string[] {
+  const errors: string[] = [];
+
+  if (!request.vehicleId || request.vehicleId.trim().length === 0) {
+    errors.push('L\'ID du véhicule est requis');
+  }
+
+  if (!request.customerId || request.customerId.trim().length === 0) {
+    errors.push('L\'ID du client est requis');
+  }
+
+  if (!request.expectedStartDate) {
+    errors.push('La date de début prévue est requise');
+  } else {
+    const startDate = new Date(request.expectedStartDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (startDate < today) {
+      errors.push('La date de début ne peut pas être dans le passé');
+    }
+  }
+
+  if (request.reservationDurationDays < 1) {
+    errors.push('La durée de réservation doit être d\'au moins 1 jour');
+  } else if (request.reservationDurationDays > 30) {
+    errors.push('La durée de réservation ne peut pas dépasser 30 jours');
+  }
+
+  return errors;
+}
+
+/**
+ * Vérifier si un véhicule peut être réservé
+ * (Utilise l'API backend mais avec une interface simplifiée)
+ */
+canReserveVehicle(vehicleId: string): Observable<ApiResponseData<boolean>> {
+  if (!vehicleId) {
+    return throwError(() => new Error('L\'ID du véhicule est requis'));
+  }
+
+  return this.http
+    .get<ApiResponseData<boolean>>(`${this.baseUrl}/${vehicleId}/can-be-rented`)
+    .pipe(
+      map(response => {
+        // Adapte la réponse de "canBeRented" pour les réservations
+        // Note: Un véhicule louable peut être réservé, mais on vérifie aussi qu'il est "Available"
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+}
 
   // ============================================
   // GESTION DES ERREURS

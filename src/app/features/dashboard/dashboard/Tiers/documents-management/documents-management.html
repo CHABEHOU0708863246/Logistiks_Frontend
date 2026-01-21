@@ -1,806 +1,900 @@
+<!--
+  COMPOSANT : Gestion des Documents Manquants des Tiers
+  DESCRIPTION : Interface pour compléter les documents manquants des tiers en attente de validation
+  VERSION : 1.0.0
+  AUTEUR : CHABEHOU AFFERY AUXENCE DELORS
+-->
+
 <div class="layout-wrapper">
   <div class="layout-container">
-    <!-- SIDEBAR COMPLÈTE -->
-<aside class="layout-menu" id="sidebar">
-  <div class="app-brand">
-    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-    <div>
-      <span class="app-brand-text">Logistiks</span>
-      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
-    </div>
-  </div>
-
-  <ul class="menu-inner">
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard']" class="menu-link">
-        <i class="menu-icon bx bx-home-circle"></i>
-        <div>Dashboard</div>
-      </a>
-    </li>
-
-    <li class="menu-header">
-      <span>RÉFÉRENTIELS</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-group"></i>
-        <div>Tiers</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-            <div>Tous les tiers</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-            <div>Documents à valider</div>
-            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-              {{ dashboardStats.documentsPending }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-            <div>Gestion des documents</div>
-            <span class="badge badge-info">
-              <i class='bx bx-upload'></i>
-              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-            <div>Nouveau tier</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-car"></i>
-        <div>Véhicules</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-            <div>Tous les véhicules</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/disponibles']" class="menu-link">
-            <div>Disponibles</div>
-            <span class="badge badge-success">28</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/loues']" class="menu-link">
-            <div>Loués</div>
-            <span class="badge badge-primary">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/maintenance']" class="menu-link">
-            <div>En maintenance</div>
-            <span class="badge badge-warning">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
-            <div>Suivi entretien</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-folder"></i>
-        <div>Documents</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents']" class="menu-link">
-            <div>Tous les documents</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
-            <div>Contrats signés</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
-            <div>Pièces d'identité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-            <div>Factures fournisseurs</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-header">
-      <span>CŒUR MÉTIER</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-file"></i>
-        <div>Contrats</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-            <div>Tous les contrats</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
-            <div>Contrats actifs</div>
-            <span class="badge badge-success">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
-            <div>À expiration</div>
-            <span class="badge badge-warning">3</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-            <div>Nouveau contrat</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-        <i class="menu-icon bx bx-calendar"></i>
-        <div>Calendrier & Échéances</div>
-      </a>
-    </li>
-
-    <li class="menu-header">
-      <span>FINANCE & COMPTABILITÉ</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-credit-card"></i>
-        <div>Comptes</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-            <div>Comptes bancaires</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-            <div>Mobile Money</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-            <div>Soldes & Bilans</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-wallet"></i>
-        <div>Paiements</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-            <div>Tous les paiements</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-            <div>En retard</div><span class="badge badge-danger">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-            <div>En attente</div><span class="badge badge-warning">8</span>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-header">
-      <span>ADMINISTRATION</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-user"></i>
-        <div>Utilisateurs</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-            <div>Liste utilisateurs</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-            <div>Détail utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-            <div>Formulaire utilisateur</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-            <div>Gestion rôles</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-            <div>Permissions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-            <div>Profil utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-            <div>Sessions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-            <div>Activité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-            <div>Groupes</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-cog"></i>
-        <div>Paramétrage</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-            <div>Paramètres généraux</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-            <div>Types de véhicules</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" style="margin-top: 2rem;">
-      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-        <i class="menu-icon bx bx-log-out"></i>
-        <div>Déconnexion</div>
-      </a>
-    </li>
-  </ul>
-</aside>
-
-    <!-- MAIN CONTENT -->
-    <div class="layout-page">
-
-      <!-- NAVBAR -->
-      <nav class="layout-navbar">
-        <div class="d-flex align-items-center">
-          <button class="menu-toggle-btn" (click)="toggleSidebar()">
-            <i class='bx bx-menu'></i>
-          </button>
+    <!-- =========================================================================== -->
+    <!-- SECTION : SIDEBAR PRINCIPALE (NAVIGATION) -->
+    <!-- =========================================================================== -->
+    <aside class="layout-menu" id="sidebar">
+      <!-- En-tête de la sidebar -->
+      <div class="app-brand">
+        <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+        <div>
+          <span class="app-brand-text">Logistiks</span>
+          <div class="app-brand-subtitle">Gestion de flotte et locations</div>
         </div>
+      </div>
 
-        <ul class="navbar-nav">
-          <!-- User dropdown avec photo dynamique -->
-          <li class="nav-item dropdown" (click)="toggleUserMenu()">
-            <div class="avatar dropdown-toggle">
-              <!-- Photo dynamique de l'utilisateur -->
-              <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-                (error)="userPhotoUrl = getDefaultAvatar()" />
+      <!-- Menu de navigation -->
+      <ul class="menu-inner">
+        <!-- Section : Accueil -->
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard']" class="menu-link">
+            <i class="menu-icon bx bx-home-circle"></i>
+            <div>Dashboard</div>
+          </a>
+        </li>
 
-              <!-- Avatar par défaut si pas de photo -->
-              <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-                {{ getUserInitials() }}
-              </div>
-            </div>
+        <!-- Section : Référentiels -->
+        <li class="menu-header">
+          <span>RÉFÉRENTIELS</span>
+        </li>
 
-            <!-- Menu dropdown -->
-            <div class="dropdown-menu" [class.show]="showUserMenu" id="userMenu">
-              <div style="padding: 1rem;">
-                <div class="fw-bold">{{ userName }}</div>
-                <div class="text-muted fs-sm">
-                  {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
-                </div>
-                <hr style="margin: 0.5rem 0;">
-                <a [routerLink]="['/profile']" class="dropdown-item">
-                  <i class='bx bx-user mr-2'></i> Mon profil
-                </a>
-                <a [routerLink]="['/settings']" class="dropdown-item">
-                  <i class='bx bx-cog mr-2'></i> Paramètres
-                </a>
-                <hr style="margin: 0.5rem 0;">
-                <a (click)="logout()" class="dropdown-item logout-item">
-                  <i class='bx bx-log-out mr-2'></i> Déconnexion
-                </a>
-              </div>
-            </div>
+        <!-- Sous-section : Tiers -->
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-group"></i>
+            <div>Tiers</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+                <div>Tous les tiers</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+                <div>Documents à valider</div>
+                <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                  {{ dashboardStats.documentsPending }}
+                </span>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+                <div>Gestion des documents</div>
+                <span class="badge badge-info">
+                  <i class='bx bx-upload'></i>
+                  {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+                </span>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+                <div>Nouveau tier</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Sous-section : Véhicules -->
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-car"></i>
+            <div>Véhicules</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+                <div>Tous les véhicules</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+                <div>Ajouter vehicule</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
+                <div>Affectations</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
+                <div>Suivi entretien</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/vehicules/assurances']" class="menu-link">
+                <div>Assurances</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Sous-section : Documents -->
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-folder"></i>
+            <div>Documents</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/documents']" class="menu-link">
+                <div>Tous les documents</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
+                <div>Contrats signés</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
+                <div>Pièces d'identité</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+                <div>Factures fournisseurs</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Section : Cœur Métier -->
+        <li class="menu-header">
+          <span>CŒUR MÉTIER</span>
+        </li>
+
+        <!-- Sous-section : Contrats -->
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-file"></i>
+            <div>Contrats</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+                <div>Tous les contrats</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
+                <div>Contrats actifs</div>
+                <span class="badge badge-success">12</span>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
+                <div>À expiration</div>
+                <span class="badge badge-warning">3</span>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+                <div>Nouveau contrat</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
           </li>
         </ul>
-      </nav>
+      </li>
 
-      <!-- CONTENT WRAPPER -->
-      <div class="content-wrapper">
+      <!-- Item : Calendrier -->
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
 
-        <!-- HEADER -->
-        <div class="dashboard-header mb-4">
-          <div class="welcome-section">
-            <h1 class="welcome-title">
-              <i class='bx bx-file-plus me-2'></i>
-              Tiers à compléter
-            </h1>
-            <p class="welcome-subtitle">
-              Gestion des documents manquants pour les tiers en attente de validation
-            </p>
+      <!-- Section : Finance & Comptabilité -->
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
+
+      <!-- Sous-section : Comptes -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Sous-section : Paiements -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+              <div>En retard</div><span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+              <div>En attente</div><span class="badge badge-warning">8</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Section : Administration -->
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
+
+      <!-- Sous-section : Utilisateurs -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+              <div>Liste utilisateurs</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+              <div>Détail utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+              <div>Formulaire utilisateur</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+              <div>Gestion rôles</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+              <div>Permissions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+              <div>Profil utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+              <div>Sessions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+              <div>Activité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+              <div>Groupes</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Sous-section : Paramétrage -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Item : Déconnexion -->
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION : CONTENU PRINCIPAL -->
+  <!-- =========================================================================== -->
+  <div class="layout-page">
+    <!-- =========================================================== -->
+    <!-- SOUS-SECTION : NAVBAR (EN-TÊTE) -->
+    <!-- =========================================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown" (click)="toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Avatar utilisateur dynamique -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
           </div>
 
-          <!-- STATISTIQUES -->
-          <div class="stats-cards">
-            <div class="stat-card">
-              <div class="stat-icon primary">
-                <i class='bx bx-group'></i>
+          <!-- Menu dropdown utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu" id="userMenu">
+            <div style="padding: 1rem;">
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
               </div>
-              <div class="stat-content">
-                <h3>{{ stats.totalTiers }}</h3>
-                <p>Tiers à traiter</p>
-              </div>
+              <hr style="margin: 0.5rem 0;">
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user mr-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog mr-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out mr-2'></i> Déconnexion
+              </a>
             </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
 
-            <div class="stat-card">
-              <div class="stat-icon success">
-                <i class='bx bx-check-circle'></i>
-              </div>
-              <div class="stat-content">
-                <h3>{{ stats.documentsValidated }}/{{ stats.documentsRequired }}</h3>
-                <p>Documents validés</p>
-              </div>
+    <!-- =========================================================== -->
+    <!-- SOUS-SECTION : CONTENU DE LA PAGE -->
+    <!-- =========================================================== -->
+    <div class="content-wrapper">
+      <!-- =========================================================== -->
+      <!-- SECTION : EN-TÊTE ET STATISTIQUES -->
+      <!-- =========================================================== -->
+      <div class="dashboard-header mb-4">
+        <!-- Titre et description -->
+        <div class="welcome-section">
+          <h1 class="welcome-title">
+            <i class='bx bx-file-plus me-2'></i>
+            Tiers à compléter
+          </h1>
+          <p class="welcome-subtitle">
+            Gestion des documents manquants pour les tiers en attente de validation
+          </p>
+        </div>
+
+        <!-- Cartes de statistiques -->
+        <div class="stats-cards">
+          <!-- Carte : Tiers à traiter -->
+          <div class="stat-card">
+            <div class="stat-icon primary">
+              <i class='bx bx-group'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.totalTiers }}</h3>
+              <p>Tiers à traiter</p>
+            </div>
+          </div>
+
+          <!-- Carte : Documents validés -->
+          <div class="stat-card">
+            <div class="stat-icon success">
+              <i class='bx bx-check-circle'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ stats.documentsValidated }}/{{ stats.documentsRequired }}</h3>
+              <p>Documents validés</p>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- BARRE DE RECHERCHE ET FILTRES -->
-        <div class="filters-bar mb-4">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class='bx bx-search'></i>
-                </span>
-                <input type="text" class="form-control" [formGroup]="searchForm" placeholder="Rechercher un tier...">
-              </div>
-            </div>
+      <!-- =========================================================== -->
+      <!-- SECTION : FILTRES -->
+      <!-- =========================================================== -->
+      <div class="filters-bar mb-4">
+        <div class="row g-3">
+          <!-- Colonne vide pour alignement -->
+          <div class="col-md-4"></div>
 
-            <div class="col-md-3">
-              <select class="form-select" [formControl]="roleControl">
-                <option [ngValue]="null">Tous les rôles</option>
-                <option [value]="1">Client Livreur</option>
-                <option [value]="2">Client Particulier</option>
-                <option [value]="3">Fournisseur</option>
-              </select>
-            </div>
+          <!-- Filtre : Rôle -->
+          <div class="col-md-3">
+            <select class="form-select" [formControl]="roleControl">
+              <option [ngValue]="null">Tous les rôles</option>
+              <option [value]="1">Client Livreur</option>
+              <option [value]="2">Client Particulier</option>
+              <option [value]="3">Fournisseur</option>
+            </select>
+          </div>
 
-            <div class="col-md-3">
-              <select class="form-select" [formControl]="statusControl">
-                <option [value]="1">En attente de validation</option>
-                <option [value]="2">Actif</option>
-                <option [value]="3">Bloqué</option>
-              </select>
-            </div>
+          <!-- Filtre : Statut -->
+          <div class="col-md-3">
+            <select class="form-select" [formControl]="statusControl">
+              <option [value]="1">En attente de validation</option>
+              <option [value]="2">Actif</option>
+              <option [value]="3">Bloqué</option>
+            </select>
+          </div>
 
-            <div class="col-md-2">
-              <button class="btn btn-primary w-100" (click)="loadTiersToComplete()">
-                <i class='bx bx-filter-alt'></i> Filtrer
-              </button>
-            </div>
+          <!-- Bouton : Appliquer les filtres -->
+          <div class="col-md-2">
+            <button class="btn btn-primary w-100" (click)="loadTiersToComplete()">
+              <i class='bx bx-filter-alt'></i> Filtrer
+            </button>
           </div>
         </div>
+      </div>
 
-        <!-- LISTE DES TIERS -->
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title mb-0">
-              <i class='bx bx-list-ul me-2'></i>
-              Liste des tiers avec documents manquants
-            </h5>
-            <span class="badge bg-primary">{{ tiers.length }}</span>
-          </div>
-
-          <div class="card-body p-0">
-            <!-- ÉTAT DE CHARGEMENT -->
-            <div *ngIf="isLoading" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Chargement...</span>
-              </div>
-              <p class="text-muted mt-2">Chargement des tiers...</p>
-            </div>
-
-            <!-- TABLEAU DES TIERS -->
-            <div *ngIf="!isLoading" class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th>Tier</th>
-                    <th>Rôle(s)</th>
-                    <th>Documents requis</th>
-                    <th>Documents existants</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let tier of tiers" [class.table-warning]="hasMissingDocuments(tier)">
-                    <!-- COLONNE 1: INFOS TIER -->
-                    <td>
-                      <div class="tier-info">
-                        <strong>{{ tier.firstName }} {{ tier.lastName }}</strong>
-                        <div class="text-muted small">
-                          <i class='bx bx-phone'></i> {{ tier.phone }}
-                          <span class="ms-2">{{ tier.tierNumber }}</span>
-                        </div>
-                      </div>
-                    </td>
-
-                    <!-- COLONNE 2: RÔLES -->
-                    <td>
-                      <div class="roles-badges">
-                        <ng-container *ngFor="let role of tier.roles">
-                          <span *ngIf="role.isActive" class="badge bg-info me-1">
-                            {{ role.roleType === 1 ? 'Client Livreur' :
-                            role.roleType === 2 ? 'Client Part.' :
-                            role.roleType === 3 ? 'Fournisseur' :
-                            role.roleType === 4 ? 'Partenaire' : 'Autre' }}
-                          </span>
-                        </ng-container>
-                      </div>
-                    </td>
-
-                    <!-- COLONNE 3: DOCUMENTS REQUIS -->
-                    <td>
-                      <div class="required-docs">
-                        <div *ngFor="let reqDoc of getRequiredDocumentsForTier(tier)" class="mb-1">
-                          <i class='bx bx-file me-1'></i>
-                          {{ reqDoc.label }}
-                        </div>
-                      </div>
-                    </td>
-
-                    <!-- COLONNE 4: DOCUMENTS EXISTANTS -->
-                    <td>
-                      <div class="existing-docs">
-                        <div *ngFor="let doc of getExistingDocumentsWithStatus(tier)"
-                          class="mb-1 d-flex align-items-center">
-                          <span [class]="doc.statusClass + ' me-2'">
-                            {{ doc.statusLabel }}
-                          </span>
-                          <small class="text-muted">
-                            {{ getDocumentTypeLabel(doc.type) }}
-                          </small>
-
-                          <!-- BOUTON DE VALIDATION POUR DOC EN ATTENTE -->
-                          <button *ngIf="doc.status === 1 && !isDocumentBeingProcessed(doc.id)"
-                            class="btn btn-sm btn-success ms-2" (click)="validateDocument(tier.id, doc.id)">
-                            <i class='bx bx-check'></i>
-                          </button>
-
-                          <!-- SPINNER SI EN COURS DE TRAITEMENT -->
-                          <div *ngIf="isDocumentBeingProcessed(doc.id)" class="spinner-border spinner-border-sm ms-2">
-                          </div>
-                        </div>
-
-                        <!-- MESSAGE SI AUCUN DOCUMENT -->
-                        <div *ngIf="!tier.documents || tier.documents.length === 0" class="text-muted small">
-                          Aucun document uploadé
-                        </div>
-                      </div>
-                    </td>
-
-                    <!-- COLONNE 5: STATUT -->
-                    <td>
-                      <span [class]="tier.status === 1 ? 'badge bg-warning' :
-                                  tier.status === 2 ? 'badge bg-success' :
-                                  'badge bg-secondary'">
-                        {{ tier.status === 1 ? 'À valider' :
-                        tier.status === 2 ? 'Actif' : 'Autre' }}
-                      </span>
-                    </td>
-
-                    <!-- COLONNE 6: ACTIONS -->
-                    <td>
-                      <div class="btn-group btn-group-sm">
-                        <!-- BOUTON UPLOAD DE DOCUMENT -->
-                        <button class="btn btn-primary" (click)="selectTier(tier)" title="Ajouter un document">
-                          <i class='bx bx-upload'></i>
-                        </button>
-
-                        <!-- BOUTON VALIDATION DU TIER (si tous documents présents) -->
-                        <!-- <button *ngIf="!hasMissingDocuments(tier) && tier.status === 1" class="btn btn-success" (click)="validateTier(tier.id)" title="Valider le tier">
-                      <i class='bx bx-check-double'></i>
-                    </button> -->
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <!-- MESSAGE SI AUCUN TIER -->
-              <div *ngIf="tiers.length === 0 && !isLoading" class="text-center py-5">
-                <i class='bx bx-party display-1 text-muted mb-3'></i>
-                <h5 class="text-muted">Tous les tiers sont à jour !</h5>
-                <p class="text-muted">Aucun document manquant pour les tiers sélectionnés.</p>
-              </div>
-            </div>
-          </div>
+      <!-- =========================================================== -->
+      <!-- SECTION : LISTE DES TIERS -->
+      <!-- =========================================================== -->
+      <div class="card">
+        <!-- En-tête de la carte -->
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class='bx bx-list-ul me-2'></i>
+            Liste des tiers avec documents manquants
+          </h5>
+          <span class="badge bg-primary">{{ tiers.length }}</span>
         </div>
 
-        <!-- MODAL D'UPLOAD DE DOCUMENT -->
-        <div class="modal-backdrop" *ngIf="showUploadModal" (click)="showUploadModal = false"></div>
+        <!-- Corps de la carte -->
+        <div class="card-body p-0">
+          <!-- État : Chargement -->
+          <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="text-muted mt-2">Chargement des tiers...</p>
+          </div>
 
-        <div class="modal" *ngIf="showUploadModal && selectedTier">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">
-                  <i class='bx bx-upload me-2'></i>
-                  Uploader un document pour {{ selectedTier.firstName }} {{ selectedTier.lastName }}
-                </h5>
-                <button type="button" class="btn-close" (click)="showUploadModal = false"></button>
-              </div>
-
-              <div class="modal-body">
-                <!-- DOCUMENTS MANQUANTS -->
-                <div class="alert alert-info mb-4">
-                  <h6>
-                    <i class='bx bx-info-circle me-2'></i>
-                    Documents manquants pour ce tier :
-                  </h6>
-                  <ul class="mb-0">
-                    <li *ngFor="let missingDoc of getMissingDocuments(selectedTier)">
-                      {{ missingDoc.label }}
-                    </li>
-                  </ul>
-                </div>
-
-                <!-- FORMULAIRE D'UPLOAD -->
-                <form [formGroup]="uploadForm">
-                  <!-- TYPE DE DOCUMENT -->
-                  <div class="mb-3">
-                    <label class="form-label">Type de document *</label>
-                    <select class="form-select" formControlName="documentType">
-                      <option [ngValue]="null" disabled>Sélectionnez un type</option>
-                      <option [value]="DocumentType.IdentityCard">CNI/Passeport</option>
-                      <option [value]="DocumentType.DriverLicense">Permis de conduire</option>
-                      <option [value]="DocumentType.VehicleRegistration">Carte grise</option>
-                      <option [value]="DocumentType.Insurance">Assurance</option>
-                      <option [value]="DocumentType.Contract">Contrat signé</option>
-                      <option [value]="DocumentType.Invoice">Facture</option>
-                      <option [value]="DocumentType.Receipt">Reçu</option>
-                      <option [value]="DocumentType.MaintenanceReport">Rapport de maintenance</option>
-                      <option [value]="DocumentType.BusinessLicense">Licence commerciale</option>
-                      <option [value]="DocumentType.Other">Autre document</option>
-                    </select>
-                  </div>
-
-                  <!-- DATE D'EXPIRATION -->
-                  <div class="mb-3">
-                    <label class="form-label">Date d'expiration (Obligatoire)</label>
-                    <input type="date" class="form-control" formControlName="expiryDate">
-                  </div>
-
-                  <!-- DESCRIPTION -->
-                  <div class="mb-3">
-                    <label class="form-label">Description (optionnel)</label>
-                    <textarea class="form-control" formControlName="description" rows="3"
-                      placeholder="Notes sur le document..."></textarea>
-                  </div>
-
-                  <!-- UPLOAD DE FICHIER -->
-                  <div class="mb-4">
-                    <label class="form-label">Fichier *</label>
-                    <div class="file-upload-area" [class.drag-over]="false" (click)="fileInput.click()">
-                      <input #fileInput type="file" class="d-none" (change)="onFileSelected($event)"
-                        accept=".jpg,.jpeg,.png,.pdf">
-
-                      <div *ngIf="!selectedFile" class="upload-placeholder">
-                        <i class='bx bx-cloud-upload display-4 text-muted mb-3'></i>
-                        <p class="mb-1">Cliquez pour sélectionner un fichier</p>
-                        <p class="text-muted small mb-0">
-                          Formats acceptés: JPG, PNG, PDF (max 5MB)
-                        </p>
-                      </div>
-
-                      <div *ngIf="selectedFile" class="selected-file">
-                        <i class='bx bx-file'></i>
-                        <div class="file-info">
-                          <strong>{{ selectedFile.name }}</strong>
-                          <small class="text-muted">
-                            {{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB
-                          </small>
-                        </div>
-                        <button type="button" class="btn btn-sm btn-outline-danger"
-                          (click)="selectedFile = null; $event.stopPropagation()">
-                          <i class='bx bx-x'></i>
-                        </button>
+          <!-- Tableau des tiers (si chargé) -->
+          <div *ngIf="!isLoading" class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Tier</th>
+                  <th>Rôle(s)</th>
+                  <th>Documents requis</th>
+                  <th>Documents existants</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Ligne : Tier (répétée pour chaque tier) -->
+                <tr *ngFor="let tier of tiers" [class.table-warning]="hasMissingDocuments(tier)">
+                  <!-- Colonne 1 : Informations du tier -->
+                  <td>
+                    <div class="tier-info">
+                      <strong>{{ tier.firstName }} {{ tier.lastName }}</strong>
+                      <div class="text-muted small">
+                        <i class='bx bx-phone'></i> {{ tier.phone }}
+                        <span class="ms-2">{{ tier.tierNumber }}</span>
                       </div>
                     </div>
+                  </td>
+
+                  <!-- Colonne 2 : Rôles du tier -->
+                  <td>
+                    <div class="roles-badges">
+                      <ng-container *ngFor="let role of tier.roles">
+                        <span *ngIf="role.isActive" class="badge bg-info me-1">
+                          {{ role.roleType === 1 ? 'Client Livreur' :
+                              role.roleType === 2 ? 'Client Part.' :
+                              role.roleType === 3 ? 'Fournisseur' :
+                              role.roleType === 4 ? 'Partenaire' : 'Autre' }}
+                        </span>
+                      </ng-container>
+                    </div>
+                  </td>
+
+                  <!-- Colonne 3 : Documents requis -->
+                  <td>
+                    <div class="required-docs">
+                      <div *ngFor="let reqDoc of getRequiredDocumentsForTier(tier)" class="mb-1">
+                        <i class='bx bx-file me-1'></i>
+                        {{ reqDoc.label }}
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Colonne 4 : Documents existants -->
+                  <td>
+                    <div class="existing-docs">
+                      <!-- Liste des documents existants -->
+                      <div *ngFor="let doc of getExistingDocumentsWithStatus(tier)"
+                           class="mb-1 d-flex align-items-center">
+                        <!-- Statut du document -->
+                        <span [class]="doc.statusClass + ' me-2'">
+                          {{ doc.statusLabel }}
+                        </span>
+                        <!-- Type de document -->
+                        <small class="text-muted">
+                          {{ getDocumentTypeLabel(doc.type) }}
+                        </small>
+
+                        <!-- Bouton de validation pour document en attente -->
+                        <button *ngIf="doc.status === 1 && !isDocumentBeingProcessed(doc.id)"
+                                class="btn btn-sm btn-success ms-2"
+                                (click)="validateDocument(tier.id, doc.id)">
+                          <i class='bx bx-check'></i>
+                        </button>
+
+                        <!-- Spinner si en cours de traitement -->
+                        <div *ngIf="isDocumentBeingProcessed(doc.id)"
+                             class="spinner-border spinner-border-sm ms-2">
+                        </div>
+                      </div>
+
+                      <!-- Message si aucun document -->
+                      <div *ngIf="!tier.documents || tier.documents.length === 0" class="text-muted small">
+                        Aucun document uploadé
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Colonne 5 : Statut du tier -->
+                  <td>
+                    <span [class]="tier.status === 1 ? 'badge bg-warning' :
+                                    tier.status === 2 ? 'badge bg-success' :
+                                    'badge bg-secondary'">
+                      {{ tier.status === 1 ? 'À valider' :
+                          tier.status === 2 ? 'Actif' : 'Autre' }}
+                    </span>
+                  </td>
+
+                  <!-- Colonne 6 : Actions -->
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <!-- Bouton : Upload de document -->
+                      <button class="btn btn-primary"
+                              (click)="selectTier(tier)"
+                              title="Ajouter un document">
+                        <i class='bx bx-upload'></i>
+                      </button>
+
+                      <!-- Bouton : Validation du tier (commenté) -->
+                      <!--
+                      <button *ngIf="!hasMissingDocuments(tier) && tier.status === 1"
+                              class="btn btn-success"
+                              (click)="validateTier(tier.id)"
+                              title="Valider le tier">
+                        <i class='bx bx-check-double'></i>
+                      </button>
+                      -->
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Message : Aucun tier trouvé -->
+            <div *ngIf="tiers.length === 0 && !isLoading" class="text-center py-5">
+              <i class='bx bx-party display-1 text-muted mb-3'></i>
+              <h5 class="text-muted">Tous les tiers sont à jour !</h5>
+              <p class="text-muted">Aucun document manquant pour les tiers sélectionnés.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================== -->
+      <!-- SECTION : MODAL D'UPLOAD DE DOCUMENT -->
+      <!-- =========================================================== -->
+
+      <!-- Overlay de fond -->
+      <div class="modal-backdrop" *ngIf="showUploadModal" (click)="showUploadModal = false"></div>
+
+      <!-- Modal d'upload -->
+      <div class="modal" *ngIf="showUploadModal && selectedTier">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <!-- En-tête du modal -->
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class='bx bx-upload me-2'></i>
+                Uploader un document pour {{ selectedTier.firstName }} {{ selectedTier.lastName }}
+              </h5>
+              <button type="button" class="btn-close" (click)="showUploadModal = false"></button>
+            </div>
+
+            <!-- Corps du modal -->
+            <div class="modal-body">
+              <!-- Section : Documents manquants -->
+              <div class="alert alert-info mb-4">
+                <h6>
+                  <i class='bx bx-info-circle me-2'></i>
+                  Documents manquants pour ce tier :
+                </h6>
+                <ul class="mb-0">
+                  <li *ngFor="let missingDoc of getMissingDocuments(selectedTier)">
+                    {{ missingDoc.label }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Formulaire d'upload -->
+              <form [formGroup]="uploadForm">
+                <!-- Champ : Type de document -->
+                <div class="mb-3">
+                  <label class="form-label">Type de document *</label>
+                  <select class="form-select" formControlName="documentType">
+                    <option [ngValue]="null" disabled>Sélectionnez un type</option>
+                    <option [value]="DocumentType.IdentityCard">CNI/Passeport</option>
+                    <option [value]="DocumentType.DriverLicense">Permis de conduire</option>
+                    <option [value]="DocumentType.VehicleRegistration">Carte grise</option>
+                    <option [value]="DocumentType.Insurance">Assurance</option>
+                    <option [value]="DocumentType.Contract">Contrat signé</option>
+                    <option [value]="DocumentType.Invoice">Facture</option>
+                    <option [value]="DocumentType.Receipt">Reçu</option>
+                    <option [value]="DocumentType.MaintenanceReport">Rapport de maintenance</option>
+                    <option [value]="DocumentType.BusinessLicense">Licence commerciale</option>
+                    <option [value]="DocumentType.Other">Autre document</option>
+                  </select>
+                </div>
+
+                <!-- Champ : Date d'expiration -->
+                <div class="mb-3">
+                  <label class="form-label">Date d'expiration (Obligatoire)</label>
+                  <input type="date" class="form-control" formControlName="expiryDate">
+                </div>
+
+                <!-- Champ : Description -->
+                <div class="mb-3">
+                  <label class="form-label">Description (optionnel)</label>
+                  <textarea class="form-control"
+                            formControlName="description"
+                            rows="3"
+                            placeholder="Notes sur le document..."></textarea>
+                </div>
+
+                <!-- Section : Upload de fichier -->
+                <div class="mb-4">
+                  <label class="form-label">Fichier *</label>
+                  <div class="file-upload-area"
+                       [class.drag-over]="false"
+                       (click)="fileInput.click()">
+                    <!-- Input de fichier caché -->
+                    <input #fileInput
+                           type="file"
+                           class="d-none"
+                           (change)="onFileSelected($event)"
+                           accept=".jpg,.jpeg,.png,.pdf">
+
+                    <!-- Zone de placeholder -->
+                    <div *ngIf="!selectedFile" class="upload-placeholder">
+                      <i class='bx bx-cloud-upload display-4 text-muted mb-3'></i>
+                      <p class="mb-1">Cliquez pour sélectionner un fichier</p>
+                      <p class="text-muted small mb-0">
+                        Formats acceptés: JPG, PNG, PDF (max 5MB)
+                      </p>
+                    </div>
+
+                    <!-- Fichier sélectionné -->
+                    <div *ngIf="selectedFile" class="selected-file">
+                      <i class='bx bx-file'></i>
+                      <div class="file-info">
+                        <strong>{{ selectedFile.name }}</strong>
+                        <small class="text-muted">
+                          {{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB
+                        </small>
+                      </div>
+                      <button type="button"
+                              class="btn btn-sm btn-outline-danger"
+                              (click)="selectedFile = null; $event.stopPropagation()">
+                        <i class='bx bx-x'></i>
+                      </button>
+                    </div>
                   </div>
-
-
-                </form>
-              </div>
-
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="showUploadModal = false">
-                  Annuler
-                </button>
-                <button type="button" class="btn btn-primary" (click)="uploadDocument()"
-                  [disabled]="!uploadForm.valid || !selectedFile || isUploading">
-                  <i class='bx bx-upload me-1'></i>
-                  {{ isUploading ? 'Upload en cours...' : 'Uploader le document' }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- MODALES D'ÉTAT -->
-        <!-- POPUP DE SUCCÈS - UPLOAD DE DOCUMENT -->
-        <div class="custom-modal-overlay" *ngIf="showUploadSuccessModal" (click)="closeUploadSuccessModal()">
-          <div class="custom-modal success-modal" (click)="$event.stopPropagation()">
-            <div class="success-icon-wrapper">
-              <div class="success-icon">
-                <i class='bx bx-check'></i>
-              </div>
-              <div class="success-animation"></div>
+                </div>
+              </form>
             </div>
 
-            <h3 class="modal-success-title">Document uploadé avec succès !</h3>
-
-            <div class="modal-success-details">
-              <div class="detail-item">
-                <i class='bx bx-user-circle'></i>
-                <span>{{ uploadedDocumentInfo?.tierName }}</span>
-              </div>
-            </div>
-
-            <button class="btn-success-close" (click)="closeUploadSuccessModal()">
-              Parfait !
-            </button>
-          </div>
-        </div>
-
-        <!-- POPUP D'ERREUR - UPLOAD DE DOCUMENT -->
-        <div class="custom-modal-overlay" *ngIf="showUploadErrorModal" (click)="closeUploadErrorModal()">
-          <div class="custom-modal error-modal" (click)="$event.stopPropagation()">
-            <div class="error-icon-wrapper">
-              <div class="error-icon">
-                <i class='bx bx-x'></i>
-              </div>
-            </div>
-
-            <h3 class="modal-error-title">Erreur d'upload</h3>
-            <p class="modal-error-message">{{ uploadErrorMessage }}</p>
-
-            <button class="btn-error-close" (click)="closeUploadErrorModal()">
-              Compris
-            </button>
-          </div>
-        </div>
-
-        <!-- POPUP DE SUCCÈS - VALIDATION DE TIER -->
-        <div class="custom-modal-overlay" *ngIf="showValidationSuccessModal" (click)="closeValidationSuccessModal()">
-          <div class="custom-modal validation-modal" (click)="$event.stopPropagation()">
-            <div class="confetti-container">
-              <div class="confetti" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
-            </div>
-
-            <div class="validation-icon-wrapper">
-              <div class="validation-icon">
-                <i class='bx bx-badge-check'></i>
-              </div>
-              <div class="pulse-ring"></div>
-              <div class="pulse-ring delay"></div>
-            </div>
-
-            <h3 class="modal-validation-title">Tier validé avec succès ! 🎉</h3>
-
-            <div class="modal-validation-details">
-              <div class="detail-row">
-                <span class="detail-label">Nom complet</span>
-                <span class="detail-value">{{ validatedTierInfo?.name }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">N° Tier</span>
-                <span class="detail-value">{{ validatedTierInfo?.id }}</span>
-              </div>
-            </div>
-
-            <div class="validation-message">
-              <i class='bx bx-info-circle'></i>
-              <p>Le tier est maintenant actif et peut commencer à utiliser la plateforme</p>
-            </div>
-
-            <button class="btn-validation-close" (click)="closeValidationSuccessModal()">
-              <i class='bx bx-check-circle'></i>
-              Parfait !
-            </button>
-          </div>
-        </div>
-
-        <!-- POPUP D'ERREUR - VALIDATION DE TIER -->
-        <div class="custom-modal-overlay" *ngIf="showValidationErrorModal" (click)="closeValidationErrorModal()">
-          <div class="custom-modal error-modal" (click)="$event.stopPropagation()">
-            <div class="error-icon-wrapper">
-              <div class="error-icon">
-                <i class='bx bx-error-circle'></i>
-              </div>
-            </div>
-
-            <h3 class="modal-error-title">Erreur de validation</h3>
-            <p class="modal-error-message">{{ validationErrorMessage }}</p>
-
-            <div class="error-actions">
-              <button class="btn-error-retry" (click)="closeValidationErrorModal()">
-                <i class='bx bx-refresh'></i>
-                Réessayer
+            <!-- Pied du modal -->
+            <div class="modal-footer">
+              <button type="button"
+                      class="btn btn-secondary"
+                      (click)="showUploadModal = false">
+                Annuler
               </button>
-              <button class="btn-error-close" (click)="closeValidationErrorModal()">
-                Fermer
+              <button type="button"
+                      class="btn btn-primary"
+                      (click)="uploadDocument()"
+                      [disabled]="!uploadForm.valid || !selectedFile || isUploading">
+                <i class='bx bx-upload me-1'></i>
+                {{ isUploading ? 'Upload en cours...' : 'Uploader le document' }}
               </button>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- FOOTER -->
-        <div class="content-footer">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              © 2026 Logistiks. Tous droits réservés.
+      <!-- =========================================================== -->
+      <!-- SECTION : MODALES D'ÉTAT (SUCCÈS/ERREUR) -->
+      <!-- =========================================================== -->
+
+      <!-- Modal : Succès d'upload -->
+      <div class="custom-modal-overlay" *ngIf="showUploadSuccessModal" (click)="closeUploadSuccessModal()">
+        <div class="custom-modal success-modal" (click)="$event.stopPropagation()">
+          <div class="success-icon-wrapper">
+            <div class="success-icon">
+              <i class='bx bx-check'></i>
             </div>
-            <div class="text-muted">
-              <span class="badge bg-light text-dark">
-                <i class='bx bx-time me-1'></i> {{ currentUser ? 'Connecté' : 'Déconnecté' }}
-              </span>
+            <div class="success-animation"></div>
+          </div>
+
+          <h3 class="modal-success-title">Document uploadé avec succès !</h3>
+
+          <div class="modal-success-details">
+            <div class="detail-item">
+              <i class='bx bx-user-circle'></i>
+              <span>{{ uploadedDocumentInfo?.tierName }}</span>
             </div>
           </div>
-        </div>
 
+          <button class="btn-success-close" (click)="closeUploadSuccessModal()">
+            Parfait !
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal : Erreur d'upload -->
+      <div class="custom-modal-overlay" *ngIf="showUploadErrorModal" (click)="closeUploadErrorModal()">
+        <div class="custom-modal error-modal" (click)="$event.stopPropagation()">
+          <div class="error-icon-wrapper">
+            <div class="error-icon">
+              <i class='bx bx-x'></i>
+            </div>
+          </div>
+
+          <h3 class="modal-error-title">Erreur d'upload</h3>
+          <p class="modal-error-message">{{ uploadErrorMessage }}</p>
+
+          <button class="btn-error-close" (click)="closeUploadErrorModal()">
+            Compris
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal : Succès de validation -->
+      <div class="custom-modal-overlay" *ngIf="showValidationSuccessModal" (click)="closeValidationSuccessModal()">
+        <div class="custom-modal validation-modal" (click)="$event.stopPropagation()">
+          <!-- Confetti animation -->
+          <div class="confetti-container">
+            <div class="confetti" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
+          </div>
+
+          <div class="validation-icon-wrapper">
+            <div class="validation-icon">
+              <i class='bx bx-badge-check'></i>
+            </div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring delay"></div>
+          </div>
+
+          <h3 class="modal-validation-title">Tier validé avec succès ! 🎉</h3>
+
+          <div class="modal-validation-details">
+            <div class="detail-row">
+              <span class="detail-label">Nom complet</span>
+              <span class="detail-value">{{ validatedTierInfo?.name }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">N° Tier</span>
+              <span class="detail-value">{{ validatedTierInfo?.id }}</span>
+            </div>
+          </div>
+
+          <div class="validation-message">
+            <i class='bx bx-info-circle'></i>
+            <p>Le tier est maintenant actif et peut commencer à utiliser la plateforme</p>
+          </div>
+
+          <button class="btn-validation-close" (click)="closeValidationSuccessModal()">
+            <i class='bx bx-check-circle'></i>
+            Parfait !
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal : Erreur de validation -->
+      <div class="custom-modal-overlay" *ngIf="showValidationErrorModal" (click)="closeValidationErrorModal()">
+        <div class="custom-modal error-modal" (click)="$event.stopPropagation()">
+          <div class="error-icon-wrapper">
+            <div class="error-icon">
+              <i class='bx bx-error-circle'></i>
+            </div>
+          </div>
+
+          <h3 class="modal-error-title">Erreur de validation</h3>
+          <p class="modal-error-message">{{ validationErrorMessage }}</p>
+
+          <div class="error-actions">
+            <button class="btn-error-retry" (click)="closeValidationErrorModal()">
+              <i class='bx bx-refresh'></i>
+              Réessayer
+            </button>
+            <button class="btn-error-close" (click)="closeValidationErrorModal()">
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================== -->
+      <!-- SECTION : FOOTER -->
+      <!-- =========================================================== -->
+      <div class="content-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <!-- Copyright -->
+          <div>
+            © 2026 Logistiks. Tous droits réservés.
+          </div>
+
+          <!-- État de connexion -->
+          <div class="text-muted">
+            <span class="badge bg-light text-dark">
+              <i class='bx bx-time me-1'></i> {{ currentUser ? 'Connecté' : 'Déconnecté' }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- =========================================================== -->
+    <!-- COMPOSANT : DIALOGUE DE CONFIRMATION -->
+    <!-- =========================================================== -->
+    <app-confirm-dialog
+      [visible]="showConfirmDialog"
+      [title]="confirmDialogConfig.title"
+      [message]="confirmDialogConfig.message"
+      [details]="confirmDialogConfig.details"
+      [confirmText]="confirmDialogConfig.confirmText"
+      [cancelText]="confirmDialogConfig.cancelText"
+      (confirm)="onConfirmDialog()"
+      (cancel)="onCancelDialog()">
+    </app-confirm-dialog>
   </div>
+</div>

@@ -3,15 +3,27 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+
+// Modèles
 import { IdentityType, TierRoleType, TierStatus, DocumentStatus } from '../../../../../core/models/Enums/Logistiks-enums';
-import { Tiers } from '../../../../../core/services/Tiers/tiers';
-import { Notification } from '../../../../../core/services/Notification/notification';
-import { Auth } from '../../../../../core/services/Auth/auth';
-import { Token } from '../../../../../core/services/Token/token';
 import { CreateTierRequest } from '../../../../../core/models/Tiers/Tier-requests';
-import { environment } from '../../../../../../environments/environment.development';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 
+// Services
+import { Tiers } from '../../../../../core/services/Tiers/tiers';
+import { Auth } from '../../../../../core/services/Auth/auth';
+import { Token } from '../../../../../core/services/Token/token';
+import { NotificationService } from '../../../../../core/services/Notification/notification-service';
+
+// Environnement
+import { environment } from '../../../../../../environments/environment.development';
+
+/**
+ * Composant de création et de gestion des formulaires de tiers
+ * @class TierForm
+ * @implements {OnInit, OnDestroy}
+ * @description Permet la création de nouveaux tiers avec validation complète
+ */
 @Component({
   selector: 'app-tier-form',
   standalone: true,
@@ -20,29 +32,43 @@ import { User } from '../../../../../core/models/Core/Users/Entities/User';
   styleUrls: ['./tier-form.scss']
 })
 export class TierForm implements OnInit, OnDestroy {
-  // Formulaires
-  tierForm: FormGroup;
-  submitted = false;
-  loading = false;
-  error: string | null = null;
+  // ===========================================================================
+  // CONSTANTES ET CONFIGURATION
+  // ===========================================================================
 
-  // Données
-  selectedRoles: TierRoleType[] = [];
-  maxBirthDate: string;
-
-  // Gestion utilisateur
-  currentUser: any = null;
-  userName: string = 'Utilisateur';
-  userPhotoUrl: string = '';
-  showUserMenu: boolean = false;
-
-  // Gestion sidebar
-  isSidebarCollapsed: boolean = false;
-
-  // Options pour les selects
+  /** Options pour les selects d'identité */
   identityTypeOptions = IdentityType;
 
-  // Rôles disponibles avec leurs configurations
+  /** Couleurs pour les avatars générés */
+  private avatarColors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
+
+  // ===========================================================================
+  // FORMULAIRE ET ÉTATS
+  // ===========================================================================
+
+  /** Formulaire principal de création de tier */
+  tierForm: FormGroup;
+
+  /** Indique si le formulaire a été soumis */
+  submitted = false;
+
+  /** Indique si une opération est en cours */
+  loading = false;
+
+  /** Message d'erreur à afficher */
+  error: string | null = null;
+
+  /** Rôles sélectionnés pour le tier */
+  selectedRoles: TierRoleType[] = [];
+
+  /** Date maximale pour la date de naissance (18 ans minimum) */
+  maxBirthDate: string;
+
+  // ===========================================================================
+  // DONNÉES ET OPTIONS
+  // ===========================================================================
+
+  /** Rôles disponibles avec leurs configurations */
   roles = [
     { value: TierRoleType.ClientParticulier, label: 'Client Particulier', icon: 'bx bx-user', color: 'primary' },
     { value: TierRoleType.Supplier, label: 'Fournisseur', icon: 'bx bx-truck', color: 'info' },
@@ -50,6 +76,7 @@ export class TierForm implements OnInit, OnDestroy {
     { value: TierRoleType.Partner, label: 'Partenaire', icon: 'bx bx-handshake', color: 'success' }
   ];
 
+  /** Rôles disponibles avec descriptions */
   availableRoles = [
     {
       value: TierRoleType.ClientParticulier,
@@ -77,7 +104,7 @@ export class TierForm implements OnInit, OnDestroy {
     }
   ];
 
-  // Statuts disponibles
+  /** Statuts disponibles pour les tiers */
   statuses = [
     { value: TierStatus.Active, label: 'Actif', badge: 'success', icon: 'bx bx-check-circle' },
     { value: TierStatus.PendingValidation, label: 'En attente', badge: 'warning', icon: 'bx bx-time' },
@@ -85,7 +112,30 @@ export class TierForm implements OnInit, OnDestroy {
     { value: TierStatus.Inactive, label: 'Inactif', badge: 'default', icon: 'bx bx-minus-circle' }
   ];
 
-  // Statistiques pour le menu
+  // ===========================================================================
+  // GESTION UTILISATEUR ET INTERFACE
+  // ===========================================================================
+
+  /** Utilisateur connecté */
+  currentUser: any = null;
+
+  /** Nom d'affichage de l'utilisateur */
+  userName: string = 'Utilisateur';
+
+  /** URL de la photo de l'utilisateur */
+  userPhotoUrl: string = '';
+
+  /** État d'affichage du menu utilisateur */
+  showUserMenu: boolean = false;
+
+  /** État de réduction de la sidebar */
+  isSidebarCollapsed: boolean = false;
+
+  // ===========================================================================
+  // STATISTIQUES
+  // ===========================================================================
+
+  /** Statistiques pour le menu */
   stats = {
     total: 0,
     active: 0,
@@ -95,6 +145,7 @@ export class TierForm implements OnInit, OnDestroy {
     suppliers: 0
   };
 
+  /** Statistiques détaillées pour le tableau de bord */
   dashboardStats = {
     totalTiers: 0,
     activeTiers: 0,
@@ -108,12 +159,16 @@ export class TierForm implements OnInit, OnDestroy {
     totalSuppliers: 0
   };
 
+  // ===========================================================================
+  // SUBJECTS ET SERVICES
+  // ===========================================================================
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private formBuilder: FormBuilder,
     private tiersService: Tiers,
-    private notificationService: Notification,
+    private notificationService: NotificationService,
     private authService: Auth,
     private tokenService: Token,
     private router: Router
@@ -127,32 +182,216 @@ export class TierForm implements OnInit, OnDestroy {
     this.tierForm = this.createTierForm();
   }
 
-  ngOnInit() {
-    // Vérifier le token
-    const token = this.tokenService.getToken();
-    if (!token) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
+  // ===========================================================================
+  // LIFECYCLE HOOKS
+  // ===========================================================================
 
+  /**
+   * Initialisation du composant
+   */
+  ngOnInit(): void {
+    this.verifyAuthentication();
     this.loadCurrentUser();
     this.loadStatistics();
   }
 
-  ngOnDestroy() {
+  /**
+   * Nettoyage à la destruction du composant
+   */
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  // === CHARGEMENT DES STATISTIQUES ===
+  // ===========================================================================
+  // AUTHENTIFICATION ET GESTION UTILISATEUR
+  // ===========================================================================
 
+  /**
+   * Vérifie l'authentification de l'utilisateur
+   */
+  private verifyAuthentication(): void {
+    const token = this.tokenService.getToken();
+    if (!token) {
+      this.router.navigate(['/auth/login']);
+    }
+  }
+
+  /**
+   * Charge les informations de l'utilisateur connecté
+   */
+  loadCurrentUser(): void {
+    this.authService.getCurrentUser()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (user: User) => {
+          this.currentUser = user;
+          this.userName = this.formatUserName(user);
+          this.userPhotoUrl = this.getUserPhotoUrl(user);
+        },
+        error: (error) => {
+          console.error('Erreur chargement utilisateur:', error);
+          if (error.status === 401) {
+            this.tokenService.handleTokenExpired();
+          } else {
+            this.setDefaultUser();
+          }
+        }
+      });
+  }
+
+  /**
+   * Définit un utilisateur par défaut en cas d'erreur
+   */
+  private setDefaultUser(): void {
+    this.userName = 'Utilisateur Logistiks';
+    this.userPhotoUrl = this.generateAvatarUrl({ firstName: 'Utilisateur' } as User);
+  }
+
+  /**
+   * Formate le nom d'utilisateur pour l'affichage
+   * @param user - Utilisateur à formater
+   * @returns Nom formaté
+   */
+  formatUserName(user: any): string {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    } else if (user.firstName) {
+      return user.firstName;
+    } else if (user.username) {
+      return user.username;
+    } else if (user.email) {
+      return user.email.split('@')[0];
+    }
+    return 'Utilisateur Logistiks';
+  }
+
+  /**
+   * Obtient l'URL de la photo de l'utilisateur
+   * @param user - Utilisateur
+   * @returns URL de la photo
+   */
+  getUserPhotoUrl(user: User): string {
+    // Si photoUrl est un ID MongoDB
+    if (user.photoUrl && /^[0-9a-fA-F]{24}$/.test(user.photoUrl)) {
+      return `${environment.apiUrl}/api/User/photo/${user.photoUrl}`;
+    }
+
+    // Si photoUrl est déjà une URL complète
+    if (user.photoUrl && user.photoUrl.startsWith('http')) {
+      return user.photoUrl;
+    }
+
+    // Sinon, générer un avatar
+    return this.generateAvatarUrl(user);
+  }
+
+  /**
+   * Génère un avatar à partir du nom de l'utilisateur
+   * @param user - Utilisateur
+   * @returns URL de l'avatar généré
+   */
+  generateAvatarUrl(user: User): string {
+    const name = this.formatUserName(user);
+    const colorIndex = name.length % this.avatarColors.length;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${this.avatarColors[colorIndex]}&color=fff&size=128`;
+  }
+
+  /**
+   * Obtient les initiales de l'utilisateur
+   * @returns Initiales de l'utilisateur
+   */
+  getUserInitials(): string {
+    const parts = this.userName.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+    return this.userName.charAt(0).toUpperCase();
+  }
+
+  /**
+   * Obtient l'URL d'avatar par défaut
+   * @returns URL de l'avatar par défaut
+   */
+  getDefaultAvatar(): string {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+  }
+
+  // ===========================================================================
+  // GESTION DES MENUS ET SIDEBAR
+  // ===========================================================================
+
+  /**
+   * Basculer l'affichage du menu utilisateur
+   */
+  toggleUserMenu(): void {
+    this.showUserMenu = !this.showUserMenu;
+  }
+
+  /**
+   * Ferme le menu utilisateur lors d'un clic à l'extérieur
+   */
+  @HostListener('document:click', ['$event'])
+  closeUserMenu(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.dropdown-toggle') && !target.closest('.dropdown-menu')) {
+      this.showUserMenu = false;
+    }
+  }
+
+  /**
+   * Basculer l'état de la sidebar
+   */
+  toggleSidebar(): void {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+  }
+
+  /**
+   * Basculer l'affichage d'un menu déroulant
+   * @param event - Événement de clic
+   */
+  toggleMenu(event: MouseEvent): void {
+    const element = event.currentTarget as HTMLElement;
+    element?.parentElement?.classList.toggle('open');
+  }
+
+  /**
+   * Déconnecte l'utilisateur
+   */
+  logout(): void {
+    console.log('🚪 Déconnexion en cours...');
+    this.tokenService.logout();
+
+    this.authService.logout()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          console.log('✅ Déconnexion API réussie');
+          this.router.navigate(['/auth/login']);
+        },
+        error: (error) => {
+          console.warn('⚠️ Erreur API déconnexion (ignorée):', error);
+          this.router.navigate(['/auth/login']);
+        }
+      });
+  }
+
+  // ===========================================================================
+  // STATISTIQUES
+  // ===========================================================================
+
+  /**
+   * Charge les statistiques pour le menu
+   */
   loadStatistics(): void {
-    // Charger les statistiques pour le menu
-    this.subscriptions.add(
-      this.tiersService.getTiersList({
-        pageNumber: 1,
-        pageSize: 50
-      }).subscribe({
+    // Note: La méthode subscriptions.add n'existe pas dans le contexte actuel
+    // Cette méthode est probablement un reste de code à corriger
+    this.tiersService.getTiersList({
+      pageNumber: 1,
+      pageSize: 50
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: (response) => {
           const firstPageTiers = response.data || [];
 
@@ -184,10 +423,12 @@ export class TierForm implements OnInit, OnDestroy {
           console.warn('⚠️ Erreur chargement statistiques:', error);
           this.setDefaultStatistics();
         }
-      })
-    );
+      });
   }
 
+  /**
+   * Définit des statistiques par défaut en cas d'erreur
+   */
   private setDefaultStatistics(): void {
     // Valeurs par défaut pour l'affichage du menu
     this.stats = {
@@ -213,8 +454,14 @@ export class TierForm implements OnInit, OnDestroy {
     };
   }
 
-  // === FORMULAIRE ===
+  // ===========================================================================
+  // GESTION DU FORMULAIRE
+  // ===========================================================================
 
+  /**
+   * Crée le formulaire de création de tier
+   * @returns Formulaire initialisé
+   */
   createTierForm(): FormGroup {
     return this.formBuilder.group({
       // Informations personnelles
@@ -244,10 +491,17 @@ export class TierForm implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Getter pour accéder facilement aux contrôles du formulaire
+   */
   get f() {
     return this.tierForm.controls;
   }
 
+  /**
+   * Calcule le pourcentage de progression du formulaire
+   * @returns Pourcentage de progression (0-100)
+   */
   getFormProgress(): number {
     const totalFields = 7; // Nombre de champs obligatoires
     let completedFields = 0;
@@ -263,6 +517,10 @@ export class TierForm implements OnInit, OnDestroy {
     return Math.round((completedFields / totalFields) * 100);
   }
 
+  /**
+   * Gère le changement de sélection des rôles
+   * @param event - Événement de changement de case à cocher
+   */
   onRoleChange(event: any): void {
     const roleValue = parseInt(event.target.value);
     const isChecked = event.target.checked;
@@ -279,8 +537,13 @@ export class TierForm implements OnInit, OnDestroy {
     }
   }
 
-  // === SOUMISSION ===
+  // ===========================================================================
+  // SOUMISSION DU FORMULAIRE
+  // ===========================================================================
 
+  /**
+   * Soumet le formulaire pour créer un nouveau tier
+   */
   onSubmit(): void {
     this.submitted = true;
     this.error = null;
@@ -296,16 +559,13 @@ export class TierForm implements OnInit, OnDestroy {
 
     // Arrêter si le formulaire est invalide
     if (this.tierForm.invalid) {
-      this.notificationService.warning(
-        'Formulaire incomplet',
-        'Veuillez remplir correctement tous les champs obligatoires'
-      );
+      this.notifyFormErrors();
       return;
     }
 
     this.loading = true;
 
-    // Récupérer les valeurs du formulaire avec des vérifications de nullité
+    // Récupérer les valeurs du formulaire
     const formValue = this.tierForm.value;
 
     // Préparer la requête selon l'interface CreateTierRequest
@@ -335,7 +595,7 @@ export class TierForm implements OnInit, OnDestroy {
               `Le tier ${response.data.tierNumber} a été créé avec succès`
             );
 
-            // Rediriger vers la liste ou les détails
+            // Rediriger vers la liste des tiers
             this.router.navigate(['/dashboard/tiers']);
           } else {
             this.error = response.message || 'Erreur lors de la création du tier';
@@ -358,6 +618,9 @@ export class TierForm implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Sauvegarde le formulaire en tant que brouillon
+   */
   saveAsDraft(): void {
     this.submitted = true;
 
@@ -377,6 +640,9 @@ export class TierForm implements OnInit, OnDestroy {
     this.onSubmit();
   }
 
+  /**
+   * Annule la création et retourne à la liste
+   */
   onCancel(): void {
     if (this.tierForm.dirty) {
       if (confirm('Voulez-vous vraiment annuler ? Les modifications non sauvegardées seront perdues.')) {
@@ -387,8 +653,70 @@ export class TierForm implements OnInit, OnDestroy {
     }
   }
 
-  // === UTILITAIRES ===
+  /**
+   * Notifie les erreurs de validation du formulaire
+   */
+  private notifyFormErrors(): void {
+    Object.keys(this.tierForm.controls).forEach(field => {
+      const control = this.tierForm.get(field);
 
+      if (control && control.invalid) {
+        if (control.errors?.['required']) {
+          this.notificationService.warning(
+            'Champ requis',
+            `Le champ "${this.getFieldLabel(field)}" est obligatoire`
+          );
+        }
+
+        if (control.errors?.['email']) {
+          this.notificationService.warning(
+            'Email invalide',
+            'Veuillez saisir une adresse email valide'
+          );
+        }
+
+        if (control.errors?.['minlength']) {
+          this.notificationService.warning(
+            'Valeur trop courte',
+            `Le champ "${this.getFieldLabel(field)}" ne respecte pas la longueur minimale`
+          );
+        }
+
+        if (control.errors?.['pattern']) {
+          this.notificationService.warning(
+            'Format invalide',
+            `Le champ "${this.getFieldLabel(field)}" a un format incorrect`
+          );
+        }
+      }
+    });
+  }
+
+  /**
+   * Obtient le libellé d'un champ pour l'affichage
+   * @param field - Nom du champ
+   * @returns Libellé du champ
+   */
+  private getFieldLabel(field: string): string {
+    const labels: Record<string, string> = {
+      firstName: 'Prénom',
+      lastName: 'Nom',
+      identityType: 'Type de pièce',
+      identityNumber: 'Numéro de pièce',
+      phone: 'Téléphone',
+      email: 'Email'
+    };
+    return labels[field] || field;
+  }
+
+  // ===========================================================================
+  // UTILITAIRES
+  // ===========================================================================
+
+  /**
+   * Construit l'objet d'adresse à partir des valeurs du formulaire
+   * @returns Objet d'adresse ou undefined
+   */
   private getAddressObject(): any | undefined {
     const street = this.tierForm.value.street;
     const city = this.tierForm.value.city;
@@ -407,10 +735,20 @@ export class TierForm implements OnInit, OnDestroy {
     return undefined;
   }
 
+  /**
+   * Formate un numéro de téléphone
+   * @param phone - Numéro de téléphone à formater
+   * @returns Numéro formaté
+   */
   formatPhoneNumber(phone: string): string {
     return this.tiersService.formatPhoneNumber(phone);
   }
 
+  /**
+   * Formate une date
+   * @param date - Date à formater
+   * @returns Date formatée
+   */
   formatDate(date: Date | string | undefined): string {
     if (!date) return 'N/A';
     try {
@@ -420,147 +758,55 @@ export class TierForm implements OnInit, OnDestroy {
     }
   }
 
-  // === GESTION UTILISATEUR ===
+  // ===========================================================================
+  // UTILITAIRES D'AFFICHAGE (POUR LE TEMPLATE)
+  // ===========================================================================
 
-  loadCurrentUser(): void {
-    this.authService.getCurrentUser()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (user: User) => {
-          this.currentUser = user;
-          this.userName = this.formatUserName(user);
-          this.userPhotoUrl = this.getUserPhotoUrl(user);
-        },
-        error: (error) => {
-          console.error('Erreur chargement utilisateur:', error);
-          if (error.status === 401) {
-            this.tokenService.handleTokenExpired();
-          } else {
-            this.setDefaultUser();
-          }
-        }
-      });
-  }
-
-  private setDefaultUser(): void {
-    this.userName = 'Utilisateur Logistiks';
-    this.userPhotoUrl = this.generateAvatarUrl({ firstName: 'Utilisateur' } as User);
-  }
-
-  formatUserName(user: any): string {
-    if (user.firstName && user.lastName) {
-      return `${user.firstName} ${user.lastName}`;
-    } else if (user.firstName) {
-      return user.firstName;
-    } else if (user.username) {
-      return user.username;
-    } else if (user.email) {
-      return user.email.split('@')[0];
-    }
-    return 'Utilisateur Logistiks';
-  }
-
-  getUserPhotoUrl(user: User): string {
-    // Si photoUrl est présent et c'est un ID MongoDB (24 caractères hexadécimaux)
-    if (user.photoUrl && /^[0-9a-fA-F]{24}$/.test(user.photoUrl)) {
-      return `${environment.apiUrl}/api/User/photo/${user.photoUrl}`;
-    }
-
-    // Si photoUrl est déjà une URL complète
-    if (user.photoUrl && user.photoUrl.startsWith('http')) {
-      return user.photoUrl;
-    }
-
-    // Sinon, générer un avatar
-    return this.generateAvatarUrl(user);
-  }
-
-  generateAvatarUrl(user: User): string {
-    const name = this.formatUserName(user);
-    const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
-    const colorIndex = name.length % colors.length;
-
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
-  }
-
-  getUserInitials(): string {
-    const name = this.userName;
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
-    }
-    return name.charAt(0).toUpperCase();
-  }
-
-  getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
-  }
-
-  // === GESTION MENU ===
-
-  toggleUserMenu(): void {
-    this.showUserMenu = !this.showUserMenu;
-  }
-
-  @HostListener('document:click', ['$event'])
-  closeUserMenu(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.dropdown-toggle') && !target.closest('.dropdown-menu')) {
-      this.showUserMenu = false;
-    }
-  }
-
-  toggleSidebar(): void {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed;
-  }
-
-      toggleMenu(event: MouseEvent): void {
-    const element = event.currentTarget as HTMLElement;
-    if (element && element.parentElement) {
-      element.parentElement.classList.toggle('open');
-    }
-  }
-
-  logout(): void {
-    console.log('🚪 Déconnexion en cours...');
-    this.tokenService.logout();
-
-    this.authService.logout()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          console.log('✅ Déconnexion API réussie');
-          this.router.navigate(['/auth/login']);
-        },
-        error: (error) => {
-          console.warn('⚠️ Erreur API déconnexion (ignorée):', error);
-          this.router.navigate(['/auth/login']);
-        }
-      });
-  }
-
-  // === MÉTHODES UTILITAIRES POUR LE TEMPLATE ===
-
+  /**
+   * Obtient la classe CSS pour un badge de rôle
+   * @param roleType - Type de rôle
+   * @returns Classe CSS
+   */
   getRoleBadgeClass(roleType: TierRoleType): string {
     const role = this.roles.find(r => r.value === roleType);
     return role ? `badge-${role.color}` : 'badge-secondary';
   }
 
+  /**
+   * Obtient la classe CSS pour un badge de statut
+   * @param status - Statut du tier
+   * @returns Classe CSS
+   */
   getStatusBadgeClass(status: TierStatus): string {
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? `badge-${statusObj.badge}` : 'badge-secondary';
   }
 
+  /**
+   * Obtient le texte d'un statut
+   * @param status - Statut du tier
+   * @returns Texte du statut
+   */
   getStatusText(status: TierStatus): string {
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? statusObj.label : 'Inconnu';
   }
 
+  /**
+   * Obtient le texte d'un rôle
+   * @param roleType - Type de rôle
+   * @returns Texte du rôle
+   */
   getRoleText(roleType: TierRoleType): string {
     const role = this.roles.find(r => r.value === roleType);
     return role ? role.label : 'Inconnu';
   }
 
+  /**
+   * Obtient l'icône d'un statut
+   * @param status - Statut du tier
+   * @returns Classe de l'icône
+   */
   getStatusIcon(status: TierStatus): string {
     switch (status) {
       case TierStatus.Active:
@@ -576,6 +822,10 @@ export class TierForm implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Getter de compatibilité (à supprimer - code résiduel)
+   * @deprecated Cette méthode ne devrait pas exister
+   */
   get subscriptions(): any {
     return { add: (callback: any) => callback };
   }
