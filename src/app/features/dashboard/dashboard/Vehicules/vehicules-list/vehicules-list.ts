@@ -13,6 +13,8 @@ import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 import { Tier } from '../../../../../core/models/Tiers/Tiers';
 import { Tiers } from '../../../../../core/services/Tiers/tiers';
+import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
+import { RentalContract } from '../../../../../core/models/Contracts/Rental-contract.model';
 
 /**
  * Composant de gestion de la liste des véhicules
@@ -22,7 +24,7 @@ import { Tiers } from '../../../../../core/services/Tiers/tiers';
  */
 @Component({
   selector: 'app-vehicules-list',
-  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule, NotificationComponent],
   templateUrl: './vehicules-list.html',
   styleUrls: ['./vehicules-list.scss'],
 })
@@ -30,6 +32,20 @@ export class VehiculesList implements OnInit, OnDestroy {
   // ============================================================================
   // SECTION 1: PROPRIÉTÉS DE GESTION DE L'ÉTAT DE L'INTERFACE
   // ============================================================================
+
+  /** Liste des véhicules affichés */
+  vehicles: VehicleDto[] = [];
+  /** Liste des tiers disponibles */
+  tiersList: Tier[] = [];
+  /** Liste filtrée des tiers pour l'autocomplétion */
+  filteredTiers: Tier[] = [];
+  /** Réservations actives */
+  activeReservations: any[] = [];
+
+  /** Liste des contrats disponibles pour la confirmation */
+  availableContracts: RentalContract[] = [];
+  /** Contrats filtrés pour la sélection */
+  filteredContracts: RentalContract[] = [];
 
   /** Contrôle l'affichage du modal d'édition */
   showEditModal = false;
@@ -58,15 +74,6 @@ export class VehiculesList implements OnInit, OnDestroy {
   // ============================================================================
   // SECTION 2: PROPRIÉTÉS DE DONNÉES
   // ============================================================================
-
-  /** Liste des véhicules affichés */
-  vehicles: VehicleDto[] = [];
-  /** Liste des tiers disponibles */
-  tiersList: Tier[] = [];
-  /** Liste filtrée des tiers pour l'autocomplétion */
-  filteredTiers: Tier[] = [];
-  /** Réservations actives */
-  activeReservations: any[] = [];
 
   /** Statistiques de l'application */
   dashboardStats = {
@@ -361,8 +368,9 @@ export class VehiculesList implements OnInit, OnDestroy {
 
     // Formulaire de confirmation
     this.confirmReservationForm = this.formBuilder.group({
-      contractId: ['', [Validators.required, Validators.pattern(/^[0-9a-fA-F]{24}$/)]]
-    });
+    contractId: ['', [Validators.required, Validators.pattern(/^[0-9a-fA-F]{24}$/)]],
+    additionalNotes: ['']
+  });
   }
 
   // ============================================================================
@@ -806,6 +814,220 @@ export class VehiculesList implements OnInit, OnDestroy {
   }
 
   /**
+ * Charge la liste des contrats disponibles pour confirmation
+ */
+  loadAvailableContracts(): void {
+    // Note: Vous devrez créer ce service ou adapter votre service existant
+    // Pour l'exemple, je simule une liste de contrats
+    this.availableContracts = [
+      {
+        id: '1234567890abcdef12345678',
+        contractNumber: 'CONT-2024-001',
+        customerId: '',
+        vehicleId: '',
+        startDate: new Date(),
+        endDate: new Date(),
+        durationInWeeks: 4,
+        weeklyAmount: 50000,
+        totalAmount: 200000,
+        securityDeposit: 100000,
+        depositPaid: true,
+        paymentFrequency: 1,
+        paymentDay: 1,
+        status: 1,
+        terms: {
+          latePaymentFee: 5000,
+          damageFee: 100000,
+          earlyTerminationFee: 2,
+          mileageOverFee: 500,
+          insuranceDeductible: 50000,
+          additionalTerms: []
+        },
+        weeklyMileageLimit: 500,
+        documents: [],
+        createdAt: new Date(),
+        createdBy: ''
+      },
+      {
+        id: 'abcdef123456789012345678',
+        contractNumber: 'CONT-2024-002',
+        customerId: '',
+        vehicleId: '',
+        startDate: new Date(),
+        endDate: new Date(),
+        durationInWeeks: 8,
+        weeklyAmount: 75000,
+        totalAmount: 600000,
+        securityDeposit: 150000,
+        depositPaid: false,
+        paymentFrequency: 2,
+        paymentDay: 3,
+        status: 2,
+        terms: {
+          latePaymentFee: 5000,
+          damageFee: 100000,
+          earlyTerminationFee: 2,
+          mileageOverFee: 500,
+          insuranceDeductible: 50000,
+          additionalTerms: ['Location longue durée']
+        },
+        weeklyMileageLimit: 750,
+        documents: [],
+        createdAt: new Date(),
+        createdBy: ''
+      }
+    ];
+
+    this.filteredContracts = [...this.availableContracts];
+  }
+
+  /**
+   * Filtre les contrats selon le terme de recherche
+   */
+  filterContracts(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredContracts = this.availableContracts;
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    this.filteredContracts = this.availableContracts.filter(contract =>
+      contract.contractNumber.toLowerCase().includes(term) ||
+      contract.id.toLowerCase().includes(term)
+    );
+  }
+
+  // ============================================================================
+  // SECTION 24: MÉTHODES POUR LA GESTION DES RÉSERVATIONS
+  // ============================================================================
+
+  /**
+   * Ouvre le modal de confirmation de réservation
+   */
+  openConfirmReservationModal(reservation: any): void {
+    this.selectedReservation = reservation;
+    this.confirmReservationForm.reset();
+    this.confirmReservationSubmitted = false;
+    this.showConfirmReservationModal = true;
+
+    // Charger les contrats disponibles
+    this.loadAvailableContracts();
+
+    // Pré-remplir avec le contrat si déjà lié
+    if (reservation.contractId) {
+      this.confirmReservationForm.patchValue({
+        contractId: reservation.contractId
+      });
+    }
+  }
+
+  /**
+   * Sélectionne un contrat
+   */
+  selectContract(contract: RentalContract): void {
+    this.confirmReservationForm.patchValue({
+      contractId: contract.id
+    });
+
+    // Scroller vers l'élément sélectionné
+    setTimeout(() => {
+      const selectedElement = document.querySelector('.contract-item.bg-light');
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  }
+
+  /**
+   * Récupère le contrat sélectionné
+   */
+  getSelectedContract(): RentalContract | undefined {
+    const contractId = this.confirmReservationForm.get('contractId')?.value;
+    if (!contractId) return undefined;
+
+    return this.availableContracts.find(c => c.id === contractId);
+  }
+
+  /**
+   * Calcule le nombre de jours restants avant expiration
+   */
+  getDaysRemaining(expiryDate: Date | string | undefined): number {
+    if (!expiryDate) return 0;
+
+    try {
+      const expiry = new Date(expiryDate);
+      const today = new Date();
+      const diffTime = expiry.getTime() - today.getTime();
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  /**
+   * Obtient l'icône du type de véhicule
+   */
+  getVehicleTypeIcon(vehicleType?: string): string {
+    if (!vehicleType) return 'bx bx-car';
+
+    switch (vehicleType.toLowerCase()) {
+      case 'moto': return 'bx bx-cycling';
+      case 'voiture': return 'bx bx-car';
+      case 'tricycle': return 'bx bx-cycling';
+      case 'scooter': return 'bx bx-cycling';
+      case 'van': return 'bx bx-bus';
+      default: return 'bx bx-car';
+    }
+  }
+
+  /**
+   * Obtient la classe CSS pour le badge de statut de contrat
+   */
+  getContractStatusBadge(status: number): string {
+    switch (status) {
+      case 1: return 'badge-info'; // Draft
+      case 2: return 'badge-warning'; // Pending
+      case 3: return 'badge-success'; // Active
+      case 4: return 'badge-secondary'; // Suspended
+      case 5: return 'badge-danger'; // Terminated
+      case 6: return 'badge-primary'; // Completed
+      default: return 'badge-secondary';
+    }
+  }
+
+  /**
+   * Obtient le texte du statut du contrat
+   */
+  getContractStatusText(status: number): string {
+    switch (status) {
+      case 1: return 'Brouillon';
+      case 2: return 'En attente';
+      case 3: return 'Actif';
+      case 4: return 'Suspendu';
+      case 5: return 'Résilié';
+      case 6: return 'Terminé';
+      default: return 'Inconnu';
+    }
+  }
+
+  /**
+   * Affiche les détails d'une réservation
+   */
+  showReservationDetails(reservation: any): void {
+    console.log('Détails de la réservation:', reservation);
+
+    // Vous pouvez créer un modal de détails ici
+    this.notificationService.info(
+      'Détails de la réservation',
+      `Véhicule: ${reservation.vehicleName || 'N/A'}<br>
+     Client: ${reservation.customerName || 'N/A'}<br>
+     Date début: ${this.formatReservationDate(reservation.expectedStartDate)}<br>
+     Date fin: ${this.formatReservationDate(reservation.expiryDate)}<br>
+     Statut: ${this.getReservationStatusText(reservation.status)}`
+    );
+  }
+
+  /**
    * Gère le succès de l'édition
    */
   private handleEditSuccess(response: any): void {
@@ -867,8 +1089,8 @@ export class VehiculesList implements OnInit, OnDestroy {
   // ============================================================================
 
   /**
-   * Charge les réservations actives
-   */
+ * Charge les réservations actives avec enrichissement des données
+ */
   loadActiveReservations(): void {
     this.reservationsLoading = true;
     this.vehiclesService.getActiveReservations()
@@ -880,14 +1102,158 @@ export class VehiculesList implements OnInit, OnDestroy {
   }
 
   /**
-   * Gère la réponse des réservations
+   * Gère la réponse des réservations avec enrichissement des données
    */
   private handleReservationsResponse(response: any): void {
-    this.reservationsLoading = false;
-    if (response.success && response.data) {
-      this.activeReservations = response.data;
+  this.reservationsLoading = false;
+
+  if (response.success && response.data) {
+    this.activeReservations = response.data;
+
+    // Charger les véhicules et clients AVANT d'enrichir
+    this.loadDataForReservations();
+  }
+}
+
+/**
+ * Charge les données nécessaires pour enrichir les réservations
+ */
+private loadDataForReservations(): void {
+  // 1. Charger les véhicules si nécessaire
+  if (this.vehicles.length === 0) {
+    this.vehiclesService.searchVehicles({
+      page: 1, pageSize: 100,
+      sortDescending: false
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.vehicles = response.data;
+            this.enrichReservationsData();
+          }
+        },
+        error: (error) => {
+          console.error('Erreur chargement véhicules:', error);
+          this.enrichReservationsData(); // Essayer quand même avec les données disponibles
+        }
+      });
+  } else {
+    // 2. Charger les clients si nécessaire
+    if (this.tiersList.length === 0) {
+      this.tiersService.getTiersList({
+        pageNumber: 1,
+        pageSize: 100
+      }).subscribe({
+        next: (response) => {
+          if (response.data) {
+            this.tiersList = response.data;
+            this.enrichReservationsData();
+          }
+        },
+        error: (error) => {
+          console.error('Erreur chargement clients:', error);
+          this.enrichReservationsData();
+        }
+      });
+    } else {
+      this.enrichReservationsData();
     }
   }
+}
+
+  /**
+   * Enrichit les réservations avec les données des véhicules et clients
+   */
+  private enrichReservationsData(): void {
+  this.activeReservations.forEach(reservation => {
+    // Récupérer le véhicule correspondant
+    const vehicle = this.vehicles.find(v => v.id === reservation.vehicleId);
+    if (vehicle) {
+      reservation.vehicleCode = vehicle.code;
+      reservation.vehicleName = `${vehicle.brand} ${vehicle.model} (${vehicle.plateNumber})`;
+      reservation.vehicleType = this.getTypeText(vehicle.type);
+    } else {
+      reservation.vehicleCode = 'N/A';
+      reservation.vehicleName = `Véhicule ${reservation.vehicleId?.substring(0, 8) || 'inconnu'}`;
+
+      // Essayer de charger ce véhicule spécifique
+      this.loadReservationVehicle(reservation);
+    }
+
+    // Récupérer le client correspondant
+    const client = this.tiersList.find(t => t.id === reservation.customerId);
+    if (client) {
+      reservation.customerName = this.tiersService.getFullName(client);
+      reservation.customerPhone = client.phone;
+      reservation.customerTierNumber = client.tierNumber;
+    } else {
+      reservation.customerName = 'Client non chargé';
+      reservation.customerPhone = null;
+
+      // Charger le client spécifique
+      this.loadReservationClient(reservation);
+    }
+  });
+}
+
+/**
+ * Charge les données d'un véhicule spécifique pour une réservation
+ */
+private loadReservationVehicle(reservation: any): void {
+  this.vehiclesService.getVehicleById(reservation.vehicleId)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          const vehicle = response.data;
+
+          // Mettre à jour la réservation
+          const reservationIndex = this.activeReservations.findIndex(r => r.id === reservation.id);
+          if (reservationIndex !== -1) {
+            this.activeReservations[reservationIndex].vehicleCode = vehicle.code;
+            this.activeReservations[reservationIndex].vehicleName = `${vehicle.brand} ${vehicle.model} (${vehicle.plateNumber})`;
+            this.activeReservations[reservationIndex].vehicleType = this.getTypeText(vehicle.type);
+
+            // Forcer la détection des changements
+            this.activeReservations = [...this.activeReservations];
+          }
+        }
+      },
+      error: (error) => {
+        console.warn('Impossible de charger le véhicule:', error);
+      }
+    });
+}
+
+  /**
+ * Charge les données d'un client spécifique pour une réservation
+ */
+private loadReservationClient(reservation: any): void {
+  this.tiersService.getTierById(reservation.customerId)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          const client = response.data;
+
+          // Mettre à jour la réservation
+          const reservationIndex = this.activeReservations.findIndex(r => r.id === reservation.id);
+          if (reservationIndex !== -1) {
+            this.activeReservations[reservationIndex].customerName = this.tiersService.getFullName(client);
+            this.activeReservations[reservationIndex].customerPhone = client.phone;
+            this.activeReservations[reservationIndex].customerTierNumber = client.tierNumber;
+
+            // Forcer la détection des changements
+            this.activeReservations = [...this.activeReservations];
+          }
+        }
+      },
+      error: (error) => {
+        console.warn('Impossible de charger le client:', error);
+      }
+    });
+}
 
   /**
    * Gère les erreurs de chargement des réservations
@@ -1018,25 +1384,61 @@ export class VehiculesList implements OnInit, OnDestroy {
   }
 
   /**
-   * Gère le succès de la réservation
-   */
+ * Gère le succès de la réservation
+ */
   private handleReservationSuccess(response: any): void {
     this.reservationLoading = false;
 
-    if (response.status === 200 && response.statusText === 'OK') {
+    // DEBUG: Afficher la structure complète de la réponse
+    console.log('📡 Réponse complète de la réservation:', response);
+    console.log('📡 Status:', response.status);
+    console.log('📡 StatusText:', response.statusText);
+    console.log('📡 Body:', response.body);
+    console.log('📡 Success property:', response.success);
+    console.log('📡 StatusCode property:', response.statusCode);
+
+    // Vérifier différentes structures de réponse possibles
+    const isSuccess =
+      response.status === 200 ||
+      response.status === 201 ||
+      response.success === true ||
+      response.ok === true ||
+      (response.body && response.body.success === true) ||
+      (typeof response === 'string' && response.includes('success'));
+
+    if (isSuccess) {
       this.notificationService.success(
-        'Réservation effectuée',
-        response.statusText || 'Le véhicule a été réservé avec succès'
+        'Réservation effectuée ✅',
+        'Le véhicule a été réservé avec succès'
       );
 
       this.closeReservationModal();
       this.loadVehicles(this.pagination.currentPage);
       this.loadActiveReservations();
+
+      // Optionnel: Rediriger ou afficher un message supplémentaire
+      setTimeout(() => {
+        this.notificationService.info(
+          'Réservation confirmée',
+          'Vous pouvez consulter la réservation dans le menu "Réservations"'
+        );
+      }, 1000);
     } else {
+      // Extraire le message d'erreur de différentes propriétés possibles
+      const errorMessage =
+        response.message ||
+        response.error?.message ||
+        response.body?.message ||
+        response.statusText ||
+        'Impossible de réserver le véhicule';
+
       this.notificationService.error(
-        'Erreur de réservation',
-        response.statusText || 'Impossible de réserver le véhicule'
+        'Erreur de réservation ❌',
+        errorMessage
       );
+
+      // Optionnel: Afficher plus de détails dans la console
+      console.error('❌ Détails de l\'erreur:', response);
     }
   }
 
@@ -1084,25 +1486,194 @@ export class VehiculesList implements OnInit, OnDestroy {
   }
 
   /**
-   * Gère le succès de l'annulation
-   */
+ * Gère le succès de l'annulation de réservation
+ */
   private handleCancelReservationSuccess(response: any): void {
     this.cancelReservationLoading = false;
 
-    if (response.status === 200) {
-      this.notificationService.success(
-        'Réservation annulée',
-        response.statusText || 'La réservation a été annulée avec succès'
-      );
+    // Debug log
+    console.log('📡 Réponse annulation réservation:', response);
 
-      this.showCancelReservationModal = false;
-      this.loadVehicles(this.pagination.currentPage);
-      this.loadActiveReservations();
-    } else {
+    try {
+      // Vérification flexible du succès
+      const isSuccess = this.checkCancellationSuccess(response);
+
+      if (isSuccess) {
+        const successMessage = this.extractCancellationSuccessMessage(response);
+
+        this.notificationService.success(
+          '✅ Réservation annulée',
+          successMessage
+        );
+
+        // Actions de succès
+        this.closeCancellationModal();
+        this.refreshRelevantData();
+
+        // Message informatif supplémentaire
+        this.showCancellationFeedback();
+
+      } else {
+        this.handleCancellationFailure(response);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du traitement de l\'annulation:', error);
       this.notificationService.error(
-        'Erreur d\'annulation',
-        response.statusText || 'Impossible d\'annuler la réservation'
+        'Erreur de traitement',
+        'Une erreur est survenue lors du traitement de l\'annulation'
       );
+    }
+  }
+
+  /**
+   * Vérifie si l'annulation est un succès
+   */
+  private checkCancellationSuccess(response: any): boolean {
+    if (!response) return false;
+
+    // Multiples formats de succès supportés
+    return (
+      // Format HTTP standard
+      (response.status && (response.status === 200 || response.status === 204)) ||
+      // Format avec propriété success
+      response.success === true ||
+      // Format avec propriété cancelled
+      response.cancelled === true ||
+      // Format dans data/body
+      (response.data && response.data.success === true) ||
+      (response.body && response.body.cancelled === true) ||
+      // Format texte
+      (typeof response === 'string' && (
+        response.toLowerCase().includes('cancelled') ||
+        response.toLowerCase().includes('annulé') ||
+        response.toLowerCase().includes('success')
+      ))
+    );
+  }
+
+  /**
+   * Extrait le message de succès d'annulation
+   */
+  private extractCancellationSuccessMessage(response: any): string {
+    // Priorités pour extraire le message
+    if (response.message) return response.message;
+    if (response.data?.message) return response.data.message;
+    if (response.body?.message) return response.body.message;
+    if (response.statusText && response.statusText !== 'OK') return response.statusText;
+
+    // Message par défaut avec emoji approprié
+    return 'La réservation a été annulée avec succès ✨';
+  }
+
+  /**
+   * Ferme le modal d'annulation
+   */
+  private closeCancellationModal(): void {
+    this.showCancelReservationModal = false;
+    this.selectedReservation = null;
+    this.cancelReservationForm.reset();
+    this.cancelReservationSubmitted = false;
+  }
+
+  /**
+   * Rafraîchit les données pertinentes
+   */
+  private refreshRelevantData(): void {
+    // Rafraîchir la liste des véhicules
+    this.loadVehicles(this.pagination.currentPage);
+
+    // Rafraîchir les réservations actives
+    this.loadActiveReservations();
+
+    // Optionnel: Rafraîchir les statistiques
+    setTimeout(() => {
+      this.loadStatistics();
+    }, 500);
+  }
+
+  /**
+   * Affiche un feedback supplémentaire
+   */
+  private showCancellationFeedback(): void {
+    setTimeout(() => {
+      if (this.selectedReservation?.customerName) {
+        this.notificationService.info(
+          'Client notifié',
+          `Le client ${this.selectedReservation.customerName} a été notifié de l'annulation`
+        );
+      }
+    }, 1000);
+  }
+
+  /**
+   * Gère les échecs d'annulation
+   */
+  private handleCancellationFailure(response: any): void {
+    let errorTitle = 'Erreur d\'annulation';
+    let errorMessage = 'Impossible d\'annuler la réservation';
+
+    // Extraction du message d'erreur
+    if (response.message) {
+      errorMessage = response.message;
+    } else if (response.error?.message) {
+      errorMessage = response.error.message;
+    } else if (response.body?.message) {
+      errorMessage = response.body.message;
+    } else if (response.status) {
+      // Messages basés sur le code HTTP
+      switch (response.status) {
+        case 400:
+          errorTitle = 'Requête invalide';
+          errorMessage = 'La requête d\'annulation est incorrecte';
+          break;
+        case 401:
+          errorTitle = 'Non autorisé';
+          errorMessage = 'Votre session a expiré';
+          break;
+        case 403:
+          errorTitle = 'Interdit';
+          errorMessage = 'Vous n\'avez pas les permissions pour annuler cette réservation';
+          break;
+        case 404:
+          errorTitle = 'Non trouvé';
+          errorMessage = 'La réservation à annuler n\'existe pas';
+          break;
+        case 409:
+          errorTitle = 'Conflit';
+          errorMessage = 'Cette réservation ne peut pas être annulée (déjà confirmée ou expirée)';
+          break;
+        case 410:
+          errorTitle = 'Déjà annulée';
+          errorMessage = 'Cette réservation a déjà été annulée';
+          break;
+        case 422:
+          errorTitle = 'Données manquantes';
+          errorMessage = 'Le motif d\'annulation est requis';
+          break;
+        case 423:
+          errorTitle = 'Verrouillé';
+          errorMessage = 'La réservation est verrouillée et ne peut pas être annulée';
+          break;
+        case 500:
+          errorTitle = 'Erreur serveur';
+          errorMessage = 'Le serveur rencontre des difficultés techniques';
+          break;
+      }
+    }
+
+    this.notificationService.error(errorTitle, errorMessage);
+
+    // Conserver le formulaire ouvert pour correction
+    this.cancelReservationSubmitted = false;
+
+    // Proposition de solution
+    if (response.status === 409 || response.status === 423) {
+      setTimeout(() => {
+        this.notificationService.warning(
+          'Alternative',
+          'Contactez le support pour obtenir de l\'aide sur cette réservation'
+        );
+      }, 1500);
     }
   }
 
@@ -1115,16 +1686,6 @@ export class VehiculesList implements OnInit, OnDestroy {
       'Erreur',
       error.message || 'Une erreur est survenue lors de l\'annulation'
     );
-  }
-
-  /**
-   * Ouvre le modal de confirmation de réservation
-   */
-  openConfirmReservationModal(reservation: any): void {
-    this.selectedReservation = reservation;
-    this.confirmReservationForm.reset();
-    this.confirmReservationSubmitted = false;
-    this.showConfirmReservationModal = true;
   }
 
   /**
@@ -1150,25 +1711,176 @@ export class VehiculesList implements OnInit, OnDestroy {
   }
 
   /**
-   * Gère le succès de la confirmation
-   */
+ * Gère le succès de la confirmation de réservation
+ */
   private handleConfirmReservationSuccess(response: any): void {
     this.confirmReservationLoading = false;
 
-    if (response.status === 200) {
-      this.notificationService.success(
-        'Réservation confirmée',
-        response.statusText || 'La réservation a été liée au contrat avec succès'
-      );
+    // Log pour débogage
+    console.log('📡 Réponse confirmation réservation:', response);
 
-      this.showConfirmReservationModal = false;
-      this.loadActiveReservations();
-    } else {
+    try {
+      // Vérifier différents formats de succès
+      const isSuccess = this.checkConfirmationSuccess(response);
+
+      if (isSuccess) {
+        const successMessage = this.extractConfirmationSuccessMessage(response);
+
+        this.notificationService.success(
+          '✅ Réservation confirmée',
+          successMessage
+        );
+
+        // Fermer le modal
+        this.showConfirmReservationModal = false;
+
+        // Rafraîchir les données
+        this.loadActiveReservations();
+
+        // Si un véhicule spécifique était sélectionné, rafraîchir aussi sa liste
+        if (this.selectedReservation?.vehicleId) {
+          this.loadVehicles(this.pagination.currentPage);
+        }
+
+        // Message informatif supplémentaire
+        setTimeout(() => {
+          if (this.selectedReservation) {
+            this.notificationService.info(
+              'Contrat lié',
+              `Le contrat ${this.confirmReservationForm.get('contractId')?.value} a été associé avec succès`
+            );
+          }
+        }, 800);
+      } else {
+        // Gérer l'erreur
+        this.handleConfirmationError(response);
+      }
+    } catch (error) {
+      console.error('❌ Erreur inattendue dans handleConfirmReservationSuccess:', error);
       this.notificationService.error(
-        'Erreur de confirmation',
-        response.statusText || 'Impossible de confirmer la réservation'
+        'Erreur inattendue',
+        'Une erreur est survenue lors du traitement de la confirmation'
       );
     }
+  }
+
+  /**
+   * Vérifie si la confirmation est un succès
+   */
+  private checkConfirmationSuccess(response: any): boolean {
+    if (!response) return false;
+
+    // Format 1: Réponse HTTP standard
+    if (response.status && (response.status === 200 || response.status === 201)) {
+      return true;
+    }
+
+    // Format 2: Réponse avec propriété 'success'
+    if (response.success === true) {
+      return true;
+    }
+
+    // Format 3: Réponse avec propriété 'ok'
+    if (response.ok === true) {
+      return true;
+    }
+
+    // Format 4: Réponse dans 'data' ou 'body'
+    if ((response.data && response.data.success === true) ||
+      (response.body && response.body.success === true)) {
+      return true;
+    }
+
+    // Format 5: Réponse texte indiquant le succès
+    if (typeof response === 'string') {
+      const lowerResponse = response.toLowerCase();
+      return lowerResponse.includes('success') ||
+        lowerResponse.includes('confirm') ||
+        lowerResponse.includes('liée') ||
+        lowerResponse.includes('associée');
+    }
+
+    return false;
+  }
+
+  /**
+   * Extrait le message de succès
+   */
+  private extractConfirmationSuccessMessage(response: any): string {
+    // Priorité 1: Message spécifique de l'API
+    if (response.message) return response.message;
+
+    // Priorité 2: Message dans data
+    if (response.data && response.data.message) return response.data.message;
+
+    // Priorité 3: Message dans body
+    if (response.body && response.body.message) return response.body.message;
+
+    // Priorité 4: StatusText si pertinent
+    if (response.statusText && response.statusText !== 'OK') {
+      return response.statusText;
+    }
+
+    // Priorité 5: Message par défaut
+    return 'La réservation a été liée au contrat avec succès';
+  }
+
+  /**
+   * Gère les erreurs de confirmation
+   */
+  private handleConfirmationError(response: any): void {
+    let errorTitle = 'Erreur de confirmation';
+    let errorMessage = 'Impossible de confirmer la réservation';
+
+    // Extraire le message d'erreur
+    if (response.message) {
+      errorMessage = response.message;
+    } else if (response.error && response.error.message) {
+      errorMessage = response.error.message;
+    } else if (response.body && response.body.message) {
+      errorMessage = response.body.message;
+    } else if (response.data && response.data.message) {
+      errorMessage = response.data.message;
+    } else if (response.statusText && response.statusText !== 'OK') {
+      errorMessage = response.statusText;
+    } else if (response.status) {
+      // Messages basés sur le code HTTP
+      switch (response.status) {
+        case 400:
+          errorTitle = 'Données invalides';
+          errorMessage = 'L\'ID du contrat ou de la réservation est invalide';
+          break;
+        case 401:
+          errorTitle = 'Non autorisé';
+          errorMessage = 'Votre session a expiré';
+          break;
+        case 403:
+          errorTitle = 'Accès refusé';
+          errorMessage = 'Vous n\'avez pas les permissions pour cette action';
+          break;
+        case 404:
+          errorTitle = 'Non trouvé';
+          errorMessage = 'La réservation ou le contrat n\'existe pas';
+          break;
+        case 409:
+          errorTitle = 'Conflit';
+          errorMessage = 'Ce contrat est déjà associé à une autre réservation';
+          break;
+        case 422:
+          errorTitle = 'Données incorrectes';
+          errorMessage = 'Le format de l\'ID de contrat est incorrect';
+          break;
+        case 500:
+          errorTitle = 'Erreur serveur';
+          errorMessage = 'Le serveur rencontre des difficultés';
+          break;
+      }
+    }
+
+    this.notificationService.error(errorTitle, errorMessage);
+
+    // Conserver les données du formulaire en cas d'erreur
+    this.confirmReservationSubmitted = false;
   }
 
   /**

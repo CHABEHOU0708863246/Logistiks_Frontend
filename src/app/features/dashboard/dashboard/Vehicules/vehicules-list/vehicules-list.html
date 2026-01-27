@@ -1,308 +1,298 @@
 <div class="layout-wrapper">
   <!-- SIDEBAR COMPLÈTE -->
-  <aside class="layout-menu" id="sidebar">
-    <div class="app-brand">
-      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-      <div>
-        <span class="app-brand-text">Logistiks</span>
-        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
-      </div>
+<aside class="layout-menu" id="sidebar">
+  <div class="app-brand">
+    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+    <div>
+      <span class="app-brand-text">Logistiks</span>
+      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
     </div>
+  </div>
 
-    <ul class="menu-inner">
-      <li class="menu-item" routerLinkActive="active">
-        <a [routerLink]="['/dashboard']" class="menu-link">
-          <i class="menu-icon bx bx-home-circle"></i>
-          <div>Dashboard</div>
-        </a>
-      </li>
+  <ul class="menu-inner">
+    <li class="menu-item" routerLinkActive="active">
+      <a [routerLink]="['/dashboard']" class="menu-link">
+        <i class="menu-icon bx bx-home-circle"></i>
+        <div>Dashboard</div>
+      </a>
+    </li>
 
-      <li class="menu-header">
-        <span>RÉFÉRENTIELS</span>
-      </li>
+    <li class="menu-header">
+      <span>RÉFÉRENTIELS</span>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-group"></i>
-          <div>Tiers</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-              <div>Tous les tiers</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-              <div>Documents à valider</div>
-              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-                {{ dashboardStats.documentsPending }}
-              </span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-              <div>Gestion des documents</div>
-              <span class="badge badge-info">
-                <i class='bx bx-upload'></i>
-                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-              </span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-              <div>Nouveau tier</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-group"></i>
+        <div>Tiers</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+            <div>Tous les tiers</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+            <div>Documents à valider</div>
+            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+              {{ dashboardStats.documentsPending }}
+            </span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+            <div>Gestion des documents</div>
+            <span class="badge badge-info">
+              <i class='bx bx-upload'></i>
+              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+            </span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+            <div>Nouveau tier</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-car"></i>
-          <div>Véhicules</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-              <div>Tous les véhicules</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
-              <div>Ajouter vehicule</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
-              <div>Affectations</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules/entretien']" class="menu-link">
-              <div>Suivi entretien</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules/assurances']" class="menu-link">
-              <div>Assurances</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-car"></i>
+        <div>Véhicules</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+            <div>Tous les véhicules</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+            <div>Ajouter vehicule</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
+            <div>Affectations</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-folder"></i>
-          <div>Documents</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents']" class="menu-link">
-              <div>Tous les documents</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
-              <div>Contrats signés</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
-              <div>Pièces d'identité</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-              <div>Factures fournisseurs</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-folder"></i>
+        <div>Documents</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents']" class="menu-link">
+            <div>Tous les documents</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
+            <div>Contrats signés</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
+            <div>Pièces d'identité</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+            <div>Factures fournisseurs</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-header">
-        <span>CŒUR MÉTIER</span>
-      </li>
+    <li class="menu-header">
+      <span>CŒUR MÉTIER</span>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-file"></i>
-          <div>Contrats</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-              <div>Tous les contrats</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
-              <div>Contrats actifs</div>
-              <span class="badge badge-success">12</span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
-              <div>À expiration</div>
-              <span class="badge badge-warning">3</span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-              <div>Nouveau contrat</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-file"></i>
+        <div>Contrats</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+            <div>Tous les contrats</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
+            <div>Contrats actifs</div>
+            <span class="badge badge-success">12</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
+            <div>À expiration</div>
+            <span class="badge badge-warning">3</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+            <div>Nouveau contrat</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active">
-        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-          <i class="menu-icon bx bx-calendar"></i>
-          <div>Calendrier & Échéances</div>
-        </a>
-      </li>
+    <li class="menu-item" routerLinkActive="active">
+      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+        <i class="menu-icon bx bx-calendar"></i>
+        <div>Calendrier & Échéances</div>
+      </a>
+    </li>
 
-      <li class="menu-header">
-        <span>FINANCE & COMPTABILITÉ</span>
-      </li>
+    <li class="menu-header">
+      <span>FINANCE & COMPTABILITÉ</span>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-credit-card"></i>
-          <div>Comptes</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-              <div>Comptes bancaires</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-              <div>Mobile Money</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-              <div>Soldes & Bilans</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-credit-card"></i>
+        <div>Comptes</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+            <div>Comptes bancaires</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+            <div>Mobile Money</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+            <div>Soldes & Bilans</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-wallet"></i>
-          <div>Paiements</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-              <div>Tous les paiements</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-              <div>En retard</div><span class="badge badge-danger">5</span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-              <div>En attente</div><span class="badge badge-warning">8</span>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-wallet"></i>
+        <div>Paiements</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+            <div>Tous les paiements</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+            <div>En retard</div><span class="badge badge-danger">5</span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+            <div>En attente</div><span class="badge badge-warning">8</span>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-header">
-        <span>ADMINISTRATION</span>
-      </li>
+    <li class="menu-header">
+      <span>ADMINISTRATION</span>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-user"></i>
-          <div>Utilisateurs</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-              <div>Liste utilisateurs</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-              <div>Détail utilisateur</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-              <div>Formulaire utilisateur</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-              <div>Gestion rôles</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-              <div>Permissions</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-              <div>Profil utilisateur</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-              <div>Sessions</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-              <div>Activité</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-              <div>Groupes</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-user"></i>
+        <div>Utilisateurs</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+            <div>Liste utilisateurs</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+            <div>Détail utilisateur</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+            <div>Formulaire utilisateur</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+            <div>Gestion rôles</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+            <div>Permissions</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+            <div>Profil utilisateur</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+            <div>Sessions</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+            <div>Activité</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+            <div>Groupes</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-cog"></i>
-          <div>Paramétrage</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-              <div>Paramètres généraux</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-              <div>Types de véhicules</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-cog"></i>
+        <div>Paramétrage</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+            <div>Paramètres généraux</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+            <div>Types de véhicules</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" style="margin-top: 2rem;">
-        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-          <i class="menu-icon bx bx-log-out"></i>
-          <div>Déconnexion</div>
-        </a>
-      </li>
-    </ul>
-  </aside>
+    <li class="menu-item" style="margin-top: 2rem;">
+      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+        <i class="menu-icon bx bx-log-out"></i>
+        <div>Déconnexion</div>
+      </a>
+    </li>
+  </ul>
+</aside>
 
   <!-- MAIN CONTENT -->
   <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
@@ -422,6 +412,7 @@
                     <tr>
                       <th>Véhicule</th>
                       <th>Client</th>
+                      <th>Contact</th>
                       <th>Date début</th>
                       <th>Date fin</th>
                       <th>Statut</th>
@@ -431,14 +422,44 @@
                   <tbody>
                     <tr *ngFor="let reservation of activeReservations">
                       <td>
-                        <strong>{{ reservation.vehicleCode || 'Véhicule ' + reservation.vehicleId.substring(0, 8)
-                          }}</strong>
+                        <div class="d-flex align-items-center gap-2">
+                          <i [class]="getVehicleTypeIcon(reservation.vehicleType)" class="text-primary"></i>
+                          <div>
+                            <strong class="d-block">{{ reservation.vehicleCode || 'N/A' }}</strong>
+                            <small class="text-muted">
+                              {{ reservation.vehicleName || 'Véhicule ' + (reservation.vehicleId ?
+                              reservation.vehicleId.substring(0, 8) : 'N/A') }}
+                            </small>
+                          </div>
+                        </div>
                       </td>
                       <td>
-                        <small>ID: {{ reservation.customerId.substring(0, 8) }}...</small>
+                        <div>
+                          <strong class="d-block">
+                            {{ reservation.customerName || 'Client non chargé' }}
+                          </strong>
+                          <small class="text-muted" *ngIf="reservation.customerTierNumber">
+                            {{ reservation.customerTierNumber }}
+                          </small>
+                        </div>
                       </td>
-                      <td>{{ formatReservationDate(reservation.expectedStartDate) }}</td>
-                      <td>{{ formatReservationDate(reservation.expiryDate) }}</td>
+                      <td>
+                        <small *ngIf="reservation.customerPhone" class="text-primary">
+                          <i class='bx bx-phone'></i> {{ reservation.customerPhone }}
+                        </small>
+                        <small *ngIf="!reservation.customerPhone" class="text-muted">
+                          Téléphone non disponible
+                        </small>
+                      </td>
+                      <td>
+                        {{ formatReservationDate(reservation.expectedStartDate) }}
+                      </td>
+                      <td>
+                        {{ formatReservationDate(reservation.expiryDate) }}
+                        <small class="text-muted d-block">
+                          {{ getDaysRemaining(reservation.expiryDate) }} jours restants
+                        </small>
+                      </td>
                       <td>
                         <span class="badge" [ngClass]="getReservationStatusBadge(reservation.status)">
                           {{ getReservationStatusText(reservation.status) }}
@@ -446,13 +467,17 @@
                       </td>
                       <td>
                         <div class="btn-group btn-group-sm" role="group">
-                          <button class="btn btn-outline-primary" *ngIf="reservation.status === 'Active'"
-                            (click)="openConfirmReservationModal(reservation)">
-                            <i class='bx bx-link'></i>
+                          <button class="btn btn-outline-success" *ngIf="reservation.status === 'Active'"
+                            (click)="openConfirmReservationModal(reservation)" title="Confirmer la réservation">
+                            <i class='bx bx-check'></i>
                           </button>
                           <button class="btn btn-outline-danger" *ngIf="reservation.status === 'Active'"
-                            (click)="openCancelReservationModal(reservation)">
+                            (click)="openCancelReservationModal(reservation)" title="Annuler la réservation">
                             <i class='bx bx-x'></i>
+                          </button>
+                          <button class="btn btn-outline-info" (click)="showReservationDetails(reservation)"
+                            title="Voir les détails">
+                            <i class='bx bx-show'></i>
                           </button>
                         </div>
                       </td>
@@ -666,7 +691,9 @@
                             </button>
                             <ul class="dropdown-menu" [class.show]="vehicle.showActionsMenu">
                               <li>
-                                <hr class="dropdown-divider">
+                                <a class="dropdown-item" (click)="openEditModal(vehicle)">
+                                  <i class='bx bx-edit text-primary'></i> Modifier
+                                </a>
                               </li>
 
                               <!-- VÉHICULE DISPONIBLE -->
@@ -1246,7 +1273,7 @@
       </div>
 
       <div class="modal" *ngIf="showConfirmReservationModal" [class.show]="showConfirmReservationModal">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header bg-success text-white">
               <h5 class="modal-title">
@@ -1257,27 +1284,126 @@
             </div>
 
             <div class="modal-body">
-              <p class="mb-3">Veuillez saisir l'ID du contrat pour confirmer cette réservation :</p>
+              <!-- Résumé de la réservation -->
+              <div class="alert alert-info mb-4">
+                <div class="d-flex align-items-center">
+                  <i class='bx bx-info-circle fs-4 me-3'></i>
+                  <div>
+                    <h6 class="mb-1">Réservation à confirmer</h6>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <small class="d-block"><strong>Véhicule:</strong> {{ selectedReservation?.vehicleName || 'N/A'
+                          }}</small>
+                        <small class="d-block"><strong>Code:</strong> {{ selectedReservation?.vehicleCode || 'N/A'
+                          }}</small>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="d-block"><strong>Client:</strong> {{ selectedReservation?.customerName || 'N/A'
+                          }}</small>
+                        <small class="d-block"><strong>Date début:</strong> {{
+                          formatReservationDate(selectedReservation?.expectedStartDate) }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <form [formGroup]="confirmReservationForm" (ngSubmit)="onConfirmReservationSubmit()">
-                <div class="mb-3">
-                  <label class="form-label">ID du contrat *</label>
-                  <input type="text" class="form-control" formControlName="contractId"
-                    placeholder="Ex: 697001a2052f25ba4c98fae0">
-                  <div class="form-text">
-                    Format: ObjectId MongoDB (24 caractères hexa)
+                <!-- Sélection du contrat -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Sélectionnez un contrat *</label>
+
+                  <!-- Barre de recherche -->
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">
+                      <i class='bx bx-search'></i>
+                    </span>
+                    <input type="text" class="form-control" placeholder="Rechercher un contrat par numéro ou ID..."
+                      (input)="filterContracts($event.target.value)">
                   </div>
-                  <div *ngIf="conf['contractId'].invalid && confirmReservationSubmitted" class="text-danger small">
-                    ID contrat invalide
+
+                  <!-- Liste des contrats disponibles -->
+                  <div class="contracts-list border rounded" style="max-height: 250px; overflow-y: auto;">
+                    <div *ngIf="filteredContracts.length === 0" class="text-center py-4">
+                      <i class='bx bx-folder-open fs-1 text-muted mb-2'></i>
+                      <p class="text-muted mb-0">Aucun contrat disponible</p>
+                    </div>
+
+                    <div *ngFor="let contract of filteredContracts" class="contract-item p-3 border-bottom"
+                      [class.bg-light]="confirmReservationForm.get('contractId')?.value === contract.id"
+                      (click)="selectContract(contract)">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="mb-1 text-primary">
+                            <i class='bx bx-file me-2'></i>
+                            {{ contract.contractNumber }}
+                          </h6>
+                          <small class="text-muted d-block">
+                            <i class='bx bx-calendar me-1'></i>
+                            {{ contract.durationInWeeks }} semaines •
+                            {{ formatCurrency(contract.totalAmount) }}
+                          </small>
+                          <small class="text-muted">
+                            <i class='bx bx-time me-1'></i>
+                            Créé le {{ formatDate(contract.createdAt) }}
+                          </small>
+                        </div>
+                        <div class="text-end">
+                          <span class="badge" [ngClass]="getContractStatusBadge(contract.status)">
+                            {{ getContractStatusText(contract.status) }}
+                          </span>
+                          <div class="mt-2">
+                            <small class="text-muted">
+                              ID: {{ contract.id.substring(0, 12) }}...
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
+                  <!-- Champ caché pour l'ID du contrat sélectionné -->
+                  <input type="hidden" formControlName="contractId">
+
+                  <!-- Contrat sélectionné -->
+                  <div *ngIf="confirmReservationForm.get('contractId')?.value" class="alert alert-success mt-3">
+                    <div class="d-flex align-items-center">
+                      <i class='bx bx-check-circle fs-4 me-3 text-success'></i>
+                      <div>
+                        <h6 class="mb-1">Contrat sélectionné</h6>
+                        <small class="d-block">
+                          <strong>Numéro:</strong> {{ getSelectedContract()?.contractNumber }}
+                        </small>
+                        <small class="d-block">
+                          <strong>Montant total:</strong> {{ formatCurrency(getSelectedContract()?.totalAmount || 0) }}
+                        </small>
+                        <small class="d-block">
+                          <strong>Durée:</strong> {{ getSelectedContract()?.durationInWeeks }} semaines
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="conf['contractId'].invalid && confirmReservationSubmitted" class="text-danger small mt-2">
+                    <i class='bx bx-error-circle me-1'></i>
+                    Veuillez sélectionner un contrat
+                  </div>
+                </div>
+
+                <!-- Informations additionnelles -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Notes additionnelles (optionnel)</label>
+                  <textarea class="form-control" rows="3" placeholder="Ajoutez des notes pour cette confirmation..."
+                    formControlName="additionalNotes"></textarea>
                 </div>
 
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" (click)="showConfirmReservationModal = false">
-                    Retour
+                    Annuler
                   </button>
                   <button type="submit" class="btn btn-success" [disabled]="confirmReservationLoading">
                     <span *ngIf="confirmReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-link me-1'></i> Lier au contrat
+                    <i class='bx bx-link me-1'></i> Confirmer et lier la réservation
                   </button>
                 </div>
               </form>
@@ -1285,6 +1411,197 @@
           </div>
         </div>
       </div>
+
+
+
+      <!-- MODAL D'ÉDITION DE VÉHICULE -->
+      <div class="modal-backdrop" *ngIf="showEditModal" (click)="closeEditModal()"></div>
+
+      <div class="vehicle-edit-modal" *ngIf="showEditModal" [class.show]="showEditModal">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+
+          <!-- HEADER -->
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class='bx bx-edit me-2'></i>
+              Modifier le véhicule
+            </h5>
+            <button type="button" class="btn-close" (click)="closeEditModal()" aria-label="Close">
+              <i class='bx bx-x'></i>
+            </button>
+          </div>
+
+          <!-- BODY -->
+          <div class="modal-body">
+            <div *ngIf="!selectedVehicle" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+              <p class="mt-3">Chargement des données...</p>
+            </div>
+
+            <form *ngIf="selectedVehicle" [formGroup]="editVehicleForm" (ngSubmit)="onEditSubmit()">
+
+              <!-- EN-TÊTE -->
+              <div class="vehicle-header mb-4">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="vehicle-icon">
+                    <i [class]="getVehicleIcon(selectedVehicle.type)"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-1">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h4>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge bg-secondary">{{ selectedVehicle.code }}</span>
+                      <span class="badge" [ngClass]="getTypeBadgeClass(selectedVehicle.type)">
+                        {{ getTypeText(selectedVehicle.type) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTIFICATION D'ERREUR -->
+              <div *ngIf="editSubmitted && editVehicleForm.invalid" class="alert alert-danger">
+                <i class='bx bx-error-circle me-2'></i>
+                Veuillez corriger les erreurs dans le formulaire
+              </div>
+
+              <!-- INFORMATIONS DE BASE -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-info-circle me-2'></i> Informations de base</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <!-- Plaque d'immatriculation -->
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Plaque d'immatriculation *</label>
+                      <input type="text" class="form-control" formControlName="plateNumber"
+                        [class.is-invalid]="editSubmitted && ef['plateNumber'].invalid">
+                      <div *ngIf="editSubmitted && ef['plateNumber'].invalid" class="invalid-feedback">
+                        <span *ngIf="ef['plateNumber'].errors?.['required']">La plaque est requise</span>
+                        <span *ngIf="ef['plateNumber'].errors?.['minlength']">Minimum 5 caractères</span>
+                      </div>
+                    </div>
+
+                    <!-- Couleur -->
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Couleur</label>
+                      <input type="text" class="form-control" formControlName="color">
+                    </div>
+
+                    <!-- Kilométrage -->
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Kilométrage actuel *</label>
+                      <input type="number" class="form-control" formControlName="currentMileage"
+                        [class.is-invalid]="editSubmitted && ef['currentMileage'].invalid">
+                      <div *ngIf="editSubmitted && ef['currentMileage'].invalid" class="invalid-feedback">
+                        <span *ngIf="ef['currentMileage'].errors?.['required']">Le kilométrage est requis</span>
+                        <span *ngIf="ef['currentMileage'].errors?.['min']">Doit être positif</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ASSURANCE -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-shield-alt me-2'></i> Assurance</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Compagnie d'assurance</label>
+                      <input type="text" class="form-control" formControlName="insuranceCompany">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Numéro de police</label>
+                      <input type="text" class="form-control" formControlName="insurancePolicyNumber">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Date de début</label>
+                      <input type="date" class="form-control" formControlName="insuranceStartDate">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Date de fin</label>
+                      <input type="date" class="form-control" formControlName="insuranceEndDate">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Type de couverture</label>
+                      <input type="text" class="form-control" formControlName="insuranceCoverageType">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Prime annuelle</label>
+                      <input type="number" class="form-control" formControlName="insuranceAnnualPremium">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARACTÉRISTIQUES -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-cog me-2'></i> Caractéristiques</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" formControlName="hasGps">
+                        <label class="form-check-label">Équipé GPS</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" formControlName="hasAirConditioning">
+                        <label class="form-check-label">Climatisation</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Transmission</label>
+                      <input type="text" class="form-control" formControlName="transmission">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Cylindrée (cm³)</label>
+                      <input type="number" class="form-control" formControlName="engineCapacity">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Capacité réservoir (L)</label>
+                      <input type="number" class="form-control" formControlName="fuelCapacity">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTES -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-note me-2'></i> Notes</h6>
+                </div>
+                <div class="card-body">
+                  <textarea class="form-control" formControlName="notes" rows="3"
+                    placeholder="Notes internes sur le véhicule..."></textarea>
+                </div>
+              </div>
+
+              <!-- FOOTER -->
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+                  Annuler
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="editLoading">
+                  <span *ngIf="editLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class='bx bx-save me-1'></i> Enregistrer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPOSANT DE NOTIFICATION -->
+      <app-notification-component></app-notification-component>
 
     </div>
   </div>

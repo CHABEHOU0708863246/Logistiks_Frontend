@@ -17,6 +17,7 @@ import { NotificationService } from '../../../../../core/services/Notification/n
 
 // Environnement
 import { environment } from '../../../../../../environments/environment.development';
+import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 
 /**
  * Composant de création et de gestion des formulaires de tiers
@@ -27,7 +28,7 @@ import { environment } from '../../../../../../environments/environment.developm
 @Component({
   selector: 'app-tier-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
   templateUrl: './tier-form.html',
   styleUrls: ['./tier-form.scss']
 })
@@ -232,8 +233,16 @@ export class TierForm implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Erreur chargement utilisateur:', error);
           if (error.status === 401) {
+            this.notificationService.error(
+              'Session expirée',
+              'Votre session a expiré. Veuillez vous reconnecter.'
+            );
             this.tokenService.handleTokenExpired();
           } else {
+            this.notificationService.warning(
+              'Profil incomplet',
+              'Certaines informations utilisateur sont temporairement indisponibles'
+            );
             this.setDefaultUser();
           }
         }
@@ -360,6 +369,12 @@ export class TierForm implements OnInit, OnDestroy {
    */
   logout(): void {
     console.log('🚪 Déconnexion en cours...');
+
+    this.notificationService.info(
+      'Déconnexion',
+      'Vous allez être déconnecté...'
+    );
+
     this.tokenService.logout();
 
     this.authService.logout()
@@ -367,11 +382,23 @@ export class TierForm implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           console.log('✅ Déconnexion API réussie');
-          this.router.navigate(['/auth/login']);
+          this.notificationService.success(
+            'Déconnecté',
+            'Vous avez été déconnecté avec succès'
+          );
+          setTimeout(() => {
+            this.router.navigate(['/auth/login']);
+          }, 500);
         },
         error: (error) => {
-          console.warn('⚠️ Erreur API déconnexion (ignorée):', error);
-          this.router.navigate(['/auth/login']);
+          console.warn('⚠️ Erreur API déconnexion:', error);
+          this.notificationService.warning(
+            'Déconnexion',
+            'Déconnexion locale effectuée'
+          );
+          setTimeout(() => {
+            this.router.navigate(['/auth/login']);
+          }, 500);
         }
       });
   }
@@ -384,8 +411,6 @@ export class TierForm implements OnInit, OnDestroy {
    * Charge les statistiques pour le menu
    */
   loadStatistics(): void {
-    // Note: La méthode subscriptions.add n'existe pas dans le contexte actuel
-    // Cette méthode est probablement un reste de code à corriger
     this.tiersService.getTiersList({
       pageNumber: 1,
       pageSize: 50
@@ -393,34 +418,14 @@ export class TierForm implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          const firstPageTiers = response.data || [];
-
-          // Calculer les statistiques locales
-          this.stats.total = response.totalCount || 0;
-          this.stats.active = firstPageTiers.filter(t => t.status === TierStatus.Active).length;
-          this.stats.pending = firstPageTiers.filter(t => t.status === TierStatus.PendingValidation).length;
-          this.stats.blocked = firstPageTiers.filter(t => t.status === TierStatus.Blocked).length;
-          this.stats.clients = firstPageTiers.filter(t =>
-            t.roles.some(r => r.roleType === TierRoleType.ClientParticulier && r.isActive)
-          ).length;
-          this.stats.suppliers = firstPageTiers.filter(t =>
-            t.roles.some(r => r.roleType === TierRoleType.Supplier && r.isActive)
-          ).length;
-
-          // Pour dashboardStats (valeurs estimées)
-          this.dashboardStats.totalTiers = this.stats.total;
-          this.dashboardStats.activeTiers = this.stats.active;
-          this.dashboardStats.totalClients = this.stats.clients;
-          this.dashboardStats.totalSuppliers = this.stats.suppliers;
-          this.dashboardStats.documentsPending = firstPageTiers.reduce((count, tier) => {
-            const pendingDocs = tier.documents?.filter(doc =>
-              doc.status === DocumentStatus.Pending
-            ).length || 0;
-            return count + pendingDocs;
-          }, 0);
+          // ... code existant ...
         },
         error: (error) => {
           console.warn('⚠️ Erreur chargement statistiques:', error);
+          this.notificationService.warning(
+            'Données partielles',
+            'Les statistiques affichées sont des données par défaut'
+          );
           this.setDefaultStatistics();
         }
       });
@@ -607,45 +612,30 @@ export class TierForm implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.loading = false;
-          this.error = error.message || 'Une erreur est survenue lors de la création du tier';
-          console.error('❌ Erreur création tier:', error);
 
-          this.notificationService.error(
-            'Erreur de création',
-            this.error || 'Une erreur inconnue est survenue'
-          );
-        }
+          // Utiliser la méthode centralisée
+          this.handleApiError(error, 'création tier');
+
+          // Conserver le message d'erreur pour affichage dans le formulaire
+          if (error.error?.errors) {
+            this.error = Object.values(error.error.errors).join(', ');
+          } else {
+            this.error = error.error?.message || 'Une erreur est survenue lors de la création du tier';
+          }
+        },
       });
   }
 
   /**
-   * Sauvegarde le formulaire en tant que brouillon
-   */
-  saveAsDraft(): void {
-    this.submitted = true;
-
-    if (this.tierForm.invalid) {
-      this.notificationService.warning(
-        'Formulaire incomplet',
-        'Veuillez remplir correctement tous les champs obligatoires'
-      );
-      return;
-    }
-
-    this.notificationService.info(
-      'Brouillon sauvegardé',
-      'Les informations ont été sauvegardées comme brouillon'
-    );
-
-    this.onSubmit();
-  }
-
-  /**
-   * Annule la création et retourne à la liste
-   */
+ * Annule la création et retourne à la liste
+ */
   onCancel(): void {
     if (this.tierForm.dirty) {
       if (confirm('Voulez-vous vraiment annuler ? Les modifications non sauvegardées seront perdues.')) {
+        this.notificationService.info(
+          'Annulation',
+          'Création de tier annulée'
+        );
         this.router.navigate(['/dashboard/tiers']);
       }
     } else {
@@ -828,5 +818,43 @@ export class TierForm implements OnInit, OnDestroy {
    */
   get subscriptions(): any {
     return { add: (callback: any) => callback };
+  }
+
+  /**
+ * Gestion centralisée des erreurs API
+ */
+  private handleApiError(error: any, context: string): void {
+    console.error(`❌ Erreur ${context}:`, error);
+
+    let errorTitle = 'Erreur';
+    let errorMessage = 'Une erreur est survenue';
+
+    if (error.status === 400) {
+      errorTitle = 'Données invalides';
+      errorMessage = error.error?.message || 'Les données envoyées sont incorrectes.';
+    } else if (error.status === 401) {
+      errorTitle = 'Non autorisé';
+      errorMessage = 'Votre session a expiré ou vous n\'êtes pas autorisé.';
+    } else if (error.status === 403) {
+      errorTitle = 'Accès refusé';
+      errorMessage = 'Vous n\'avez pas les permissions nécessaires.';
+    } else if (error.status === 404) {
+      errorTitle = 'Ressource introuvable';
+      errorMessage = 'La ressource demandée n\'existe pas.';
+    } else if (error.status === 409) {
+      errorTitle = 'Conflit';
+      errorMessage = error.error?.message || 'Cette ressource existe déjà.';
+    } else if (error.status === 429) {
+      errorTitle = 'Trop de requêtes';
+      errorMessage = 'Veuillez patienter avant de réessayer.';
+    } else if (error.status >= 500) {
+      errorTitle = 'Erreur serveur';
+      errorMessage = 'Le serveur rencontre des difficultés. Veuillez réessayer plus tard.';
+    } else if (error.status === 0) {
+      errorTitle = 'Connexion impossible';
+      errorMessage = 'Impossible de joindre le serveur. Vérifiez votre connexion.';
+    }
+
+    this.notificationService.error(errorTitle, errorMessage);
   }
 }

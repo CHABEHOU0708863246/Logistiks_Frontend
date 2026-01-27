@@ -50,6 +50,7 @@
         "aria-progressbar-name": "off",
         "aria-valid-attr-value": "off"
       }
-    ]
+    ],
+    "typescript-config/is-valid": "off"
   }
 }

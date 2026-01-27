@@ -11,6 +11,7 @@ import { Auth } from '../../../../../core/services/Auth/auth';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 import { Token } from '../../../../../core/services/Token/token';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
+import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 
 /**
  * Composant pour la création et la gestion de formulaires de véhicules
@@ -20,7 +21,7 @@ import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
  */
 @Component({
   selector: 'app-vehicule-form',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
   templateUrl: './vehicule-form.html',
   styleUrls: ['./vehicule-form.scss'],
 })
@@ -546,7 +547,7 @@ export class VehiculeForm implements OnInit, OnDestroy {
     // CAS 3 — Erreur inconnue
     this.notificationService.error(
       'Erreur inconnue',
-      'Une erreur inattendue est survenue'
+      'Une erreur inattendue est survenue, verifiez les informations et réessayez'
     );
   }
 

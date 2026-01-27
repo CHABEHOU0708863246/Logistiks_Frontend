@@ -12,11 +12,12 @@ import { DocumentStatus, TierStatus, TierRoleType } from '../../../../../core/mo
 import { SearchTiersRequest } from '../../../../../core/models/Tiers/Tier-requests';
 import { TierDocument, Tier } from '../../../../../core/models/Tiers/Tiers';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 
 
 @Component({
   selector: 'app-documents-validation',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
   templateUrl: './documents-validation.html',
   styleUrl: './documents-validation.scss',
 })
