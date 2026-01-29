@@ -682,22 +682,31 @@ export class TierForm implements OnInit, OnDestroy {
     });
   }
 
+
+
   /**
-   * Obtient le libellé d'un champ pour l'affichage
-   * @param field - Nom du champ
-   * @returns Libellé du champ
-   */
-  private getFieldLabel(field: string): string {
-    const labels: Record<string, string> = {
-      firstName: 'Prénom',
-      lastName: 'Nom',
-      identityType: 'Type de pièce',
-      identityNumber: 'Numéro de pièce',
-      phone: 'Téléphone',
-      email: 'Email'
-    };
-    return labels[field] || field;
-  }
+ * Formate le libellé des champs pour l'affichage
+ */
+private getFieldLabel(field: string): string {
+  const labels: Record<string, string> = {
+    firstName: 'Prénom',
+    lastName: 'Nom',
+    companyName: 'Nom de l\'entreprise',
+    birthDate: 'Date de naissance',
+    placeOfBirth: 'Lieu de naissance',
+    identityType: 'Type de pièce d\'identité',
+    identityNumber: 'Numéro de pièce d\'identité',
+    phone: 'Téléphone',
+    secondaryPhone: 'Téléphone secondaire',
+    email: 'Adresse email',
+    street: 'Rue',
+    city: 'Ville',
+    country: 'Pays',
+    zipCode: 'Code postal',
+    notes: 'Notes'
+  };
+  return labels[field] || field;
+}
 
   // ===========================================================================
   // UTILITAIRES
@@ -821,40 +830,195 @@ export class TierForm implements OnInit, OnDestroy {
   }
 
   /**
- * Gestion centralisée des erreurs API
+ * Gestion centralisée et détaillée des erreurs API
  */
-  private handleApiError(error: any, context: string): void {
-    console.error(`❌ Erreur ${context}:`, error);
+private handleApiError(error: any, context: string): void {
+  console.error(`❌ Erreur ${context}:`, error);
 
-    let errorTitle = 'Erreur';
-    let errorMessage = 'Une erreur est survenue';
+  let errorTitle = 'Erreur';
+  let errorMessage = 'Une erreur est survenue';
+  let showDetails = false;
 
-    if (error.status === 400) {
-      errorTitle = 'Données invalides';
-      errorMessage = error.error?.message || 'Les données envoyées sont incorrectes.';
-    } else if (error.status === 401) {
-      errorTitle = 'Non autorisé';
-      errorMessage = 'Votre session a expiré ou vous n\'êtes pas autorisé.';
-    } else if (error.status === 403) {
-      errorTitle = 'Accès refusé';
-      errorMessage = 'Vous n\'avez pas les permissions nécessaires.';
-    } else if (error.status === 404) {
-      errorTitle = 'Ressource introuvable';
-      errorMessage = 'La ressource demandée n\'existe pas.';
-    } else if (error.status === 409) {
-      errorTitle = 'Conflit';
-      errorMessage = error.error?.message || 'Cette ressource existe déjà.';
-    } else if (error.status === 429) {
-      errorTitle = 'Trop de requêtes';
-      errorMessage = 'Veuillez patienter avant de réessayer.';
-    } else if (error.status >= 500) {
-      errorTitle = 'Erreur serveur';
-      errorMessage = 'Le serveur rencontre des difficultés. Veuillez réessayer plus tard.';
-    } else if (error.status === 0) {
-      errorTitle = 'Connexion impossible';
-      errorMessage = 'Impossible de joindre le serveur. Vérifiez votre connexion.';
+  if (error.status === 400) {
+    errorTitle = 'Données invalides';
+
+    // Gestion spécifique pour les conflits de données
+    if (error.error?.message?.includes('téléphone') ||
+        error.error?.message?.includes('phone') ||
+        error.error?.message?.includes('numéro')) {
+      errorMessage = 'Un tiers avec ce numéro de téléphone existe déjà.';
+    } else if (error.error?.message?.includes('email') ||
+               error.error?.message?.includes('courriel')) {
+      errorMessage = 'Un tiers avec cette adresse email existe déjà.';
+    } else if (error.error?.message?.includes('identité') ||
+               error.error?.message?.includes('identity')) {
+      errorMessage = 'Un tiers avec ce numéro de pièce d\'identité existe déjà.';
+    } else if (error.error?.errors) {
+      // Gestion des erreurs de validation détaillées
+      const validationErrors = error.error.errors;
+      errorMessage = 'Veuillez corriger les erreurs suivantes :\n\n';
+
+      Object.keys(validationErrors).forEach(field => {
+        const fieldErrors = validationErrors[field];
+        errorMessage += `• ${this.getFieldLabel(field)} : ${fieldErrors.join(', ')}\n`;
+      });
+      showDetails = true;
+    } else if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else {
+      errorMessage = 'Les données envoyées sont incorrectes.';
     }
 
-    this.notificationService.error(errorTitle, errorMessage);
+  } else if (error.status === 401) {
+    errorTitle = 'Session expirée';
+    errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+
+  } else if (error.status === 403) {
+    errorTitle = 'Accès refusé';
+    errorMessage = 'Vous n\'avez pas les permissions nécessaires pour cette action.';
+
+  } else if (error.status === 404) {
+    errorTitle = 'Ressource introuvable';
+    errorMessage = 'La ressource demandée n\'existe pas ou a été supprimée.';
+
+  } else if (error.status === 409) {
+    errorTitle = 'Conflit de données';
+
+    if (error.error?.message) {
+      if (error.error.message.includes('Duplicate')) {
+        errorMessage = 'Cette information existe déjà dans le système :\n\n';
+
+        if (error.error.message.includes('Phone')) {
+          errorMessage += '• Numéro de téléphone déjà utilisé';
+        } else if (error.error.message.includes('Email')) {
+          errorMessage += '• Adresse email déjà utilisée';
+        } else if (error.error.message.includes('Identity')) {
+          errorMessage += '• Numéro de pièce d\'identité déjà utilisé';
+        } else {
+          errorMessage += error.error.message;
+        }
+      } else {
+        errorMessage = error.error.message;
+      }
+    } else {
+      errorMessage = 'Cette ressource existe déjà dans le système.';
+    }
+
+  } else if (error.status === 422) {
+    errorTitle = 'Données invalides';
+    errorMessage = 'Les données fournies ne respectent pas les règles de validation.';
+    showDetails = true;
+
+  } else if (error.status === 429) {
+    errorTitle = 'Trop de requêtes';
+    errorMessage = 'Veuillez patienter quelques instants avant de réessayer.';
+
+  } else if (error.status >= 500) {
+    errorTitle = 'Erreur serveur';
+    errorMessage = 'Le serveur rencontre des difficultés. Veuillez réessayer plus tard.\n\n';
+    errorMessage += 'Détail technique : ' + (error.error?.message || 'Erreur interne');
+
+  } else if (error.status === 0) {
+    errorTitle = 'Connexion impossible';
+    errorMessage = 'Impossible de joindre le serveur.\n\n';
+    errorMessage += 'Vérifiez :\n';
+    errorMessage += '• Votre connexion internet\n';
+    errorMessage += '• Que le serveur est démarré\n';
+    errorMessage += '• Que l\'URL est correcte';
+
+  } else if (error.message) {
+    errorMessage = error.message;
   }
+
+  // Journalisation détaillée pour le débogage
+  this.logErrorDetails(error, context);
+
+  // Affichage de la notification
+  if (showDetails) {
+    this.notificationService.error(
+      errorTitle,
+      errorMessage,
+    );
+  } else {
+    this.notificationService.error(
+      errorTitle,
+      errorMessage,
+    );
+  }
+
+  // Conserver le message d'erreur pour affichage dans le formulaire
+  this.setFormError(error);
+}
+
+
+
+/**
+ * Journalisation détaillée des erreurs
+ */
+private logErrorDetails(error: any, context: string): void {
+  console.group(`🔍 Détails de l'erreur ${context}`);
+
+  // Informations générales
+  console.log('📍 Contexte:', context);
+  console.log('📊 Statut:', error.status);
+  console.log('📄 URL:', error.url);
+
+  // Corps de l'erreur
+  if (error.error) {
+    console.log('📦 Corps de l\'erreur:', error.error);
+
+    // Extraction des messages détaillés
+    if (error.error.errors) {
+      console.log('📋 Erreurs de validation:');
+      Object.entries(error.error.errors).forEach(([field, messages]) => {
+        console.log(`  • ${field}:`, messages);
+      });
+    }
+
+    if (error.error.message) {
+      console.log('💬 Message:', error.error.message);
+    }
+  }
+
+  console.groupEnd();
+}
+
+/**
+ * Définit l'erreur du formulaire avec des informations spécifiques
+ */
+private setFormError(error: any): void {
+  let formErrorMessage = '';
+
+  if (error.status === 400) {
+    // Messages spécifiques selon le champ en erreur
+    if (error.error?.errors) {
+      const errors = error.error.errors;
+
+      if (errors['Phone']) {
+        formErrorMessage = errors['Phone'].join(', ');
+      } else if (errors['Email']) {
+        formErrorMessage = errors['Email'].join(', ');
+      } else if (errors['IdentityNumber']) {
+        formErrorMessage = errors['IdentityNumber'].join(', ');
+      } else {
+        formErrorMessage = 'Veuillez vérifier les informations saisies.';
+      }
+    } else if (error.error?.message) {
+      formErrorMessage = error.error.message;
+
+      // Traduction des messages communs
+      if (formErrorMessage.includes('already exists') || formErrorMessage.includes('déjà existant')) {
+        if (formErrorMessage.includes('phone')) {
+          formErrorMessage = 'Ce numéro de téléphone est déjà utilisé.';
+        } else if (formErrorMessage.includes('email')) {
+          formErrorMessage = 'Cette adresse email est déjà utilisée.';
+        } else if (formErrorMessage.includes('identity')) {
+          formErrorMessage = 'Ce numéro de pièce d\'identité est déjà utilisé.';
+        }
+      }
+    }
+  }
+
+  this.error = formErrorMessage || 'Une erreur est survenue lors de l\'opération.';
+}
 }

@@ -65,12 +65,14 @@ export enum FuelType {
 
 // CONTRACTS
 export enum ContractStatus {
-  Draft = 1,
-  Pending = 2,
-  Active = 3,
-  Suspended = 4,
-  Terminated = 5,
-  Completed = 6
+    Draft = 1,
+    Pending = 2,
+    Active = 3,
+    Suspended = 4,
+    Terminated = 5,
+    Completed = 6,
+    Template = 7,
+    Assigned = 8
 }
 
 export enum PaymentFrequency {
@@ -193,4 +195,86 @@ export enum TierRoleType {
   ClientParticulier = 2,
   Supplier = 3,
   Partner = 4
+}
+
+
+// Type pour les champs personnalisés
+export type CustomFields = Record<string, string>;
+
+// Type pour les dictionnaires
+export type Dictionary<TKey extends string | number | symbol, TValue> = Record<TKey, TValue>;
+
+/**
+ * Type d'entité pour les documents
+ */
+export enum DocumentEntityType {
+  Tier = 1,
+  Vehicle = 2,
+  Contract = 3,
+  Expense = 4,
+  Maintenance = 5
+}
+
+export enum ContractType {
+    Template = 0, // Contrat modèle sans client/véhicule assigné
+    Final = 1,    // Contrat final avec client/véhicule assigné
+    Draft = 2     // Brouillon en cours de création
+}
+
+/**
+ * Labels pour l'affichage des types d'entité de document
+ */
+export const DocumentEntityTypeLabels: Record<DocumentEntityType, string> = {
+  [DocumentEntityType.Tier]: 'Tier (Client/Fournisseur)',
+  [DocumentEntityType.Vehicle]: 'Véhicule',
+  [DocumentEntityType.Contract]: 'Contrat',
+  [DocumentEntityType.Expense]: 'Dépense',
+  [DocumentEntityType.Maintenance]: 'Maintenance'
+};
+
+/**
+ * Helper pour obtenir le label d'un type d'entité de document
+ */
+export function getDocumentEntityTypeLabel(type: DocumentEntityType): string {
+  return DocumentEntityTypeLabels[type] || 'Inconnu';
+}
+
+/**
+ * Helper pour obtenir tous les types d'entité de document
+ */
+export function getAllDocumentEntityTypes(): Array<{ value: DocumentEntityType; label: string }> {
+  return Object.keys(DocumentEntityType)
+    .filter(key => !isNaN(Number(key)))
+    .map(key => ({
+      value: Number(key) as DocumentEntityType,
+      label: DocumentEntityTypeLabels[Number(key) as DocumentEntityType]
+    }));
+}
+
+/**
+ * Helper pour vérifier si une valeur est un DocumentEntityType valide
+ */
+export function isValidDocumentEntityType(value: any): value is DocumentEntityType {
+  return Object.values(DocumentEntityType).includes(value);
+}
+
+/**
+ * Helper pour convertir une chaîne en DocumentEntityType
+ */
+export function parseDocumentEntityType(value: string): DocumentEntityType | null {
+  const numValue = Number(value);
+  if (isValidDocumentEntityType(numValue)) {
+    return numValue;
+  }
+
+  // Essayer de parser par nom
+  const enumKey = Object.keys(DocumentEntityType).find(
+    key => key.toLowerCase() === value.toLowerCase() && isNaN(Number(key))
+  );
+
+  if (enumKey) {
+    return DocumentEntityType[enumKey as keyof typeof DocumentEntityType] as DocumentEntityType;
+  }
+
+  return null;
 }

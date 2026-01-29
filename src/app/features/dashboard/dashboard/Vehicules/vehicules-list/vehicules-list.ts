@@ -5,7 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../../../../environments/environment.development';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
-import { VehicleStatus, VehicleType, FuelType, TierStatus } from '../../../../../core/models/Enums/Logistiks-enums';
+import { VehicleStatus, VehicleType, FuelType, TierStatus, ContractStatus } from '../../../../../core/models/Enums/Logistiks-enums';
 import { UpdateVehicleRequest, VehicleDto, VehicleSearchCriteria, VehicleStatistics } from '../../../../../core/models/Vehicles/Vehicle.dtos';
 import { Auth } from '../../../../../core/services/Auth/auth';
 import { Token } from '../../../../../core/services/Token/token';
@@ -14,7 +14,25 @@ import { NotificationService } from '../../../../../core/services/Notification/n
 import { Tier } from '../../../../../core/models/Tiers/Tiers';
 import { Tiers } from '../../../../../core/services/Tiers/tiers';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
-import { RentalContract } from '../../../../../core/models/Contracts/Rental-contract.model';
+import { ContractBasic, RentalContract } from '../../../../../core/models/Contracts/Rental-contract.model';
+import { Contract } from '../../../../../core/services/Contract/contract';
+import { ContractDto } from '../../../../../core/models/Contracts/ContractDto';
+
+/**
+ * Réponse paginée du serveur pour les contrats
+ */
+export interface ContractPaginatedResponse {
+  data: ContractDto[]; // Ou ContractBasic[] selon ce que vous recevez
+  success?: boolean; // Optionnel car peut venir du serveur
+  message?: string;
+  errors?: string[];
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
 
 /**
  * Composant de gestion de la liste des véhicules
@@ -29,6 +47,38 @@ import { RentalContract } from '../../../../../core/models/Contracts/Rental-cont
   styleUrls: ['./vehicules-list.scss'],
 })
 export class VehiculesList implements OnInit, OnDestroy {
+
+  /** Indique si le chargement des tiers pour affectation est en cours */
+isLoadingTiersForAssignment: boolean = false;
+
+/** Indique si le chargement des contrats pour affectation est en cours */
+isLoadingContractsForAssignment: boolean = false;
+
+  // ============================================================================
+  // SECTION 1: AJOUTER CES PROPRIÉTÉS
+  // ============================================================================
+
+  /** Contrôle l'affichage du modal d'affectation */
+  showAssignRentalModal = false;
+
+  /** Véhicule pour l'affectation en cours */
+  assignRentalVehicle: VehicleDto | null = null;
+
+  /** Tiers filtrés pour l'affectation */
+  filteredTiersForAssignment: Tier[] = [];
+
+  /** Contrats filtrés pour l'affectation */
+  filteredContractsForAssignment: ContractBasic[] = [];
+
+  /** Formulaire d'affectation */
+  assignRentalForm!: FormGroup;
+
+  /** Indique si le chargement d'affectation est en cours */
+  assignRentalLoading = false;
+
+  /** Indique si le formulaire d'affectation a été soumis */
+  assignRentalSubmitted = false;
+
   // ============================================================================
   // SECTION 1: PROPRIÉTÉS DE GESTION DE L'ÉTAT DE L'INTERFACE
   // ============================================================================
@@ -43,9 +93,9 @@ export class VehiculesList implements OnInit, OnDestroy {
   activeReservations: any[] = [];
 
   /** Liste des contrats disponibles pour la confirmation */
-  availableContracts: RentalContract[] = [];
+  availableContracts: ContractBasic[] = [];
   /** Contrats filtrés pour la sélection */
-  filteredContracts: RentalContract[] = [];
+  filteredContracts: ContractBasic[] = [];
 
   /** Contrôle l'affichage du modal d'édition */
   showEditModal = false;
@@ -292,6 +342,7 @@ export class VehiculesList implements OnInit, OnDestroy {
 
   /** Subject pour la gestion de la destruction des observables */
   private destroy$ = new Subject<void>();
+  TierStatus: any;
 
   // ============================================================================
   // SECTION 11: CONSTRUCTEUR ET INJECTION DE DÉPENDANCES
@@ -311,6 +362,7 @@ export class VehiculesList implements OnInit, OnDestroy {
     private vehiclesService: Vehicles,
     private notificationService: NotificationService,
     private authService: Auth,
+    private contractService: Contract,
     private tokenService: Token,
     public tiersService: Tiers,
     private formBuilder: FormBuilder,
@@ -368,9 +420,551 @@ export class VehiculesList implements OnInit, OnDestroy {
 
     // Formulaire de confirmation
     this.confirmReservationForm = this.formBuilder.group({
-    contractId: ['', [Validators.required, Validators.pattern(/^[0-9a-fA-F]{24}$/)]],
-    additionalNotes: ['']
+      contractId: ['', [Validators.required, Validators.pattern(/^[0-9a-fA-F]{24}$/)]],
+      additionalNotes: ['']
+    });
+
+    // Formulaire d'affectation
+    this.assignRentalForm = this.formBuilder.group({
+      vehicleId: ['', Validators.required],
+      customerId: ['', [Validators.required, Validators.pattern(/^[0-9a-fA-F]{24}$/)]],
+      contractId: ['', [Validators.required, Validators.pattern(/^[0-9a-fA-F]{24}$/)]],
+      startDate: ['', Validators.required],
+      startMileage: ['', [Validators.required, Validators.min(0)]],
+      notes: ['']
+    });
+
+  }
+
+  /**
+ * Ouvre le modal d'affectation pour un véhicule
+ */
+openAssignRentalModal(vehicle: VehicleDto): void {
+  console.log('🚀 Ouverture du modal d\'affectation pour:', vehicle.code);
+
+  this.assignRentalVehicle = vehicle;
+  this.showAssignRentalModal = true;
+  this.assignRentalSubmitted = false;
+
+  // Initialiser le formulaire
+  this.assignRentalForm.patchValue({
+    vehicleId: vehicle.id,
+    customerId: '',
+    contractId: '',
+    startDate: new Date().toISOString().slice(0, 16),
+    startMileage: vehicle.currentMileage,
+    notes: ''
   });
+
+  // Charger les données
+  this.loadTiersForAssignment();
+  this.loadContractsForAssignment();
+}
+
+  /**
+   * Convertit un DTO de contrat en ContractBasic pour l'affectation
+   */
+  private convertDtoToContractBasic(dto: ContractDto): ContractBasic {
+    return {
+      id: dto.id,
+      contractNumber: dto.contractNumber,
+      contractType: dto.contractType,
+      customerId: dto.customerId,
+      vehicleId: dto.vehicleId,
+      startDate: new Date(dto.startDate),
+      endDate: new Date(dto.endDate),
+      durationInWeeks: dto.durationInWeeks,
+      weeklyAmount: dto.weeklyAmount,
+      totalAmount: dto.totalAmount,
+      securityDeposit: dto.securityDeposit,
+      depositPaid: dto.depositPaid,
+      paymentFrequency: dto.paymentFrequency,
+      paymentDay: dto.paymentDay,
+      status: dto.status,
+      terms: dto.terms,
+      weeklyMileageLimit: dto.weeklyMileageLimit,
+      deliveryInfo: dto.deliveryInfo,
+      returnInfo: dto.returnInfo,
+      // Option A : Laisser undefined si vous n'avez pas les références
+      documents: undefined,
+
+      // Option B : Créer un tableau vide
+      // documents: [],
+
+      notes: dto.notes,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: dto.updatedAt ? new Date(dto.updatedAt) : undefined,
+      createdBy: dto.createdBy,
+      approvedBy: dto.approvedBy,
+      approvedAt: dto.approvedAt ? new Date(dto.approvedAt) : undefined,
+
+      // Champs calculés
+      isActive: this.isContractActive(dto),
+      isExpired: this.isContractExpired(dto),
+      weeksRemaining: this.calculateWeeksRemaining(dto),
+    };
+  }
+
+  /**
+   * Vérifie si un contrat est actif
+   */
+  private isContractActive(dto: ContractDto): boolean {
+    const now = new Date();
+    const startDate = new Date(dto.startDate);
+    const endDate = new Date(dto.endDate);
+
+    return dto.status === ContractStatus.Active &&
+      now >= startDate &&
+      now <= endDate;
+  }
+
+  /**
+   * Vérifie si un contrat est expiré
+   */
+  private isContractExpired(dto: ContractDto): boolean {
+    const now = new Date();
+    const endDate = new Date(dto.endDate);
+
+    return dto.status === ContractStatus.Suspended ||
+      (dto.status === ContractStatus.Active && now > endDate);
+  }
+
+  /**
+   * Calcule le nombre de semaines restantes
+   */
+  private calculateWeeksRemaining(dto: ContractDto): number {
+    const now = new Date();
+    const endDate = new Date(dto.endDate);
+
+    if (now > endDate) return 0;
+
+    const diffInMs = endDate.getTime() - now.getTime();
+    const diffInWeeks = Math.ceil(diffInMs / (1000 * 60 * 60 * 24 * 7));
+
+    return diffInWeeks;
+  }
+
+  /**
+ * Rafraîchit la liste des contrats
+ */
+refreshContracts(): void {
+  console.log('🔄 Rafraîchissement manuel des contrats...');
+
+  if (this.showAssignRentalModal) {
+    this.loadContractsForAssignment();
+
+    this.notificationService.info(
+      'Actualisation',
+      'Rechargement des contrats disponibles...'
+    );
+  }
+}
+
+  /**
+   * Charge les contrats pour l'affectation
+   */
+  loadContractsForAssignment(): void {
+  this.isLoadingContractsForAssignment = true;  // <-- Démarrer le loading
+
+  console.log('🔄 Chargement des contrats pour affectation...');
+
+  // Critères de recherche pour les contrats disponibles
+  const searchCriteria = {
+    page: 1,
+    pageSize: 100,
+    sortBy: 'createdAt',
+    sortDescending: true,
+    // On charge les contrats actifs OU en attente
+    // Le filtrage se fera côté client
+  };
+
+  this.contractService.searchContracts(searchCriteria)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response: ContractPaginatedResponse) => {
+        this.isLoadingContractsForAssignment = false;  // <-- Arrêter le loading
+
+        console.log('📡 Réponse API contrats:', response);
+
+        if (response && response.data && Array.isArray(response.data)) {
+          // Convertir les DTOs en ContractBasic
+          const allContracts = response.data.map(dto =>
+            this.convertDtoToContractBasic(dto)
+          );
+
+          console.log(`📦 ${allContracts.length} contrats récupérés du serveur`);
+
+          // Filtrer les contrats disponibles pour affectation
+          this.availableContracts = this.filterContractsForVehicleAssignment(allContracts);
+          this.filteredContractsForAssignment = [...this.availableContracts];
+
+          console.log(`✅ ${this.filteredContractsForAssignment.length} contrats disponibles pour affectation`);
+
+          // Notification si aucun contrat disponible
+          if (this.filteredContractsForAssignment.length === 0) {
+            this.notificationService.info(
+              'Aucun contrat disponible',
+              'Tous les contrats actifs sont déjà affectés ou ne répondent pas aux critères'
+            );
+          }
+        } else {
+          console.warn('⚠️ Réponse invalide du serveur:', response);
+          this.availableContracts = [];
+          this.filteredContractsForAssignment = [];
+
+          this.notificationService.warning(
+            'Données incomplètes',
+            'Les contrats n\'ont pas pu être chargés correctement'
+          );
+        }
+      },
+      error: (error: any) => {
+        this.isLoadingContractsForAssignment = false;  // <-- Arrêter le loading
+
+        console.error('❌ Erreur lors du chargement des contrats:', error);
+        console.error('Détails de l\'erreur:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+
+        this.availableContracts = [];
+        this.filteredContractsForAssignment = [];
+
+        // Message d'erreur détaillé
+        let errorMessage = 'Impossible de charger les contrats disponibles';
+
+        if (error.status === 404) {
+          errorMessage = 'Le service de contrats n\'est pas disponible';
+        } else if (error.status === 401) {
+          errorMessage = 'Votre session a expiré';
+        } else if (error.status === 500) {
+          errorMessage = 'Erreur serveur lors du chargement des contrats';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        this.notificationService.error(
+          'Erreur de chargement',
+          errorMessage
+        );
+      }
+    });
+}
+
+  /**
+ * Filtre les contrats pour l'affectation d'un véhicule
+ * RÈGLES MÉTIER:
+ * - Contrat actif OU en attente
+ * - PAS de véhicule déjà affecté
+ * - Dépôt payé (si requis)
+ * - Date de début <= aujourd'hui
+ * - Date de fin >= aujourd'hui
+ */
+private filterContractsForVehicleAssignment(contracts: RentalContract[]): RentalContract[] {
+  if (!this.assignRentalVehicle) {
+    console.warn('⚠️ Aucun véhicule sélectionné pour le filtrage');
+    return contracts;
+  }
+
+  console.log(`🔍 Filtrage de ${contracts.length} contrats...`);
+
+  const filtered = contracts.filter(contract => {
+    // Debug pour chaque contrat
+    const debugInfo = {
+      contractNumber: contract.contractNumber,
+      vehicleId: contract.vehicleId,
+      status: contract.status,
+      depositPaid: contract.depositPaid,
+      startDate: contract.startDate,
+      endDate: contract.endDate
+    };
+
+    // 1. Vérifier si le contrat a déjà un véhicule
+    if (contract.vehicleId && contract.vehicleId !== '' && contract.vehicleId !== null) {
+      console.log(`❌ Contrat ${contract.contractNumber} déjà affecté au véhicule ${contract.vehicleId}`);
+      return false;
+    }
+
+    // 2. Vérifier le statut du contrat
+    const validStatuses = [ContractStatus.Active, ContractStatus.Pending];
+    if (!validStatuses.includes(contract.status)) {
+      console.log(`❌ Contrat ${contract.contractNumber} a un statut invalide: ${contract.status}`);
+      return false;
+    }
+
+    // 3. Vérifier si le dépôt est payé (si la vérification est activée)
+    if (contract.securityDeposit && contract.securityDeposit > 0) {
+      if (contract.depositPaid === false) {
+        console.log(`❌ Contrat ${contract.contractNumber} - Dépôt non payé`);
+        return false;
+      }
+    }
+
+    // 4. Vérifier les dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (contract.startDate) {
+      const startDate = new Date(contract.startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Le contrat ne doit pas commencer dans le futur (marge de 7 jours)
+      const maxFutureDate = new Date(today);
+      maxFutureDate.setDate(maxFutureDate.getDate() + 7);
+
+      if (startDate > maxFutureDate) {
+        console.log(`❌ Contrat ${contract.contractNumber} commence trop dans le futur: ${startDate}`);
+        return false;
+      }
+    }
+
+    if (contract.endDate) {
+      const endDate = new Date(contract.endDate);
+      endDate.setHours(0, 0, 0, 0);
+
+      if (endDate < today) {
+        console.log(`❌ Contrat ${contract.contractNumber} expiré: ${endDate}`);
+        return false;
+      }
+    }
+
+    console.log(`✅ Contrat ${contract.contractNumber} valide pour affectation`);
+    return true;
+  });
+
+  console.log(`✅ ${filtered.length} contrats passent les filtres`);
+  return filtered;
+}
+
+  /**
+   * Filtre les tiers pour l'affectation
+   */
+  filterTiersForAssignment(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredTiersForAssignment = this.tiersList;
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    this.filteredTiersForAssignment = this.tiersList.filter(tier =>
+      this.tiersService.getFullName(tier).toLowerCase().includes(term) ||
+      tier.phone?.toLowerCase().includes(term) ||
+      tier.tierNumber?.toLowerCase().includes(term)
+    );
+  }
+
+  /**
+   * Filtre les contrats pour l'affectation
+   */
+  filterContractsForAssignment(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredContractsForAssignment = this.availableContracts;
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    this.filteredContractsForAssignment = this.availableContracts.filter(contract =>
+      contract.contractNumber.toLowerCase().includes(term)
+    );
+  }
+
+  /**
+   * Sélectionne un tier pour l'affectation
+   */
+  selectTierForAssignment(tier: Tier): void {
+    this.assignRentalForm.patchValue({
+      customerId: tier.id
+    });
+  }
+
+  /**
+   * Sélectionne un contrat pour l'affectation
+   */
+  selectContractForAssignment(contract: RentalContract): void {
+    this.assignRentalForm.patchValue({
+      contractId: contract.id
+    });
+  }
+
+  /**
+   * Récupère le tier sélectionné pour l'affectation
+   */
+  getSelectedTierForAssignment(): Tier | undefined {
+    const customerId = this.assignRentalForm.get('customerId')?.value;
+    if (!customerId) return undefined;
+    return this.tiersList.find(t => t.id === customerId);
+  }
+
+  /**
+   * Récupère le contrat sélectionné pour l'affectation
+   */
+  getSelectedContractForAssignment(): RentalContract | undefined {
+    const contractId = this.assignRentalForm.get('contractId')?.value;
+    if (!contractId) return undefined;
+    return this.availableContracts.find(c => c.id === contractId);
+  }
+
+  /**
+   * Soumet l'affectation
+   */
+  onAssignRentalSubmit(): void {
+    this.assignRentalSubmitted = true;
+
+    if (this.assignRentalForm.invalid || !this.assignRentalVehicle) {
+      this.notificationService.warning(
+        'Formulaire invalide',
+        'Veuillez remplir tous les champs obligatoires'
+      );
+      return;
+    }
+
+    this.assignRentalLoading = true;
+    const request = this.prepareAssignRequest();
+
+    this.vehiclesService.assignVehicle(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => this.handleAssignSuccess(response),
+        error: (error) => this.handleAssignError(error)
+      });
+  }
+
+  /**
+   * Prépare la requête d'affectation
+   */
+  private prepareAssignRequest(): any {
+    const formValue = this.assignRentalForm.getRawValue();
+    return {
+      vehicleId: formValue.vehicleId,
+      customerId: formValue.customerId,
+      contractId: formValue.contractId,
+      startDate: new Date(formValue.startDate).toISOString(),
+      startMileage: parseInt(formValue.startMileage, 10),
+      notes: formValue.notes || undefined
+    };
+  }
+
+  /**
+   * Gère le succès de l'affectation
+   */
+  private handleAssignSuccess(response: any): void {
+    this.assignRentalLoading = false;
+
+    if (response.success) {
+      this.notificationService.success(
+        'Véhicule affecté ✅',
+        `Le véhicule ${this.assignRentalVehicle?.code} a été affecté avec succès`
+      );
+
+      // Fermer le modal
+      this.showAssignRentalModal = false;
+      this.assignRentalForm.reset();
+
+      // Rafraîchir les données
+      this.loadVehicles(this.pagination.currentPage);
+      this.loadActiveReservations();
+    } else {
+      this.notificationService.error(
+        'Erreur d\'affectation ❌',
+        response.message || 'Impossible d\'affecter le véhicule'
+      );
+    }
+  }
+
+  /**
+   * Gère les erreurs d'affectation
+   */
+  private handleAssignError(error: any): void {
+    this.assignRentalLoading = false;
+    this.notificationService.error(
+      'Erreur',
+      error.message || 'Une erreur est survenue lors de l\'affectation'
+    );
+  }
+
+  /**
+   * Getter pour les contrôles du formulaire d'affectation
+   */
+  get arf() {
+    return this.assignRentalForm.controls;
+  }
+
+  /**
+ * Charge les tiers pour l'affectation (uniquement les actifs)
+ */
+loadTiersForAssignment(): void {
+  this.isLoadingTiersForAssignment = true;
+
+  this.tiersService.getTiersList({
+    status: TierStatus.Active,
+    pageSize: 100
+  }).pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response) => {
+        this.isLoadingTiersForAssignment = false;  // <-- Arrêter le loading
+
+        if (response.data) {
+          // Stocker tous les tiers
+          this.tiersList = response.data;
+
+          // Filtrer pour l'affectation (actifs et en validation)
+          this.filteredTiersForAssignment = response.data.filter(tier =>
+            tier.status === TierStatus.Active ||
+            tier.status === TierStatus.PendingValidation
+          );
+
+          console.log(`✅ ${this.filteredTiersForAssignment.length} clients chargés pour affectation`);
+        } else {
+          console.warn('Aucun tier dans la réponse:', response);
+          this.filteredTiersForAssignment = [];
+        }
+      },
+      error: (error) => {
+        this.isLoadingTiersForAssignment = false;  // <-- Arrêter le loading même en cas d'erreur
+        console.error('❌ Erreur lors du chargement des tiers:', error);
+
+        this.notificationService.error(
+          'Erreur de chargement',
+          'Impossible de charger les clients disponibles'
+        );
+
+        this.filteredTiersForAssignment = [];
+      }
+    });
+}
+
+
+  /**
+   * Obtient le texte du statut d'un tier
+   */
+  getTierStatusText(status: TierStatus): string {
+    switch (status) {
+      case TierStatus.PendingValidation: return 'En validation';
+      case TierStatus.Active: return 'Actif';
+      case TierStatus.Blocked: return 'Bloqué';
+      case TierStatus.Suspended: return 'Suspendu';
+      case TierStatus.Inactive: return 'Inactif';
+      case TierStatus.Blacklisted: return 'Liste noire';
+      case TierStatus.None: return 'Aucun';
+      default: return 'Inconnu';
+    }
+  }
+
+  /**
+   * Obtient la classe CSS pour le badge de statut Tier
+   */
+  getTierStatusBadge(status: TierStatus): string {
+    switch (status) {
+      case TierStatus.Active: return 'badge-success';
+      case TierStatus.PendingValidation: return 'badge-warning';
+      case TierStatus.Suspended:
+      case TierStatus.Blocked:
+        return 'badge-danger';
+      case TierStatus.Inactive: return 'badge-secondary';
+      case TierStatus.Blacklisted: return 'badge-dark';
+      default: return 'badge-light';
+    }
   }
 
   // ============================================================================
@@ -814,71 +1408,44 @@ export class VehiculesList implements OnInit, OnDestroy {
   }
 
   /**
- * Charge la liste des contrats disponibles pour confirmation
- */
+   * Charge la liste des contrats disponibles pour confirmation
+   */
   loadAvailableContracts(): void {
-    // Note: Vous devrez créer ce service ou adapter votre service existant
-    // Pour l'exemple, je simule une liste de contrats
-    this.availableContracts = [
-      {
-        id: '1234567890abcdef12345678',
-        contractNumber: 'CONT-2024-001',
-        customerId: '',
-        vehicleId: '',
-        startDate: new Date(),
-        endDate: new Date(),
-        durationInWeeks: 4,
-        weeklyAmount: 50000,
-        totalAmount: 200000,
-        securityDeposit: 100000,
-        depositPaid: true,
-        paymentFrequency: 1,
-        paymentDay: 1,
-        status: 1,
-        terms: {
-          latePaymentFee: 5000,
-          damageFee: 100000,
-          earlyTerminationFee: 2,
-          mileageOverFee: 500,
-          insuranceDeductible: 50000,
-          additionalTerms: []
-        },
-        weeklyMileageLimit: 500,
-        documents: [],
-        createdAt: new Date(),
-        createdBy: ''
-      },
-      {
-        id: 'abcdef123456789012345678',
-        contractNumber: 'CONT-2024-002',
-        customerId: '',
-        vehicleId: '',
-        startDate: new Date(),
-        endDate: new Date(),
-        durationInWeeks: 8,
-        weeklyAmount: 75000,
-        totalAmount: 600000,
-        securityDeposit: 150000,
-        depositPaid: false,
-        paymentFrequency: 2,
-        paymentDay: 3,
-        status: 2,
-        terms: {
-          latePaymentFee: 5000,
-          damageFee: 100000,
-          earlyTerminationFee: 2,
-          mileageOverFee: 500,
-          insuranceDeductible: 50000,
-          additionalTerms: ['Location longue durée']
-        },
-        weeklyMileageLimit: 750,
-        documents: [],
-        createdAt: new Date(),
-        createdBy: ''
-      }
-    ];
+    // Options de recherche pour les contrats
+    const searchCriteria = {
+      page: 1,
+      pageSize: 50,
+      sortBy: 'createdAt',
+      sortDescending: true,
+      status: ContractStatus.Draft,
+    };
 
-    this.filteredContracts = [...this.availableContracts];
+    this.contractService.searchContracts(searchCriteria)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.data) {
+            this.availableContracts = response.data;
+            this.filteredContracts = [...this.availableContracts];
+
+            console.log(`${this.availableContracts.length} contrats chargés pour confirmation`);
+          } else {
+            console.warn('Aucun contrat disponible:', response.data);
+            this.availableContracts = [];
+            this.filteredContracts = [];
+          }
+        },
+        error: (error) => {
+          console.error('Erreur lors du chargement des contrats:', error);
+          this.notificationService.error(
+            'Erreur de chargement',
+            'Impossible de charger les contrats disponibles'
+          );
+          // Fallback sur une liste vide
+          this.availableContracts = [];
+          this.filteredContracts = [];
+        }
+      });
   }
 
   /**
@@ -893,7 +1460,9 @@ export class VehiculesList implements OnInit, OnDestroy {
     const term = searchTerm.toLowerCase();
     this.filteredContracts = this.availableContracts.filter(contract =>
       contract.contractNumber.toLowerCase().includes(term) ||
-      contract.id.toLowerCase().includes(term)
+      contract.id.toLowerCase().includes(term) ||
+      // Ajouter la recherche par nom client si disponible
+      (contract.customerName && contract.customerName.toLowerCase().includes(term))
     );
   }
 
@@ -1105,155 +1674,155 @@ export class VehiculesList implements OnInit, OnDestroy {
    * Gère la réponse des réservations avec enrichissement des données
    */
   private handleReservationsResponse(response: any): void {
-  this.reservationsLoading = false;
+    this.reservationsLoading = false;
 
-  if (response.success && response.data) {
-    this.activeReservations = response.data;
+    if (response.success && response.data) {
+      this.activeReservations = response.data;
 
-    // Charger les véhicules et clients AVANT d'enrichir
-    this.loadDataForReservations();
-  }
-}
-
-/**
- * Charge les données nécessaires pour enrichir les réservations
- */
-private loadDataForReservations(): void {
-  // 1. Charger les véhicules si nécessaire
-  if (this.vehicles.length === 0) {
-    this.vehiclesService.searchVehicles({
-      page: 1, pageSize: 100,
-      sortDescending: false
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.data) {
-            this.vehicles = response.data;
-            this.enrichReservationsData();
-          }
-        },
-        error: (error) => {
-          console.error('Erreur chargement véhicules:', error);
-          this.enrichReservationsData(); // Essayer quand même avec les données disponibles
-        }
-      });
-  } else {
-    // 2. Charger les clients si nécessaire
-    if (this.tiersList.length === 0) {
-      this.tiersService.getTiersList({
-        pageNumber: 1,
-        pageSize: 100
-      }).subscribe({
-        next: (response) => {
-          if (response.data) {
-            this.tiersList = response.data;
-            this.enrichReservationsData();
-          }
-        },
-        error: (error) => {
-          console.error('Erreur chargement clients:', error);
-          this.enrichReservationsData();
-        }
-      });
-    } else {
-      this.enrichReservationsData();
+      // Charger les véhicules et clients AVANT d'enrichir
+      this.loadDataForReservations();
     }
   }
-}
+
+  /**
+   * Charge les données nécessaires pour enrichir les réservations
+   */
+  private loadDataForReservations(): void {
+    // 1. Charger les véhicules si nécessaire
+    if (this.vehicles.length === 0) {
+      this.vehiclesService.searchVehicles({
+        page: 1, pageSize: 100,
+        sortDescending: false
+      })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              this.vehicles = response.data;
+              this.enrichReservationsData();
+            }
+          },
+          error: (error) => {
+            console.error('Erreur chargement véhicules:', error);
+            this.enrichReservationsData(); // Essayer quand même avec les données disponibles
+          }
+        });
+    } else {
+      // 2. Charger les clients si nécessaire
+      if (this.tiersList.length === 0) {
+        this.tiersService.getTiersList({
+          pageNumber: 1,
+          pageSize: 100
+        }).subscribe({
+          next: (response) => {
+            if (response.data) {
+              this.tiersList = response.data;
+              this.enrichReservationsData();
+            }
+          },
+          error: (error) => {
+            console.error('Erreur chargement clients:', error);
+            this.enrichReservationsData();
+          }
+        });
+      } else {
+        this.enrichReservationsData();
+      }
+    }
+  }
 
   /**
    * Enrichit les réservations avec les données des véhicules et clients
    */
   private enrichReservationsData(): void {
-  this.activeReservations.forEach(reservation => {
-    // Récupérer le véhicule correspondant
-    const vehicle = this.vehicles.find(v => v.id === reservation.vehicleId);
-    if (vehicle) {
-      reservation.vehicleCode = vehicle.code;
-      reservation.vehicleName = `${vehicle.brand} ${vehicle.model} (${vehicle.plateNumber})`;
-      reservation.vehicleType = this.getTypeText(vehicle.type);
-    } else {
-      reservation.vehicleCode = 'N/A';
-      reservation.vehicleName = `Véhicule ${reservation.vehicleId?.substring(0, 8) || 'inconnu'}`;
+    this.activeReservations.forEach(reservation => {
+      // Récupérer le véhicule correspondant
+      const vehicle = this.vehicles.find(v => v.id === reservation.vehicleId);
+      if (vehicle) {
+        reservation.vehicleCode = vehicle.code;
+        reservation.vehicleName = `${vehicle.brand} ${vehicle.model} (${vehicle.plateNumber})`;
+        reservation.vehicleType = this.getTypeText(vehicle.type);
+      } else {
+        reservation.vehicleCode = 'N/A';
+        reservation.vehicleName = `Véhicule ${reservation.vehicleId?.substring(0, 8) || 'inconnu'}`;
 
-      // Essayer de charger ce véhicule spécifique
-      this.loadReservationVehicle(reservation);
-    }
+        // Essayer de charger ce véhicule spécifique
+        this.loadReservationVehicle(reservation);
+      }
 
-    // Récupérer le client correspondant
-    const client = this.tiersList.find(t => t.id === reservation.customerId);
-    if (client) {
-      reservation.customerName = this.tiersService.getFullName(client);
-      reservation.customerPhone = client.phone;
-      reservation.customerTierNumber = client.tierNumber;
-    } else {
-      reservation.customerName = 'Client non chargé';
-      reservation.customerPhone = null;
+      // Récupérer le client correspondant
+      const client = this.tiersList.find(t => t.id === reservation.customerId);
+      if (client) {
+        reservation.customerName = this.tiersService.getFullName(client);
+        reservation.customerPhone = client.phone;
+        reservation.customerTierNumber = client.tierNumber;
+      } else {
+        reservation.customerName = 'Client non chargé';
+        reservation.customerPhone = null;
 
-      // Charger le client spécifique
-      this.loadReservationClient(reservation);
-    }
-  });
-}
-
-/**
- * Charge les données d'un véhicule spécifique pour une réservation
- */
-private loadReservationVehicle(reservation: any): void {
-  this.vehiclesService.getVehicleById(reservation.vehicleId)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          const vehicle = response.data;
-
-          // Mettre à jour la réservation
-          const reservationIndex = this.activeReservations.findIndex(r => r.id === reservation.id);
-          if (reservationIndex !== -1) {
-            this.activeReservations[reservationIndex].vehicleCode = vehicle.code;
-            this.activeReservations[reservationIndex].vehicleName = `${vehicle.brand} ${vehicle.model} (${vehicle.plateNumber})`;
-            this.activeReservations[reservationIndex].vehicleType = this.getTypeText(vehicle.type);
-
-            // Forcer la détection des changements
-            this.activeReservations = [...this.activeReservations];
-          }
-        }
-      },
-      error: (error) => {
-        console.warn('Impossible de charger le véhicule:', error);
+        // Charger le client spécifique
+        this.loadReservationClient(reservation);
       }
     });
-}
+  }
+
+  /**
+   * Charge les données d'un véhicule spécifique pour une réservation
+   */
+  private loadReservationVehicle(reservation: any): void {
+    this.vehiclesService.getVehicleById(reservation.vehicleId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            const vehicle = response.data;
+
+            // Mettre à jour la réservation
+            const reservationIndex = this.activeReservations.findIndex(r => r.id === reservation.id);
+            if (reservationIndex !== -1) {
+              this.activeReservations[reservationIndex].vehicleCode = vehicle.code;
+              this.activeReservations[reservationIndex].vehicleName = `${vehicle.brand} ${vehicle.model} (${vehicle.plateNumber})`;
+              this.activeReservations[reservationIndex].vehicleType = this.getTypeText(vehicle.type);
+
+              // Forcer la détection des changements
+              this.activeReservations = [...this.activeReservations];
+            }
+          }
+        },
+        error: (error) => {
+          console.warn('Impossible de charger le véhicule:', error);
+        }
+      });
+  }
 
   /**
  * Charge les données d'un client spécifique pour une réservation
  */
-private loadReservationClient(reservation: any): void {
-  this.tiersService.getTierById(reservation.customerId)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          const client = response.data;
+  private loadReservationClient(reservation: any): void {
+    this.tiersService.getTierById(reservation.customerId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            const client = response.data;
 
-          // Mettre à jour la réservation
-          const reservationIndex = this.activeReservations.findIndex(r => r.id === reservation.id);
-          if (reservationIndex !== -1) {
-            this.activeReservations[reservationIndex].customerName = this.tiersService.getFullName(client);
-            this.activeReservations[reservationIndex].customerPhone = client.phone;
-            this.activeReservations[reservationIndex].customerTierNumber = client.tierNumber;
+            // Mettre à jour la réservation
+            const reservationIndex = this.activeReservations.findIndex(r => r.id === reservation.id);
+            if (reservationIndex !== -1) {
+              this.activeReservations[reservationIndex].customerName = this.tiersService.getFullName(client);
+              this.activeReservations[reservationIndex].customerPhone = client.phone;
+              this.activeReservations[reservationIndex].customerTierNumber = client.tierNumber;
 
-            // Forcer la détection des changements
-            this.activeReservations = [...this.activeReservations];
+              // Forcer la détection des changements
+              this.activeReservations = [...this.activeReservations];
+            }
           }
+        },
+        error: (error) => {
+          console.warn('Impossible de charger le client:', error);
         }
-      },
-      error: (error) => {
-        console.warn('Impossible de charger le client:', error);
-      }
-    });
-}
+      });
+  }
 
   /**
    * Gère les erreurs de chargement des réservations
@@ -1983,6 +2552,8 @@ private loadReservationClient(reservation: any): void {
     return actions;
   }
 
+
+
   /**
    * Assigner un véhicule à une location
    */
@@ -1992,11 +2563,12 @@ private loadReservationClient(reservation: any): void {
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
-            this.router.navigate(['/dashboard/vehicules', vehicle.id, 'affecter']);
+            // Ouvrir le modal d'affectation au lieu de naviguer
+            this.openAssignRentalModal(vehicle);
           } else {
             this.notificationService.warning(
               'Véhicule non louable',
-              'Ce véhicule ne peut pas être loué pour le moment'
+              response.message || 'Ce véhicule ne peut pas être loué pour le moment'
             );
           }
         },

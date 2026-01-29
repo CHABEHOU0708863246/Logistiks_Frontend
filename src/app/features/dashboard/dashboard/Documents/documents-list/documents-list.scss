@@ -541,11 +541,6 @@ body {
   color: #566a7f;
 }
 
-
-
-
-
-
 /* TABLE */
 .table-responsive {
   overflow-x: auto;
@@ -1018,40 +1013,23 @@ tr:hover {
 
 
 
-/* Styles pour l'état des documents */
-.document-status {
-  font-size: 0.75rem;
-  display: block;
 
-  &.text-success {
-    color: #28c76f;
-  }
 
-  &.text-warning {
-    color: #ff9f43;
-  }
-}
 
-.document-status-indicator {
-  .missing-docs-tooltip {
-    display: none;
-    position: absolute;
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 0.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    z-index: 1000;
-    min-width: 200px;
-    max-width: 300px;
-  }
 
-  &:hover .missing-docs-tooltip {
-    display: block;
-  }
-}
 
-.badge-sm {
-  font-size: 0.65rem;
-  padding: 0.2rem 0.4rem;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

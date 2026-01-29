@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, RouterLink, Router } from '@angular/router';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, Subscription } from 'rxjs';
 
 import { User } from '../../../core/models/Core/Users/Entities/User';
 import { DocumentStatus, TierRoleType, TierStatus } from '../../../core/models/Enums/Logistiks-enums';
@@ -12,6 +12,8 @@ import { Token } from '../../../core/services/Token/token';
 import { environment } from '../../../../environments/environment.development';
 import { Tier } from '../../../core/models/Tiers/Tiers';
 import { PaginatedResponse } from '../../../core/models/Common/PaginatedResponse';
+import { Contract } from '../../../core/services/Contract/contract';
+import { Document } from '../../../core/services/Document/document';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,6 +23,14 @@ import { PaginatedResponse } from '../../../core/models/Common/PaginatedResponse
   styleUrls: ['./dashboard.scss']
 })
 export class Dashboard implements OnInit, OnDestroy {
+
+   // Données pour graphiques
+  chartData = {
+    tiersByStatus: { labels: [], datasets: [] },
+    monthlyContracts: { labels: [], datasets: [] },
+    documentsByType: { labels: [], datasets: [] },
+    paymentsByStatus: { labels: [], datasets: [] }
+  };
 
   currentUser: User | null = null;
   userName: string = 'Utilisateur';
@@ -48,6 +58,8 @@ export class Dashboard implements OnInit, OnDestroy {
   constructor(
     private authService: Auth,
     private tiersService: Tiers,
+    private documentService: Document,
+    private contractService: Contract,
     private tokenService: Token,
     private router: Router,
   ) { }
@@ -172,73 +184,171 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   /**
-   * Charger les données du tableau de bord
+   * Charger toutes les données du dashboard=
    */
   loadDashboardData(): void {
     this.isLoading = true;
-    this.loadTiersStatistics();
-    this.loadSimulatedData();
-  }
 
-  loadTiersStatistics(): void {
+    // Charger toutes les données en parallèle
     this.subscriptions.add(
-      this.tiersService.getTiersList({
-        pageNumber: 1,
-        pageSize: 100 // Changé de 1000 à 100
+      forkJoin({
+        tiers: this.loadTiersStatistics(),
+        documents: this.loadPendingDocuments(),
+        payments: this.loadOverduePayments(),
+        contracts: this.loadActiveContracts(),
+        vehicles: this.loadVehiclesData(),
+        recovery: this.loadRecoveryRate()
       }).subscribe({
-        next: (response) => {
-
-          this.dashboardStats.totalTiers = response.totalCount || response.data?.length || 0;
-
-          // Calculer les statistiques sur la première page
-          const firstPageTiers = response.data || [];
-
-          // Statistiques par statut (première page seulement)
-          this.dashboardStats.activeTiers = firstPageTiers.filter(t =>
-            t.status === TierStatus.Active
-          ).length;
-
-          // Statistiques par rôle (première page seulement)
-          this.dashboardStats.totalClients = firstPageTiers.filter(t =>
-            t.roles?.some(r =>
-              r.roleType === TierRoleType.ClientParticulier &&
-              r.isActive === true
-            )
-          ).length;
-
-          this.dashboardStats.totalSuppliers = firstPageTiers.filter(t =>
-            t.roles?.some(r =>
-              r.roleType === TierRoleType.Supplier &&
-              r.isActive === true
-            )
-          ).length;
-
-          // Documents en attente (première page seulement)
-          this.dashboardStats.documentsPending = firstPageTiers.reduce((count, tier) => {
-            const pendingDocs = tier.documents?.filter(doc =>
-              doc.status === DocumentStatus.Pending
-            ).length || 0;
-            return count + pendingDocs;
-          }, 0);
-
-          // Si nous avons besoin de statistiques exactes, nous pouvons faire des requêtes supplémentaires
-          if (response.totalCount > 100) {
-            this.loadCompleteTiersStatistics(response.totalCount);
-          }
-
-          console.log('📊 Statistiques calculées (page 1):', {
-            total: this.dashboardStats.totalTiers,
-            active: this.dashboardStats.activeTiers,
-            clients: this.dashboardStats.totalClients,
-            suppliers: this.dashboardStats.totalSuppliers,
-            pendingDocs: this.dashboardStats.documentsPending
-          });
+        next: (results) => {
+          console.log('✅ Données du dashboard chargées:', results);
+          this.isLoading = false;
         },
         error: (error) => {
-          console.error('❌ Erreur chargement des statistiques des tiers:', error);
+          console.error('❌ Erreur chargement dashboard:', error);
+          this.isLoading = false;
+          this.loadSimulatedData(); // Fallback aux données simulées
         }
       })
     );
+  }
+
+  /**
+   * Charger les statistiques des tiers
+   */
+  loadTiersStatistics(): Observable<any> {
+    return this.tiersService.getTiersList({
+      pageNumber: 1,
+      pageSize: 100
+    }).pipe(
+      map((response) => {
+        const firstPageTiers = response.data || [];
+
+        this.dashboardStats.totalTiers = response.totalCount || firstPageTiers.length;
+        this.dashboardStats.activeTiers = firstPageTiers.filter(t =>
+          t.status === TierStatus.Active
+        ).length;
+
+        this.dashboardStats.totalClients = firstPageTiers.filter(t =>
+          t.roles?.some(r =>
+            r.roleType === TierRoleType.ClientParticulier &&
+            r.isActive === true
+          )
+        ).length;
+
+        this.dashboardStats.totalSuppliers = firstPageTiers.filter(t =>
+          t.roles?.some(r =>
+            r.roleType === TierRoleType.Supplier &&
+            r.isActive === true
+          )
+        ).length;
+
+        return { success: true };
+      })
+    );
+  }
+
+  /**
+   * Charger les documents en attente de validation
+   */
+  loadPendingDocuments(): Observable<any> {
+    return this.documentService.getDocumentsPendingValidation().pipe(
+      map((response) => {
+        this.dashboardStats.documentsPending = response.totalCount || 0;
+        return { success: true };
+      }),
+      catchError((error) => {
+        console.warn('⚠️ Erreur chargement documents:', error);
+        return of({ success: false });
+      })
+    );
+  }
+
+  /**
+   * Charger les paiements en retard
+   */
+  loadOverduePayments(): Observable<any> {
+    return this.contractService.getOverduePayments().pipe(
+      map((response) => {
+        const payments = response.data || [];
+        this.dashboardStats.paymentsOverdue = payments.length;
+        return { success: true };
+      }),
+      catchError((error) => {
+        console.warn('⚠️ Erreur chargement paiements:', error);
+        return of({ success: false });
+      })
+    );
+  }
+
+  /**
+   * Charger les contrats actifs
+   */
+  loadActiveContracts(): Observable<any> {
+    return this.contractService.getActiveContracts().pipe(
+      map((response) => {
+        const contracts = response.data || [];
+        this.dashboardStats.activeContracts = contracts.length;
+        return { success: true };
+      }),
+      catchError((error) => {
+        console.warn('⚠️ Erreur chargement contrats:', error);
+        return of({ success: false });
+      })
+    );
+  }
+
+  /**
+   * Charger les données des véhicules
+   */
+  loadVehiclesData(): Observable<any> {
+    // Si vous avez un service Vehicle, utilisez-le
+    // Sinon, simuler ou utiliser une autre source
+    return of({ success: true }).pipe(
+      map(() => {
+        // Simulation - À remplacer par votre logique réelle
+        this.dashboardStats.vehiclesNeedingAttention = 1;
+        return { success: true };
+      })
+    );
+  }
+
+  /**
+   * Calculer le taux de recouvrement
+   */
+  loadRecoveryRate(): Observable<any> {
+    return of({ success: true }).pipe(
+      map(() => {
+        const receivedPayments = 85000; // Exemple
+        const expectedPayments = 100000; // Exemple
+        this.dashboardStats.recoveryRate = Math.round((receivedPayments / expectedPayments) * 100);
+        return { success: true };
+      })
+    );
+  }
+
+
+  /**
+   * Calculer la tendance des véhicules opérationnels
+   */
+  getVehiclesTrend(): number {
+    // Simulation - à adapter avec vos données réelles
+    return +5; // +5% ce mois
+  }
+
+  /**
+   * Calculer la tendance des contrats actifs
+   */
+  getContractsTrend(): number {
+    // Simulation - à adapter avec vos données réelles
+    return +8; // +8% ce mois
+  }
+
+  /**
+   * Calculer la tendance du taux de recouvrement
+   */
+  getRecoveryTrend(): number {
+    // Simulation - à adapter avec vos données réelles
+    return -3; // -3% ce mois
   }
 
 

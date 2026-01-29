@@ -585,33 +585,217 @@ export class TiersList implements OnInit, OnDestroy {
   }
 
   /**
-   * Active un tier
-   * @param tier - Tier à activer
-   */
-  activateTier(tier: Tier): void {
-    this.openConfirmDialog(
-      'Activation du tier',
-      `Voulez-vous activer le tier ${tier.tierNumber} ?`,
-      '',
-      () => {
-        this.tiersService.activateTier(tier.id)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: () => {
+ * Active un tier
+ * @param tier - Tier à activer
+ */
+activateTier(tier: Tier): void {
+  this.openConfirmDialog(
+    'Activation du tier',
+    `Voulez-vous activer le tier ${tier.tierNumber} ?`,
+    '',
+    () => {
+      this.tiersService.activateTier(tier.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            if (response.success) {
               this.notificationService.success(
                 'Tier activé',
-                `Le tier ${tier.tierNumber} a été activé`
+                `Le tier ${tier.tierNumber} a été activé avec succès`
               );
               this.loadTiers(this.pagination.currentPage);
-            },
-            error: (error) => {
-              const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-              this.notificationService.error('Erreur d’activation', errorMessage);
+            } else {
+              // Gérer les erreurs spécifiques de l'API
+              let errorMessage = response.message || 'Échec de l\'activation';
+
+              // Si l'API retourne des erreurs spécifiques (comme documents manquants)
+              if (response.errors?.length) {
+                errorMessage += `:\n${response.errors.join('\n')}`;
+              }
+
+              this.notificationService.error('Erreur d\'activation', errorMessage);
             }
-          });
-      }
+          },
+          error: (error) => {
+            // Extraire le message d'erreur de l'API
+            const apiError = error.error;
+            let message = 'Erreur inconnue lors de l\'activation';
+
+            if (apiError?.message) {
+              message = apiError.message;
+            } else if (error.message) {
+              message = error.message;
+            }
+
+            // Vérifier si l'erreur concerne les documents
+            if (message.toLowerCase().includes('document') ||
+                message.toLowerCase().includes('valider') ||
+                message.toLowerCase().includes('validation')) {
+              message = `Impossible d'activer le tier. ${message}`;
+            }
+
+            // Ajouter les erreurs supplémentaires si disponibles
+            if (apiError?.errors?.length) {
+              message += `:\n${apiError.errors.join('\n')}`;
+            }
+
+            this.notificationService.error('Erreur d\'activation', message);
+            console.error('Erreur d\'activation:', error);
+          }
+        });
+    }
+  );
+}
+
+// ===========================================================================
+// VÉRIFICATION D'ÉLIGIBILITÉ ET ÉTAT DES DOCUMENTS
+// ===========================================================================
+
+/**
+ * Vérifie l'éligibilité à l'activation avant de lancer le processus
+ * @param tier - Tier à vérifier
+ */
+checkActivationEligibility(tier: Tier): void {
+  this.notificationService.info(
+    '🔍 Vérification en cours',
+    'Vérification des conditions d\'activation...'
+  );
+
+  // Vérifier d'abord localement l'état des documents
+  const documentsStatus = this.getDocumentsStatus(tier);
+
+  if (!documentsStatus.valid) {
+    // Afficher les documents manquants
+    let message = 'Le tier ne peut pas être activé pour les raisons suivantes :\n\n';
+    message += '📋 Documents manquants ou non validés :\n';
+    documentsStatus.missing.forEach(doc => {
+      message += `• ${doc}\n`;
+    });
+    message += '\nVeuillez valider tous les documents obligatoires avant l\'activation.';
+
+    this.notificationService.warning(
+      '⛔ Activation impossible',
+      message,
+    );
+
+    return;
+  }
+
+  // Si les documents sont OK, procéder à l'activation
+  this.activateTier(tier);
+}
+
+/**
+ * Vérifie l'état des documents d'un tier
+ * @param tier - Tier à vérifier
+ * @returns État des documents
+ */
+getDocumentsStatus(tier: Tier): { valid: boolean; missing: string[] } {
+  // Définir les documents obligatoires selon le type de tier
+  const requiredDocuments = this.getRequiredDocumentsForTier(tier);
+
+  const missingDocs: string[] = [];
+  let hasInvalidDocs = false;
+
+  // Vérifier chaque document obligatoire
+  if (tier.documents && tier.documents.length > 0) {
+    requiredDocuments.forEach(reqDoc => {
+      // const foundDoc = tier.documents.find(d =>
+      //   d.type === reqDoc.type && d.status === 'Validated'
+      // );
+
+      // if (!foundDoc) {
+      //   missingDocs.push(reqDoc.name);
+      //   hasInvalidDocs = true;
+      // }
+    });
+  } else {
+    // Aucun document
+    requiredDocuments.forEach(reqDoc => {
+      missingDocs.push(reqDoc.name);
+    });
+    hasInvalidDocs = true;
+  }
+
+  return {
+    valid: !hasInvalidDocs,
+    missing: missingDocs
+  };
+}
+
+/**
+ * Détermine les documents obligatoires selon le type de tier
+ * @param tier - Tier
+ * @returns Liste des documents obligatoires
+ */
+private getRequiredDocumentsForTier(tier: Tier): Array<{type: string, name: string}> {
+  const baseDocuments = [
+    { type: 'IDENTITY', name: 'Pièce d\'identité' },
+    { type: 'ADDRESS_PROOF', name: 'Justificatif de domicile' }
+  ];
+
+  // Ajouter des documents spécifiques selon les rôles
+  const activeRoles = this.getActiveRoles(tier);
+
+  if (activeRoles.includes(TierRoleType.ClientParticulier)) {
+    baseDocuments.push(
+      { type: 'DRIVER_LICENSE', name: 'Permis de conduire' },
+      { type: 'INSURANCE', name: 'Attestation d\'assurance' }
     );
   }
+
+  if (activeRoles.includes(TierRoleType.Supplier)) {
+    baseDocuments.push(
+      { type: 'BUSINESS_REGISTRATION', name: 'Extrait Kbis' },
+      { type: 'BANK_DETAILS', name: 'RIB' }
+    );
+  }
+
+  return baseDocuments;
+}
+
+/**
+ * Formate un message d'erreur à partir d'une réponse d'API
+ * @param error - L'erreur retournée par l'API
+ * @returns Message formaté
+ */
+private formatApiErrorMessage(error: any): string {
+  let message = 'Erreur inconnue';
+
+  // Vérifier différentes structures d'erreur possibles
+  if (error?.error?.message) {
+    message = error.error.message;
+  } else if (error?.message) {
+    message = error.message;
+  } else if (typeof error === 'string') {
+    message = error;
+  }
+
+  // Rendre le message plus lisible
+  message = message
+    .replace(/\.$/, '') // Retirer le point final
+    .trim();
+
+  return message;
+}
+
+/**
+ * Vérifie si une erreur concerne les documents
+ * @param message - Message d'erreur
+ * @returns True si l'erreur concerne les documents
+ */
+private isDocumentError(message: string): boolean {
+  const documentKeywords = [
+    'document', 'documents', 'valider', 'validation',
+    'manquant', 'obligatoire', 'required', 'missing'
+  ];
+
+  const lowerMessage = message.toLowerCase();
+  return documentKeywords.some(keyword => lowerMessage.includes(keyword));
+}
+
+
+
 
   // ===========================================================================
   // FILTRES ET TRI

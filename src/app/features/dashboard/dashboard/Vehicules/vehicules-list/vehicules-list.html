@@ -1,298 +1,271 @@
 <div class="layout-wrapper">
   <!-- SIDEBAR COMPLÈTE -->
-<aside class="layout-menu" id="sidebar">
-  <div class="app-brand">
-    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-    <div>
-      <span class="app-brand-text">Logistiks</span>
-      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+  <aside class="layout-menu" id="sidebar">
+    <div class="app-brand">
+      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+      <div>
+        <span class="app-brand-text">Logistik</span>
+        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+      </div>
     </div>
-  </div>
 
-  <ul class="menu-inner">
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard']" class="menu-link">
-        <i class="menu-icon bx bx-home-circle"></i>
-        <div>Dashboard</div>
-      </a>
-    </li>
+    <ul class="menu-inner">
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard']" class="menu-link">
+          <i class="menu-icon bx bx-home-circle"></i>
+          <div>Dashboard</div>
+        </a>
+      </li>
 
-    <li class="menu-header">
-      <span>RÉFÉRENTIELS</span>
-    </li>
+      <li class="menu-header">
+        <span>RÉFÉRENTIELS</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-group"></i>
-        <div>Tiers</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-            <div>Tous les tiers</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-            <div>Documents à valider</div>
-            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-              {{ dashboardStats.documentsPending }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-            <div>Gestion des documents</div>
-            <span class="badge badge-info">
-              <i class='bx bx-upload'></i>
-              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-            </span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-            <div>Nouveau tier</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-group"></i>
+          <div>Tiers</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+              <div>Tous les tiers</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+              <div>Documents à valider</div>
+              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
+                {{ dashboardStats.documentsPending }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+              <div>Gestion des documents</div>
+              <span class="badge badge-info">
+                <i class='bx bx-upload'></i>
+                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
+              </span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+              <div>Nouveau tier</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-car"></i>
-        <div>Véhicules</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-            <div>Tous les véhicules</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
-            <div>Ajouter vehicule</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
-            <div>Affectations</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-car"></i>
+          <div>Véhicules</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+              <div>Tous les véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+              <div>Ajouter vehicule</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-folder"></i>
-        <div>Documents</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents']" class="menu-link">
-            <div>Tous les documents</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
-            <div>Contrats signés</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
-            <div>Pièces d'identité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-            <div>Factures fournisseurs</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-folder"></i>
+          <div>Documents</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents']" class="menu-link">
+              <div>Tous les documents</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+              <div>Factures fournisseurs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-header">
-      <span>CŒUR MÉTIER</span>
-    </li>
+      <li class="menu-header">
+        <span>CŒUR MÉTIER</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-file"></i>
-        <div>Contrats</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-            <div>Tous les contrats</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
-            <div>Contrats actifs</div>
-            <span class="badge badge-success">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
-            <div>À expiration</div>
-            <span class="badge badge-warning">3</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-            <div>Nouveau contrat</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-file"></i>
+          <div>Contrats</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+              <div>Tous les contrats</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+              <div>Nouveau contrat</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-        <i class="menu-icon bx bx-calendar"></i>
-        <div>Calendrier & Échéances</div>
-      </a>
-    </li>
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+          <i class="menu-icon bx bx-calendar"></i>
+          <div>Calendrier & Échéances</div>
+        </a>
+      </li>
 
-    <li class="menu-header">
-      <span>FINANCE & COMPTABILITÉ</span>
-    </li>
+      <li class="menu-header">
+        <span>FINANCE & COMPTABILITÉ</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-credit-card"></i>
-        <div>Comptes</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-            <div>Comptes bancaires</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-            <div>Mobile Money</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-            <div>Soldes & Bilans</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-credit-card"></i>
+          <div>Comptes</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+              <div>Comptes bancaires</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+              <div>Mobile Money</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+              <div>Soldes & Bilans</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-wallet"></i>
-        <div>Paiements</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-            <div>Tous les paiements</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-            <div>En retard</div><span class="badge badge-danger">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-            <div>En attente</div><span class="badge badge-warning">8</span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-wallet"></i>
+          <div>Paiements</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+              <div>Tous les paiements</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+              <div>En retard</div><span class="badge badge-danger">5</span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+              <div>En attente</div><span class="badge badge-warning">8</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-header">
-      <span>ADMINISTRATION</span>
-    </li>
+      <li class="menu-header">
+        <span>ADMINISTRATION</span>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-user"></i>
-        <div>Utilisateurs</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-            <div>Liste utilisateurs</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-            <div>Détail utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-            <div>Formulaire utilisateur</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-            <div>Gestion rôles</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-            <div>Permissions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-            <div>Profil utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-            <div>Sessions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-            <div>Activité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-            <div>Groupes</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-user"></i>
+          <div>Utilisateurs</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+              <div>Liste utilisateurs</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+              <div>Détail utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+              <div>Formulaire utilisateur</div>
+              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+              <div>Gestion rôles</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+              <div>Permissions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+              <div>Profil utilisateur</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+              <div>Sessions</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+              <div>Activité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+              <div>Groupes</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-cog"></i>
-        <div>Paramétrage</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-            <div>Paramètres généraux</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-            <div>Types de véhicules</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-cog"></i>
+          <div>Paramétrage</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+              <div>Paramètres généraux</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+              <div>Types de véhicules</div>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <li class="menu-item" style="margin-top: 2rem;">
-      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-        <i class="menu-icon bx bx-log-out"></i>
-        <div>Déconnexion</div>
-      </a>
-    </li>
-  </ul>
-</aside>
+      <li class="menu-item" style="margin-top: 2rem;">
+        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+          <i class="menu-icon bx bx-log-out"></i>
+          <div>Déconnexion</div>
+        </a>
+      </li>
+    </ul>
+  </aside>
 
   <!-- MAIN CONTENT -->
   <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
@@ -685,33 +658,41 @@
                         <div class="btn-group" role="group">
                           <!-- Bouton principal avec dropdown -->
                           <div class="dropdown" [class.show]="vehicle.showActionsMenu">
-                            <button class="btn btn-sm btn-primary dropdown-toggle" type="button"
+                            <button class="btn btn-sm btn-primary dropdown-toggle"
+                              [class.show]="vehicle.showActionsMenu" type="button"
                               (click)="toggleActionsMenu(vehicle, $event)">
-                              <i class='bx bx-cog'></i> Actions
+                              <i class='bx bx-cog'></i>
+                              Actions
                             </button>
+
                             <ul class="dropdown-menu" [class.show]="vehicle.showActionsMenu">
+                              <!-- MODIFIER - Toujours disponible -->
                               <li>
-                                <a class="dropdown-item" (click)="openEditModal(vehicle)">
-                                  <i class='bx bx-edit text-primary'></i> Modifier
+                                <a class="dropdown-item item-info" (click)="openEditModal(vehicle)">
+                                  <i class='bx bx-edit'></i>
+                                  Modifier
                                 </a>
                               </li>
 
                               <!-- VÉHICULE DISPONIBLE -->
                               <ng-container *ngIf="vehicle.status === VehicleStatus.Available">
                                 <li>
-                                  <a class="dropdown-item" (click)="assignToRental(vehicle)">
-                                    <i class='bx bx-key text-success'></i> Louer
+                                  <a class="dropdown-item item-success" (click)="assignToRental(vehicle)">
+                                    <i class='bx bx-key'></i>
+                                    Louer
                                   </a>
                                 </li>
                                 <li>
-                                  <!-- ⭐ MODIFIÉ : Appelle maintenant openReservationModal() -->
-                                  <a class="dropdown-item" (click)="openReservationModal(vehicle)">
-                                    <i class='bx bx-time text-primary'></i> Réserver
+                                  <a class="dropdown-item item-info" (click)="openReservationModal(vehicle)">
+                                    <i class='bx bx-time'></i>
+                                    Réserver
                                   </a>
                                 </li>
                                 <li>
-                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
-                                    <i class='bx bx-wrench text-info'></i> Mettre en maintenance
+                                  <a class="dropdown-item item-warning"
+                                    (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
+                                    <i class='bx bx-wrench'></i>
+                                    Mettre en maintenance
                                   </a>
                                 </li>
                               </ng-container>
@@ -719,13 +700,16 @@
                               <!-- VÉHICULE LOUÉ -->
                               <ng-container *ngIf="vehicle.status === VehicleStatus.Rented">
                                 <li>
-                                  <a class="dropdown-item" (click)="releaseVehicle(vehicle)">
-                                    <i class='bx bx-check-circle text-warning'></i> Libérer
+                                  <a class="dropdown-item item-warning" (click)="releaseVehicle(vehicle)">
+                                    <i class='bx bx-check-circle'></i>
+                                    Libérer
                                   </a>
                                 </li>
                                 <li>
-                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
-                                    <i class='bx bx-wrench text-info'></i> Mettre en maintenance
+                                  <a class="dropdown-item item-info"
+                                    (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
+                                    <i class='bx bx-wrench'></i>
+                                    Mettre en maintenance
                                   </a>
                                 </li>
                               </ng-container>
@@ -733,13 +717,16 @@
                               <!-- VÉHICULE RÉSERVÉ -->
                               <ng-container *ngIf="vehicle.status === VehicleStatus.Reserved">
                                 <li>
-                                  <a class="dropdown-item" (click)="assignToRental(vehicle)">
-                                    <i class='bx bx-key text-success'></i> Confirmer la location
+                                  <a class="dropdown-item item-success" (click)="assignToRental(vehicle)">
+                                    <i class='bx bx-key'></i>
+                                    Confirmer la location
                                   </a>
                                 </li>
                                 <li>
-                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Available)">
-                                    <i class='bx bx-x text-secondary'></i> Annuler la réservation
+                                  <a class="dropdown-item item-secondary"
+                                    (click)="changeStatus(vehicle, VehicleStatus.Available)">
+                                    <i class='bx bx-x'></i>
+                                    Annuler la réservation
                                   </a>
                                 </li>
                               </ng-container>
@@ -747,8 +734,10 @@
                               <!-- VÉHICULE EN MAINTENANCE -->
                               <ng-container *ngIf="vehicle.status === VehicleStatus.Maintenance">
                                 <li>
-                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Available)">
-                                    <i class='bx bx-check text-success'></i> Marquer comme disponible
+                                  <a class="dropdown-item item-success"
+                                    (click)="changeStatus(vehicle, VehicleStatus.Available)">
+                                    <i class='bx bx-check'></i>
+                                    Marquer comme disponible
                                   </a>
                                 </li>
                               </ng-container>
@@ -756,8 +745,10 @@
                               <!-- VÉHICULE HORS SERVICE -->
                               <ng-container *ngIf="vehicle.status === VehicleStatus.OutOfService">
                                 <li>
-                                  <a class="dropdown-item" (click)="changeStatus(vehicle, VehicleStatus.Available)">
-                                    <i class='bx bx-refresh text-success'></i> Réactiver
+                                  <a class="dropdown-item item-success"
+                                    (click)="changeStatus(vehicle, VehicleStatus.Available)">
+                                    <i class='bx bx-refresh'></i>
+                                    Réactiver
                                   </a>
                                 </li>
                               </ng-container>
@@ -768,9 +759,10 @@
                                   <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                  <a class="dropdown-item text-danger"
+                                  <a class="dropdown-item item-danger"
                                     (click)="changeStatus(vehicle, VehicleStatus.OutOfService)">
-                                    <i class='bx bx-block'></i> Mettre hors service
+                                    <i class='bx bx-block'></i>
+                                    Mettre hors service
                                   </a>
                                 </li>
                               </ng-container>
@@ -780,8 +772,9 @@
                                 <hr class="dropdown-divider">
                               </li>
                               <li>
-                                <a class="dropdown-item" (click)="showVehicleDetails(vehicle)">
-                                  <i class='bx bx-show text-info'></i> Voir les détails
+                                <a class="dropdown-item item-info" (click)="showVehicleDetails(vehicle)">
+                                  <i class='bx bx-show'></i>
+                                  Voir les détails
                                 </a>
                               </li>
                             </ul>
@@ -823,6 +816,7 @@
           </div>
         </div>
       </div>
+
       <!-- MODAL DE DÉTAILS DU VÉHICULE -->
       <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
 
@@ -1404,6 +1398,278 @@
                   <button type="submit" class="btn btn-success" [disabled]="confirmReservationLoading">
                     <span *ngIf="confirmReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
                     <i class='bx bx-link me-1'></i> Confirmer et lier la réservation
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL DE CONFIRMATION D'AFFECTATION/LOCATION - VERSION CORRIGÉE -->
+      <div class="modal-backdrop" *ngIf="showAssignRentalModal" (click)="showAssignRentalModal = false"></div>
+
+      <div class="modal" *ngIf="showAssignRentalModal" [class.show]="showAssignRentalModal">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title">
+                <i class='bx bx-key me-2'></i>Affecter un véhicule à une location
+              </h5>
+              <button type="button" class="btn-close btn-close-white" (click)="showAssignRentalModal = false"></button>
+            </div>
+
+            <div class="modal-body">
+              <!-- Véhicule sélectionné -->
+              <div class="alert alert-info mb-4">
+                <div class="d-flex align-items-center">
+                  <i class='bx bx-car fs-4 me-3'></i>
+                  <div>
+                    <h6 class="mb-1">Véhicule à affecter</h6>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <small class="d-block"><strong>Code:</strong> {{ assignRentalVehicle?.code || 'N/A' }}</small>
+                        <small class="d-block"><strong>Marque/Modèle:</strong> {{ assignRentalVehicle?.brand }} {{
+                          assignRentalVehicle?.model }}</small>
+                        <small class="d-block"><strong>Immatriculation:</strong> {{ assignRentalVehicle?.plateNumber ||
+                          'N/A' }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <form [formGroup]="assignRentalForm" (ngSubmit)="onAssignRentalSubmit()">
+                <!-- Recherche du client -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Sélectionnez un client *</label>
+
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">
+                      <i class='bx bx-search'></i>
+                    </span>
+                    <input type="text" class="form-control"
+                      placeholder="Rechercher un client par nom, téléphone ou numéro de tier..."
+                      (input)="filterTiersForAssignment($any($event.target).value)">
+                  </div>
+
+                  <!-- Liste des clients disponibles - VERSION CORRIGÉE SANS DUPLICATION -->
+                  <div class="tiers-list border rounded" style="max-height: 250px; overflow-y: auto;">
+                    <div *ngIf="isLoadingTiersForAssignment" class="text-center py-4">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                      </div>
+                      <p class="text-muted mb-0 mt-2">Chargement des clients...</p>
+                    </div>
+
+                    <div *ngIf="!isLoadingTiersForAssignment && filteredTiersForAssignment.length === 0"
+                      class="text-center py-4">
+                      <i class='bx bx-user fs-1 text-muted mb-2'></i>
+                      <p class="text-muted mb-0">Aucun client disponible</p>
+                    </div>
+
+                    <!-- ✅ UN SEUL *ngFor ICI - PAS DE DUPLICATION -->
+                    <div *ngFor="let tier of filteredTiersForAssignment"
+                      class="tier-item p-3 border-bottom cursor-pointer"
+                      [class.bg-light]="assignRentalForm.get('customerId')?.value === tier.id"
+                      [class.selected]="assignRentalForm.get('customerId')?.value === tier.id"
+                      (click)="selectTierForAssignment(tier)">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                          <h6 class="mb-1 text-primary">
+                            <i class='bx bx-user me-2'></i>
+                            {{ tiersService.getFullName(tier) }}
+                          </h6>
+                          <small class="text-muted d-block">
+                            <i class='bx bx-phone me-1'></i>
+                            {{ tier.phone || 'Non renseigné' }} •
+                            <i class='bx bx-id-card me-1 ms-2'></i>
+                            {{ tier.tierNumber || 'N/A' }}
+                          </small>
+                          <small class="text-muted d-block">
+                            <i class='bx bx-envelope me-1'></i>
+                            {{ tier.email || 'Non renseigné' }}
+                          </small>
+                        </div>
+                        <div>
+                          <span class="badge" [ngClass]="getTierStatusBadge(tier.status)">
+                            {{ getTierStatusText(tier.status) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Client sélectionné -->
+                  <div *ngIf="assignRentalForm.get('customerId')?.value" class="alert alert-success mt-3">
+                    <div class="d-flex align-items-center">
+                      <i class='bx bx-check-circle fs-4 me-3 text-success'></i>
+                      <div>
+                        <h6 class="mb-1">Client sélectionné</h6>
+                        <small class="d-block">
+                          <strong>Nom:</strong> {{ getSelectedTierForAssignment()?.firstName }} {{
+                          getSelectedTierForAssignment()?.lastName }}
+                        </small>
+                        <small class="d-block">
+                          <strong>Téléphone:</strong> {{ getSelectedTierForAssignment()?.phone || 'Non renseigné' }}
+                        </small>
+                        <small class="d-block">
+                          <strong>Numéro Tier:</strong> {{ getSelectedTierForAssignment()?.tierNumber || 'N/A' }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="arf['customerId'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
+                    <i class='bx bx-error-circle me-1'></i>
+                    Veuillez sélectionner un client
+                  </div>
+                </div>
+
+                <!-- Contrat de location - VERSION CORRIGÉE -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">
+                    Sélectionnez un contrat de location *
+                    <button type="button" class="btn btn-sm btn-link p-0 ms-2" (click)="refreshContracts()"
+                      [disabled]="isLoadingContractsForAssignment">
+                      <i class='bx bx-refresh' [class.bx-spin]="isLoadingContractsForAssignment"></i>
+                      Actualiser
+                    </button>
+                  </label>
+
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">
+                      <i class='bx bx-search'></i>
+                    </span>
+                    <input type="text" class="form-control" placeholder="Rechercher un contrat par numéro..."
+                      (input)="filterContractsForAssignment($any($event.target).value)">
+                  </div>
+
+                  <!-- Liste des contrats disponibles -->
+                  <div class="contracts-list border rounded" style="max-height: 250px; overflow-y: auto;">
+                    <div *ngIf="isLoadingContractsForAssignment" class="text-center py-4">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                      </div>
+                      <p class="text-muted mb-0 mt-2">Chargement des contrats...</p>
+                    </div>
+
+                    <div *ngIf="!isLoadingContractsForAssignment && filteredContractsForAssignment.length === 0"
+                      class="text-center py-4">
+                      <i class='bx bx-file fs-1 text-muted mb-2'></i>
+                      <p class="text-muted mb-0">Aucun contrat disponible</p>
+                      <small class="text-muted">
+                        Seuls les contrats actifs sans véhicule affecté sont affichés
+                      </small>
+                    </div>
+
+                    <div *ngFor="let contract of filteredContractsForAssignment"
+                      class="contract-item p-3 border-bottom cursor-pointer"
+                      [class.bg-light]="assignRentalForm.get('contractId')?.value === contract.id"
+                      [class.selected]="assignRentalForm.get('contractId')?.value === contract.id"
+                      (click)="selectContractForAssignment(contract)">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                          <h6 class="mb-1 text-primary">
+                            <i class='bx bx-file me-2'></i>
+                            {{ contract.contractNumber }}
+                          </h6>
+                          <small class="text-muted d-block">
+                            <i class='bx bx-calendar me-1'></i>
+                            {{ contract.durationInWeeks }} semaines •
+                            {{ formatCurrency(contract.totalAmount) }}
+                          </small>
+                          <small class="text-muted d-block">
+                            <i class='bx bx-time me-1'></i>
+                            Début: {{ formatDate(contract.startDate) }} •
+                            Fin: {{ formatDate(contract.endDate) }}
+                          </small>
+                          <small class="text-muted d-block" *ngIf="contract.notes">
+                            <i class='bx bx-note me-1'></i>
+                            {{ contract.notes }}
+                          </small>
+                        </div>
+                        <div class="text-end">
+                          <span class="badge" [ngClass]="getContractStatusBadge(contract.status)">
+                            {{ getContractStatusText(contract.status) }}
+                          </span>
+                          <div class="mt-2">
+                            <small class="text-muted">
+                              ID: {{ contract.id.substring(0, 8) }}...
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Contrat sélectionné -->
+                  <div *ngIf="assignRentalForm.get('contractId')?.value" class="alert alert-success mt-3">
+                    <div class="d-flex align-items-center">
+                      <i class='bx bx-check-circle fs-4 me-3 text-success'></i>
+                      <div>
+                        <h6 class="mb-1">Contrat sélectionné</h6>
+                        <small class="d-block">
+                          <strong>Numéro:</strong> {{ getSelectedContractForAssignment()?.contractNumber }}
+                        </small>
+                        <small class="d-block">
+                          <strong>Durée:</strong> {{ getSelectedContractForAssignment()?.durationInWeeks }} semaines
+                        </small>
+                        <small class="d-block">
+                          <strong>Montant total:</strong> {{
+                          formatCurrency(getSelectedContractForAssignment()?.totalAmount || 0) }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="arf['contractId'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
+                    <i class='bx bx-error-circle me-1'></i>
+                    Veuillez sélectionner un contrat
+                  </div>
+                </div>
+
+                <!-- Date de début et kilométrage -->
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Date de début *</label>
+                    <input type="datetime-local" class="form-control" formControlName="startDate"
+                      [min]="today.toISOString().slice(0,16)">
+                    <div *ngIf="arf['startDate'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
+                      <i class='bx bx-error-circle me-1'></i>
+                      Veuillez sélectionner une date de début
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Kilométrage de départ *</label>
+                    <input type="number" class="form-control" formControlName="startMileage" min="0"
+                      [max]="assignRentalVehicle?.currentMileage ?? null" step="1">
+                    <small class="text-muted">
+                      Kilométrage actuel: {{ assignRentalVehicle?.currentMileage || 0 }} km
+                    </small>
+                    <div *ngIf="arf['startMileage'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
+                      <i class='bx bx-error-circle me-1'></i>
+                      Veuillez entrer un kilométrage valide
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notes additionnelles -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Remarques (optionnel)</label>
+                  <textarea class="form-control" rows="3" placeholder="Ajoutez des remarques pour cette location..."
+                    formControlName="notes"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" (click)="showAssignRentalModal = false">
+                    Annuler
+                  </button>
+                  <button type="submit" class="btn btn-primary"
+                    [disabled]="assignRentalLoading || assignRentalForm.invalid">
+                    <span *ngIf="assignRentalLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i class='bx bx-check me-1' *ngIf="!assignRentalLoading"></i>
+                    {{ assignRentalLoading ? 'Affectation en cours...' : 'Affecter le véhicule' }}
                   </button>
                 </div>
               </form>

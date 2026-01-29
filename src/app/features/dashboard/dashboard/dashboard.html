@@ -1,301 +1,266 @@
 <div class="layout-wrapper">
   <div class="layout-container">
     <!-- SIDEBAR COMPLÈTE -->
-<!-- <app-sidebar></app-sidebar> -->
-<!-- SIDEBAR COMPLÈTE -->
-<aside class="layout-menu" id="sidebar">
-  <div class="app-brand">
-    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-    <div>
-      <span class="app-brand-text">Logistiks</span>
-      <div class="app-brand-subtitle">Gestion de flotte et locations</div>
-    </div>
-  </div>
+    <!-- SIDEBAR COMPLÈTE -->
+    <aside class="layout-menu" id="sidebar">
+      <div class="app-brand">
+        <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+        <div>
+          <span class="app-brand-text">Logistik</span>
+          <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+        </div>
+      </div>
 
-  <ul class="menu-inner">
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard']" class="menu-link">
-        <i class="menu-icon bx bx-home-circle"></i>
-        <div>Dashboard</div>
-      </a>
-    </li>
-
-    <li class="menu-header">
-      <span>RÉFÉRENTIELS</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-group"></i>
-        <div>Tiers</div>
-      </a>
-      <ul class="menu-sub">
+      <ul class="menu-inner">
         <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-            <div>Tous les tiers</div>
+          <a [routerLink]="['/dashboard']" class="menu-link">
+            <i class="menu-icon bx bx-home-circle"></i>
+            <div>Dashboard</div>
           </a>
         </li>
+
+        <li class="menu-header">
+          <span>RÉFÉRENTIELS</span>
+        </li>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-group"></i>
+            <div>Tiers</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+                <div>Tous les tiers</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+                <div>Documents à valider</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+                <div>Gestion des documents</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+                <div>Nouveau tier</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-car"></i>
+            <div>Véhicules</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+                <div>Tous les véhicules</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+                <div>Ajouter vehicule</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-folder"></i>
+            <div>Documents</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/documents']" class="menu-link">
+                <div>Tous les documents</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
+                <div>Factures fournisseurs</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="menu-header">
+          <span>CŒUR MÉTIER</span>
+        </li>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-file"></i>
+            <div>Contrats</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+                <div>Tous les contrats</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
+                <div>Nouveau contrat</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
         <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-            <div>Documents à valider</div>
-            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-              {{ dashboardStats.documentsPending }}
-            </span>
+          <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+            <i class="menu-icon bx bx-calendar"></i>
+            <div>Calendrier & Échéances</div>
           </a>
         </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-            <div>Gestion des documents</div>
-            <span class="badge badge-info">
-              <i class='bx bx-upload'></i>
-              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-            </span>
-          </a>
+
+        <li class="menu-header">
+          <span>FINANCE & COMPTABILITÉ</span>
         </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-            <div>Nouveau tier</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-credit-card"></i>
+            <div>Comptes</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+                <div>Comptes bancaires</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+                <div>Mobile Money</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+                <div>Soldes & Bilans</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-wallet"></i>
+            <div>Paiements</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+                <div>Tous les paiements</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
+                <div>En retard</div><span class="badge badge-danger">5</span>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
+                <div>En attente</div><span class="badge badge-warning">8</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="menu-header">
+          <span>ADMINISTRATION</span>
+        </li>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-user"></i>
+            <div>Utilisateurs</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+                <div>Liste utilisateurs</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
+                <div>Détail utilisateur</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+                <div>Formulaire utilisateur</div>
+                <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+                <div>Gestion rôles</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+                <div>Permissions</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
+                <div>Profil utilisateur</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
+                <div>Sessions</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
+                <div>Activité</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
+                <div>Groupes</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="menu-item" routerLinkActive="active open">
+          <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+            <i class="menu-icon bx bx-cog"></i>
+            <div>Paramétrage</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+                <div>Paramètres généraux</div>
+              </a>
+            </li>
+            <li class="menu-item" routerLinkActive="active">
+              <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+                <div>Types de véhicules</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="menu-item" style="margin-top: 2rem;">
+          <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+            <i class="menu-icon bx bx-log-out"></i>
+            <div>Déconnexion</div>
           </a>
         </li>
       </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-car"></i>
-        <div>Véhicules</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-            <div>Tous les véhicules</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
-            <div>Ajouter vehicule</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
-            <div>Affectations</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-folder"></i>
-        <div>Documents</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents']" class="menu-link">
-            <div>Tous les documents</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
-            <div>Contrats signés</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
-            <div>Pièces d'identité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-            <div>Factures fournisseurs</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-header">
-      <span>CŒUR MÉTIER</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-file"></i>
-        <div>Contrats</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-            <div>Tous les contrats</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
-            <div>Contrats actifs</div>
-            <span class="badge badge-success">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
-            <div>À expiration</div>
-            <span class="badge badge-warning">3</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-            <div>Nouveau contrat</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-        <i class="menu-icon bx bx-calendar"></i>
-        <div>Calendrier & Échéances</div>
-      </a>
-    </li>
-
-    <li class="menu-header">
-      <span>FINANCE & COMPTABILITÉ</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-credit-card"></i>
-        <div>Comptes</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-            <div>Comptes bancaires</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-            <div>Mobile Money</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-            <div>Soldes & Bilans</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-wallet"></i>
-        <div>Paiements</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-            <div>Tous les paiements</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-            <div>En retard</div><span class="badge badge-danger">5</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-            <div>En attente</div><span class="badge badge-warning">8</span>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-header">
-      <span>ADMINISTRATION</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-user"></i>
-        <div>Utilisateurs</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-            <div>Liste utilisateurs</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-            <div>Détail utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-            <div>Formulaire utilisateur</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-            <div>Gestion rôles</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-            <div>Permissions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-            <div>Profil utilisateur</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-            <div>Sessions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-            <div>Activité</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-            <div>Groupes</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active open">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-cog"></i>
-        <div>Paramétrage</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-            <div>Paramètres généraux</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-            <div>Types de véhicules</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <li class="menu-item" style="margin-top: 2rem;">
-      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-        <i class="menu-icon bx bx-log-out"></i>
-        <div>Déconnexion</div>
-      </a>
-    </li>
-  </ul>
-</aside>
+    </aside>
 
     <!-- MAIN CONTENT -->
     <div class="layout-page">
@@ -327,7 +292,7 @@
               <div style="padding: 1rem;">
                 <div class="fw-bold">{{ userName }}</div>
                 <div class="text-muted fs-sm">
-                  {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+                  {{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}
                 </div>
                 <hr style="margin: 0.5rem 0;">
                 <a [routerLink]="['/profile']" class="dropdown-item">
@@ -354,23 +319,49 @@
           <h1 class="welcome-title">Bonjour, {{ userName }} 👋</h1>
 
           <!-- Message de bienvenue dynamique -->
+          <!-- Message de bienvenue dynamique -->
           <p class="welcome-subtitle">
             Bienvenue sur votre tableau de bord Logistiks.
-            <strong *ngIf="dashboardStats.documentsPending > 0">
-              {{ dashboardStats.documentsPending }} document{{ dashboardStats.documentsPending > 1 ? 's' : '' }}
-            </strong>
-            <span *ngIf="dashboardStats.documentsPending > 0">attendent votre validation,</span>
 
-            <strong *ngIf="dashboardStats.paymentsOverdue > 0">
-              {{ dashboardStats.paymentsOverdue }} paiement{{ dashboardStats.paymentsOverdue > 1 ? 's' : '' }}
-            </strong>
-            <span *ngIf="dashboardStats.paymentsOverdue > 0">sont en retard,</span>
+            <!-- Section Documents -->
+            <ng-container *ngIf="dashboardStats.documentsPending > 0; else noPendingDocs">
+              <strong>
+                {{ dashboardStats.documentsPending }} document{{ dashboardStats.documentsPending > 1 ? 's' : '' }}
+              </strong>
+              enregistrez dans notre base de donnée,
+            </ng-container>
+            <ng-template #noPendingDocs>
+              <span *ngIf="dashboardStats.documentsPending === 0">
+                tous les documents sont validés,
+              </span>
+            </ng-template>
 
-            <strong *ngIf="dashboardStats.vehiclesNeedingAttention > 0">
-              {{ dashboardStats.vehiclesNeedingAttention }} véhicule{{ dashboardStats.vehiclesNeedingAttention > 1 ? 's'
-              : '' }}
-            </strong>
-            <span *ngIf="dashboardStats.vehiclesNeedingAttention > 0">nécessitent votre attention aujourd'hui.</span>
+            <!-- Section Paiements -->
+            <ng-container *ngIf="dashboardStats.paymentsOverdue > 0; else noOverduePayments">
+              <strong>
+                {{ dashboardStats.paymentsOverdue }} paiement{{ dashboardStats.paymentsOverdue > 1 ? 's' : '' }}
+              </strong>
+              sont en retard,
+            </ng-container>
+            <ng-template #noOverduePayments>
+              <span *ngIf="dashboardStats.paymentsOverdue === 0">
+                aucun paiement n'est en retard,
+              </span>
+            </ng-template>
+
+            <!-- Section Véhicules -->
+            <ng-container *ngIf="dashboardStats.vehiclesNeedingAttention > 0; else noVehicleAttention">
+              <strong>
+                {{ dashboardStats.vehiclesNeedingAttention }} véhicule{{ dashboardStats.vehiclesNeedingAttention > 1 ?
+                's' : '' }}
+              </strong>
+              nécessitent votre attention.
+            </ng-container>
+            <ng-template #noVehicleAttention>
+              <span *ngIf="dashboardStats.vehiclesNeedingAttention === 0">
+                tous les véhicules sont opérationnels.
+              </span>
+            </ng-template>
           </p>
 
           <!-- Quick actions -->
@@ -423,7 +414,7 @@
             </div>
           </div>
 
-          <!-- CARD 2: VÉHICULES OPÉRATIONNELS (Statique pour l'instant) -->
+          <!-- CARD 2: VÉHICULES OPÉRATIONNELS (Dynamique) -->
           <div class="col-3">
             <div class="card">
               <div class="card-body">
@@ -432,11 +423,14 @@
                     <i class='bx bx-car'></i>
                   </div>
                   <div class="stat-content">
-                    <h3>42</h3>
+                    <h3>{{ getFormattedNumber(dashboardStats.vehiclesNeedingAttention) }}</h3>
                     <p>Véhicules Opérationnels</p>
-                    <div class="stat-trend trend-up">
-                      <i class='bx bx-up-arrow-alt'></i>
-                      +5% ce mois
+                    <div class="stat-trend" [class.trend-up]="getVehiclesTrend() >= 0"
+                      [class.trend-down]="getVehiclesTrend() < 0">
+                      <i class='bx' [class.bx-up-arrow-alt]="getVehiclesTrend() >= 0"
+                        [class.bx-down-arrow-alt]="getVehiclesTrend() < 0">
+                      </i>
+                      {{ getVehiclesTrend() >= 0 ? '+' : '' }}{{ getVehiclesTrend() }}% ce mois
                     </div>
                   </div>
                 </div>
@@ -453,12 +447,14 @@
                     <i class='bx bx-file'></i>
                   </div>
                   <div class="stat-content">
-                    <!-- Nombre dynamique de contrats actifs -->
                     <h3>{{ getFormattedNumber(dashboardStats.activeContracts) }}</h3>
                     <p>Contrats Actifs</p>
-                    <div class="stat-trend trend-up">
-                      <i class='bx bx-up-arrow-alt'></i>
-                      +8% ce mois
+                    <div class="stat-trend" [class.trend-up]="getContractsTrend() >= 0"
+                      [class.trend-down]="getContractsTrend() < 0">
+                      <i class='bx' [class.bx-up-arrow-alt]="getContractsTrend() >= 0"
+                        [class.bx-down-arrow-alt]="getContractsTrend() < 0">
+                      </i>
+                      {{ getContractsTrend() >= 0 ? '+' : '' }}{{ getContractsTrend() }}% ce mois
                     </div>
                   </div>
                 </div>
@@ -475,12 +471,14 @@
                     <i class='bx bx-wallet'></i>
                   </div>
                   <div class="stat-content">
-                    <!-- Taux de recouvrement dynamique -->
                     <h3>{{ dashboardStats.recoveryRate }}%</h3>
                     <p>Taux de Recouvrement</p>
-                    <div class="stat-trend trend-down">
-                      <i class='bx bx-down-arrow-alt'></i>
-                      -3% ce mois
+                    <div class="stat-trend" [class.trend-up]="getRecoveryTrend() >= 0"
+                      [class.trend-down]="getRecoveryTrend() < 0">
+                      <i class='bx' [class.bx-up-arrow-alt]="getRecoveryTrend() >= 0"
+                        [class.bx-down-arrow-alt]="getRecoveryTrend() < 0">
+                      </i>
+                      {{ getRecoveryTrend() >= 0 ? '+' : '' }}{{ getRecoveryTrend() }}% ce mois
                     </div>
                   </div>
                 </div>
@@ -492,7 +490,7 @@
         <!-- FOOTER -->
         <footer class="content-footer">
           <div class="footer-text">
-            © 2026 Logistiks - Version 1.0.0
+            © 2026 Logistik - Version 1.0.0
             <span style="margin: 0 8px;">•</span>
             <a href="#" style="color: #696cff; text-decoration: none;" onclick="loadContent('aide')">Aide & Support</a>
             <span style="margin: 0 8px;">•</span>

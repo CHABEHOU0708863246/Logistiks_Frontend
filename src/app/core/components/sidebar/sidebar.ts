@@ -2,10 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MenuItemConfig } from '../../models/Menu/Menu-config.model';
-import { Menu } from '../../services/Menu/menu';
 import { Token } from '../../services/Token/token';
 import { CommonModule } from '@angular/common';
-import { Permission } from '../../services/Permission/permission';
 
 @Component({
   selector: 'app-sidebar',
@@ -31,60 +29,17 @@ export class Sidebar implements OnInit, OnDestroy {
   private subscriptions = new Subscription();
 
   constructor(
-    private menuService: Menu,
-    private permissionService: Permission,
     private tokenService: Token,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     console.log('🔧 Sidebar - Initialisation');
-    this.loadMenu();
     this.loadDashboardStats();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-  }
-
-  /**
-   * Charge le menu depuis l'API
-   */
-  loadMenu(): void {
-    this.isLoading = true;
-    console.log('📋 Chargement du menu...');
-
-    // S'abonner au menu
-    this.subscriptions.add(
-      this.menuService.menu$.subscribe({
-        next: (menu) => {
-          this.menuItems = menu;
-          console.log('✅ Menu chargé:', menu.length, 'items');
-          console.log('📊 Détail du menu:', menu);
-
-          // Debug: afficher les permissions de l'utilisateur
-          const userPermissions = this.permissionService.getAllPermissions();
-          const userRoles = this.permissionService.getAllRoles();
-          console.log('👤 Permissions utilisateur:', userPermissions);
-          console.log('👤 Rôles utilisateur:', userRoles);
-
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('❌ Erreur chargement menu:', error);
-          this.isLoading = false;
-        }
-      })
-    );
-
-    // Charger le menu si vide
-    if (this.menuService.needsRefresh()) {
-      console.log('🔄 Rafraîchissement du menu nécessaire');
-      this.menuService.loadUserMenu().subscribe({
-        next: () => console.log('✅ Menu rafraîchi'),
-        error: (err) => console.error('❌ Erreur rafraîchissement:', err)
-      });
-    }
   }
 
   /**
@@ -158,16 +113,7 @@ export class Sidebar implements OnInit, OnDestroy {
   logout(): void {
     console.log('🚪 Déconnexion...');
     this.tokenService.logout();
-    this.menuService.clearCache();
-    this.permissionService.clearPermissions();
     this.router.navigate(['/auth/login']);
   }
 
-  /**
-   * Rafraîchir le menu
-   */
-  refreshMenu(): void {
-    console.log('🔄 Rafraîchissement manuel du menu');
-    this.menuService.refresh();
-  }
 }

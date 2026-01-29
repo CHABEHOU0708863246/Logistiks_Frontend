@@ -13,6 +13,7 @@ import { SearchTiersRequest } from '../../../../../core/models/Tiers/Tier-reques
 import { TierDocument, Tier } from '../../../../../core/models/Tiers/Tiers';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
+import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 
 
 @Component({
@@ -140,6 +141,7 @@ export class DocumentsValidation implements OnInit, OnDestroy {
     private formBuilder: FormBuilder,
     private tiersService: Tiers,
     private authService: Auth,
+    private notificationService: NotificationService,
     private sanitizer: DomSanitizer,
     private tokenService: Token,
     private router: Router
@@ -366,17 +368,26 @@ export class DocumentsValidation implements OnInit, OnDestroy {
   }
 
   /**
- * Valider un document
- */
+   * Valider un document - VERSION CORRIGÉE
+   */
   validateDocument(): void {
     if (!this.selectedDocument || !this.selectedTier) {
-      console.error('Document ou tier non sélectionné');
+      this.notificationService.error(
+        'Erreur',
+        'Document ou tier non sélectionné'
+      );
       return;
     }
 
     this.isLoading = true;
 
-    this.tiersService.validateDocument(this.selectedTier.id, this.selectedDocument.id)
+    // Capturer les valeurs avant de les réinitialiser
+    const tierName = `${this.selectedTier.firstName} ${this.selectedTier.lastName}`;
+    const docType = this.getDocumentTypeLabel(this.selectedDocument.type);
+    const documentId = this.selectedDocument.id;
+    const tierId = this.selectedTier.id;
+
+    this.tiersService.validateDocument(tierId, documentId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -401,52 +412,71 @@ export class DocumentsValidation implements OnInit, OnDestroy {
           // Recharger la liste
           this.loadDocumentsToValidate();
 
-          // Notification de succès
-          alert('Document validé avec succès !');
+          // ✨ NOTIFICATION DE SUCCÈS AMÉLIORÉE ✨
+          this.notificationService.success(
+            '✓ Document validé !',
+            `Le document "${docType}" de ${tierName} a été validé avec succès.`
+          );
         },
         error: (error) => {
           console.error('Erreur détaillée validation document:', error);
-          console.error('Error object:', error);
 
           // Messages d'erreur spécifiques
-          let errorMsg = "Erreur lors de la validation";
+          let errorTitle = "Échec de la validation";
+          let errorMsg = "Une erreur s'est produite lors de la validation";
 
           if (error.error?.message) {
             errorMsg = error.error.message;
           }
 
           if (error.status === 404) {
-            errorMsg = "Document ou tier non trouvé";
+            errorTitle = "Document introuvable";
+            errorMsg = "Le document ou le tier n'a pas été trouvé";
           } else if (error.status === 500) {
-            errorMsg = "Erreur serveur. Vérifiez les logs backend.";
+            errorTitle = "Erreur serveur";
+            errorMsg = "Une erreur serveur s'est produite. Vérifiez les logs backend.";
+          } else if (error.status === 400) {
+            errorTitle = "Données invalides";
+            errorMsg = "Les données fournies sont invalides";
           }
 
-          alert(`${errorMsg}: ${error.message}`);
+          this.notificationService.error(errorTitle, errorMsg);
           this.isLoading = false;
         }
       });
   }
 
   /**
-   * Rejeter un document - CORRIGÉ avec meilleure gestion d'erreurs
+   * Rejeter un document - VERSION CORRIGÉE
    */
   rejectDocument(): void {
     if (!this.selectedDocument || !this.selectedTier || !this.rejectionForm.valid) {
-      console.error('Données manquantes pour le rejet');
-      alert('Veuillez sélectionner un document et fournir une raison de rejet');
+      this.notificationService.warning(
+        'Informations manquantes',
+        'Veuillez sélectionner un document et fournir une raison de rejet'
+      );
       return;
     }
 
     const { reason } = this.rejectionForm.value;
 
     if (!reason || reason.trim().length === 0) {
-      alert('Veuillez fournir une raison de rejet');
+      this.notificationService.warning(
+        'Raison requise',
+        'Veuillez fournir une raison de rejet'
+      );
       return;
     }
 
     this.isLoading = true;
 
-    this.tiersService.rejectDocument(this.selectedTier.id, this.selectedDocument.id, reason)
+    // Capturer les valeurs avant de les réinitialiser
+    const tierName = `${this.selectedTier.firstName} ${this.selectedTier.lastName}`;
+    const docType = this.getDocumentTypeLabel(this.selectedDocument.type);
+    const documentId = this.selectedDocument.id;
+    const tierId = this.selectedTier.id;
+
+    this.tiersService.rejectDocument(tierId, documentId, reason)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -467,44 +497,53 @@ export class DocumentsValidation implements OnInit, OnDestroy {
             this.selectedTier = null;
             this.rejectionForm.reset();
 
-            // Notification de succès
-            alert('Document rejeté avec succès !');
+            // ✨ NOTIFICATION INFO ✨
+            this.notificationService.info(
+              'Document rejeté',
+              `Le document "${docType}" de ${tierName} a été rejeté.`
+            );
 
             // Recharger la liste
             this.loadDocumentsToValidate();
           } else {
-            alert(`Erreur: ${response.message}`);
+            this.notificationService.error(
+              'Échec du rejet',
+              response.message || 'Une erreur est survenue'
+            );
           }
 
           this.isLoading = false;
         },
         error: (error) => {
           console.error('Erreur détaillée rejet document:', error);
-          console.error('Error object:', error);
 
           // Messages d'erreur spécifiques
-          let errorMsg = "Erreur lors du rejet du document";
+          let errorTitle = "Échec du rejet";
+          let errorMsg = "Une erreur s'est produite lors du rejet";
 
           if (error.error?.message) {
             errorMsg = error.error.message;
           }
 
           if (error.status === 404) {
-            errorMsg = "Document ou tier non trouvé";
+            errorTitle = "Document introuvable";
+            errorMsg = "Le document ou le tier n'a pas été trouvé";
           } else if (error.status === 500) {
-            errorMsg = "Erreur serveur. Vérifiez les logs backend.";
+            errorTitle = "Erreur serveur";
+            errorMsg = "Une erreur serveur s'est produite";
           } else if (error.status === 400) {
-            errorMsg = "Données invalides";
+            errorTitle = "Données invalides";
+            errorMsg = "Les données fournies sont invalides";
           }
 
-          alert(`${errorMsg}: ${error.message}`);
+          this.notificationService.error(errorTitle, errorMsg);
           this.isLoading = false;
         }
       });
   }
 
   /**
-   * Valider tous les documents d'un tier
+   * Valider tous les documents d'un tier - VERSION CORRIGÉE
    */
   validateAllDocumentsForTier(tier: Tier): void {
     if (!tier.documents || tier.documents.length === 0) {
@@ -514,22 +553,35 @@ export class DocumentsValidation implements OnInit, OnDestroy {
     const pendingDocuments = tier.documents.filter(doc => doc.status === DocumentStatus.Pending);
 
     if (pendingDocuments.length === 0) {
+      this.notificationService.info(
+        'Aucun document à valider',
+        `Tous les documents de ${tier.firstName} ${tier.lastName} sont déjà traités.`
+      );
       return;
     }
 
-    if (!confirm(`Valider tous les documents (${pendingDocuments.length}) de ${tier.firstName} ${tier.lastName} ?`)) {
+    // Capturer les valeurs pour la notification
+    const tierName = `${tier.firstName} ${tier.lastName}`;
+    const docCount = pendingDocuments.length;
+
+    if (!confirm(`Valider tous les documents (${docCount}) de ${tierName} ?`)) {
       return;
     }
 
     this.isLoading = true;
 
-    // Valider chaque document un par un
     const validationPromises = pendingDocuments.map(doc =>
       this.tiersService.validateDocument(tier.id, doc.id).toPromise()
     );
 
     Promise.all(validationPromises)
       .then(() => {
+        // ✨ NOTIFICATION DE SUCCÈS MULTIPLE ✨
+        this.notificationService.success(
+          '✓ Validation multiple réussie !',
+          `${docCount} document(s) de ${tierName} ont été validés avec succès.`
+        );
+
         // Recharger les données
         this.loadDocumentsToValidate();
         this.loadStatistics();
@@ -537,6 +589,12 @@ export class DocumentsValidation implements OnInit, OnDestroy {
       })
       .catch(error => {
         console.error('Erreur lors de la validation des documents:', error);
+
+        this.notificationService.error(
+          'Erreur de validation multiple',
+          'Certains documents n\'ont pas pu être validés. Veuillez réessayer.'
+        );
+
         this.isLoading = false;
       });
   }
@@ -985,7 +1043,7 @@ export class DocumentsValidation implements OnInit, OnDestroy {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
-      toggleMenu(event: MouseEvent): void {
+  toggleMenu(event: MouseEvent): void {
     const element = event.currentTarget as HTMLElement;
     if (element && element.parentElement) {
       element.parentElement.classList.toggle('open');

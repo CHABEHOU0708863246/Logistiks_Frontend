@@ -13,7 +13,7 @@
   <div class="app-brand">
     <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
     <div>
-      <span class="app-brand-text">Logistiks</span>
+      <span class="app-brand-text">Logistik</span>
       <div class="app-brand-subtitle">Gestion de flotte et locations</div>
     </div>
   </div>
@@ -84,11 +84,6 @@
             <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
           </a>
         </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules/affectations']" class="menu-link">
-            <div>Affectations</div>
-          </a>
-        </li>
       </ul>
     </li>
 
@@ -101,16 +96,6 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/documents']" class="menu-link">
             <div>Tous les documents</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/contrats']" class="menu-link">
-            <div>Contrats signés</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/documents/identite']" class="menu-link">
-            <div>Pièces d'identité</div>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
@@ -134,18 +119,6 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/contrats']" class="menu-link">
             <div>Tous les contrats</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/actifs']" class="menu-link">
-            <div>Contrats actifs</div>
-            <span class="badge badge-success">12</span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats/expiration']" class="menu-link">
-            <div>À expiration</div>
-            <span class="badge badge-warning">3</span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
@@ -336,7 +309,7 @@
             <div style="padding: 1rem;">
               <div class="fw-bold">{{ userName }}</div>
               <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}
               </div>
               <hr style="margin: 0.5rem 0;">
               <a [routerLink]="['/profile']" class="dropdown-item">
@@ -477,7 +450,7 @@
                              class="form-control"
                              id="companyName"
                              formControlName="companyName"
-                             placeholder="Logistiks SARL">
+                             placeholder="Logistik SARL">
                     </div>
 
                     <!-- Champ : Date de naissance -->

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Permission } from './permission';
+import { Contract } from './contract';
 
-describe('Permission', () => {
-  let service: Permission;
+describe('Contract', () => {
+  let service: Contract;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Permission);
+    service = TestBed.inject(Contract);
   });
 
   it('should be created', () => {

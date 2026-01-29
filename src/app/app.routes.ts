@@ -28,6 +28,16 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'dashboard/documents',
+    loadChildren: () => import('./features/dashboard/dashboard/Documents/documents.routes').then((m) => m.DOCUMENTS_ROUTES),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'dashboard/contrats',
+    loadChildren: () => import('./features/dashboard/dashboard/Contract/contracts.routes').then((m) => m.CONTRACT_ROUTES),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     component: NotFound
   },

@@ -1,4 +1,4 @@
-import { PaymentFrequency, ContractStatus } from "../Enums/Logistiks-enums";
+import { PaymentFrequency, ContractStatus, ContractType } from "../Enums/Logistiks-enums";
 import { ContractTerms } from "./Contract-terms.model";
 import { DeliveryInfo } from "./Delivery-info.model";
 import { ReturnInfo } from "./Return-info.model";
@@ -8,7 +8,7 @@ import { ReturnInfo } from "./Return-info.model";
  */
 export interface DocumentReference {
   id: string;
-  documentType: any; // Vous pouvez utiliser DocumentType de votre enum
+  documentType: any;
   url: string;
 }
 
@@ -18,23 +18,24 @@ export interface DocumentReference {
 export interface RentalContract {
   id: string;
   contractNumber: string;
-  customerId: string;
-  vehicleId: string;
+  customerId?: string;
+  vehicleId?: string;
   startDate: Date;
   endDate: Date;
   durationInWeeks: number;
   weeklyAmount: number;
-  totalAmount: number; // Calculé (WeeklyAmount * DurationInWeeks)
+  totalAmount: number;
   securityDeposit: number;
   depositPaid: boolean;
   paymentFrequency: PaymentFrequency;
-  paymentDay: number; // DayOfWeek en C# est 0 (Dimanche) à 6 (Samedi)
+  paymentDay: number;
+  contractType: ContractType;
   status: ContractStatus;
   terms: ContractTerms;
   weeklyMileageLimit?: number;
   deliveryInfo?: DeliveryInfo;
   returnInfo?: ReturnInfo;
-  documents: DocumentReference[];
+  documents?: DocumentReference[];
   notes?: string;
   createdAt: Date;
   updatedAt?: Date;
@@ -42,8 +43,17 @@ export interface RentalContract {
   approvedBy?: string;
   approvedAt?: Date;
 
-  // Champs calculés (Note: En TS, ce sont des propriétés simples si elles viennent de l'API)
+  // Champs calculés
   isActive?: boolean;
   isExpired?: boolean;
   weeksRemaining?: number;
+}
+
+// Créez une interface intermédiaire pour la compatibilité
+export interface ContractBasic extends Omit<RentalContract, 'documents'> {
+  documents?: DocumentReference[];
+  customerName?: string;
+  customerPhone?: string;
+  vehicleCode?: string;
+  vehicleFullName?: string;
 }
