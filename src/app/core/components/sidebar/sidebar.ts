@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { MenuItemConfig } from '../../models/Menu/Menu-config.model';
 import { Token } from '../../services/Token/token';
 import { CommonModule } from '@angular/common';
 
@@ -13,7 +12,6 @@ import { CommonModule } from '@angular/common';
 })
 export class Sidebar implements OnInit, OnDestroy {
 
-  menuItems: MenuItemConfig[] = [];
   isLoading = false;
 
   dashboardStats = {
@@ -69,42 +67,6 @@ export class Sidebar implements OnInit, OnDestroy {
     if (parentLi) {
       parentLi.classList.toggle('open');
     }
-  }
-
-  /**
-   * ✅ CORRECTION: Vérifie si un menu item est visible
-   * L'API backend envoie déjà un menu filtré, donc on fait confiance au backend
-   */
-  isMenuItemVisible(item: MenuItemConfig): boolean {
-    if (!item) {
-      console.warn('⚠️ Item menu null ou undefined');
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * ✅ CORRECTION: Vérifie si un menu a des sous-items visibles
-   */
-  hasVisibleSubItems(item: MenuItemConfig): boolean {
-    if (!item || !item.subItems || item.subItems.length === 0) {
-      return false;
-    }
-
-    // ✅ Si le backend a envoyé des sous-items, ils sont visibles
-    return item.subItems.length > 0;
-  }
-
-  /**
-   * ✅ CORRECTION: Récupère les sous-items visibles
-   */
-  getVisibleSubItems(item: MenuItemConfig): MenuItemConfig[] {
-    if (!item || !item.subItems) {
-      return [];
-    }
-
-    // ✅ Retourner tous les sous-items car le backend a déjà filtré
-    return item.subItems;
   }
 
   /**

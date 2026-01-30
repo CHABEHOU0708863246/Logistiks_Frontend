@@ -102,7 +102,6 @@ export class Dashboard implements OnInit, OnDestroy {
    * Charger l'utilisateur connecté
    */
   loadCurrentUser(): void {
-    console.log('👤 Chargement utilisateur...');
 
     this.subscriptions.add(
       this.authService.getCurrentUser().subscribe({
@@ -128,7 +127,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private setDefaultUser(): void {
-    this.userName = 'Utilisateur Logistiks';
+    this.userName = 'Utilisateur Logistik';
     this.userPhotoUrl = this.generateAvatarUrl({ firstName: 'Utilisateur' } as User);
   }
 
@@ -142,7 +141,7 @@ export class Dashboard implements OnInit, OnDestroy {
     } else if (user.email) {
       return user.email.split('@')[0];
     }
-    return 'Utilisateur Logistiks';
+    return 'Utilisateur Logistik';
   }
 
   /**
@@ -306,7 +305,7 @@ export class Dashboard implements OnInit, OnDestroy {
     return of({ success: true }).pipe(
       map(() => {
         // Simulation - À remplacer par votre logique réelle
-        this.dashboardStats.vehiclesNeedingAttention = 1;
+        this.dashboardStats.vehiclesNeedingAttention = 0;
         return { success: true };
       })
     );

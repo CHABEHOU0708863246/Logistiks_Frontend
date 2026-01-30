@@ -754,46 +754,6 @@ private getRequiredDocumentsForTier(tier: Tier): Array<{type: string, name: stri
   return baseDocuments;
 }
 
-/**
- * Formate un message d'erreur à partir d'une réponse d'API
- * @param error - L'erreur retournée par l'API
- * @returns Message formaté
- */
-private formatApiErrorMessage(error: any): string {
-  let message = 'Erreur inconnue';
-
-  // Vérifier différentes structures d'erreur possibles
-  if (error?.error?.message) {
-    message = error.error.message;
-  } else if (error?.message) {
-    message = error.message;
-  } else if (typeof error === 'string') {
-    message = error;
-  }
-
-  // Rendre le message plus lisible
-  message = message
-    .replace(/\.$/, '') // Retirer le point final
-    .trim();
-
-  return message;
-}
-
-/**
- * Vérifie si une erreur concerne les documents
- * @param message - Message d'erreur
- * @returns True si l'erreur concerne les documents
- */
-private isDocumentError(message: string): boolean {
-  const documentKeywords = [
-    'document', 'documents', 'valider', 'validation',
-    'manquant', 'obligatoire', 'required', 'missing'
-  ];
-
-  const lowerMessage = message.toLowerCase();
-  return documentKeywords.some(keyword => lowerMessage.includes(keyword));
-}
-
 
 
 

@@ -676,12 +676,12 @@
 
                               <!-- VÉHICULE DISPONIBLE -->
                               <ng-container *ngIf="vehicle.status === VehicleStatus.Available">
-                                <li>
+                                <!-- <li>
                                   <a class="dropdown-item item-success" (click)="assignToRental(vehicle)">
                                     <i class='bx bx-key'></i>
                                     Louer
                                   </a>
-                                </li>
+                                </li> -->
                                 <li>
                                   <a class="dropdown-item item-info" (click)="openReservationModal(vehicle)">
                                     <i class='bx bx-time'></i>
@@ -690,7 +690,7 @@
                                 </li>
                                 <li>
                                   <a class="dropdown-item item-warning"
-                                    (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
+                                    (click)="openConfirmDialog(vehicle, VehicleStatus.Maintenance)">
                                     <i class='bx bx-wrench'></i>
                                     Mettre en maintenance
                                   </a>
@@ -706,8 +706,8 @@
                                   </a>
                                 </li>
                                 <li>
-                                  <a class="dropdown-item item-info"
-                                    (click)="changeStatus(vehicle, VehicleStatus.Maintenance)">
+                                  <a class="dropdown-item item-warning"
+                                    (click)="openConfirmDialog(vehicle, VehicleStatus.Maintenance)">
                                     <i class='bx bx-wrench'></i>
                                     Mettre en maintenance
                                   </a>
@@ -735,7 +735,7 @@
                               <ng-container *ngIf="vehicle.status === VehicleStatus.Maintenance">
                                 <li>
                                   <a class="dropdown-item item-success"
-                                    (click)="changeStatus(vehicle, VehicleStatus.Available)">
+                                    (click)="openConfirmDialog(vehicle, VehicleStatus.Available)">
                                     <i class='bx bx-check'></i>
                                     Marquer comme disponible
                                   </a>
@@ -754,13 +754,15 @@
                               </ng-container>
 
                               <!-- METTRE HORS SERVICE (sauf si déjà hors service) -->
-                              <ng-container *ngIf="vehicle.status !== VehicleStatus.OutOfService">
+                              <ng-container *ngIf="vehicle.status !== VehicleStatus.OutOfService &&
+                     vehicle.status !== VehicleStatus.Rented &&
+                     vehicle.status !== VehicleStatus.Reserved">
                                 <li>
                                   <hr class="dropdown-divider">
                                 </li>
                                 <li>
                                   <a class="dropdown-item item-danger"
-                                    (click)="changeStatus(vehicle, VehicleStatus.OutOfService)">
+                                    (click)="openConfirmDialog(vehicle, VehicleStatus.OutOfService)">
                                     <i class='bx bx-block'></i>
                                     Mettre hors service
                                   </a>
@@ -1868,6 +1870,11 @@
 
       <!-- COMPOSANT DE NOTIFICATION -->
       <app-notification-component></app-notification-component>
+      <!-- DIALOG DE CONFIRMATION POUR CHANGEMENT DE STATUT -->
+      <app-confirm-dialog [title]="confirmDialogTitle" [message]="confirmDialogMessage" [details]="confirmDialogDetails"
+        [confirmText]="confirmDialogConfirmText" [cancelText]="confirmDialogCancelText" [visible]="showConfirmDialog"
+        (confirm)="onDialogConfirm()" (cancel)="onDialogCancel()">
+      </app-confirm-dialog>
 
     </div>
   </div>

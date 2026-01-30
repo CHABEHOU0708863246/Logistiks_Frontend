@@ -37,18 +37,11 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
             <div>Documents à valider</div>
-            <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-              {{ dashboardStats.documentsPending }}
-            </span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
             <div>Gestion des documents</div>
-            <span class="badge badge-info">
-              <i class='bx bx-upload'></i>
-              {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-            </span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
@@ -335,9 +328,1292 @@
     <!-- ========================================== -->
     <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
     <!-- ========================================== -->
-    <div class="content-wrapper">
+<!-- CONTENT WRAPPER -->
+<div class="content-wrapper">
+  <!-- COMPOSANT DE NOTIFICATION -->
+  <app-notification-component></app-notification-component>
 
+  <!-- SECTION STATISTIQUES -->
+  <div class="row mb-4">
+    <div class="col-12 col-md-6 col-lg-3 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon primary">
+          <i class='bx bx-file'></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ dashboardStats.activeContracts }}</h3>
+          <p>Contrats Actifs</p>
+        </div>
+      </div>
     </div>
+    <div class="col-12 col-md-6 col-lg-3 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon warning">
+          <i class='bx bx-time'></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ dashboardStats.contractsExpiring }}</h3>
+          <p>Expirent sous 7j</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon danger">
+          <i class='bx bx-error-circle'></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ dashboardStats.paymentsOverdue }}</h3>
+          <p>Paiements en retard</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon info">
+          <i class='bx bx-dollar-circle'></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ formatCurrency(dashboardStats.totalOutstanding) }}</h3>
+          <p>Montant dû</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION RECHERCHE ET FILTRES -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-12 col-md-6 mb-3 mb-md-0">
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-end-0">
+              <i class='bx bx-search'></i>
+            </span>
+            <input type="text" class="form-control border-start-0" [(ngModel)]="searchTerm"
+              (keyup.enter)="onSearch()" placeholder="Rechercher par numéro, client, véhicule...">
+            <button class="btn btn-primary" (click)="onSearch()">
+              <i class='bx bx-search me-1'></i> Rechercher
+            </button>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 d-flex justify-content-md-end">
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-primary" *ngIf="hasPermission(permission.Contract_Create)"
+              (click)="openCreateModal()">
+              <i class='bx bx-plus me-1'></i> Nouveau Contrat
+            </button>
+            <button class="btn btn-outline-secondary" (click)="toggleAdvancedFilters()">
+              <i class='bx bx-filter-alt me-1'></i>
+              {{ showAdvancedFilters ? 'Masquer' : 'Afficher' }} Filtres
+            </button>
+            <button class="btn btn-outline-danger" (click)="resetFilters()">
+              <i class='bx bx-reset me-1'></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTRES AVANCÉS -->
+      <div class="row mt-3" *ngIf="showAdvancedFilters">
+        <div class="col-12">
+          <div class="card border">
+            <div class="card-body">
+              <div class="row g-3">
+                <!-- Statut -->
+                <div class="col-md-4">
+                  <label class="form-label">Statut</label>
+                  <select class="form-select" [(ngModel)]="selectedStatus" (change)="onSearch()">
+                    <option [ngValue]="null">Tous les statuts</option>
+                    <option *ngFor="let status of statusOptions" [value]="status.value">
+                      {{ status.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Fréquence de paiement -->
+                <div class="col-md-4">
+                  <label class="form-label">Fréquence paiement</label>
+                  <select class="form-select" [(ngModel)]="selectedPaymentFrequency" (change)="onSearch()">
+                    <option [ngValue]="null">Toutes les fréquences</option>
+                    <option *ngFor="let freq of frequencyOptions" [value]="freq.value">
+                      {{ freq.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Solde en cours -->
+                <div class="col-md-4">
+                  <label class="form-label">Solde</label>
+                  <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" [(ngModel)]="hasOutstandingBalance"
+                      (change)="onSearch()" id="outstandingBalance">
+                    <label class="form-check-label" for="outstandingBalance">
+                      Avec solde impayé
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Dates de début -->
+                <div class="col-md-6">
+                  <label class="form-label">Date début (du)</label>
+                  <input type="date" class="form-control" [(ngModel)]="startDateFrom" (change)="onSearch()">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Date début (au)</label>
+                  <input type="date" class="form-control" [(ngModel)]="startDateTo" (change)="onSearch()">
+                </div>
+
+                <!-- Dates de fin -->
+                <div class="col-md-6">
+                  <label class="form-label">Date fin (du)</label>
+                  <input type="date" class="form-control" [(ngModel)]="endDateFrom" (change)="onSearch()">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Date fin (au)</label>
+                  <input type="date" class="form-control" [(ngModel)]="endDateTo" (change)="onSearch()">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION FILTRES RAPIDES -->
+  <div class="row mb-4" *ngIf="!showAdvancedFilters">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex flex-column gap-3">
+            <!-- Filtres par statut -->
+            <div class="filter-group">
+              <label class="form-label mb-1">Filtrer par statut :</label>
+              <div class="d-flex gap-2 flex-wrap">
+                <button *ngFor="let status of statusOptions" class="btn btn-sm"
+                  [class.btn-primary]="selectedStatus === status.value"
+                  [class.btn-outline-primary]="selectedStatus !== status.value"
+                  (click)="onFilterByStatus(status.value)">
+                  <i [class]="status.icon + ' me-1'"></i> {{ status.label }}
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByStatus()">
+                  Tous les statuts
+                </button>
+              </div>
+            </div>
+
+            <!-- Filtres par fréquence -->
+            <div class="filter-group">
+              <label class="form-label mb-1">Filtrer par fréquence :</label>
+              <div class="d-flex gap-2 flex-wrap">
+                <button *ngFor="let freq of frequencyOptions" class="btn btn-sm"
+                  [class.btn-primary]="selectedPaymentFrequency === freq.value"
+                  [class.btn-outline-primary]="selectedPaymentFrequency !== freq.value"
+                  (click)="onFilterByFrequency(freq.value)">
+                  <i [class]="freq.icon + ' me-1'"></i> {{ freq.label }}
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByFrequency()">
+                  Toutes les fréquences
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION PRINCIPALE -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Liste des Contrats</h5>
+          <div class="d-flex align-items-center gap-2">
+            <div class="form-group mb-0">
+              <select class="form-select form-select-sm" (change)="onPageSizeChange($event)" style="width: auto;">
+                <option *ngFor="let size of pageSizeOptions" [value]="size">
+                  {{ size }} par page
+                </option>
+              </select>
+            </div>
+            <div class="text-muted fs-sm">
+              {{ pagination.totalCount }} résultats
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- LOADING -->
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-2">Chargement des contrats...</p>
+          </div>
+
+          <!-- ERROR -->
+          <div *ngIf="error && !loading" class="alert alert-danger">
+            <i class='bx bx-error-circle me-2'></i> {{ error }}
+          </div>
+
+          <!-- TABLE DES CONTRATS -->
+          <div *ngIf="!loading && !error" class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">#</th>
+                  <th (click)="onSortChange('contractNumber')" style="cursor: pointer;">
+                    N° Contrat <i class='bx bx-sort' *ngIf="selectedSort !== 'contractNumber'"></i>
+                    <i class='bx bx-sort-up' *ngIf="selectedSort === 'contractNumber' && !sortDescending"></i>
+                    <i class='bx bx-sort-down' *ngIf="selectedSort === 'contractNumber' && sortDescending"></i>
+                  </th>
+                  <th>Client</th>
+                  <th>Véhicule</th>
+                  <th (click)="onSortChange('startDate')" style="cursor: pointer;">
+                    Période <i class='bx bx-sort' *ngIf="selectedSort !== 'startDate'"></i>
+                    <i class='bx bx-sort-up' *ngIf="selectedSort === 'startDate' && !sortDescending"></i>
+                    <i class='bx bx-sort-down' *ngIf="selectedSort === 'startDate' && sortDescending"></i>
+                  </th>
+                  <th>Montants</th>
+                  <th>Fréquence</th>
+                  <th>Statut</th>
+                  <th>Échéance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let contract of contracts; let i = index">
+                  <td class="text-muted">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
+                  <td>
+                    <strong>{{ contract.contractNumber }}</strong>
+                    <small class="text-muted d-block">
+                      ID: {{ contract.id.substring(0, 8) }}...
+                    </small>
+                  </td>
+                  <td>
+                    <div>
+                      <div class="fw-semibold">{{ contract.customerName || 'N/A' }}</div>
+                      <small class="text-muted">{{ contract.customerPhone || 'Tél. non disponible' }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      <div class="fw-semibold">{{ contract.vehicleFullName || 'N/A' }}</div>
+                      <small class="text-muted">{{ contract.vehicleCode || 'Code N/A' }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      <small class="d-block">{{ formatDate(contract.startDate) }}</small>
+                      <small class="d-block text-muted">→ {{ formatDate(contract.endDate) }}</small>
+                      <small class="badge bg-info">
+                        {{ contract.durationInWeeks }} semaines
+                      </small>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      <small class="d-block">Hebdo: {{ formatCurrency(contract.weeklyAmount) }}</small>
+                      <small class="d-block text-muted">Total: {{ formatCurrency(contract.totalAmount) }}</small>
+                      <small class="d-block">
+                        <span class="badge" [ngClass]="contract.depositPaid ? 'bg-success' : 'bg-warning'">
+                          {{ contract.depositPaid ? 'Caution payée' : 'Caution due' }}
+                        </span>
+                      </small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary">
+                      {{ getPaymentFrequencyLabel(contract.paymentFrequency) }}
+                    </span>
+                    <small class="d-block text-muted">
+                      Jour: {{ contract.paymentDayLabel }}
+                    </small>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="getStatusBadgeClass(contract.status)">
+                      <i [class]="getStatusIcon(contract.status) + ' me-1'"></i>
+                      {{ getStatusLabel(contract.status) }}
+                    </span>
+                    <div *ngIf="contract.daysRemaining !== undefined">
+                      <small class="text-muted">
+                        {{ contract.daysRemaining }} jours restants
+                      </small>
+                    </div>
+                  </td>
+                  <td>
+                    <div *ngIf="contract.weeksRemaining">
+                      <small class="d-block">{{ contract.weeksRemaining }} semaines</small>
+                      <small class="text-muted d-block">{{ getDaysRemaining(contract.endDate) }} jours</small>
+                    </div>
+                    <div *ngIf="!contract.weeksRemaining">
+                      <small class="text-muted">Terminé</small>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <!-- Bouton principal avec dropdown -->
+                      <div class="dropdown" [class.show]="openedActionsMenu === contract.id">
+                        <button class="btn btn-sm btn-primary dropdown-toggle"
+                          [class.show]="openedActionsMenu === contract.id" type="button"
+                          (click)="toggleActionsMenu(contract, $event)">
+                          <i class='bx bx-cog'></i>
+                          Actions
+                        </button>
+
+                        <ul class="dropdown-menu" [class.show]="openedActionsMenu === contract.id">
+                          <!-- ENREGISTRER PAIEMENT -->
+                          <li *ngIf="contract.status === contractStatus.Active">
+                            <a class="dropdown-item item-success" (click)="openPaymentModal(contract)">
+                              <i class='bx bx-dollar-circle'></i>
+                              Enregistrer paiement
+                            </a>
+                          </li>
+
+                          <!-- VOIR SOLDE -->
+                          <li>
+                            <a class="dropdown-item item-info" (click)="openBalanceModal(contract)">
+                              <i class='bx bx-wallet'></i>
+                              Voir solde détaillé
+                            </a>
+                          </li>
+
+                          <!-- RAPPORT FINANCIER -->
+                          <li>
+                            <a class="dropdown-item item-warning" (click)="openFinancialReportModal(contract)">
+                              <i class='bx bx-bar-chart'></i>
+                              Rapport financier
+                            </a>
+                          </li>
+
+                          <!-- RENOUVELLER -->
+                          <li *ngIf="contract.status === contractStatus.Active && contract.weeksRemaining <= 2">
+                            <a class="dropdown-item item-primary" (click)="openRenewModal(contract)">
+                              <i class='bx bx-refresh'></i>
+                              Renouveler contrat
+                            </a>
+                          </li>
+
+                          <!-- TERMINER -->
+                          <li *ngIf="contract.status === contractStatus.Active">
+                            <a class="dropdown-item item-danger" (click)="openTerminateModal(contract)">
+                              <i class='bx bx-x-circle'></i>
+                              Terminer contrat
+                            </a>
+                          </li>
+
+                          <li>
+                            <hr class="dropdown-divider">
+                          </li>
+
+                          <!-- GÉNÉRER PDF -->
+                          <li>
+                            <a class="dropdown-item item-secondary" (click)="generatePdf(contract)">
+                              <i class='bx bx-file-pdf'></i>
+                              Générer PDF
+                            </a>
+                          </li>
+
+                          <!-- TÉLÉCHARGER PDF -->
+                          <li>
+                            <a class="dropdown-item item-secondary" (click)="downloadPdf(contract.id)">
+                              <i class='bx bx-download'></i>
+                              Télécharger PDF
+                            </a>
+                          </li>
+
+                          <!-- SIGNER -->
+                          <li *ngIf="contract.status === contractStatus.Pending">
+                            <a class="dropdown-item item-success" (click)="openSignatureModal(contract)">
+                              <i class='bx bx-pen'></i>
+                              Signer contrat
+                            </a>
+                          </li>
+
+                          <!-- VÉRIFIER ÉLIGIBILITÉ -->
+                          <li>
+                            <a class="dropdown-item item-info" (click)="openEligibilityModal(contract)">
+                              <i class='bx bx-check-shield'></i>
+                              Vérifier éligibilité
+                            </a>
+                          </li>
+
+                          <li>
+                            <hr class="dropdown-divider">
+                          </li>
+
+                          <!-- VOIR DÉTAILS -->
+                          <li>
+                            <a class="dropdown-item item-info" (click)="openDetailsModal(contract)">
+                              <i class='bx bx-show'></i>
+                              Voir les détails
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- AUCUN RÉSULTAT -->
+            <div *ngIf="contracts.length === 0 && !loading" class="text-center py-5">
+              <i class='bx bx-file fs-1 text-muted mb-3'></i>
+              <h5 class="text-muted">Aucun contrat trouvé</h5>
+              <p class="text-muted">Modifiez vos critères de recherche ou créez un nouveau contrat.</p>
+              <button class="btn btn-primary" *ngIf="hasPermission(permission.Contract_Create)"
+                (click)="openCreateModal()">
+                <i class='bx bx-plus me-1'></i> Créer un contrat
+              </button>
+            </div>
+          </div>
+
+          <!-- PAGINATION -->
+          <div *ngIf="!loading && !error && pagination.totalPages > 1"
+            class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted fs-sm">
+              Page {{ pagination.currentPage }} sur {{ pagination.totalPages }}
+              ({{ pagination.totalCount }} contrats)
+            </div>
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item" [class.disabled]="!pagination.hasPreviousPage">
+                  <a class="page-link" (click)="onPageChange(pagination.currentPage - 1)">
+                    <i class='bx bx-chevron-left'></i>
+                  </a>
+                </li>
+                <li *ngFor="let page of visiblePages" class="page-item"
+                  [class.active]="page === pagination.currentPage"
+                  [class.disabled]="page === -1">
+                  <a class="page-link" (click)="page !== -1 && onPageChange(page)">
+                    {{ page === -1 ? '...' : page }}
+                  </a>
+                </li>
+                <li class="page-item" [class.disabled]="!pagination.hasNextPage">
+                  <a class="page-link" (click)="onPageChange(pagination.currentPage + 1)">
+                    <i class='bx bx-chevron-right'></i>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL D'ENREGISTREMENT DE PAIEMENT -->
+  <div class="modal-backdrop" *ngIf="showPaymentModal" (click)="closePaymentModal()"></div>
+
+  <div class="modal" *ngIf="showPaymentModal" [class.show]="showPaymentModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">
+            <i class='bx bx-dollar-circle me-2'></i>Enregistrer un paiement
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closePaymentModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="selectedContractForPayment" class="alert alert-info mb-3">
+            <i class='bx bx-info-circle me-2'></i>
+            Contrat : <strong>{{ selectedContractForPayment.contractNumber }}</strong><br>
+            Client : {{ selectedContractForPayment.customerName }}
+          </div>
+
+          <form [formGroup]="paymentForm" (ngSubmit)="onPaymentSubmit()">
+            <!-- Date de paiement -->
+            <!-- <div class="mb-3">
+              <label class="form-label">Date de paiement *</label>
+              <input type="date" class="form-control" formControlName="paymentDate"
+                [max]="new Date().toISOString().split('T')[0]">
+              <div *ngIf="pf['paymentDate'].invalid && paymentSubmitted" class="text-danger small">
+                Date invalide
+              </div>
+            </div> -->
+
+            <!-- Montant -->
+            <div class="mb-3">
+              <label class="form-label">Montant payé *</label>
+              <div class="input-group">
+                <input type="number" class="form-control" formControlName="amountPaid" min="0.01" step="0.01">
+                <span class="input-group-text">FCFA</span>
+              </div>
+              <div class="form-text">
+                Montant hebdomadaire: {{ formatCurrency(selectedContractForPayment?.weeklyAmount) }}
+              </div>
+              <div *ngIf="pf['amountPaid'].invalid && paymentSubmitted" class="text-danger small">
+                Montant invalide
+              </div>
+            </div>
+
+            <!-- Méthode de paiement -->
+            <div class="mb-3">
+              <label class="form-label">Méthode de paiement *</label>
+              <select class="form-select" formControlName="method">
+                <option *ngFor="let method of paymentMethodOptions" [value]="method.value">
+                  {{ method.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Référence -->
+            <div class="mb-3">
+              <label class="form-label">Référence (optionnel)</label>
+              <input type="text" class="form-control" formControlName="reference"
+                placeholder="Ex: Transfert ref, numéro transaction...">
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+              <label class="form-label">Notes (optionnel)</label>
+              <textarea class="form-control" formControlName="notes" rows="3"
+                placeholder="Notes additionnelles..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closePaymentModal()">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-success" [disabled]="paymentLoading">
+                <span *ngIf="paymentLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class='bx bx-check me-1'></i> Enregistrer le paiement
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE RENOUVELLEMENT -->
+  <div class="modal-backdrop" *ngIf="showRenewModal" (click)="closeRenewModal()"></div>
+
+  <div class="modal" *ngIf="showRenewModal" [class.show]="showRenewModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class='bx bx-refresh me-2'></i>Renouveler le contrat
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeRenewModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="selectedContract" class="alert alert-info mb-3">
+            <i class='bx bx-info-circle me-2'></i>
+            Contrat actuel : <strong>{{ selectedContract.contractNumber }}</strong><br>
+            Se termine le : {{ formatDate(selectedContract.endDate) }}
+          </div>
+
+          <form [formGroup]="renewForm" (ngSubmit)="onRenewSubmit()">
+            <!-- Durée -->
+            <div class="mb-3">
+              <label class="form-label">Nouvelle durée (semaines) *</label>
+              <input type="number" class="form-control" formControlName="durationInWeeks" min="1" max="52">
+              <div *ngIf="rf['durationInWeeks'].invalid && renewSubmitted" class="text-danger small">
+                Durée invalide (1-52 semaines)
+              </div>
+            </div>
+
+            <!-- Nouveau montant hebdomadaire -->
+            <div class="mb-3">
+              <label class="form-label">Nouveau montant hebdomadaire *</label>
+              <div class="input-group">
+                <input type="number" class="form-control" formControlName="newWeeklyAmount" min="0.01" step="0.01">
+                <span class="input-group-text">FCFA</span>
+              </div>
+              <div class="form-text">
+                Montant actuel: {{ formatCurrency(selectedContract?.weeklyAmount) }}
+              </div>
+              <div *ngIf="rf['newWeeklyAmount'].invalid && renewSubmitted" class="text-danger small">
+                Montant invalide
+              </div>
+            </div>
+
+            <!-- Nouvelle caution -->
+            <div class="mb-3">
+              <label class="form-label">Nouvelle caution (optionnel)</label>
+              <div class="input-group">
+                <input type="number" class="form-control" formControlName="newSecurityDeposit" min="0" step="0.01">
+                <span class="input-group-text">FCFA</span>
+              </div>
+              <div class="form-text">
+                Caution actuelle: {{ formatCurrency(selectedContract?.securityDeposit) }}
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+              <label class="form-label">Notes (optionnel)</label>
+              <textarea class="form-control" formControlName="notes" rows="3"
+                placeholder="Raisons du renouvellement, changements..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeRenewModal()">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="renewLoading">
+                <span *ngIf="renewLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class='bx bx-check me-1'></i> Renouveler le contrat
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE TERMINATION -->
+  <div class="modal-backdrop" *ngIf="showTerminateModal" (click)="closeTerminateModal()"></div>
+
+  <div class="modal" *ngIf="showTerminateModal" [class.show]="showTerminateModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class='bx bx-x-circle me-2'></i>Terminer le contrat
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeTerminateModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="selectedContract" class="alert alert-warning mb-3">
+            <i class='bx bx-error-circle me-2'></i>
+            <strong>Attention !</strong> Cette action est irréversible.<br>
+            Contrat : <strong>{{ selectedContract.contractNumber }}</strong>
+          </div>
+
+          <form [formGroup]="terminateForm" (ngSubmit)="onTerminateSubmit()">
+            <!-- Motif -->
+            <div class="mb-3">
+              <label class="form-label">Motif de la termination *</label>
+              <textarea class="form-control" formControlName="reason" rows="4"
+                placeholder="Détaillez les raisons de la termination (minimum 5 caractères)..."></textarea>
+              <div class="form-text">
+                Le motif sera enregistré dans l'historique du contrat
+              </div>
+              <div *ngIf="tf['reason'].invalid && terminateSubmitted" class="text-danger small">
+                Minimum 5 caractères requis
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeTerminateModal()">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-danger" [disabled]="terminateLoading">
+                <span *ngIf="terminateLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class='bx bx-trash me-1'></i> Terminer le contrat
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE SOLDE DÉTAILLÉ -->
+  <div class="modal-backdrop" *ngIf="showBalanceModal" (click)="closeBalanceModal()"></div>
+
+  <div class="modal" *ngIf="showBalanceModal" [class.show]="showBalanceModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title">
+            <i class='bx bx-wallet me-2'></i>Solde détaillé du contrat
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeBalanceModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="balanceLoading" class="text-center py-5">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-3">Chargement du solde...</p>
+          </div>
+
+          <div *ngIf="!balanceLoading && contractBalance" class="balance-details">
+            <!-- En-tête -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h6 class="mb-1">Contrat {{ contractBalance.contractNumber }}</h6>
+                    <small class="text-muted">Solde mis à jour le {{ formatDate(contractBalance.lastPaymentDate) }}</small>
+                  </div>
+                  <div class="col-md-6 text-end">
+                    <h4 class="text-primary mb-0">{{ formatCurrency(contractBalance.totalOutstanding) }}</h4>
+                    <small class="text-muted">Montant total dû</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Résumé -->
+            <div class="row mb-4">
+              <div class="col-md-4 mb-3">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h3 class="text-success">{{ formatCurrency(contractBalance.totalPaid) }}</h3>
+                    <small class="text-muted">Total payé</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h3 class="text-danger">{{ formatCurrency(contractBalance.overdueAmount) }}</h3>
+                    <small class="text-muted">En retard</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="card text-center">
+                  <div class="card-body">
+                    <h3 class="text-warning">{{ contractBalance.paymentsOverdue }}</h3>
+                    <small class="text-muted">Paiements en retard</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Détails -->
+            <div class="card">
+              <div class="card-header">
+                <h6 class="mb-0">Détails du solde</h6>
+              </div>
+              <div class="card-body">
+                <table class="table table-sm">
+                  <tbody>
+                    <tr>
+                      <td>Montant total du contrat</td>
+                      <td class="text-end">{{ formatCurrency(contractBalance.totalContractAmount) }}</td>
+                    </tr>
+                    <tr>
+                      <td>Total des paiements effectués</td>
+                      <td class="text-end text-success">{{ formatCurrency(contractBalance.totalPaid) }}</td>
+                    </tr>
+                    <tr>
+                      <td>Frais de retard</td>
+                      <td class="text-end text-danger">{{ formatCurrency(contractBalance.lateFees) }}</td>
+                    </tr>
+                    <tr>
+                      <td>Nombre de paiements effectués</td>
+                      <td class="text-end">{{ contractBalance.paymentsMade }}</td>
+                    </tr>
+                    <tr>
+                      <td>Nombre de paiements manqués</td>
+                      <td class="text-end">{{ contractBalance.paymentsMissed }}</td>
+                    </tr>
+                    <tr class="table-active">
+                      <td><strong>Solde total dû</strong></td>
+                      <td class="text-end"><strong>{{ formatCurrency(contractBalance.totalOutstanding) }}</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Prochain paiement -->
+                <div *ngIf="contractBalance.nextPaymentDue" class="alert alert-warning mt-3">
+                  <i class='bx bx-time me-2'></i>
+                  <strong>Prochain paiement dû :</strong>
+                  {{ formatDate(contractBalance.nextPaymentDue) }}
+                  <span class="badge bg-warning ms-2">
+                    {{ formatCurrency(contractBalance.currentWeekDue) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeBalanceModal()">
+            Fermer
+          </button>
+          <button type="button" class="btn btn-primary" *ngIf="selectedContract"
+            (click)="openPaymentModal(selectedContract)">
+            <i class='bx bx-dollar-circle me-1'></i> Enregistrer un paiement
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE RAPPORT FINANCIER -->
+  <div class="modal-backdrop" *ngIf="showFinancialReportModal" (click)="closeFinancialReportModal()"></div>
+
+  <div class="modal" *ngIf="showFinancialReportModal" [class.show]="showFinancialReportModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title">
+            <i class='bx bx-bar-chart me-2'></i>Rapport financier
+          </h5>
+          <button type="button" class="btn-close" (click)="closeFinancialReportModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="financialReportLoading" class="text-center py-5">
+            <div class="spinner-border text-warning" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-3">Chargement du rapport...</p>
+          </div>
+
+          <div *ngIf="!financialReportLoading && financialReport" class="financial-report">
+            <!-- En-tête -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-8">
+                    <h5 class="mb-1">Contrat {{ financialReport.contractNumber }}</h5>
+                    <small class="text-muted">Généré le {{ formatDate(financialReport.generatedAt) }}</small>
+                  </div>
+                  <div class="col-md-4 text-end">
+                    <h4 class="text-primary mb-0">{{ formatCurrency(financialReport.netRevenue) }}</h4>
+                    <small class="text-muted">Revenu net</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chiffres clés -->
+            <div class="row mb-4">
+              <div class="col-md-3 mb-3">
+                <div class="card">
+                  <div class="card-body text-center">
+                    <h5 class="text-success">{{ formatCurrency(financialReport.grossRevenue) }}</h5>
+                    <small class="text-muted">Revenu brut</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-3">
+                <div class="card">
+                  <div class="card-body text-center">
+                    <h5 class="text-danger">{{ formatCurrency(financialReport.totalAdditionalCharges) }}</h5>
+                    <small class="text-muted">Charges additionnelles</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-3">
+                <div class="card">
+                  <div class="card-body text-center">
+                    <h5 class="text-warning">{{ formatCurrency(financialReport.totalOutstanding) }}</h5>
+                    <small class="text-muted">En cours de recouvrement</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 mb-3">
+                <div class="card">
+                  <div class="card-body text-center">
+                    <h5 class="text-info">{{ financialReport.profitMargin | number:'1.0-1' }}%</h5>
+                    <small class="text-muted">Marge bénéficiaire</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Détails -->
+            <div class="card">
+              <div class="card-header">
+                <h6 class="mb-0">Détails financiers</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h6>Revenus</h6>
+                    <table class="table table-sm">
+                      <tbody>
+                        <tr>
+                          <td>Valeur totale du contrat</td>
+                          <td class="text-end">{{ formatCurrency(financialReport.totalContractValue) }}</td>
+                        </tr>
+                        <tr>
+                          <td>Total perçu</td>
+                          <td class="text-end text-success">{{ formatCurrency(financialReport.totalPaid) }}</td>
+                        </tr>
+                        <tr>
+                          <td>Revenu brut</td>
+                          <td class="text-end"><strong>{{ formatCurrency(financialReport.grossRevenue) }}</strong></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="col-md-6">
+                    <h6>Charges et frais</h6>
+                    <table class="table table-sm">
+                      <tbody>
+                        <tr>
+                          <td>Frais de retard</td>
+                          <td class="text-end">{{ formatCurrency(financialReport.totalLateFees) }}</td>
+                        </tr>
+                        <tr>
+                          <td>Frais de dommages</td>
+                          <td class="text-end">{{ formatCurrency(financialReport.totalDamageFees) }}</td>
+                        </tr>
+                        <tr>
+                          <td>Frais kilométrage</td>
+                          <td class="text-end">{{ formatCurrency(financialReport.totalMileageOverageFees) }}</td>
+                        </tr>
+                        <tr>
+                          <td>Total charges additionnelles</td>
+                          <td class="text-end text-danger"><strong>{{ formatCurrency(financialReport.totalAdditionalCharges) }}</strong></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Synthèse -->
+                <div class="alert alert-success mt-3">
+                  <div class="row">
+                    <div class="col-md-8">
+                      <h6 class="mb-1">Synthèse</h6>
+                      <small class="text-muted">
+                        Revenu brut - Charges = Revenu net
+                      </small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                      <h4 class="mb-0">{{ formatCurrency(financialReport.netRevenue) }}</h4>
+                      <small>Revenu net</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Paiements -->
+                <div class="mt-4">
+                  <h6>Statistiques des paiements</h6>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <h3 class="text-success">{{ financialReport.paymentsMade }}</h3>
+                          <small>Paiements effectués</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <h3 class="text-danger">{{ financialReport.paymentsMissed }}</h3>
+                          <small>Paiements manqués</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <h3 class="text-warning">{{ formatCurrency(financialReport.totalOutstanding) }}</h3>
+                          <small>Montant en cours</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeFinancialReportModal()">
+            Fermer
+          </button>
+          <button type="button" class="btn btn-primary" *ngIf="selectedContract"
+            (click)="downloadPdf(selectedContract.id)">
+            <i class='bx bx-download me-1'></i> Télécharger PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE SIGNATURE -->
+  <div class="modal-backdrop" *ngIf="showSignatureModal" (click)="closeSignatureModal()"></div>
+
+  <div class="modal" *ngIf="showSignatureModal" [class.show]="showSignatureModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">
+            <i class='bx bx-pen me-2'></i>Signer le contrat
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeSignatureModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="selectedContract" class="alert alert-info mb-3">
+            <i class='bx bx-info-circle me-2'></i>
+            Contrat : <strong>{{ selectedContract.contractNumber }}</strong><br>
+            Client : {{ selectedContract.customerName }}
+          </div>
+
+          <form [formGroup]="signatureForm" (ngSubmit)="onSignatureSubmit()">
+            <!-- Fichier PDF -->
+            <div class="mb-3">
+              <label class="form-label">Contrat signé (PDF) *</label>
+              <input type="file" class="form-control" accept=".pdf" (change)="onFileSelected($event)">
+              <div class="form-text">
+                Téléversez le contrat signé par le client (format PDF uniquement)
+              </div>
+              <div *ngIf="signatureSubmitted && !signatureFile" class="text-danger small">
+                Veuillez sélectionner un fichier PDF
+              </div>
+            </div>
+
+            <!-- Date de signature -->
+            <div class="mb-3">
+              <label class="form-label">Date de signature *</label>
+              <input type="date" class="form-control" formControlName="signatureDate">
+              <div *ngIf="sf['signatureDate'].invalid && signatureSubmitted" class="text-danger small">
+                Date invalide
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+              <label class="form-label">Notes (optionnel)</label>
+              <textarea class="form-control" formControlName="notes" rows="3"
+                placeholder="Notes sur la signature..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeSignatureModal()">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-success" [disabled]="signatureLoading || !signatureFile">
+                <span *ngIf="signatureLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class='bx bx-upload me-1'></i> Uploader le contrat signé
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL D'ÉLIGIBILITÉ -->
+  <div class="modal-backdrop" *ngIf="showEligibilityModal" (click)="closeEligibilityModal()"></div>
+
+  <div class="modal" *ngIf="showEligibilityModal" [class.show]="showEligibilityModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title">
+            <i class='bx bx-check-shield me-2'></i>Vérification d'éligibilité
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeEligibilityModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="eligibilityLoading" class="text-center py-5">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-3">Vérification en cours...</p>
+          </div>
+
+          <div *ngIf="!eligibilityLoading && eligibilityResult" class="eligibility-result">
+            <!-- Résultat -->
+            <div class="card mb-3" [ngClass]="eligibilityResult.isEligible ? 'border-success' : 'border-danger'">
+              <div class="card-body text-center">
+                <i [class]="eligibilityResult.isEligible ? 'bx bx-check-circle text-success fs-1' : 'bx bx-x-circle text-danger fs-1'"></i>
+                <h4 class="mt-3">{{ eligibilityResult.isEligible ? 'ÉLIGIBLE' : 'NON ÉLIGIBLE' }}</h4>
+                <p class="mb-0">{{ eligibilityResult.customerName }}</p>
+              </div>
+            </div>
+
+            <!-- Détails -->
+            <div class="card">
+              <div class="card-header">
+                <h6 class="mb-0">Détails de la vérification</h6>
+              </div>
+              <div class="card-body">
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Statut actif
+                    <span [ngClass]="eligibilityResult.isActive ? 'badge bg-success' : 'badge bg-danger'">
+                      {{ eligibilityResult.isActive ? 'Oui' : 'Non' }}
+                    </span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Contrat actif
+                    <span [ngClass]="eligibilityResult.hasActiveContract ? 'badge bg-warning' : 'badge bg-success'">
+                      {{ eligibilityResult.hasActiveContract ? 'Oui' : 'Non' }}
+                    </span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Solde impayé
+                    <span [ngClass]="eligibilityResult.hasOutstandingBalance ? 'badge bg-danger' : 'badge bg-success'">
+                      {{ formatCurrency(eligibilityResult.currentBalance) }}
+                    </span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Paiements en retard
+                    <span [ngClass]="eligibilityResult.hasLatePayments ? 'badge bg-danger' : 'badge bg-success'">
+                      {{ eligibilityResult.consecutiveLatePayments }}
+                    </span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Documents expirés
+                    <span [ngClass]="eligibilityResult.hasExpiredDocuments ? 'badge bg-warning' : 'badge bg-success'">
+                      {{ eligibilityResult.expiredDocumentTypes.length }}
+                    </span>
+                  </li>
+                </ul>
+
+                <!-- Raisons -->
+                <div *ngIf="eligibilityResult.reasons.length > 0" class="mt-3">
+                  <h6>Raisons de non-éligibilité :</h6>
+                  <ul class="list-unstyled">
+                    <li *ngFor="let reason of eligibilityResult.reasons" class="text-danger">
+                      <i class='bx bx-x-circle me-1'></i> {{ reason }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEligibilityModal()">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CRÉATION -->
+  <div class="modal-backdrop" *ngIf="showCreateModal" (click)="closeCreateModal()"></div>
+
+  <div class="modal" *ngIf="showCreateModal" [class.show]="showCreateModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class='bx bx-plus me-2'></i>Créer un nouveau contrat
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeCreateModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <form [formGroup]="createForm" (ngSubmit)="onCreateSubmit()">
+            <div class="row">
+              <!-- Client -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Client *</label>
+                <input type="text" class="form-control" formControlName="customerId" placeholder="ID du client">
+                <div *ngIf="cf['customerId'].invalid && createSubmitted" class="text-danger small">
+                  Client requis
+                </div>
+              </div>
+
+              <!-- Véhicule -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Véhicule *</label>
+                <input type="text" class="form-control" formControlName="vehicleId" placeholder="ID du véhicule">
+                <div *ngIf="cf['vehicleId'].invalid && createSubmitted" class="text-danger small">
+                  Véhicule requis
+                </div>
+              </div>
+
+              <!-- Date de début -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Date de début *</label>
+                <input type="date" class="form-control" formControlName="startDate">
+                <div *ngIf="cf['startDate'].invalid && createSubmitted" class="text-danger small">
+                  Date de début invalide
+                </div>
+              </div>
+
+              <!-- Durée -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Durée (semaines) *</label>
+                <input type="number" class="form-control" formControlName="durationInWeeks" min="1" max="52">
+                <div *ngIf="cf['durationInWeeks'].invalid && createSubmitted" class="text-danger small">
+                  Durée invalide (1-52 semaines)
+                </div>
+              </div>
+
+              <!-- Montant hebdomadaire -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Montant hebdomadaire *</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" formControlName="weeklyAmount" min="0.01" step="0.01">
+                  <span class="input-group-text">FCFA</span>
+                </div>
+                <div *ngIf="cf['weeklyAmount'].invalid && createSubmitted" class="text-danger small">
+                  Montant invalide
+                </div>
+              </div>
+
+              <!-- Caution -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Caution</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" formControlName="securityDeposit" min="0" step="0.01">
+                  <span class="input-group-text">FCFA</span>
+                </div>
+              </div>
+
+              <!-- Fréquence de paiement -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Fréquence de paiement *</label>
+                <select class="form-select" formControlName="paymentFrequency">
+                  <option *ngFor="let freq of frequencyOptions" [value]="freq.value">
+                    {{ freq.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Jour de paiement -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Jour de paiement *</label>
+                <input type="number" class="form-control" formControlName="paymentDay" min="1" max="7">
+                <div class="form-text">1 = Lundi, 7 = Dimanche</div>
+              </div>
+
+              <!-- Limite kilométrique -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Limite kilométrique hebdomadaire</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" formControlName="weeklyMileageLimit" min="0">
+                  <span class="input-group-text">km</span>
+                </div>
+              </div>
+
+              <!-- Notes -->
+              <div class="col-md-12 mb-3">
+                <label class="form-label">Notes (optionnel)</label>
+                <textarea class="form-control" formControlName="notes" rows="3"
+                  placeholder="Informations additionnelles..."></textarea>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="createLoading">
+                <span *ngIf="createLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class='bx bx-check me-1'></i> Créer le contrat
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
           <!-- COMPOSANT DE NOTIFICATION -->
       <app-notification-component></app-notification-component>
   </div>

@@ -17,6 +17,7 @@ import { NotificationComponent } from "../../../../../core/components/notificati
 import { ContractBasic, RentalContract } from '../../../../../core/models/Contracts/Rental-contract.model';
 import { Contract } from '../../../../../core/services/Contract/contract';
 import { ContractDto } from '../../../../../core/models/Contracts/ContractDto';
+import { ConfirmDialog } from '../../../../../core/components/confirm-dialog/confirm-dialog';
 
 /**
  * Réponse paginée du serveur pour les contrats
@@ -42,11 +43,38 @@ export interface ContractPaginatedResponse {
  */
 @Component({
   selector: 'app-vehicules-list',
-  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule, NotificationComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule, NotificationComponent, ConfirmDialog],
   templateUrl: './vehicules-list.html',
   styleUrls: ['./vehicules-list.scss'],
 })
 export class VehiculesList implements OnInit, OnDestroy {
+
+  /** Contrôle l'affichage du dialog de confirmation */
+showConfirmDialog = false;
+
+/** Titre du dialog de confirmation */
+confirmDialogTitle = '';
+
+/** Message du dialog de confirmation */
+confirmDialogMessage = '';
+
+/** Détails supplémentaires du dialog de confirmation */
+confirmDialogDetails = '';
+
+/** Texte du bouton de confirmation */
+confirmDialogConfirmText = 'Confirmer';
+
+/** Texte du bouton d'annulation */
+confirmDialogCancelText = 'Annuler';
+
+/** Véhicule concerné par la confirmation */
+pendingConfirmVehicle: VehicleDto | null = null;
+
+/** Action à exécuter après confirmation */
+pendingConfirmAction: (() => void) | null = null;
+
+/** Statut cible pour le changement */
+pendingStatus: VehicleStatus | null = null;
 
   /** Indique si le chargement des tiers pour affectation est en cours */
 isLoadingTiersForAssignment: boolean = false;
@@ -370,6 +398,224 @@ isLoadingContractsForAssignment: boolean = false;
   ) {
     this.initializeForms();
   }
+
+  /**
+ * Affiche le dialog de confirmation pour changer le statut d'un véhicule
+ */
+openConfirmDialog(vehicle: VehicleDto, newStatus: VehicleStatus): void {
+  this.pendingConfirmVehicle = vehicle;
+  this.pendingStatus = newStatus;
+
+  const currentStatus = this.getStatusText(vehicle.status);
+  const newStatusText = this.getStatusText(newStatus);
+
+  // Configuration du dialog selon le statut cible
+  if (newStatus === VehicleStatus.Maintenance) {
+    this.configureMaintenanceDialog(vehicle, currentStatus, newStatusText);
+  } else if (newStatus === VehicleStatus.OutOfService) {
+    this.configureOutOfServiceDialog(vehicle, currentStatus, newStatusText);
+  } else if (newStatus === VehicleStatus.Available) {
+    this.configureAvailableDialog(vehicle, currentStatus, newStatusText);
+  }
+
+  this.showConfirmDialog = true;
+}
+
+/**
+ * Configure le dialog pour la maintenance
+ */
+private configureMaintenanceDialog(
+  vehicle: VehicleDto,
+  currentStatus: string,
+  newStatusText: string
+): void {
+  this.confirmDialogTitle = 'Mettre en maintenance';
+  this.confirmDialogMessage = `Êtes-vous sûr de vouloir mettre le véhicule "${vehicle.code}" en maintenance ?`;
+
+  let details = `Statut actuel: ${currentStatus}\n`;
+  details += `Nouveau statut: ${newStatusText}\n`;
+
+  // Ajouter des avertissements spécifiques
+  if (vehicle.status === VehicleStatus.Rented) {
+    details += '\n⚠️ ATTENTION: Ce véhicule est actuellement loué.\n';
+    details += 'La location doit d\'abord être terminée.';
+  }
+
+  if (vehicle.isInsuranceExpired) {
+    details += '\n⚠️ ATTENTION: L\'assurance de ce véhicule est expirée.';
+  }
+
+  this.confirmDialogDetails = details;
+  this.confirmDialogConfirmText = 'Mettre en maintenance';
+  this.confirmDialogCancelText = 'Annuler';
+}
+
+/**
+ * Configure le dialog pour hors service
+ */
+private configureOutOfServiceDialog(
+  vehicle: VehicleDto,
+  currentStatus: string,
+  newStatusText: string
+): void {
+  this.confirmDialogTitle = 'Mettre hors service';
+  this.confirmDialogMessage = `Êtes-vous sûr de vouloir mettre le véhicule "${vehicle.code}" hors service ?`;
+
+  let details = `Statut actuel: ${currentStatus}\n`;
+  details += `Nouveau statut: ${newStatusText}\n`;
+  details += '\n⚠️ Cette action est définitive et nécessite une raison valide.';
+
+  // Ajouter des avertissements spécifiques
+  if (vehicle.status === VehicleStatus.Rented) {
+    details += '\n⚠️ IMPOSSIBLE: Ce véhicule est actuellement loué.\n';
+    details += 'Terminez d\'abord la location.';
+  }
+
+  if (vehicle.status === VehicleStatus.Reserved) {
+    details += '\n⚠️ IMPOSSIBLE: Ce véhicule est réservé.\n';
+    details += 'Annulez d\'abord la réservation.';
+  }
+
+  this.confirmDialogDetails = details;
+  this.confirmDialogConfirmText = 'Mettre hors service';
+  this.confirmDialogCancelText = 'Annuler';
+}
+
+/**
+ * Configure le dialog pour rendre disponible
+ */
+private configureAvailableDialog(
+  vehicle: VehicleDto,
+  currentStatus: string,
+  newStatusText: string
+): void {
+  this.confirmDialogTitle = 'Rendre disponible';
+  this.confirmDialogMessage = `Êtes-vous sûr de vouloir rendre le véhicule "${vehicle.code}" disponible ?`;
+
+  let details = `Statut actuel: ${currentStatus}\n`;
+  details += `Nouveau statut: ${newStatusText}\n`;
+
+  if (vehicle.isInsuranceExpired) {
+    details += '\n⚠️ ATTENTION: L\'assurance de ce véhicule est expirée.\n';
+    details += 'Le véhicule ne pourra pas être loué sans assurance valide.';
+  }
+
+  this.confirmDialogDetails = details;
+  this.confirmDialogConfirmText = 'Rendre disponible';
+  this.confirmDialogCancelText = 'Annuler';
+}
+
+/**
+ * Gère la confirmation du dialog
+ */
+onDialogConfirm(): void {
+  this.showConfirmDialog = false;
+
+  if (this.pendingConfirmVehicle && this.pendingStatus) {
+    // Demander la raison si nécessaire
+    if ([VehicleStatus.Maintenance, VehicleStatus.OutOfService].includes(this.pendingStatus)) {
+      this.askReasonAndExecute();
+    } else {
+      // Pour les autres statuts, exécuter directement
+      this.executeChangeStatus(this.pendingConfirmVehicle, this.pendingStatus);
+    }
+  }
+
+  this.resetDialog();
+}
+
+/**
+ * Demande la raison puis exécute l'action
+ */
+private askReasonAndExecute(): void {
+  const reason = prompt('Veuillez indiquer la raison de ce changement :', '');
+
+  if (reason === null || reason.trim() === '') {
+    this.notificationService.warning(
+      'Raison requise',
+      'Le changement de statut a été annulé. Une raison est obligatoire.'
+    );
+    return;
+  }
+
+  if (this.pendingConfirmVehicle && this.pendingStatus) {
+    this.executeChangeStatus(this.pendingConfirmVehicle, this.pendingStatus, reason);
+  }
+}
+
+/**
+ * Exécute l'action en attente
+ */
+private executePendingAction(): void {
+  if (this.pendingConfirmAction) {
+    this.pendingConfirmAction();
+  }
+}
+
+/**
+ * Exécute le changement de statut
+ */
+private executeChangeStatus(vehicle: VehicleDto, newStatus: VehicleStatus, reason?: string): void {
+  this.loading = true;
+
+  this.vehiclesService.changeVehicleStatus(vehicle.id, newStatus, reason)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response) => {
+        this.loading = false;
+
+        if (response.ok) {
+          const newStatusText = this.getStatusText(newStatus);
+          this.notificationService.success(
+            'Statut modifié',
+            `Le véhicule ${vehicle.code} est maintenant "${newStatusText}"`
+          );
+
+          // Rafraîchir la liste
+          this.loadVehicles(this.pagination.currentPage);
+        } else {
+          this.notificationService.error(
+            'Erreur de modification',
+            response.statusText || 'Impossible de changer le statut'
+          );
+        }
+      },
+      error: (error) => {
+        this.loading = false;
+        this.notificationService.error(
+          'Erreur',
+          error.message || 'Une erreur est survenue lors du changement de statut'
+        );
+      }
+    });
+}
+
+/**
+ * Gère l'annulation du dialog
+ */
+onDialogCancel(): void {
+  this.showConfirmDialog = false;
+  this.resetDialog();
+
+  this.notificationService.info(
+    'Action annulée',
+    'Le changement de statut a été annulé.'
+  );
+}
+
+/**
+ * Réinitialise les données du dialog
+ */
+private resetDialog(): void {
+  this.pendingConfirmVehicle = null;
+  this.pendingConfirmAction = null;
+  this.pendingStatus = null;
+  this.confirmDialogTitle = '';
+  this.confirmDialogMessage = '';
+  this.confirmDialogDetails = '';
+  this.confirmDialogConfirmText = 'Confirmer';
+  this.confirmDialogCancelText = 'Annuler';
+}
 
   /**
    * Initialise tous les formulaires du composant
