@@ -1564,9 +1564,10 @@ tr:hover {
     }
   }
 
-  /* ============================================
-     MODALS CORRIGÉS ET STYLISÉS
-     ============================================ */
+
+
+
+
   .modal-backdrop {
     position: fixed;
     top: 0;
@@ -1916,5 +1917,802 @@ tr:hover {
     &.bg-secondary {
       background: linear-gradient(135deg, #8592a3 0%, #6c757d 100%) !important;
     }
+  }
+}
+
+
+
+/* MODAL D'UPLOAD DE DOCUMENT - Style cohérent avec l'application */
+.document-upload-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: 95%;
+  max-width: 800px;
+  max-height: 85vh; /* Réduit légèrement pour mieux s'adapter */
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* S'assure que le contenu prend toute la hauteur */
+    min-height: 0; /* Important pour le scroll */
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+}
+
+/* Header avec gradient bleu (couleur principale de l'application) */
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0; /* Empêche le header de rétrécir */
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+  }
+
+  .modal-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+
+    i {
+      font-size: 1.8rem;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+  }
+
+  .btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    z-index: 1;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+
+    i {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+/* Body avec scrollbar stylisée - CORRIGÉ POUR LE SCROLL */
+.modal-body {
+  flex: 1 1 auto; /* Prend l'espace disponible */
+  overflow-y: auto; /* Active le scroll vertical */
+  overflow-x: hidden; /* Désactive le scroll horizontal */
+  padding: 2rem;
+  min-height: 0; /* Important pour le flex scrolling */
+  max-height: calc(85vh - 180px); /* Calcul automatique de la hauteur max */
+
+  /* Scrollbar personnalisée améliorée */
+  &::-webkit-scrollbar {
+    width: 10px; /* Légèrement plus large pour meilleure ergonomie */
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(66, 153, 225, 0.1);
+    border-radius: 10px;
+    margin: 8px 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #4299e1, #3182ce);
+    border-radius: 10px;
+    border: 2px solid #f8fafc;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(to bottom, #3182ce, #4299e1);
+      border: 2px solid #e2e8f0;
+    }
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none; /* Cache les boutons de début/fin */
+  }
+
+  /* Pour Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #4299e1 rgba(66, 153, 225, 0.1);
+}
+
+/* Cards */
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  background: white;
+  flex-shrink: 0; /* Empêche les cartes de se comprimer */
+
+  .card-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0 !important;
+
+    h6 {
+      font-weight: 700;
+      color: #2d3748;
+      margin: 0;
+      display: flex;
+      align-items: center;
+
+      i {
+        font-size: 1.2rem;
+        color: #4299e1;
+      }
+    }
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+/* Zone d'upload de fichier */
+.file-upload-area {
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f7fafc;
+
+  &:hover {
+    border-color: #4299e1;
+    background: #edf2f7;
+  }
+
+  .upload-placeholder {
+    color: #718096;
+
+    i {
+      font-size: 3rem;
+    }
+  }
+
+  .file-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+
+    .file-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        font-size: 1.8rem;
+        color: white;
+      }
+    }
+
+    .file-info {
+      flex: 1;
+
+      h6 {
+        margin: 0;
+        color: #2d3748;
+        font-weight: 600;
+        word-break: break-all; /* Permet de casser les longs noms de fichiers */
+      }
+    }
+
+    .btn-outline-danger {
+      border-radius: 8px;
+      padding: 0.375rem 0.75rem;
+      flex-shrink: 0; /* Empêche le bouton de rétrécir */
+    }
+  }
+}
+
+/* Form controls */
+.form-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  }
+
+  &:disabled {
+    background-color: #f8fafc;
+    opacity: 0.7;
+  }
+}
+
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Form text */
+.form-text.text-muted {
+  font-size: 0.875rem;
+  color: #718096 !important;
+  margin-top: 0.25rem;
+}
+
+/* Footer - CORRIGÉ POUR RESTER EN BAS */
+.modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0; /* Empêche le footer de rétrécir */
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  .btn-secondary {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+
+    &:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    border: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(66, 153, 225, 0.4);
+    }
+  }
+}
+
+/* Alertes */
+.alert {
+  border-radius: 10px;
+  border: none;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+
+  &.alert-danger {
+    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+    color: #c53030;
+  }
+
+  &.alert-success {
+    background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+    color: #22543d;
+  }
+
+  &.alert-info {
+    background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+    color: #2c5282;
+  }
+
+  &.alert-warning {
+    background: linear-gradient(135deg, #feebc8 0%, #fbd38d 100%);
+    color: #975a16;
+  }
+}
+
+/* Badges */
+.badge {
+  padding: 0.35rem 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  white-space: nowrap;
+
+  &.bg-primary {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%) !important;
+  }
+
+  &.bg-secondary {
+    background: linear-gradient(135deg, #a0aec0 0%, #718096 100%) !important;
+  }
+}
+
+/* Validation */
+.invalid-feedback {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  color: #e53e3e;
+  display: flex;
+  align-items: center;
+
+  i {
+    margin-right: 0.25rem;
+  }
+}
+
+/* Animation backdrop */
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-height: 700px) {
+  .document-upload-modal {
+    max-height: 90vh; /* Augmente sur petits écrans */
+  }
+
+  .modal-body {
+    max-height: calc(90vh - 180px);
+  }
+
+  .file-upload-area {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .document-upload-modal {
+    width: 98%;
+    max-width: 98%;
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .modal-footer {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .file-upload-area {
+    padding: 1.5rem;
+  }
+
+  .file-preview {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+
+    .file-info {
+      text-align: center;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Modal de détails */
+.document-details-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+
+    .modal-header {
+      border-radius: 12px 12px 0 0;
+      padding: 1.5rem;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      border-radius: 0 0 12px 12px;
+      padding: 1rem 1.5rem;
+    }
+  }
+}
+
+/* Modales d'actions */
+.document-action-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .modal-content {
+    width: 90%;
+    max-width: 500px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+
+    .modal-header {
+      border-bottom: 1px solid #dee2e6;
+      padding: 1rem;
+    }
+
+    .modal-body {
+      padding: 1rem;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #dee2e6;
+      padding: 0.75rem 1rem;
+    }
+  }
+}
+
+/* Badges de statut */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-weight: 500;
+  font-size: 0.875rem;
+
+  &.valid {
+    background: rgba(40, 199, 111, 0.1);
+    color: #28c76f;
+  }
+
+  &.pending {
+    background: rgba(255, 159, 67, 0.1);
+    color: #ff9f43;
+  }
+
+  &.expired {
+    background: rgba(234, 84, 85, 0.1);
+    color: #ea5455;
+  }
+
+  i {
+    font-size: 1.25rem;
+    margin-right: 0.5rem;
+  }
+}
+
+/* Aperçu de fichier */
+.file-icon-display {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+/* Info d'entité */
+.entity-info {
+  .entity-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+  }
+}
+
+/* Animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Arrière-plan modal */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .document-details-modal .modal-content {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .entity-info {
+    flex-direction: column;
+    text-align: center;
+
+    .entity-icon {
+      margin-right: 0;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Modal de modification des métadonnées
+.document-metadata-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050; // Supérieur au backdrop (1040)
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+
+  &.show {
+    display: flex !important;
+  }
+
+  .modal-content {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1051; // Encore plus haut
+  }
+}
+
+// Backdrop pour les modals
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+
+  &.show {
+    display: block !important;
+  }
+}
+
+// Modal de remplacement de fichier
+.document-replace-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+
+  &.show {
+    display: flex !important;
+  }
+
+  .modal-content {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    z-index: 1051;
+  }
+}
+
+// Modal de signature
+.document-sign-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+
+  &.show {
+    display: flex !important;
+  }
+
+  .modal-content {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    z-index: 1051;
+  }
+}
+
+// Modal de suppression/archivage
+.document-delete-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+
+  &.show {
+    display: flex !important;
+  }
+
+  .modal-content {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    z-index: 1051;
   }
 }

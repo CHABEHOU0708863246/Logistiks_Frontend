@@ -563,13 +563,6 @@ export class DocumentsManagement implements OnInit, OnDestroy {
 
         // Recharger les données
         this.loadTiersToComplete();
-
-        // Suggérer la validation si tous documents présents
-        if (this.selectedTier && !this.hasMissingDocuments(this.selectedTier)) {
-          setTimeout(() => {
-            this.suggestValidation(this.selectedTier!);
-          }, 2000);
-        }
       },
       error: (error) => {
         console.error('Erreur upload document:', error);
@@ -595,12 +588,6 @@ export class DocumentsManagement implements OnInit, OnDestroy {
         next: (response) => {
           this.removeFromProcessing(documentId);
           this.loadTiersToComplete();
-
-          // Vérifier si on peut maintenant valider le tier
-          const tier = this.tiers.find((t) => t.id === tierId);
-          if (tier && !this.hasMissingDocuments(tier)) {
-            this.suggestValidation(tier);
-          }
         },
         error: (error) => {
           console.error('Erreur validation document:', error);
@@ -669,22 +656,6 @@ export class DocumentsManagement implements OnInit, OnDestroy {
   // VALIDATION DES TIERS
   // ===========================================================================
 
-  /**
-   * Suggère la validation d'un tier
-   * @param tier - Tier à suggérer
-   */
-  suggestValidation(tier: Tier): void {
-    this.openConfirmDialog(
-      {
-        title: 'Documents complets',
-        message: `${tier.firstName} ${tier.lastName} a maintenant tous ses documents.`,
-        details: 'Souhaitez-vous valider ce tier maintenant ?',
-        confirmText: 'Oui, valider',
-        cancelText: 'Plus tard'
-      },
-      () => this.validateTier(tier.id)
-    );
-  }
 
   /**
    * Valide un tier (change son statut à Actif)

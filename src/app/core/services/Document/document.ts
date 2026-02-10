@@ -163,17 +163,23 @@ export class Document {
   // ============ GESTION DES SIGNATURES ============
 
   /**
-   * Signer un document
-   */
-  signDocument(
-    id: string,
-    signatureData: string
-  ): Observable<ApiResponseData<Document>> {
-    const request: SignDocumentRequest = { signatureData };
-    return this.http
-      .post<ApiResponseData<Document>>(`${this.baseUrl}/${id}/sign`, request)
-      .pipe(catchError(this.handleError));
-  }
+ * Signer un document (VERSION CORRIGÉE)
+ */
+signDocument(
+  id: string,
+  signData: any  // Accepter l'objet complet du formulaire
+): Observable<ApiResponseData<Document>> {
+  // Créer la requête avec tous les champs
+  const request = {
+    signatureData: signData.password || '',
+    signatureType: signData.signatureType || 'digital',
+    comment: signData.comment || ''
+  };
+
+  return this.http
+    .post<ApiResponseData<Document>>(`${this.baseUrl}/${id}/sign`, request)
+    .pipe(catchError(this.handleError));
+}
 
   /**
    * Vérifier si un document nécessite une signature
@@ -409,11 +415,21 @@ export class Document {
   }
 
   /**
-   * Rejeter un document (statut → Rejected)
-   */
-  rejectDocument(id: string, reason: string): Observable<ApiResponseData<Document>> {
-    return this.updateDocumentStatus(id, DocumentStatus.Rejected, reason);
-  }
+ * Rejeter un document (VERSION CORRIGÉE)
+ */
+rejectDocument(
+  id: string,
+  rejectData: any
+): Observable<ApiResponseData<Document>> {
+  const request = {
+    reason: rejectData.reason,
+    notifyOwner: rejectData.notifyOwner !== false
+  };
+
+  return this.http
+    .post<ApiResponseData<Document>>(`${this.baseUrl}/${id}/reject`, request)
+    .pipe(catchError(this.handleError));
+}
 
   /**
    * Mettre un document en attente (statut → Pending)

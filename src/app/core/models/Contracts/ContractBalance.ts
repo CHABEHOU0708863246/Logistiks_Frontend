@@ -1,19 +1,22 @@
-/**
- * Solde du contrat
- */
+// src/app/core/models/Contracts/ContractBalance.ts
+
 export interface ContractBalance {
   contractId: string;
   contractNumber: string;
   totalContractAmount: number;
   totalPaid: number;
+  totalOutstanding: number;
+  currentWeekDue: number;
   lateFees: number;
   totalPayments: number;
   paymentsMade: number;
   paymentsMissed: number;
   paymentsOverdue: number;
-  currentWeekDue: number;
-  nextPaymentDue: Date;
+  nextPaymentDue?: Date;
   lastPaymentDate?: Date;
-  totalOutstanding: number;
-  overdueAmount: number;
+
+  // ✅ AJOUT : Propriétés manquantes pour le calcul
+  weeklyAmount?: number;
+  weeksRemaining?: number;
+  paymentsPending?: number;
 }

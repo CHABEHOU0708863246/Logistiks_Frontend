@@ -4,19 +4,54 @@
     <div class="app-brand">
       <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
       <div>
-        <span class="app-brand-text">Logistik</span>
-        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
+        <span class="app-brand-text">LOGISTIK</span>
       </div>
     </div>
 
     <ul class="menu-inner">
+      <!-- Dashboard -->
       <li class="menu-item" routerLinkActive="active">
         <a [routerLink]="['/dashboard']" class="menu-link">
           <i class="menu-icon bx bx-home-circle"></i>
-          <div>Dashboard</div>
+          <div>Tableau de bord</div>
         </a>
       </li>
 
+      <!-- TABLEAUX DE BORD & ANALYTICS -->
+      <li class="menu-header">
+        <span>TABLEAUX DE BORD</span>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-bar-chart-alt-2"></i>
+          <div>Analytics & Rapports</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/analytics/kpi']" class="menu-link">
+              <div>KPIs Globaux</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/analytics/finance']" class="menu-link">
+              <div>Tableau de bord financier</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/analytics/flotte']" class="menu-link">
+              <div>Statistiques flotte</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/analytics/contrats']" class="menu-link">
+              <div>Performance contrats</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- RÉFÉRENTIELS -->
       <li class="menu-header">
         <span>RÉFÉRENTIELS</span>
       </li>
@@ -35,18 +70,11 @@
           <li class="menu-item" routerLinkActive="active">
             <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
               <div>Documents à valider</div>
-              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-                {{ dashboardStats.documentsPending }}
-              </span>
             </a>
           </li>
           <li class="menu-item" routerLinkActive="active">
             <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
               <div>Gestion des documents</div>
-              <span class="badge badge-info">
-                <i class='bx bx-upload'></i>
-                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-              </span>
             </a>
           </li>
           <li class="menu-item" routerLinkActive="active">
@@ -71,7 +99,7 @@
           </li>
           <li class="menu-item" routerLinkActive="active">
             <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
-              <div>Ajouter vehicule</div>
+              <div>Ajouter véhicule</div>
               <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
             </a>
           </li>
@@ -89,14 +117,10 @@
               <div>Tous les documents</div>
             </a>
           </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-              <div>Factures fournisseurs</div>
-            </a>
-          </li>
         </ul>
       </li>
 
+      <!-- CŒUR MÉTIER -->
       <li class="menu-header">
         <span>CŒUR MÉTIER</span>
       </li>
@@ -113,9 +137,13 @@
             </a>
           </li>
           <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-              <div>Nouveau contrat</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+            <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
+              <div>Statistiques contrats</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats/payment']" class="menu-link">
+              <div>Liste des paiements</div>
             </a>
           </li>
         </ul>
@@ -128,10 +156,67 @@
         </a>
       </li>
 
+      <!-- FINANCE & COMPTABILITÉ -->
       <li class="menu-header">
         <span>FINANCE & COMPTABILITÉ</span>
       </li>
 
+      <!-- CHARGES & DÉPENSES -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-money"></i>
+          <div>Charges & Dépenses</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/charges/vehicules']" class="menu-link">
+              <div>Charges véhicules</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/charges/generales']" class="menu-link">
+              <div>Charges générales</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/charges/fournisseurs']" class="menu-link">
+              <div>Paiement fournisseurs</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/charges/affectation-compte']" class="menu-link">
+              <div>Affectation compte</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- MOUVEMENTS INTERNES -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-transfer"></i>
+          <div>Mouvements Internes</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/mouvements/transferts']" class="menu-link">
+              <div>Transferts entre comptes</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/mouvements/tracabilite']" class="menu-link">
+              <div>Traçabilité complète</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/mouvements/historique']" class="menu-link">
+              <div>Historique mouvements</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- COMPTES & PAIEMENTS -->
       <li class="menu-item" routerLinkActive="active open">
         <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
           <i class="menu-icon bx bx-credit-card"></i>
@@ -168,18 +253,79 @@
             </a>
           </li>
           <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-              <div>En retard</div><span class="badge badge-danger">5</span>
+            <a [routerLink]="['/dashboard/finance/paiements/report']" class="menu-link">
+              <div>Rapports</div>
             </a>
           </li>
           <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-              <div>En attente</div><span class="badge badge-warning">8</span>
+            <a [routerLink]="['/dashboard/finance/paiements/methods']" class="menu-link">
+              <div>Méthodes paiement</div>
             </a>
           </li>
         </ul>
       </li>
 
+      <!-- RENTABILITÉ & ROI -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-trending-up"></i>
+          <div>Rentabilité & ROI</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/rentabilite/roi-vehicule']" class="menu-link">
+              <div>ROI par véhicule</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="menu-link">
+              <div>Comparaisons périodes</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/rentabilite/historique']" class="menu-link">
+              <div>Historique rentabilité</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/rentabilite/rapports']" class="menu-link">
+              <div>Rapports détaillés</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- CALCULS FINANCIERS (Module technique avec UI minimale) -->
+      <li class="menu-item" routerLinkActive="active open">
+        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+          <i class="menu-icon bx bx-calculator"></i>
+          <div>Calculs Financiers</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/calculs/agregation']" class="menu-link">
+              <div>Agrégation loyers/charges</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/calculs/resultats-nets']" class="menu-link">
+              <div>Résultats nets</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/calculs/base-roi']" class="menu-link">
+              <div>Base de calcul ROI</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/calculs/parametres']" class="menu-link">
+              <div>Paramètres calculs</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- ADMINISTRATION -->
       <li class="menu-header">
         <span>ADMINISTRATION</span>
       </li>
@@ -196,13 +342,8 @@
             </a>
           </li>
           <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-              <div>Détail utilisateur</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
             <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-              <div>Formulaire utilisateur</div>
+              <div>Créer un utilisateur</div>
               <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
             </a>
           </li>
@@ -214,26 +355,6 @@
           <li class="menu-item" routerLinkActive="active">
             <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
               <div>Permissions</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-              <div>Profil utilisateur</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-              <div>Sessions</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-              <div>Activité</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-              <div>Groupes</div>
             </a>
           </li>
         </ul>
@@ -255,9 +376,32 @@
               <div>Types de véhicules</div>
             </a>
           </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/finance']" class="menu-link">
+              <div>Paramètres financiers</div>
+            </a>
+          </li>
+          <li class="menu-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/notifications']" class="menu-link">
+              <div>Notifications & Alertes</div>
+            </a>
+          </li>
         </ul>
       </li>
 
+      <!-- À PROPOS & INFORMATIONS -->
+      <li class="menu-header">
+        <span>À PROPOS</span>
+      </li>
+
+      <li class="menu-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/about']" class="menu-link">
+          <i class="menu-icon bx bx-info-circle"></i>
+          <div>À propos de Logistik</div>
+        </a>
+      </li>
+
+      <!-- DÉCONNEXION -->
       <li class="menu-item" style="margin-top: 2rem;">
         <a class="menu-link" style="cursor: pointer;" (click)="logout()">
           <i class="menu-icon bx bx-log-out"></i>
@@ -366,7 +510,7 @@
           <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h5 class="card-title mb-0">
-                <i class='bx bx-time me-2'></i>Réservations actives
+                <i class='bx bx-time me-2'></i>Locations actives
                 <span class="badge bg-primary ms-2">{{ activeReservations.length }}</span>
               </h5>
               <button class="btn btn-sm btn-outline-primary" (click)="loadActiveReservations()">
@@ -376,7 +520,7 @@
             <div class="card-body">
               <div *ngIf="reservationsLoading" class="text-center py-3">
                 <div class="spinner-border spinner-border-sm text-primary"></div>
-                <p class="mt-2 mb-0">Chargement des réservations...</p>
+                <p class="mt-2 mb-0">Chargement des locations...</p>
               </div>
 
               <div *ngIf="!reservationsLoading" class="table-responsive">
@@ -441,11 +585,12 @@
                       <td>
                         <div class="btn-group btn-group-sm" role="group">
                           <button class="btn btn-outline-success" *ngIf="reservation.status === 'Active'"
-                            (click)="openConfirmReservationModal(reservation)" title="Confirmer la réservation">
+                            (click)="openConfirmReservationModal(reservation)"
+                            title="Confirmer la Location (Brouillon)">
                             <i class='bx bx-check'></i>
                           </button>
                           <button class="btn btn-outline-danger" *ngIf="reservation.status === 'Active'"
-                            (click)="openCancelReservationModal(reservation)" title="Annuler la réservation">
+                            (click)="openCancelReservationModal(reservation)" title="Annuler la Location">
                             <i class='bx bx-x'></i>
                           </button>
                           <button class="btn btn-outline-info" (click)="showReservationDetails(reservation)"
@@ -685,7 +830,7 @@
                                 <li>
                                   <a class="dropdown-item item-info" (click)="openReservationModal(vehicle)">
                                     <i class='bx bx-time'></i>
-                                    Réserver
+                                    Louer
                                   </a>
                                 </li>
                                 <li>
@@ -1111,113 +1256,438 @@
         </div>
       </div>
 
-      <!-- MODAL DE RÉSERVATION -->
-      <div class="modal-backdrop" *ngIf="showReservationModal" (click)="closeReservationModal()"></div>
+      <!-- Modal pour la saisie de la raison du changement de statut -->
+      <div class="modal-backdrop" *ngIf="showReasonModal" (click)="closeReasonModal()"></div>
 
-      <div class="modal" *ngIf="showReservationModal" [class.show]="showReservationModal">
-        <div class="modal-dialog modal-dialog-centered">
+      <div class="modal" *ngIf="showReasonModal" [class.show]="showReasonModal">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content" (click)="$event.stopPropagation()">
-            <div class="modal-header bg-primary text-white">
-              <h5 class="modal-title">
-                <i class='bx bx-time me-2'></i>Réserver un véhicule
-              </h5>
-              <button type="button" class="btn-close btn-close-white" (click)="closeReservationModal()"></button>
+
+            <!-- HEADER DU MODAL - Adapté au type de changement -->
+            <div class="modal-header" [ngClass]="{
+        'bg-warning': pendingStatus === VehicleStatus.Maintenance,
+        'bg-danger': pendingStatus === VehicleStatus.OutOfService,
+        'bg-success': pendingStatus === VehicleStatus.Available
+      }">
+              <div class="d-flex align-items-center w-100">
+                <div class="modal-icon">
+                  <i [class]="getStatusIcon(pendingStatus) + ' me-3'"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <h5 class="modal-title mb-1">
+                    {{ getModalTitle() }}
+                  </h5>
+                  <p class="mb-0 fs-sm text-white opacity-75">
+                    {{ getModalSubtitle() }}
+                  </p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" (click)="closeReasonModal()"></button>
+              </div>
             </div>
 
+            <!-- BODY DU MODAL -->
             <div class="modal-body">
-              <div *ngIf="reservationVehicle" class="alert alert-info mb-3">
-                <i class='bx bx-info-circle me-2'></i>
-                Vous allez réserver : <strong>{{ reservationVehicle.code }}</strong> ({{ reservationVehicle.plateNumber
-                }})
-              </div>
 
-              <form [formGroup]="reservationForm" (ngSubmit)="onReservationSubmit()">
-                <!-- Véhicule (caché) -->
-                <input type="hidden" formControlName="vehicleId">
-
-                <!-- Client -->
-                <!-- Client -->
-                <div class="mb-3">
-                  <label class="form-label">Client / Tiers *</label>
-
-                  <div class="position-relative">
-                    <input type="text" class="form-control"
-                      placeholder="Rechercher un client par nom, téléphone ou numéro..."
-                      (input)="filterTiers($event.target.value)" [disabled]="tiersLoading">
-
-                    <div *ngIf="tiersLoading" class="position-absolute top-50 end-0 translate-middle-y me-3">
-                      <span class="spinner-border spinner-border-sm text-primary"></span>
+              <!-- CARTE INFORMATIVE DU VÉHICULE -->
+              <div class="vehicle-card-reason mb-4">
+                <div class="card border-0 shadow-sm">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center">
+                      <div class="vehicle-avatar me-3">
+                        <i [class]="getVehicleIcon(pendingVehicle?.type)" class="fs-2"></i>
+                      </div>
+                      <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ pendingVehicle?.brand }} {{ pendingVehicle?.model }}</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                          <span class="badge bg-secondary">{{ pendingVehicle?.code }}</span>
+                          <span class="badge" [ngClass]="getTypeBadgeClass(pendingVehicle?.type)">
+                            {{ getTypeText(pendingVehicle?.type) }}
+                          </span>
+                          <span class="badge bg-dark">{{ pendingVehicle?.plateNumber }}</span>
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <div class="status-indicator" [ngClass]="'status-' + pendingVehicle?.status">
+                          <i [class]="getStatusIcon(pendingVehicle?.status)"></i>
+                          <span>{{ getStatusText(pendingVehicle?.status) }}</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">Vers {{ getStatusText(pendingStatus) }}</small>
+                      </div>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  <select class="form-select mt-2" formControlName="customerId" size="5" [disabled]="tiersLoading">
-                    <option value="" disabled>-- Sélectionnez un client --</option>
-                    <option *ngFor="let tier of filteredTiers" [value]="tier.id">
-                      {{ tiersService.getFullName(tier) }} - {{ tier.phone }}
-                      <span *ngIf="tier.tierNumber">({{ tier.tierNumber }})</span>
-                    </option>
-                  </select>
+              <!-- ALERTES ET AVERTISSEMENTS -->
+              <div *ngIf="showWarnings()" class="alert-section mb-4">
+                <div class="alert alert-warning border-0 shadow-sm">
+                  <div class="d-flex align-items-start">
+                    <i class='bx bx-error-circle fs-4 me-3'></i>
+                    <div>
+                      <h6 class="alert-heading mb-2">⚠️ Avertissements importants</h6>
+                      <ul class="mb-0 ps-3">
+                        <li *ngIf="pendingVehicle?.status === VehicleStatus.Rented">
+                          Ce véhicule est actuellement <strong>loué</strong>. Terminez d'abord la location.
+                        </li>
+                        <li *ngIf="pendingVehicle?.status === VehicleStatus.Reserved">
+                          Ce véhicule est <strong>réservé</strong>. Annulez d'abord la réservation.
+                        </li>
+                        <li *ngIf="pendingVehicle?.isInsuranceExpired">
+                          L'<strong>assurance est expirée</strong>. Le véhicule ne pourra pas être loué.
+                        </li>
+                        <li *ngIf="pendingStatus === VehicleStatus.OutOfService">
+                          Cette action est <strong>définitive</strong> et nécessite une justification détaillée.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-                  <div class="form-text">
-                    <i class='bx bx-info-circle me-1'></i>
-                    Sélectionnez le client dans la liste ci-dessus
+              <!-- FORMULAIRE DE SAISIE -->
+              <form [formGroup]="reasonForm" (ngSubmit)="submitReason()">
+
+                <!-- SECTION RAISON PRINCIPALE -->
+                <div class="reason-section mb-4">
+                  <label class="form-label fw-semibold mb-3">
+                    <i class='bx bx-edit me-2'></i>
+                    {{ getReasonLabel() }}
+                    <span class="text-danger">*</span>
+                  </label>
+
+                  <!-- Saisie avec placeholder contextuel -->
+                  <textarea class="form-control form-control-lg" formControlName="reason" rows="4"
+                    [placeholder]="getPlaceholderText()"
+                    [class.is-invalid]="reasonSubmitted && reasonForm.get('reason')?.invalid"
+                    [attr.maxlength]="500"></textarea>
+
+                  <!-- Compteur de caractères -->
+                  <div class="d-flex justify-content-between mt-2">
+                    <small class="text-muted">
+                      <i class='bx bx-info-circle me-1'></i>
+                      {{ getCharacterHint() }}
+                    </small>
+                    <small [ngClass]="{
+                'text-success': reasonForm.get('reason')?.value?.length >= 20,
+                'text-warning': reasonForm.get('reason')?.value?.length < 20 && reasonForm.get('reason')?.value?.length > 0,
+                'text-danger': reasonForm.get('reason')?.invalid && reasonSubmitted
+              }">
+                      {{ reasonForm.get('reason')?.value?.length || 0 }} / 500 caractères
+                    </small>
                   </div>
 
-                  <div *ngIf="rf['customerId'].invalid && reservationSubmitted" class="text-danger small">
+                  <!-- Messages d'erreur -->
+                  <div *ngIf="reasonSubmitted && reasonForm.get('reason')?.invalid" class="invalid-feedback d-block">
                     <i class='bx bx-error-circle me-1'></i>
-                    Veuillez sélectionner un client
-                  </div>
-
-                  <!-- Affichage du client sélectionné -->
-                  <!-- Affichage du client sélectionné -->
-                  <div *ngIf="rf['customerId'].value && getSelectedTier()" class="alert alert-success mt-2 py-2">
-                    <i class='bx bx-check-circle me-2'></i>
-                    <strong>Client sélectionné :</strong>
-                    {{ getSelectedTierName() }}
-                  </div>
-                </div>
-
-                <!-- Date de début -->
-                <div class="mb-3">
-                  <label class="form-label">Date de début *</label>
-                  <input type="date" class="form-control" formControlName="expectedStartDate"
-                    [min]="today | date:'yyyy-MM-dd'">
-                  <div *ngIf="rf['expectedStartDate'].invalid && reservationSubmitted" class="text-danger small">
-                    Date invalide
+                    <span *ngIf="reasonForm.get('reason')?.errors?.['required']">
+                      Veuillez saisir la raison du changement.
+                    </span>
+                    <span *ngIf="reasonForm.get('reason')?.errors?.['minlength']">
+                      Minimum {{ reasonForm.get('reason')?.errors?.['minlength']?.requiredLength }} caractères requis.
+                    </span>
+                    <span *ngIf="reasonForm.get('reason')?.errors?.['maxlength']">
+                      Maximum 500 caractères autorisés.
+                    </span>
                   </div>
                 </div>
 
-                <!-- Durée -->
-                <div class="mb-3">
-                  <label class="form-label">Durée de réservation (jours) *</label>
-                  <input type="number" class="form-control" formControlName="reservationDurationDays" min="1" max="30"
-                    step="1">
-                  <div class="form-text">
-                    Entre 1 et 30 jours. Défaut: 7 jours
-                  </div>
-                  <div *ngIf="rf['reservationDurationDays'].invalid && reservationSubmitted" class="text-danger small">
-                    Durée invalide (1-30 jours)
+                <!-- SECTION CATÉGORIES (Optionnel pour maintenance) -->
+                <div *ngIf="pendingStatus === VehicleStatus.Maintenance" class="categories-section mb-4">
+                  <label class="form-label fw-semibold mb-3">
+                    <i class='bx bx-category me-2'></i>
+                    Catégorie de maintenance
+                    <span class="text-muted">(Optionnel)</span>
+                  </label>
+
+                  <div class="row g-3">
+                    <div class="col-md-6" *ngFor="let category of maintenanceCategories">
+                      <div class="form-check card-category">
+                        <input class="form-check-input" type="radio" name="maintenanceCategory" [value]="category.value"
+                          [id]="'category-' + category.value" formControlName="category">
+                        <label class="form-check-label w-100" [for]="'category-' + category.value">
+                          <div class="category-card p-3 rounded border">
+                            <i [class]="category.icon + ' fs-4 mb-2'"></i>
+                            <h6 class="mb-1">{{ category.label }}</h6>
+                            <small class="text-muted">{{ category.description }}</small>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Notes -->
-                <div class="mb-3">
-                  <label class="form-label">Notes (optionnel)</label>
-                  <textarea class="form-control" formControlName="notes" rows="3"
-                    placeholder="Ex: Client Bamba Keita - Téléphone: 07000007"></textarea>
+                <!-- SECTION DATE ESTIMÉE (Pour maintenance) -->
+                <div *ngIf="pendingStatus === VehicleStatus.Maintenance" class="date-section mb-4">
+                  <label class="form-label fw-semibold mb-3">
+                    <i class='bx bx-calendar me-2'></i>
+                    Date de retour estimée
+                    <span class="text-muted">(Optionnel)</span>
+                  </label>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <input type="date" class="form-control" formControlName="estimatedReturnDate"
+                        [min]="today | date:'yyyy-MM-dd'">
+                      <small class="text-muted mt-1 d-block">
+                        Permet de planifier le retour en service
+                      </small>
+                    </div>
+                  </div>
                 </div>
 
+                <!-- SECTION DOCUMENTATION (Pour hors service) -->
+                <div *ngIf="pendingStatus === VehicleStatus.OutOfService" class="documentation-section mb-4">
+                  <label class="form-label fw-semibold mb-3">
+                    <i class='bx bx-paperclip me-2'></i>
+                    Documentation complémentaire
+                    <span class="text-muted">(Recommandé)</span>
+                  </label>
+
+                  <div class="card border-dashed">
+                    <div class="card-body text-center p-4">
+                      <i class='bx bx-cloud-upload fs-1 text-muted mb-3'></i>
+                      <h6 class="mb-2">Joindre des documents justificatifs</h6>
+                      <p class="text-muted fs-sm mb-3">
+                        Photos, rapports techniques, devis de réparation, etc.
+                      </p>
+                      <button type="button" class="btn btn-outline-primary btn-sm">
+                        <i class='bx bx-plus me-1'></i> Ajouter des fichiers
+                      </button>
+                      <small class="d-block text-muted mt-2">
+                        Formats acceptés : PDF, JPG, PNG (max 10MB)
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RÉSUMÉ ET CONFIRMATION -->
+                <div class="summary-section mb-4">
+                  <div class="card border-0 bg-light">
+                    <div class="card-body">
+                      <h6 class="card-title mb-3">
+                        <i class='bx bx-check-circle me-2 text-success'></i>
+                        Récapitulatif
+                      </h6>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Véhicule</small>
+                          <strong>{{ pendingVehicle?.code }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Changement de statut</small>
+                          <div class="d-flex align-items-center">
+                            <span class="badge me-2"
+                              [ngClass]="getStatusBadgeClass(pendingVehicle?.status ?? VehicleStatus.Available)">
+                              {{ getStatusText(pendingVehicle?.status ?? VehicleStatus.Available) }}
+                            </span>
+                            <i class='bx bx-right-arrow-alt text-muted mx-1'></i>
+                            <span class="badge"
+                              [ngClass]="getStatusBadgeClass(pendingStatus ?? VehicleStatus.Available)">
+                              {{ getStatusText(pendingStatus ?? VehicleStatus.Available) }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- FOOTER DU MODAL -->
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" (click)="closeReservationModal()">
-                    Annuler
-                  </button>
-                  <button type="submit" class="btn btn-primary" [disabled]="reservationLoading">
-                    <span *ngIf="reservationLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-check me-1'></i> Confirmer la réservation
-                  </button>
+                  <div class="d-flex justify-content-between w-100 align-items-center">
+                    <div>
+                      <small class="text-muted">
+                        <i class='bx bx-time me-1'></i>
+                        Action enregistrée par {{ userName }} le {{ today | date:'dd/MM/yyyy à HH:mm' }}
+                      </small>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-outline-secondary" (click)="closeReasonModal()">
+                        <i class='bx bx-x me-1'></i> Annuler
+                      </button>
+                      <button type="submit" class="btn" [ngClass]="{
+                  'btn-warning': pendingStatus === VehicleStatus.Maintenance,
+                  'btn-danger': pendingStatus === VehicleStatus.OutOfService,
+                  'btn-success': pendingStatus === VehicleStatus.Available
+                }" [disabled]="reasonLoading">
+                        <span *ngIf="reasonLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i [class]="getSubmitIcon() + ' me-1'" *ngIf="!reasonLoading"></i>
+                        {{ getSubmitButtonText() }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL DE RÉSERVATION -->
+      <div class="modal-backdrop" *ngIf="showReservationModal" (click)="closeReservationModal()"></div>
+
+      <div class="vehicle-reservation-modal" *ngIf="showReservationModal" [class.show]="showReservationModal">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+
+          <!-- HEADER -->
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class='bx bx-time me-2'></i>
+              Louer un véhicule
+            </h5>
+            <button type="button" class="btn-close" (click)="closeReservationModal()" aria-label="Close">
+              <i class='bx bx-x'></i>
+            </button>
+          </div>
+
+          <!-- BODY -->
+          <div class="modal-body">
+            <!-- VÉHICULE SÉLECTIONNÉ -->
+            <div *ngIf="reservationVehicle" class="vehicle-header mb-4">
+              <div class="d-flex align-items-center gap-3">
+                <div class="vehicle-icon">
+                  <i [class]="getVehicleIcon(reservationVehicle.type)"></i>
+                </div>
+                <div>
+                  <h4 class="mb-1">{{ reservationVehicle.brand }} {{ reservationVehicle.model }}</h4>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">{{ reservationVehicle.code }}</span>
+                    <span class="badge" [ngClass]="getTypeBadgeClass(reservationVehicle.type)">
+                      {{ getTypeText(reservationVehicle.type) }}
+                    </span>
+                    <span class="text-muted">{{ reservationVehicle.plateNumber }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- NOTIFICATION D'ERREUR -->
+            <div *ngIf="reservationSubmitted && reservationForm.invalid" class="alert alert-danger">
+              <i class='bx bx-error-circle me-2'></i>
+              Veuillez corriger les erreurs dans le formulaire
+            </div>
+
+            <form [formGroup]="reservationForm" (ngSubmit)="onReservationSubmit()">
+              <!-- Véhicule (caché) -->
+              <input type="hidden" formControlName="vehicleId">
+
+              <!-- INFORMATIONS DE RÉSERVATION -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-user me-2'></i> Informations client</h6>
+                </div>
+                <div class="card-body">
+                  <!-- Client -->
+                  <div class="mb-3">
+                    <label class="form-label">Client / Tiers *</label>
+
+                    <div class="position-relative">
+                      <input type="text" class="form-control"
+                        placeholder="Rechercher un client par nom, téléphone ou numéro..."
+                        (input)="filterTiers($event.target.value)" [disabled]="tiersLoading"
+                        [class.is-invalid]="reservationSubmitted && rf['customerId'].invalid">
+
+                      <div *ngIf="tiersLoading" class="position-absolute top-50 end-0 translate-middle-y me-3">
+                        <span class="spinner-border spinner-border-sm text-primary"></span>
+                      </div>
+                    </div>
+
+                    <select class="form-select mt-2" formControlName="customerId" size="5" [disabled]="tiersLoading">
+                      <option value="" disabled>-- Sélectionnez un client --</option>
+                      <option *ngFor="let tier of filteredTiers" [value]="tier.id">
+                        {{ tiersService.getFullName(tier) }} - {{ tier.phone }}
+                        <span *ngIf="tier.tierNumber">({{ tier.tierNumber }})</span>
+                      </option>
+                    </select>
+
+                    <div class="form-text text-muted">
+                      <i class='bx bx-info-circle me-1'></i>
+                      Sélectionnez le client dans la liste ci-dessus
+                    </div>
+
+                    <div *ngIf="reservationSubmitted && rf['customerId'].invalid" class="invalid-feedback d-block">
+                      <i class='bx bx-error-circle me-1'></i>
+                      Veuillez sélectionner un client
+                    </div>
+
+                    <!-- Affichage du client sélectionné -->
+                    <div *ngIf="rf['customerId'].value && getSelectedTier()" class="alert alert-success mt-2 py-2">
+                      <i class='bx bx-check-circle me-2'></i>
+                      <strong>Client sélectionné :</strong>
+                      {{ getSelectedTierName() }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DATES ET DURÉE -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-calendar me-2'></i> Période de réservation</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <!-- Date de début -->
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Date de début *</label>
+                      <input type="date" class="form-control" formControlName="expectedStartDate"
+                        [min]="today | date:'yyyy-MM-dd'"
+                        [class.is-invalid]="reservationSubmitted && rf['expectedStartDate'].invalid">
+                      <div *ngIf="reservationSubmitted && rf['expectedStartDate'].invalid" class="invalid-feedback">
+                        Date invalide
+                      </div>
+                    </div>
+
+                    <!-- Durée -->
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Durée (jours) *</label>
+                      <input type="number" class="form-control" formControlName="reservationDurationDays" min="1"
+                        max="30" step="1"
+                        [class.is-invalid]="reservationSubmitted && rf['reservationDurationDays'].invalid">
+                      <div class="form-text text-muted">
+                        Entre 1 et 30 jours. Défaut: 7 jours
+                      </div>
+                      <div *ngIf="reservationSubmitted && rf['reservationDurationDays'].invalid"
+                        class="invalid-feedback">
+                        Durée invalide (1-30 jours)
+                      </div>
+                    </div>
+
+                    <!-- Date de fin (calculée, lecture seule) -->
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Date de fin estimée</label>
+                      <input type="date" class="form-control" [value]="calculateEndDate()" readonly>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTES -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class='bx bx-note me-2'></i> Notes et informations complémentaires</h6>
+                </div>
+                <div class="card-body">
+                  <textarea class="form-control" formControlName="notes" rows="3"
+                    placeholder="Ex: Client Bamba Keita - Téléphone: 07000007 - Informations spéciales..."></textarea>
+                  <div class="form-text text-muted mt-2">
+                    <i class='bx bx-info-circle me-1'></i>
+                    Ces notes seront visibles dans les détails de la réservation
+                  </div>
+                </div>
+              </div>
+
+              <!-- FOOTER -->
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeReservationModal()">
+                  <i class='bx bx-x me-1'></i> Annuler
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="reservationLoading">
+                  <span *ngIf="reservationLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class='bx bx-check me-1'></i> Confirmer la location
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -1230,7 +1700,7 @@
           <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header bg-warning text-dark">
               <h5 class="modal-title">
-                <i class='bx bx-x-circle me-2'></i>Annuler une réservation
+                <i class='bx bx-x-circle me-2'></i>Annuler une location
               </h5>
               <button type="button" class="btn-close" (click)="showCancelReservationModal = false"></button>
             </div>
@@ -1255,7 +1725,7 @@
                   </button>
                   <button type="submit" class="btn btn-danger" [disabled]="cancelReservationLoading">
                     <span *ngIf="cancelReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-trash me-1'></i> Annuler la réservation
+                    <i class='bx bx-trash me-1'></i> Annuler la Location
                   </button>
                 </div>
               </form>
@@ -1273,7 +1743,7 @@
           <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header bg-success text-white">
               <h5 class="modal-title">
-                <i class='bx bx-check-circle me-2'></i>Confirmer une réservation
+                <i class='bx bx-check-circle me-2'></i>Confirmer une location
               </h5>
               <button type="button" class="btn-close btn-close-white"
                 (click)="showConfirmReservationModal = false"></button>
@@ -1314,7 +1784,7 @@
                     <span class="input-group-text">
                       <i class='bx bx-search'></i>
                     </span>
-                    <input type="text" class="form-control" placeholder="Rechercher un contrat par numéro ou ID..."
+                    <input type="text" class="form-control" placeholder="Rechercher un contrat par numéro..."
                       (input)="filterContracts($event.target.value)">
                   </div>
 
@@ -1348,11 +1818,6 @@
                           <span class="badge" [ngClass]="getContractStatusBadge(contract.status)">
                             {{ getContractStatusText(contract.status) }}
                           </span>
-                          <div class="mt-2">
-                            <small class="text-muted">
-                              ID: {{ contract.id.substring(0, 12) }}...
-                            </small>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -1399,7 +1864,7 @@
                   </button>
                   <button type="submit" class="btn btn-success" [disabled]="confirmReservationLoading">
                     <span *ngIf="confirmReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-link me-1'></i> Confirmer et lier la réservation
+                    <i class='bx bx-link me-1'></i> Confirmer et lier la location
                   </button>
                 </div>
               </form>

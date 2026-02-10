@@ -6,7 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 // Modèles
 import { PaginatedResponse } from '../../../../../core/models/Common/PaginatedResponse';
-import { TierRoleType, TierStatus } from '../../../../../core/models/Enums/Logistiks-enums';
+import { DocumentStatus, TierRoleType, TierStatus } from '../../../../../core/models/Enums/Logistiks-enums';
 import { Tier } from '../../../../../core/models/Tiers/Tiers';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 
@@ -17,13 +17,12 @@ import { Token } from '../../../../../core/services/Token/token';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 
 // Composants
-import { Sidebar } from "../../../../../core/components/sidebar/sidebar";
 import { ConfirmDialog } from "../../../../../core/components/confirm-dialog/confirm-dialog";
 import { ConfirmDialogWithInput } from "../../../../../core/components/confirm-dialog-with-input/confirm-dialog-with-input";
 
 // Environnement
 import { environment } from '../../../../../../environments/environment.development';
-
+import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 /**
  * Composant de gestion de la liste des tiers (clients, fournisseurs, partenaires)
  * @class TiersList
@@ -37,8 +36,9 @@ import { environment } from '../../../../../../environments/environment.developm
     FormsModule,
     RouterModule,
     ConfirmDialog,
-    ConfirmDialogWithInput
-  ],
+    ConfirmDialogWithInput,
+    NotificationComponent
+],
   templateUrl: './tiers-list.html',
   styleUrls: ['./tiers-list.scss']
 })
@@ -50,7 +50,8 @@ export class TiersList implements OnInit, OnDestroy {
   /** Enums exportés pour utilisation dans le template */
   TierStatus = TierStatus;
   TierRoleType = TierRoleType;
-
+  DocumentType = DocumentType;
+  DocumentStatus = DocumentStatus;
   /** Options de pagination disponibles */
   pageSizeOptions = [10, 25, 50, 100];
 
@@ -584,15 +585,15 @@ export class TiersList implements OnInit, OnDestroy {
     this.openBlockDialog(tier);
   }
 
-  /**
- * Active un tier
+/**
+ * Active un tier directement sans vérification préalable
  * @param tier - Tier à activer
  */
 activateTier(tier: Tier): void {
   this.openConfirmDialog(
     'Activation du tier',
     `Voulez-vous activer le tier ${tier.tierNumber} ?`,
-    '',
+    'Le tier sera activé même si certains documents sont manquants.',
     () => {
       this.tiersService.activateTier(tier.id)
         .pipe(takeUntil(this.destroy$))
@@ -600,52 +601,53 @@ activateTier(tier: Tier): void {
           next: (response) => {
             if (response.success) {
               this.notificationService.success(
-                'Tier activé',
+                '✅ Tier activé',
                 `Le tier ${tier.tierNumber} a été activé avec succès`
               );
               this.loadTiers(this.pagination.currentPage);
             } else {
-              // Gérer les erreurs spécifiques de l'API
+              // ✅ AMÉLIORATION : Afficher les erreurs spécifiques
               let errorMessage = response.message || 'Échec de l\'activation';
+              let errorDetails = '';
 
-              // Si l'API retourne des erreurs spécifiques (comme documents manquants)
               if (response.errors?.length) {
-                errorMessage += `:\n${response.errors.join('\n')}`;
+                errorDetails = response.errors.join('\n');
+                // Afficher le message d'erreur sans HTML
+                this.notificationService.error(
+                  errorMessage,
+                  errorDetails
+                );
+              } else {
+                this.notificationService.error('Erreur d\'activation', errorMessage);
               }
-
-              this.notificationService.error('Erreur d\'activation', errorMessage);
             }
           },
           error: (error) => {
-            // Extraire le message d'erreur de l'API
+            // ✅ AMÉLIORATION : Extraire proprement les erreurs de l'API
             const apiError = error.error;
-            let message = 'Erreur inconnue lors de l\'activation';
+            let title = 'Erreur d\'activation';
+            let message = apiError?.message || 'Erreur lors de l\'activation verifiez les documents requis si tous ont été fournis et validés';
 
-            if (apiError?.message) {
-              message = apiError.message;
-            } else if (error.message) {
-              message = error.message;
-            }
-
-            // Vérifier si l'erreur concerne les documents
-            if (message.toLowerCase().includes('document') ||
-                message.toLowerCase().includes('valider') ||
-                message.toLowerCase().includes('validation')) {
-              message = `Impossible d'activer le tier. ${message}`;
-            }
-
-            // Ajouter les erreurs supplémentaires si disponibles
+            // Construire le message d'erreur détaillé (sans HTML)
             if (apiError?.errors?.length) {
-              message += `:\n${apiError.errors.join('\n')}`;
+              title = 'Documents manquants ou invalides';
+              message = `${apiError.message || 'Impossible d\'activer le tier'}\n\n`;
+              message += 'Documents manquants :\n';
+              message += apiError.errors.map((err: string) => `• ${err}`).join('\n');
+              message += '\n\nVeuillez ajouter les documents requis avant de réessayer.';
             }
 
-            this.notificationService.error('Erreur d\'activation', message);
-            console.error('Erreur d\'activation:', error);
+            // Afficher la notification (sans options supplémentaires)
+            this.notificationService.error(title, message);
+
+            console.error('Erreur d\'activation:', apiError);
           }
         });
     }
   );
 }
+
+
 
 // ===========================================================================
 // VÉRIFICATION D'ÉLIGIBILITÉ ET ÉTAT DES DOCUMENTS
@@ -686,41 +688,13 @@ checkActivationEligibility(tier: Tier): void {
 }
 
 /**
- * Vérifie l'état des documents d'un tier
+ * Vérifie si le tier a des documents requis
  * @param tier - Tier à vérifier
- * @returns État des documents
+ * @returns True si des documents sont requis
  */
-getDocumentsStatus(tier: Tier): { valid: boolean; missing: string[] } {
-  // Définir les documents obligatoires selon le type de tier
+hasRequiredDocuments(tier: Tier): boolean {
   const requiredDocuments = this.getRequiredDocumentsForTier(tier);
-
-  const missingDocs: string[] = [];
-  let hasInvalidDocs = false;
-
-  // Vérifier chaque document obligatoire
-  if (tier.documents && tier.documents.length > 0) {
-    requiredDocuments.forEach(reqDoc => {
-      // const foundDoc = tier.documents.find(d =>
-      //   d.type === reqDoc.type && d.status === 'Validated'
-      // );
-
-      // if (!foundDoc) {
-      //   missingDocs.push(reqDoc.name);
-      //   hasInvalidDocs = true;
-      // }
-    });
-  } else {
-    // Aucun document
-    requiredDocuments.forEach(reqDoc => {
-      missingDocs.push(reqDoc.name);
-    });
-    hasInvalidDocs = true;
-  }
-
-  return {
-    valid: !hasInvalidDocs,
-    missing: missingDocs
-  };
+  return requiredDocuments.length > 0;
 }
 
 /**
@@ -728,30 +702,55 @@ getDocumentsStatus(tier: Tier): { valid: boolean; missing: string[] } {
  * @param tier - Tier
  * @returns Liste des documents obligatoires
  */
-private getRequiredDocumentsForTier(tier: Tier): Array<{type: string, name: string}> {
-  const baseDocuments = [
-    { type: 'IDENTITY', name: 'Pièce d\'identité' },
-    { type: 'ADDRESS_PROOF', name: 'Justificatif de domicile' }
-  ];
-
-  // Ajouter des documents spécifiques selon les rôles
+private getRequiredDocumentsForTier(tier: Tier): Array<{type: DocumentType, name: string}> {
+  const documents: Array<{type: DocumentType, name: string}> = [];
   const activeRoles = this.getActiveRoles(tier);
 
-  if (activeRoles.includes(TierRoleType.ClientParticulier)) {
-    baseDocuments.push(
-      { type: 'DRIVER_LICENSE', name: 'Permis de conduire' },
-      { type: 'INSURANCE', name: 'Attestation d\'assurance' }
-    );
+  // Pour les clients particuliers sans autres rôles, aucun document obligatoire
+  if (activeRoles.length === 1 && activeRoles.includes(TierRoleType.ClientParticulier)) {
+    return []; // Aucun document requis
   }
 
-  if (activeRoles.includes(TierRoleType.Supplier)) {
-    baseDocuments.push(
-      { type: 'BUSINESS_REGISTRATION', name: 'Extrait Kbis' },
-      { type: 'BANK_DETAILS', name: 'RIB' }
-    );
+  return documents;
+}
+
+/**
+ * Vérifie l'état des documents d'un tier
+ * @param tier - Tier à vérifier
+ * @returns État des documents
+ */
+getDocumentsStatus(tier: Tier): { valid: boolean; missing: string[] } {
+  const requiredDocuments = this.getRequiredDocumentsForTier(tier);
+
+  // Si aucun document n'est requis, retourner valide
+  if (requiredDocuments.length === 0) {
+    return { valid: true, missing: [] };
   }
 
-  return baseDocuments;
+  const missingDocs: string[] = [];
+
+  // Vérifier chaque document obligatoire
+  if (tier.documents && tier.documents.length > 0) {
+    requiredDocuments.forEach(reqDoc => {
+      const foundDoc = tier.documents?.find(d =>
+        d.type === reqDoc.type && d.status === DocumentStatus.Validated
+      );
+
+      if (!foundDoc) {
+        missingDocs.push(reqDoc.name);
+      }
+    });
+  } else if (requiredDocuments.length > 0) {
+    // Aucun document mais des documents sont requis
+    requiredDocuments.forEach(reqDoc => {
+      missingDocs.push(reqDoc.name);
+    });
+  }
+
+  return {
+    valid: missingDocs.length === 0,
+    missing: missingDocs
+  };
 }
 
 

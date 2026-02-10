@@ -13,6 +13,7 @@ import { ContractValidationResult } from '../../models/Contracts/ContractValidat
 import { PaymentRecord } from '../../models/Contracts/PaymentRecord';
 import { VehicleReturnResult } from '../../models/Contracts/VehicleReturnResult';
 import { PaginatedResponse } from '../../models/Common/PaginatedResponse';
+import { LatePenaltyInfo, PenaltyCalculationResult, RenewalEligibilityResult } from '../../models/Contracts/penalty.models';
 
 @Injectable({
   providedIn: 'root',
@@ -20,9 +21,38 @@ import { PaginatedResponse } from '../../models/Common/PaginatedResponse';
 export class Contract {
   private readonly baseUrl = `${environment.apiUrl}/api/v1/Contracts`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ============ ÉLIGIBILITÉ & VÉRIFICATIONS ============
+
+
+  /**
+ * Récupère les informations de pénalités d'un contrat
+ */
+  getContractPenalties(contractId: string): Observable<ApiResponseData<LatePenaltyInfo>> {
+    return this.http
+      .get<ApiResponseData<LatePenaltyInfo>>(`${this.baseUrl}/${contractId}/penalties`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Calcule la pénalité d'un paiement
+   */
+  calculatePaymentPenalty(paymentId: string): Observable<ApiResponseData<PenaltyCalculationResult>> {
+    return this.http
+      .get<ApiResponseData<PenaltyCalculationResult>>(`${this.baseUrl}/payments/${paymentId}/penalty-calculation`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Vérifie l'éligibilité au renouvellement
+   */
+  checkRenewalEligibility(contractId: string): Observable<ApiResponseData<RenewalEligibilityResult>> {
+    return this.http
+      .get<ApiResponseData<RenewalEligibilityResult>>(`${this.baseUrl}/${contractId}/renewal-eligibility`)
+      .pipe(catchError(this.handleError));
+  }
+
 
   /**
    * Vérifier l'éligibilité d'un client à la location
@@ -418,18 +448,12 @@ export class Contract {
   /**
    * Uploader un contrat signé (PDF scanné)
    */
-  uploadSignedContract(
-    contractId: string,
-    file: File
-  ): Observable<ApiResponseData<Document>> {
+  uploadSignedContract(contractId: string, file: File): Observable<ApiResponseData<any>> {
     const formData = new FormData();
-    formData.append('signedContractFile', file);
+    formData.append('signedContract', file);
 
     return this.http
-      .post<ApiResponseData<Document>>(
-        `${this.baseUrl}/${contractId}/upload-signed`,
-        formData
-      )
+      .post<ApiResponseData<any>>(`${this.baseUrl}/${contractId}/upload-signed`, formData)
       .pipe(catchError(this.handleError));
   }
 

@@ -23,9 +23,8 @@ import { ConfirmDialog } from '../../../../../core/components/confirm-dialog/con
  * Réponse paginée du serveur pour les contrats
  */
 export interface ContractPaginatedResponse {
-  data: ContractDto[]; // Ou ContractBasic[] selon ce que vous recevez
-  success?: boolean; // Optionnel car peut venir du serveur
-  message?: string;
+  data: ContractDto[];
+  success?: boolean;
   errors?: string[];
   currentPage: number;
   pageSize: number;
@@ -50,37 +49,41 @@ export interface ContractPaginatedResponse {
 export class VehiculesList implements OnInit, OnDestroy {
 
   /** Contrôle l'affichage du dialog de confirmation */
-showConfirmDialog = false;
+  showConfirmDialog = false;
 
-/** Titre du dialog de confirmation */
-confirmDialogTitle = '';
+  showReasonModal = false;
+  reasonForm!: FormGroup;
+  reasonSubmitted = false;
+  reasonLoading = false;
+  pendingVehicle: VehicleDto | null = null;
+  pendingStatus: VehicleStatus | null = null;
 
-/** Message du dialog de confirmation */
-confirmDialogMessage = '';
+  /** Titre du dialog de confirmation */
+  confirmDialogTitle = '';
 
-/** Détails supplémentaires du dialog de confirmation */
-confirmDialogDetails = '';
+  /** Message du dialog de confirmation */
+  confirmDialogMessage = '';
 
-/** Texte du bouton de confirmation */
-confirmDialogConfirmText = 'Confirmer';
+  /** Détails supplémentaires du dialog de confirmation */
+  confirmDialogDetails = '';
 
-/** Texte du bouton d'annulation */
-confirmDialogCancelText = 'Annuler';
+  /** Texte du bouton de confirmation */
+  confirmDialogConfirmText = 'Confirmer';
 
-/** Véhicule concerné par la confirmation */
-pendingConfirmVehicle: VehicleDto | null = null;
+  /** Texte du bouton d'annulation */
+  confirmDialogCancelText = 'Annuler';
 
-/** Action à exécuter après confirmation */
-pendingConfirmAction: (() => void) | null = null;
+  /** Véhicule concerné par la confirmation */
+  pendingConfirmVehicle: VehicleDto | null = null;
 
-/** Statut cible pour le changement */
-pendingStatus: VehicleStatus | null = null;
+  /** Action à exécuter après confirmation */
+  pendingConfirmAction: (() => void) | null = null;
 
   /** Indique si le chargement des tiers pour affectation est en cours */
-isLoadingTiersForAssignment: boolean = false;
+  isLoadingTiersForAssignment: boolean = false;
 
-/** Indique si le chargement des contrats pour affectation est en cours */
-isLoadingContractsForAssignment: boolean = false;
+  /** Indique si le chargement des contrats pour affectation est en cours */
+  isLoadingContractsForAssignment: boolean = false;
 
   // ============================================================================
   // SECTION 1: AJOUTER CES PROPRIÉTÉS
@@ -129,11 +132,11 @@ isLoadingContractsForAssignment: boolean = false;
   showEditModal = false;
   /** Contrôle l'affichage du modal de détails */
   showDetailsModal = false;
-  /** Contrôle l'affichage du modal de réservation */
+  /** Contrôle l'affichage du modal de Location */
   showReservationModal = false;
-  /** Contrôle l'affichage du modal d'annulation de réservation */
+  /** Contrôle l'affichage du modal d'annulation de Location */
   showCancelReservationModal = false;
-  /** Contrôle l'affichage du modal de confirmation de réservation */
+  /** Contrôle l'affichage du modal de confirmation de Location */
   showConfirmReservationModal = false;
   /** Contrôle l'affichage de la barre latérale de filtres */
   sidebarVisible = false;
@@ -144,9 +147,9 @@ isLoadingContractsForAssignment: boolean = false;
 
   /** Véhicule sélectionné pour les opérations */
   selectedVehicle: VehicleDto | null = null;
-  /** Réservation sélectionnée pour les opérations */
+  /** Location sélectionnée pour les opérations */
   selectedReservation: any = null;
-  /** Véhicule pour la réservation en cours */
+  /** Véhicule pour la Location en cours */
   reservationVehicle: VehicleDto | null = null;
 
   // ============================================================================
@@ -259,11 +262,11 @@ isLoadingContractsForAssignment: boolean = false;
 
   /** Formulaire d'édition de véhicule */
   editVehicleForm!: FormGroup;
-  /** Formulaire de réservation */
+  /** Formulaire de Location */
   reservationForm!: FormGroup;
-  /** Formulaire d'annulation de réservation */
+  /** Formulaire d'annulation de Location */
   cancelReservationForm!: FormGroup;
-  /** Formulaire de confirmation de réservation */
+  /** Formulaire de confirmation de Location */
   confirmReservationForm!: FormGroup;
 
   // ============================================================================
@@ -280,11 +283,11 @@ isLoadingContractsForAssignment: boolean = false;
   reservationsLoading = false;
   /** Indique si le chargement des tiers est en cours */
   tiersLoading = false;
-  /** Indique si la soumission de réservation est en cours */
+  /** Indique si la soumission de Location est en cours */
   reservationLoading = false;
-  /** Indique si l'annulation de réservation est en cours */
+  /** Indique si l'annulation de Location est en cours */
   cancelReservationLoading = false;
-  /** Indique si la confirmation de réservation est en cours */
+  /** Indique si la confirmation de Location est en cours */
   confirmReservationLoading = false;
 
   // ============================================================================
@@ -293,7 +296,7 @@ isLoadingContractsForAssignment: boolean = false;
 
   /** Indique si le formulaire d'édition a été soumis */
   editSubmitted = false;
-  /** Indique si le formulaire de réservation a été soumis */
+  /** Indique si le formulaire de Location a été soumis */
   reservationSubmitted = false;
   /** Indique si le formulaire d'annulation a été soumis */
   cancelReservationSubmitted = false;
@@ -349,6 +352,47 @@ isLoadingContractsForAssignment: boolean = false;
     { value: FuelType.Hybrid, label: 'Hybride', icon: 'bx bx-leaf' }
   ];
 
+
+  // Catégories de maintenance
+  maintenanceCategories = [
+    {
+      value: 'repair',
+      label: 'Réparation mécanique',
+      icon: 'bx bx-wrench',
+      description: 'Problèmes moteur, freins, transmission'
+    },
+    {
+      value: 'bodywork',
+      label: 'Carrosserie',
+      icon: 'bx bx-car',
+      description: 'Dégâts esthétiques, peinture, tôlerie'
+    },
+    {
+      value: 'electrical',
+      label: 'Problème électrique',
+      icon: 'bx bx-bolt',
+      description: 'Batterie, alternateur, circuits électriques'
+    },
+    {
+      value: 'preventive',
+      label: 'Maintenance préventive',
+      icon: 'bx bx-calendar-check',
+      description: 'Vidange, révision, contrôle technique'
+    },
+    {
+      value: 'tire',
+      label: 'Pneus',
+      icon: 'bx bx-circle',
+      description: 'Changement, équilibrage, géométrie'
+    },
+    {
+      value: 'other',
+      label: 'Autre',
+      icon: 'bx bx-question-mark',
+      description: 'Autre type de maintenance'
+    }
+  ];
+
   /** Date du jour pour validation */
   today = new Date();
 
@@ -397,225 +441,541 @@ isLoadingContractsForAssignment: boolean = false;
     private router: Router
   ) {
     this.initializeForms();
+    this.initializeReasonForm();
+  }
+
+  initializeReasonForm(): void {
+    this.reasonForm = this.formBuilder.group({
+      reason: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]],
+      category: ['other'],
+      estimatedReturnDate: [''],
+      attachments: [[]]
+    });
+  }
+
+  // Soumission du formulaire
+  submitReason(): void {
+    this.reasonSubmitted = true;
+
+    if (this.reasonForm.invalid || !this.pendingVehicle || !this.pendingStatus) {
+      this.notificationService.warning(
+        'Formulaire incomplet',
+        'Veuillez remplir tous les champs obligatoires'
+      );
+      return;
+    }
+
+    this.reasonLoading = true;
+    const reasonData = this.reasonForm.value;
+
+    // Construire la raison complète
+    let fullReason = reasonData.reason;
+    if (reasonData.category && reasonData.category !== 'other') {
+      const category = this.maintenanceCategories.find(c => c.value === reasonData.category);
+      fullReason = `[${category?.label}] ${reasonData.reason}`;
+    }
+
+    // Appeler le service pour changer le statut
+    this.vehiclesService.changeVehicleStatus(
+      this.pendingVehicle.id,
+      this.pendingStatus,
+      fullReason
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => this.handleReasonSuccess(response),
+        error: (error) => this.handleReasonError(error)
+      });
+  }
+
+  private handleReasonSuccess(response: any): void {
+    this.reasonLoading = false;
+    this.showReasonModal = false;
+
+    if (response.success) {
+      const message = this.getSuccessMessage();
+      this.notificationService.success(
+        '✅ Changement effectué',
+        message
+      );
+
+      // Rafraîchir les données
+      this.loadVehicles(this.pagination.currentPage);
+      this.loadStatistics();
+    }
+  }
+
+  private getSuccessMessage(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return `Le véhicule ${this.pendingVehicle?.code} a été mis en maintenance`;
+      case VehicleStatus.OutOfService:
+        return `Le véhicule ${this.pendingVehicle?.code} a été mis hors service`;
+      case VehicleStatus.Available:
+        return `Le véhicule ${this.pendingVehicle?.code} est maintenant disponible`;
+      default:
+        return 'Statut modifié avec succès';
+    }
+  }
+
+  showWarnings(): boolean {
+    return (
+      this.pendingVehicle?.status === VehicleStatus.Rented ||
+      this.pendingVehicle?.status === VehicleStatus.Reserved ||
+      this.pendingVehicle?.isInsuranceExpired ||
+      this.pendingStatus === VehicleStatus.OutOfService
+    );
+  }
+
+  private handleReasonError(error: any): void {
+    this.reasonLoading = false;
+    this.notificationService.error(
+      'Erreur',
+      error.message || 'Une erreur est survenue lors du changement de statut'
+    );
+  }
+
+  // Méthode pour ouvrir le modal
+  openReasonModal(vehicle: VehicleDto, newStatus: VehicleStatus): void {
+    this.pendingVehicle = vehicle;
+    this.pendingStatus = newStatus;
+    this.reasonForm.reset({
+      category: 'other',
+      estimatedReturnDate: ''
+    });
+    this.reasonSubmitted = false;
+    this.showReasonModal = true;
+  }
+
+  // Méthode pour fermer le modal
+  closeReasonModal(): void {
+    this.showReasonModal = false;
+    this.reasonForm.reset();
+    this.reasonSubmitted = false;
+  }
+
+  // Méthodes utilitaires pour le template
+  getModalTitle(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return 'Mise en maintenance';
+      case VehicleStatus.OutOfService:
+        return 'Mise hors service';
+      case VehicleStatus.Available:
+        return 'Rendre disponible';
+      default:
+        return 'Changement de statut';
+    }
+  }
+
+  getModalSubtitle(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return 'Décrivez les travaux à effectuer sur le véhicule';
+      case VehicleStatus.OutOfService:
+        return 'Justifiez la mise hors service du véhicule';
+      case VehicleStatus.Available:
+        return 'Indiquez pourquoi le véhicule est de nouveau disponible';
+      default:
+        return 'Décrivez la raison du changement';
+    }
+  }
+
+  getReasonLabel(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return 'Description des travaux';
+      case VehicleStatus.OutOfService:
+        return 'Motif de la mise hors service';
+      case VehicleStatus.Available:
+        return 'Raison du retour en service';
+      default:
+        return 'Raison du changement';
+    }
+  }
+
+  getPlaceholderText(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return 'Ex: Changement des plaquettes de frein avant - Bruits anormaux à l\'avant droit - Prise de rendez-vous chez le garagiste pour le 15/12...';
+      case VehicleStatus.OutOfService:
+        return 'Ex: Accident grave - Coût de réparation trop élevé - Moteur irréparable - Fin de vie du véhicule...';
+      case VehicleStatus.Available:
+        return 'Ex: Maintenance terminée - Réparations effectuées - Contrôle technique validé - Nettoyage complet...';
+      default:
+        return 'Décrivez la raison du changement de statut...';
+    }
+  }
+
+  getCharacterHint(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return 'Décrivez précisément les travaux à effectuer';
+      case VehicleStatus.OutOfService:
+        return 'Une justification détaillée est requise pour cette action définitive';
+      default:
+        return 'Minimum 10 caractères recommandés';
+    }
+  }
+
+  getSubmitButtonText(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return 'Confirmer la maintenance';
+      case VehicleStatus.OutOfService:
+        return 'Mettre hors service';
+      case VehicleStatus.Available:
+        return 'Rendre disponible';
+      default:
+        return 'Confirmer';
+    }
+  }
+
+  getSubmitIcon(): string {
+    switch (this.pendingStatus) {
+      case VehicleStatus.Maintenance:
+        return 'bx bx-wrench';
+      case VehicleStatus.OutOfService:
+        return 'bx bx-block';
+      case VehicleStatus.Available:
+        return 'bx bx-check-circle';
+      default:
+        return 'bx bx-check';
+    }
   }
 
   /**
  * Affiche le dialog de confirmation pour changer le statut d'un véhicule
  */
-openConfirmDialog(vehicle: VehicleDto, newStatus: VehicleStatus): void {
-  this.pendingConfirmVehicle = vehicle;
-  this.pendingStatus = newStatus;
+  openConfirmDialog(vehicle: VehicleDto, newStatus: VehicleStatus): void {
+    this.pendingConfirmVehicle = vehicle;
+    this.pendingStatus = newStatus;
 
-  const currentStatus = this.getStatusText(vehicle.status);
-  const newStatusText = this.getStatusText(newStatus);
+    const currentStatus = this.getStatusText(vehicle.status);
+    const newStatusText = this.getStatusText(newStatus);
 
-  // Configuration du dialog selon le statut cible
-  if (newStatus === VehicleStatus.Maintenance) {
-    this.configureMaintenanceDialog(vehicle, currentStatus, newStatusText);
-  } else if (newStatus === VehicleStatus.OutOfService) {
-    this.configureOutOfServiceDialog(vehicle, currentStatus, newStatusText);
-  } else if (newStatus === VehicleStatus.Available) {
-    this.configureAvailableDialog(vehicle, currentStatus, newStatusText);
+    // Configuration du dialog selon le statut cible
+    if (newStatus === VehicleStatus.Maintenance) {
+      this.configureMaintenanceDialog(vehicle, currentStatus, newStatusText);
+    } else if (newStatus === VehicleStatus.OutOfService) {
+      this.configureOutOfServiceDialog(vehicle, currentStatus, newStatusText);
+    } else if (newStatus === VehicleStatus.Available) {
+      this.configureAvailableDialog(vehicle, currentStatus, newStatusText);
+    }
+
+    this.showConfirmDialog = true;
   }
 
-  this.showConfirmDialog = true;
-}
+  /**
+   * Configure le dialog pour la maintenance
+   */
+  private configureMaintenanceDialog(
+    vehicle: VehicleDto,
+    currentStatus: string,
+    newStatusText: string
+  ): void {
+    this.confirmDialogTitle = 'Mettre en maintenance';
+    this.confirmDialogMessage = `Êtes-vous sûr de vouloir mettre le véhicule "${vehicle.code}" en maintenance ?`;
 
-/**
- * Configure le dialog pour la maintenance
- */
-private configureMaintenanceDialog(
-  vehicle: VehicleDto,
-  currentStatus: string,
-  newStatusText: string
-): void {
-  this.confirmDialogTitle = 'Mettre en maintenance';
-  this.confirmDialogMessage = `Êtes-vous sûr de vouloir mettre le véhicule "${vehicle.code}" en maintenance ?`;
+    let details = `Statut actuel: ${currentStatus}\n`;
+    details += `Nouveau statut: ${newStatusText}\n`;
 
-  let details = `Statut actuel: ${currentStatus}\n`;
-  details += `Nouveau statut: ${newStatusText}\n`;
+    // Ajouter des avertissements spécifiques
+    if (vehicle.status === VehicleStatus.Rented) {
+      details += '\n⚠️ ATTENTION: Ce véhicule est actuellement loué.\n';
+      details += 'La location doit d\'abord être terminée.';
+    }
 
-  // Ajouter des avertissements spécifiques
-  if (vehicle.status === VehicleStatus.Rented) {
-    details += '\n⚠️ ATTENTION: Ce véhicule est actuellement loué.\n';
-    details += 'La location doit d\'abord être terminée.';
+    if (vehicle.isInsuranceExpired) {
+      details += '\n⚠️ ATTENTION: L\'assurance de ce véhicule est expirée.';
+    }
+
+    this.confirmDialogDetails = details;
+    this.confirmDialogConfirmText = 'Mettre en maintenance';
+    this.confirmDialogCancelText = 'Annuler';
   }
 
-  if (vehicle.isInsuranceExpired) {
-    details += '\n⚠️ ATTENTION: L\'assurance de ce véhicule est expirée.';
+  /**
+   * Configure le dialog pour hors service
+   */
+  private configureOutOfServiceDialog(
+    vehicle: VehicleDto,
+    currentStatus: string,
+    newStatusText: string
+  ): void {
+    this.confirmDialogTitle = 'Mettre hors service';
+    this.confirmDialogMessage = `Êtes-vous sûr de vouloir mettre le véhicule "${vehicle.code}" hors service ?`;
+
+    let details = `Statut actuel: ${currentStatus}\n`;
+    details += `Nouveau statut: ${newStatusText}\n`;
+    details += '\n⚠️ Cette action est définitive et nécessite une raison valide.';
+
+    // Ajouter des avertissements spécifiques
+    if (vehicle.status === VehicleStatus.Rented) {
+      details += '\n⚠️ IMPOSSIBLE: Ce véhicule est actuellement loué.\n';
+      details += 'Terminez d\'abord la location.';
+    }
+
+    if (vehicle.status === VehicleStatus.Reserved) {
+      details += '\n⚠️ IMPOSSIBLE: Ce véhicule est réservé.\n';
+      details += 'Annulez d\'abord la réservation.';
+    }
+
+    this.confirmDialogDetails = details;
+    this.confirmDialogConfirmText = 'Mettre hors service';
+    this.confirmDialogCancelText = 'Annuler';
   }
 
-  this.confirmDialogDetails = details;
-  this.confirmDialogConfirmText = 'Mettre en maintenance';
-  this.confirmDialogCancelText = 'Annuler';
-}
+  /**
+   * Configure le dialog pour rendre disponible
+   */
+  private configureAvailableDialog(
+    vehicle: VehicleDto,
+    currentStatus: string,
+    newStatusText: string
+  ): void {
+    this.confirmDialogTitle = 'Rendre disponible';
+    this.confirmDialogMessage = `Êtes-vous sûr de vouloir rendre le véhicule "${vehicle.code}" disponible ?`;
 
-/**
- * Configure le dialog pour hors service
- */
-private configureOutOfServiceDialog(
-  vehicle: VehicleDto,
-  currentStatus: string,
-  newStatusText: string
-): void {
-  this.confirmDialogTitle = 'Mettre hors service';
-  this.confirmDialogMessage = `Êtes-vous sûr de vouloir mettre le véhicule "${vehicle.code}" hors service ?`;
+    let details = `Statut actuel: ${currentStatus}\n`;
+    details += `Nouveau statut: ${newStatusText}\n`;
 
-  let details = `Statut actuel: ${currentStatus}\n`;
-  details += `Nouveau statut: ${newStatusText}\n`;
-  details += '\n⚠️ Cette action est définitive et nécessite une raison valide.';
+    if (vehicle.isInsuranceExpired) {
+      details += '\n⚠️ ATTENTION: L\'assurance de ce véhicule est expirée.\n';
+      details += 'Le véhicule ne pourra pas être loué sans assurance valide.';
+    }
 
-  // Ajouter des avertissements spécifiques
-  if (vehicle.status === VehicleStatus.Rented) {
-    details += '\n⚠️ IMPOSSIBLE: Ce véhicule est actuellement loué.\n';
-    details += 'Terminez d\'abord la location.';
+    this.confirmDialogDetails = details;
+    this.confirmDialogConfirmText = 'Rendre disponible';
+    this.confirmDialogCancelText = 'Annuler';
   }
 
-  if (vehicle.status === VehicleStatus.Reserved) {
-    details += '\n⚠️ IMPOSSIBLE: Ce véhicule est réservé.\n';
-    details += 'Annulez d\'abord la réservation.';
+  /**
+   * Gère la confirmation du dialog
+   */
+  onDialogConfirm(): void {
+    this.showConfirmDialog = false;
+
+    if (this.pendingConfirmVehicle && this.pendingStatus) {
+      // Demander la raison si nécessaire
+      if ([VehicleStatus.Maintenance, VehicleStatus.OutOfService].includes(this.pendingStatus)) {
+        this.askReasonAndExecute();
+      } else {
+        // Pour les autres statuts, exécuter directement
+        this.executeChangeStatus(this.pendingConfirmVehicle, this.pendingStatus);
+      }
+    }
+
+    this.resetDialog();
   }
 
-  this.confirmDialogDetails = details;
-  this.confirmDialogConfirmText = 'Mettre hors service';
-  this.confirmDialogCancelText = 'Annuler';
-}
+  /**
+   * Demande la raison puis exécute l'action
+   */
+  private askReasonAndExecute(): void {
+    const reason = prompt('Veuillez indiquer la raison de ce changement :', '');
 
-/**
- * Configure le dialog pour rendre disponible
- */
-private configureAvailableDialog(
-  vehicle: VehicleDto,
-  currentStatus: string,
-  newStatusText: string
-): void {
-  this.confirmDialogTitle = 'Rendre disponible';
-  this.confirmDialogMessage = `Êtes-vous sûr de vouloir rendre le véhicule "${vehicle.code}" disponible ?`;
+    if (reason === null || reason.trim() === '') {
+      this.notificationService.warning(
+        'Raison requise',
+        'Le changement de statut a été annulé. Une raison est obligatoire.'
+      );
+      return;
+    }
 
-  let details = `Statut actuel: ${currentStatus}\n`;
-  details += `Nouveau statut: ${newStatusText}\n`;
-
-  if (vehicle.isInsuranceExpired) {
-    details += '\n⚠️ ATTENTION: L\'assurance de ce véhicule est expirée.\n';
-    details += 'Le véhicule ne pourra pas être loué sans assurance valide.';
-  }
-
-  this.confirmDialogDetails = details;
-  this.confirmDialogConfirmText = 'Rendre disponible';
-  this.confirmDialogCancelText = 'Annuler';
-}
-
-/**
- * Gère la confirmation du dialog
- */
-onDialogConfirm(): void {
-  this.showConfirmDialog = false;
-
-  if (this.pendingConfirmVehicle && this.pendingStatus) {
-    // Demander la raison si nécessaire
-    if ([VehicleStatus.Maintenance, VehicleStatus.OutOfService].includes(this.pendingStatus)) {
-      this.askReasonAndExecute();
-    } else {
-      // Pour les autres statuts, exécuter directement
-      this.executeChangeStatus(this.pendingConfirmVehicle, this.pendingStatus);
+    if (this.pendingConfirmVehicle && this.pendingStatus) {
+      this.executeChangeStatus(this.pendingConfirmVehicle, this.pendingStatus, reason);
     }
   }
 
-  this.resetDialog();
-}
+  /**
+   * Exécute le changement de statut
+   */
+  private executeChangeStatus(vehicle: VehicleDto, newStatus: VehicleStatus, reason?: string): void {
+    console.log('🔄 Changement de statut:', {
+      vehicleId: vehicle.id,
+      vehicleCode: vehicle.code,
+      fromStatus: vehicle.status,
+      toStatus: newStatus,
+      reason: reason
+    });
 
-/**
- * Demande la raison puis exécute l'action
- */
-private askReasonAndExecute(): void {
-  const reason = prompt('Veuillez indiquer la raison de ce changement :', '');
+    this.loading = true;
 
-  if (reason === null || reason.trim() === '') {
-    this.notificationService.warning(
-      'Raison requise',
-      'Le changement de statut a été annulé. Une raison est obligatoire.'
-    );
-    return;
-  }
+    this.vehiclesService.changeVehicleStatus(vehicle.id, newStatus, reason)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Réponse du serveur:', response);
+          this.loading = false;
 
-  if (this.pendingConfirmVehicle && this.pendingStatus) {
-    this.executeChangeStatus(this.pendingConfirmVehicle, this.pendingStatus, reason);
-  }
-}
+          // ✅ CORRECTION: Vérification flexible de la réussite
+          const isSuccess = this.checkStatusChangeSuccess(response);
 
-/**
- * Exécute l'action en attente
- */
-private executePendingAction(): void {
-  if (this.pendingConfirmAction) {
-    this.pendingConfirmAction();
-  }
-}
+          if (isSuccess) {
+            const newStatusText = this.getStatusText(newStatus);
 
-/**
- * Exécute le changement de statut
- */
-private executeChangeStatus(vehicle: VehicleDto, newStatus: VehicleStatus, reason?: string): void {
-  this.loading = true;
+            this.notificationService.success(
+              '✅ Statut modifié',
+              `Le véhicule ${vehicle.code} est maintenant "${newStatusText}"`
+            );
 
-  this.vehiclesService.changeVehicleStatus(vehicle.id, newStatus, reason)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response) => {
-        this.loading = false;
+            // ✅ RAFRAÎCHISSEMENT AUTOMATIQUE
+            this.refreshAfterStatusChange();
+          } else {
+            this.handleStatusChangeFailure(response);
+          }
+        },
+        error: (error) => {
+          console.error('❌ Erreur lors du changement de statut:', error);
+          this.loading = false;
 
-        if (response.ok) {
-          const newStatusText = this.getStatusText(newStatus);
-          this.notificationService.success(
-            'Statut modifié',
-            `Le véhicule ${vehicle.code} est maintenant "${newStatusText}"`
-          );
-
-          // Rafraîchir la liste
-          this.loadVehicles(this.pagination.currentPage);
-        } else {
           this.notificationService.error(
             'Erreur de modification',
-            response.statusText || 'Impossible de changer le statut'
+            this.extractErrorMessage(error)
           );
         }
-      },
-      error: (error) => {
-        this.loading = false;
-        this.notificationService.error(
-          'Erreur',
-          error.message || 'Une erreur est survenue lors du changement de statut'
-        );
-      }
-    });
-}
+      });
+  }
 
-/**
- * Gère l'annulation du dialog
- */
-onDialogCancel(): void {
-  this.showConfirmDialog = false;
-  this.resetDialog();
+  /**
+   * Vérifie si le changement de statut est un succès
+   */
+  private checkStatusChangeSuccess(response: any): boolean {
+    if (!response) return false;
 
-  this.notificationService.info(
-    'Action annulée',
-    'Le changement de statut a été annulé.'
-  );
-}
+    return (
+      // Format HTTP standard
+      response.ok === true ||
+      response.status === 200 ||
+      response.status === 204 ||
 
-/**
- * Réinitialise les données du dialog
- */
-private resetDialog(): void {
-  this.pendingConfirmVehicle = null;
-  this.pendingConfirmAction = null;
-  this.pendingStatus = null;
-  this.confirmDialogTitle = '';
-  this.confirmDialogMessage = '';
-  this.confirmDialogDetails = '';
-  this.confirmDialogConfirmText = 'Confirmer';
-  this.confirmDialogCancelText = 'Annuler';
-}
+      // Format avec propriété success
+      response.success === true ||
+
+      // Format dans body
+      (response.body && response.body.success === true) ||
+
+      // Format texte
+      (typeof response === 'string' && (
+        response.toLowerCase().includes('success') ||
+        response.toLowerCase().includes('modifié') ||
+        response.toLowerCase().includes('changed')
+      ))
+    );
+  }
+
+  /**
+   * Gère les échecs de changement de statut
+   */
+  private handleStatusChangeFailure(response: any): void {
+    const errorMessage =
+      response.message ||
+      response.error?.message ||
+      response.body?.message ||
+      response.statusText ||
+      'Impossible de changer le statut du véhicule';
+
+    this.notificationService.error(
+      'Échec de modification',
+      errorMessage
+    );
+
+    console.warn('⚠️ Détails de l\'échec:', response);
+  }
+
+  /**
+   * Extrait le message d'erreur
+   */
+  private extractErrorMessage(error: any): string {
+    if (error.error?.message) return error.error.message;
+    if (error.message) return error.message;
+    if (error.statusText && error.statusText !== 'Unknown Error') return error.statusText;
+
+    // Messages par code HTTP
+    switch (error.status) {
+      case 400: return 'Requête invalide - Vérifiez les données';
+      case 401: return 'Session expirée - Reconnectez-vous';
+      case 403: return 'Action non autorisée';
+      case 404: return 'Véhicule introuvable';
+      case 409: return 'Conflit - Le véhicule ne peut pas changer de statut';
+      case 422: return 'Données incorrectes';
+      case 500: return 'Erreur serveur';
+      default: return 'Une erreur est survenue lors du changement de statut';
+    }
+  }
+
+  /**
+   * Rafraîchit les données après un changement de statut
+   */
+  private refreshAfterStatusChange(): void {
+    console.log('🔄 Rafraîchissement des données...');
+
+    // 1. Rafraîchir la liste des véhicules (garde la même page)
+    this.loadVehicles(this.pagination.currentPage);
+
+    // 2. Rafraîchir les statistiques
+    setTimeout(() => {
+      this.loadStatistics();
+    }, 300);
+
+    // 3. Optionnel: Rafraîchir les réservations actives si nécessaire
+    setTimeout(() => {
+      this.loadActiveReservations();
+    }, 500);
+
+    console.log('✅ Rafraîchissement terminé');
+  }
+
+  /**
+   * Calcule la date de fin estimée en fonction de la date de début et de la durée
+   */
+  calculateEndDate(): string {
+    const startDate = this.reservationForm?.get('expectedStartDate')?.value;
+    const durationDays = this.reservationForm?.get('reservationDurationDays')?.value;
+
+    if (!startDate || !durationDays) {
+      return '';
+    }
+
+    try {
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setDate(start.getDate() + parseInt(durationDays, 9));
+
+      return end.toISOString().split('T')[0];
+    } catch (error) {
+      console.error('Erreur lors du calcul de la date de fin:', error);
+      return '';
+    }
+  }
+
+  /**
+   * Gère l'annulation du dialog
+   */
+  onDialogCancel(): void {
+    this.showConfirmDialog = false;
+    this.resetDialog();
+
+    this.notificationService.info(
+      'Action annulée',
+      'Le changement de statut a été annulé.'
+    );
+  }
+
+  /**
+   * Réinitialise les données du dialog
+   */
+  private resetDialog(): void {
+    this.pendingConfirmVehicle = null;
+    this.pendingConfirmAction = null;
+    this.pendingStatus = null;
+    this.confirmDialogTitle = '';
+    this.confirmDialogMessage = '';
+    this.confirmDialogDetails = '';
+    this.confirmDialogConfirmText = 'Confirmer';
+    this.confirmDialogCancelText = 'Annuler';
+  }
 
   /**
    * Initialise tous les formulaires du composant
@@ -685,27 +1045,27 @@ private resetDialog(): void {
   /**
  * Ouvre le modal d'affectation pour un véhicule
  */
-openAssignRentalModal(vehicle: VehicleDto): void {
-  console.log('🚀 Ouverture du modal d\'affectation pour:', vehicle.code);
+  openAssignRentalModal(vehicle: VehicleDto): void {
+    console.log('🚀 Ouverture du modal d\'affectation pour:', vehicle.code);
 
-  this.assignRentalVehicle = vehicle;
-  this.showAssignRentalModal = true;
-  this.assignRentalSubmitted = false;
+    this.assignRentalVehicle = vehicle;
+    this.showAssignRentalModal = true;
+    this.assignRentalSubmitted = false;
 
-  // Initialiser le formulaire
-  this.assignRentalForm.patchValue({
-    vehicleId: vehicle.id,
-    customerId: '',
-    contractId: '',
-    startDate: new Date().toISOString().slice(0, 16),
-    startMileage: vehicle.currentMileage,
-    notes: ''
-  });
+    // Initialiser le formulaire
+    this.assignRentalForm.patchValue({
+      vehicleId: vehicle.id,
+      customerId: '',
+      contractId: '',
+      startDate: new Date().toISOString().slice(0, 16),
+      startMileage: vehicle.currentMileage,
+      notes: ''
+    });
 
-  // Charger les données
-  this.loadTiersForAssignment();
-  this.loadContractsForAssignment();
-}
+    // Charger les données
+    this.loadTiersForAssignment();
+    this.loadContractsForAssignment();
+  }
 
   /**
    * Convertit un DTO de contrat en ContractBasic pour l'affectation
@@ -731,11 +1091,7 @@ openAssignRentalModal(vehicle: VehicleDto): void {
       weeklyMileageLimit: dto.weeklyMileageLimit,
       deliveryInfo: dto.deliveryInfo,
       returnInfo: dto.returnInfo,
-      // Option A : Laisser undefined si vous n'avez pas les références
       documents: undefined,
-
-      // Option B : Créer un tableau vide
-      // documents: [],
 
       notes: dto.notes,
       createdAt: new Date(dto.createdAt),
@@ -793,110 +1149,110 @@ openAssignRentalModal(vehicle: VehicleDto): void {
   /**
  * Rafraîchit la liste des contrats
  */
-refreshContracts(): void {
-  console.log('🔄 Rafraîchissement manuel des contrats...');
+  refreshContracts(): void {
+    console.log('🔄 Rafraîchissement manuel des contrats...');
 
-  if (this.showAssignRentalModal) {
-    this.loadContractsForAssignment();
+    if (this.showAssignRentalModal) {
+      this.loadContractsForAssignment();
 
-    this.notificationService.info(
-      'Actualisation',
-      'Rechargement des contrats disponibles...'
-    );
+      this.notificationService.info(
+        'Actualisation',
+        'Rechargement des contrats disponibles...'
+      );
+    }
   }
-}
 
   /**
    * Charge les contrats pour l'affectation
    */
   loadContractsForAssignment(): void {
-  this.isLoadingContractsForAssignment = true;  // <-- Démarrer le loading
+    this.isLoadingContractsForAssignment = true;  // <-- Démarrer le loading
 
-  console.log('🔄 Chargement des contrats pour affectation...');
+    console.log('🔄 Chargement des contrats pour affectation...');
 
-  // Critères de recherche pour les contrats disponibles
-  const searchCriteria = {
-    page: 1,
-    pageSize: 100,
-    sortBy: 'createdAt',
-    sortDescending: true,
-    // On charge les contrats actifs OU en attente
-    // Le filtrage se fera côté client
-  };
+    // Critères de recherche pour les contrats disponibles
+    const searchCriteria = {
+      page: 1,
+      pageSize: 100,
+      sortBy: 'createdAt',
+      sortDescending: true,
+      // On charge les contrats actifs OU en attente
+      // Le filtrage se fera côté client
+    };
 
-  this.contractService.searchContracts(searchCriteria)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response: ContractPaginatedResponse) => {
-        this.isLoadingContractsForAssignment = false;  // <-- Arrêter le loading
+    this.contractService.searchContracts(searchCriteria)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: ContractPaginatedResponse) => {
+          this.isLoadingContractsForAssignment = false;  // <-- Arrêter le loading
 
-        console.log('📡 Réponse API contrats:', response);
+          console.log('📡 Réponse API contrats:', response);
 
-        if (response && response.data && Array.isArray(response.data)) {
-          // Convertir les DTOs en ContractBasic
-          const allContracts = response.data.map(dto =>
-            this.convertDtoToContractBasic(dto)
-          );
+          if (response && response.data && Array.isArray(response.data)) {
+            // Convertir les DTOs en ContractBasic
+            const allContracts = response.data.map(dto =>
+              this.convertDtoToContractBasic(dto)
+            );
 
-          console.log(`📦 ${allContracts.length} contrats récupérés du serveur`);
+            console.log(`📦 ${allContracts.length} contrats récupérés du serveur`);
 
-          // Filtrer les contrats disponibles pour affectation
-          this.availableContracts = this.filterContractsForVehicleAssignment(allContracts);
-          this.filteredContractsForAssignment = [...this.availableContracts];
+            // Filtrer les contrats disponibles pour affectation
+            this.availableContracts = this.filterContractsForVehicleAssignment(allContracts);
+            this.filteredContractsForAssignment = [...this.availableContracts];
 
-          console.log(`✅ ${this.filteredContractsForAssignment.length} contrats disponibles pour affectation`);
+            console.log(`✅ ${this.filteredContractsForAssignment.length} contrats disponibles pour affectation`);
 
-          // Notification si aucun contrat disponible
-          if (this.filteredContractsForAssignment.length === 0) {
-            this.notificationService.info(
-              'Aucun contrat disponible',
-              'Tous les contrats actifs sont déjà affectés ou ne répondent pas aux critères'
+            // Notification si aucun contrat disponible
+            if (this.filteredContractsForAssignment.length === 0) {
+              this.notificationService.info(
+                'Aucun contrat disponible',
+                'Tous les contrats actifs sont déjà affectés ou ne répondent pas aux critères'
+              );
+            }
+          } else {
+            console.warn('⚠️ Réponse invalide du serveur:', response);
+            this.availableContracts = [];
+            this.filteredContractsForAssignment = [];
+
+            this.notificationService.warning(
+              'Données incomplètes',
+              'Les contrats n\'ont pas pu être chargés correctement'
             );
           }
-        } else {
-          console.warn('⚠️ Réponse invalide du serveur:', response);
+        },
+        error: (error: any) => {
+          this.isLoadingContractsForAssignment = false;
+
+          console.error('❌ Erreur lors du chargement des contrats:', error);
+          console.error('Détails de l\'erreur:', {
+            status: error.status,
+            message: error.message,
+            error: error.error
+          });
+
           this.availableContracts = [];
           this.filteredContractsForAssignment = [];
 
-          this.notificationService.warning(
-            'Données incomplètes',
-            'Les contrats n\'ont pas pu être chargés correctement'
+          // Message d'erreur détaillé
+          let errorMessage = 'Impossible de charger les contrats disponibles';
+
+          if (error.status === 404) {
+            errorMessage = 'Le service de contrats n\'est pas disponible';
+          } else if (error.status === 401) {
+            errorMessage = 'Votre session a expiré';
+          } else if (error.status === 500) {
+            errorMessage = 'Erreur serveur lors du chargement des contrats';
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          this.notificationService.error(
+            'Erreur de chargement',
+            errorMessage
           );
         }
-      },
-      error: (error: any) => {
-        this.isLoadingContractsForAssignment = false;  // <-- Arrêter le loading
-
-        console.error('❌ Erreur lors du chargement des contrats:', error);
-        console.error('Détails de l\'erreur:', {
-          status: error.status,
-          message: error.message,
-          error: error.error
-        });
-
-        this.availableContracts = [];
-        this.filteredContractsForAssignment = [];
-
-        // Message d'erreur détaillé
-        let errorMessage = 'Impossible de charger les contrats disponibles';
-
-        if (error.status === 404) {
-          errorMessage = 'Le service de contrats n\'est pas disponible';
-        } else if (error.status === 401) {
-          errorMessage = 'Votre session a expiré';
-        } else if (error.status === 500) {
-          errorMessage = 'Erreur serveur lors du chargement des contrats';
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-
-        this.notificationService.error(
-          'Erreur de chargement',
-          errorMessage
-        );
-      }
-    });
-}
+      });
+  }
 
   /**
  * Filtre les contrats pour l'affectation d'un véhicule
@@ -907,81 +1263,81 @@ refreshContracts(): void {
  * - Date de début <= aujourd'hui
  * - Date de fin >= aujourd'hui
  */
-private filterContractsForVehicleAssignment(contracts: RentalContract[]): RentalContract[] {
-  if (!this.assignRentalVehicle) {
-    console.warn('⚠️ Aucun véhicule sélectionné pour le filtrage');
-    return contracts;
+  private filterContractsForVehicleAssignment(contracts: RentalContract[]): RentalContract[] {
+    if (!this.assignRentalVehicle) {
+      console.warn('⚠️ Aucun véhicule sélectionné pour le filtrage');
+      return contracts;
+    }
+
+    console.log(`🔍 Filtrage de ${contracts.length} contrats...`);
+
+    const filtered = contracts.filter(contract => {
+      // Debug pour chaque contrat
+      const debugInfo = {
+        contractNumber: contract.contractNumber,
+        vehicleId: contract.vehicleId,
+        status: contract.status,
+        depositPaid: contract.depositPaid,
+        startDate: contract.startDate,
+        endDate: contract.endDate
+      };
+
+      // 1. Vérifier si le contrat a déjà un véhicule
+      if (contract.vehicleId && contract.vehicleId !== '' && contract.vehicleId !== null) {
+        console.log(`❌ Contrat ${contract.contractNumber} déjà affecté au véhicule ${contract.vehicleId}`);
+        return false;
+      }
+
+      // 2. Vérifier le statut du contrat
+      const validStatuses = [ContractStatus.Active, ContractStatus.Pending];
+      if (!validStatuses.includes(contract.status)) {
+        console.log(`❌ Contrat ${contract.contractNumber} a un statut invalide: ${contract.status}`);
+        return false;
+      }
+
+      // 3. Vérifier si le dépôt est payé (si la vérification est activée)
+      if (contract.securityDeposit && contract.securityDeposit > 0) {
+        if (contract.depositPaid === false) {
+          console.log(`❌ Contrat ${contract.contractNumber} - Dépôt non payé`);
+          return false;
+        }
+      }
+
+      // 4. Vérifier les dates
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (contract.startDate) {
+        const startDate = new Date(contract.startDate);
+        startDate.setHours(0, 0, 0, 0);
+
+        // Le contrat ne doit pas commencer dans le futur (marge de 7 jours)
+        const maxFutureDate = new Date(today);
+        maxFutureDate.setDate(maxFutureDate.getDate() + 7);
+
+        if (startDate > maxFutureDate) {
+          console.log(`❌ Contrat ${contract.contractNumber} commence trop dans le futur: ${startDate}`);
+          return false;
+        }
+      }
+
+      if (contract.endDate) {
+        const endDate = new Date(contract.endDate);
+        endDate.setHours(0, 0, 0, 0);
+
+        if (endDate < today) {
+          console.log(`❌ Contrat ${contract.contractNumber} expiré: ${endDate}`);
+          return false;
+        }
+      }
+
+      console.log(`✅ Contrat ${contract.contractNumber} valide pour affectation`);
+      return true;
+    });
+
+    console.log(`✅ ${filtered.length} contrats passent les filtres`);
+    return filtered;
   }
-
-  console.log(`🔍 Filtrage de ${contracts.length} contrats...`);
-
-  const filtered = contracts.filter(contract => {
-    // Debug pour chaque contrat
-    const debugInfo = {
-      contractNumber: contract.contractNumber,
-      vehicleId: contract.vehicleId,
-      status: contract.status,
-      depositPaid: contract.depositPaid,
-      startDate: contract.startDate,
-      endDate: contract.endDate
-    };
-
-    // 1. Vérifier si le contrat a déjà un véhicule
-    if (contract.vehicleId && contract.vehicleId !== '' && contract.vehicleId !== null) {
-      console.log(`❌ Contrat ${contract.contractNumber} déjà affecté au véhicule ${contract.vehicleId}`);
-      return false;
-    }
-
-    // 2. Vérifier le statut du contrat
-    const validStatuses = [ContractStatus.Active, ContractStatus.Pending];
-    if (!validStatuses.includes(contract.status)) {
-      console.log(`❌ Contrat ${contract.contractNumber} a un statut invalide: ${contract.status}`);
-      return false;
-    }
-
-    // 3. Vérifier si le dépôt est payé (si la vérification est activée)
-    if (contract.securityDeposit && contract.securityDeposit > 0) {
-      if (contract.depositPaid === false) {
-        console.log(`❌ Contrat ${contract.contractNumber} - Dépôt non payé`);
-        return false;
-      }
-    }
-
-    // 4. Vérifier les dates
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (contract.startDate) {
-      const startDate = new Date(contract.startDate);
-      startDate.setHours(0, 0, 0, 0);
-
-      // Le contrat ne doit pas commencer dans le futur (marge de 7 jours)
-      const maxFutureDate = new Date(today);
-      maxFutureDate.setDate(maxFutureDate.getDate() + 7);
-
-      if (startDate > maxFutureDate) {
-        console.log(`❌ Contrat ${contract.contractNumber} commence trop dans le futur: ${startDate}`);
-        return false;
-      }
-    }
-
-    if (contract.endDate) {
-      const endDate = new Date(contract.endDate);
-      endDate.setHours(0, 0, 0, 0);
-
-      if (endDate < today) {
-        console.log(`❌ Contrat ${contract.contractNumber} expiré: ${endDate}`);
-        return false;
-      }
-    }
-
-    console.log(`✅ Contrat ${contract.contractNumber} valide pour affectation`);
-    return true;
-  });
-
-  console.log(`✅ ${filtered.length} contrats passent les filtres`);
-  return filtered;
-}
 
   /**
    * Filtre les tiers pour l'affectation
@@ -1139,46 +1495,46 @@ private filterContractsForVehicleAssignment(contracts: RentalContract[]): Rental
   /**
  * Charge les tiers pour l'affectation (uniquement les actifs)
  */
-loadTiersForAssignment(): void {
-  this.isLoadingTiersForAssignment = true;
+  loadTiersForAssignment(): void {
+    this.isLoadingTiersForAssignment = true;
 
-  this.tiersService.getTiersList({
-    status: TierStatus.Active,
-    pageSize: 100
-  }).pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response) => {
-        this.isLoadingTiersForAssignment = false;  // <-- Arrêter le loading
+    this.tiersService.getTiersList({
+      status: TierStatus.Active,
+      pageSize: 100
+    }).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.isLoadingTiersForAssignment = false;  // <-- Arrêter le loading
 
-        if (response.data) {
-          // Stocker tous les tiers
-          this.tiersList = response.data;
+          if (response.data) {
+            // Stocker tous les tiers
+            this.tiersList = response.data;
 
-          // Filtrer pour l'affectation (actifs et en validation)
-          this.filteredTiersForAssignment = response.data.filter(tier =>
-            tier.status === TierStatus.Active ||
-            tier.status === TierStatus.PendingValidation
+            // Filtrer pour l'affectation (actifs et en validation)
+            this.filteredTiersForAssignment = response.data.filter(tier =>
+              tier.status === TierStatus.Active ||
+              tier.status === TierStatus.PendingValidation
+            );
+
+            console.log(`✅ ${this.filteredTiersForAssignment.length} clients chargés pour affectation`);
+          } else {
+            console.warn('Aucun tier dans la réponse:', response);
+            this.filteredTiersForAssignment = [];
+          }
+        },
+        error: (error) => {
+          this.isLoadingTiersForAssignment = false;  // <-- Arrêter le loading même en cas d'erreur
+          console.error('❌ Erreur lors du chargement des tiers:', error);
+
+          this.notificationService.error(
+            'Erreur de chargement',
+            'Impossible de charger les clients disponibles'
           );
 
-          console.log(`✅ ${this.filteredTiersForAssignment.length} clients chargés pour affectation`);
-        } else {
-          console.warn('Aucun tier dans la réponse:', response);
           this.filteredTiersForAssignment = [];
         }
-      },
-      error: (error) => {
-        this.isLoadingTiersForAssignment = false;  // <-- Arrêter le loading même en cas d'erreur
-        console.error('❌ Erreur lors du chargement des tiers:', error);
-
-        this.notificationService.error(
-          'Erreur de chargement',
-          'Impossible de charger les clients disponibles'
-        );
-
-        this.filteredTiersForAssignment = [];
-      }
-    });
-}
+      });
+  }
 
 
   /**
@@ -2079,7 +2435,7 @@ loadTiersForAssignment(): void {
   }
 
   /**
-   * Ouvre le modal de réservation pour un véhicule
+   * Ouvre le modal de Location pour un véhicule
    */
   openReservationModal(vehicle: VehicleDto): void {
     this.reservationVehicle = vehicle;
@@ -2223,8 +2579,8 @@ loadTiersForAssignment(): void {
 
     if (isSuccess) {
       this.notificationService.success(
-        'Réservation effectuée ✅',
-        'Le véhicule a été réservé avec succès'
+        'Location effectuée ✅',
+        'Le véhicule a été louer avec succès'
       );
 
       this.closeReservationModal();
@@ -2234,8 +2590,8 @@ loadTiersForAssignment(): void {
       // Optionnel: Rediriger ou afficher un message supplémentaire
       setTimeout(() => {
         this.notificationService.info(
-          'Réservation confirmée',
-          'Vous pouvez consulter la réservation dans le menu "Réservations"'
+          'Location confirmée',
+          'Vous pouvez consulter la Location dans le menu "Location actives"'
         );
       }, 1000);
     } else {
@@ -2248,7 +2604,7 @@ loadTiersForAssignment(): void {
         'Impossible de réserver le véhicule';
 
       this.notificationService.error(
-        'Erreur de réservation ❌',
+        'Erreur de Location ❌',
         errorMessage
       );
 
@@ -2317,7 +2673,7 @@ loadTiersForAssignment(): void {
         const successMessage = this.extractCancellationSuccessMessage(response);
 
         this.notificationService.success(
-          '✅ Réservation annulée',
+          '✅ Location annulée',
           successMessage
         );
 
@@ -2377,7 +2733,7 @@ loadTiersForAssignment(): void {
     if (response.statusText && response.statusText !== 'OK') return response.statusText;
 
     // Message par défaut avec emoji approprié
-    return 'La réservation a été annulée avec succès ✨';
+    return 'La Location a été annulée avec succès ✨';
   }
 
   /**
@@ -2451,15 +2807,15 @@ loadTiersForAssignment(): void {
           break;
         case 404:
           errorTitle = 'Non trouvé';
-          errorMessage = 'La réservation à annuler n\'existe pas';
+          errorMessage = 'La Location à annuler n\'existe pas';
           break;
         case 409:
           errorTitle = 'Conflit';
-          errorMessage = 'Cette réservation ne peut pas être annulée (déjà confirmée ou expirée)';
+          errorMessage = 'Cette Location ne peut pas être annulée (déjà confirmée ou expirée)';
           break;
         case 410:
           errorTitle = 'Déjà annulée';
-          errorMessage = 'Cette réservation a déjà été annulée';
+          errorMessage = 'Cette Location a déjà été annulée';
           break;
         case 422:
           errorTitle = 'Données manquantes';
@@ -2467,7 +2823,7 @@ loadTiersForAssignment(): void {
           break;
         case 423:
           errorTitle = 'Verrouillé';
-          errorMessage = 'La réservation est verrouillée et ne peut pas être annulée';
+          errorMessage = 'La Location est verrouillée et ne peut pas être annulée';
           break;
         case 500:
           errorTitle = 'Erreur serveur';
@@ -2542,7 +2898,7 @@ loadTiersForAssignment(): void {
         const successMessage = this.extractConfirmationSuccessMessage(response);
 
         this.notificationService.success(
-          '✅ Réservation confirmée',
+          '✅ Location confirmée',
           successMessage
         );
 
@@ -2637,7 +2993,7 @@ loadTiersForAssignment(): void {
     }
 
     // Priorité 5: Message par défaut
-    return 'La réservation a été liée au contrat avec succès';
+    return 'La Location a été liée au contrat avec succès';
   }
 
   /**
@@ -2663,7 +3019,7 @@ loadTiersForAssignment(): void {
       switch (response.status) {
         case 400:
           errorTitle = 'Données invalides';
-          errorMessage = 'L\'ID du contrat ou de la réservation est invalide';
+          errorMessage = 'L\'ID du contrat ou de la Location est invalide';
           break;
         case 401:
           errorTitle = 'Non autorisé';
@@ -2675,7 +3031,7 @@ loadTiersForAssignment(): void {
           break;
         case 404:
           errorTitle = 'Non trouvé';
-          errorMessage = 'La réservation ou le contrat n\'existe pas';
+          errorMessage = 'La Location ou le contrat n\'existe pas';
           break;
         case 409:
           errorTitle = 'Conflit';
@@ -2771,19 +3127,33 @@ loadTiersForAssignment(): void {
         actions.push(
           { label: 'Louer', icon: 'bx bx-key', action: () => this.assignToRental(vehicle), class: 'btn-success' },
           { label: 'Réserver', icon: 'bx bx-time', action: () => this.openReservationModal(vehicle), class: 'btn-primary' },
-          { label: 'Maintenance', icon: 'bx bx-wrench', action: () => this.changeStatus(vehicle, VehicleStatus.Maintenance), class: 'btn-info' }
+          { label: 'Maintenance', icon: 'bx bx-wrench', action: () => this.openConfirmDialog(vehicle, VehicleStatus.Maintenance), class: 'btn-info' }
         );
         break;
+
       case VehicleStatus.Rented:
+        // ❌ RETIRÉ: Le bouton "Libérer" n'apparaît plus ici
         actions.push(
-          { label: 'Libérer', icon: 'bx bx-check-circle', action: () => this.releaseVehicle(vehicle), class: 'btn-warning' },
-          { label: 'Maintenance', icon: 'bx bx-wrench', action: () => this.changeStatus(vehicle, VehicleStatus.Maintenance), class: 'btn-info' }
+          { label: 'Maintenance', icon: 'bx bx-wrench', action: () => this.openConfirmDialog(vehicle, VehicleStatus.Maintenance), class: 'btn-info' }
         );
         break;
+
       case VehicleStatus.Reserved:
         actions.push(
           { label: 'Confirmer location', icon: 'bx bx-key', action: () => this.assignToRental(vehicle), class: 'btn-success' },
-          { label: 'Annuler réservation', icon: 'bx bx-x', action: () => this.changeStatus(vehicle, VehicleStatus.Available), class: 'btn-secondary' }
+          { label: 'Annuler réservation', icon: 'bx bx-x', action: () => this.openConfirmDialog(vehicle, VehicleStatus.Available), class: 'btn-secondary' }
+        );
+        break;
+
+      case VehicleStatus.Maintenance:
+        actions.push(
+          { label: 'Marquer disponible', icon: 'bx bx-check-circle', action: () => this.openConfirmDialog(vehicle, VehicleStatus.Available), class: 'btn-success' }
+        );
+        break;
+
+      case VehicleStatus.OutOfService:
+        actions.push(
+          { label: 'Marquer disponible', icon: 'bx bx-check-circle', action: () => this.openConfirmDialog(vehicle, VehicleStatus.Available), class: 'btn-success' }
         );
         break;
     }
@@ -3090,7 +3460,9 @@ loadTiersForAssignment(): void {
   /**
    * Obtient la classe CSS pour le badge de type
    */
-  getTypeBadgeClass(type: VehicleType): string {
+  getTypeBadgeClass(type: VehicleType | null | undefined): string {
+    if (!type) return 'badge-secondary';
+
     const vehicleType = this.vehicleTypes.find(t => t.value === type);
     return vehicleType ? `badge-${vehicleType.color}` : 'badge-secondary';
   }
@@ -3098,7 +3470,9 @@ loadTiersForAssignment(): void {
   /**
    * Obtient la classe CSS pour le badge de statut
    */
-  getStatusBadgeClass(status: VehicleStatus): string {
+  getStatusBadgeClass(status: VehicleStatus | null | undefined): string {
+    if (!status) return 'badge-secondary';
+
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? `badge-${statusObj.badge}` : 'badge-secondary';
   }
@@ -3106,7 +3480,9 @@ loadTiersForAssignment(): void {
   /**
    * Obtient le texte du statut
    */
-  getStatusText(status: VehicleStatus): string {
+  getStatusText(status: VehicleStatus | null | undefined): string {
+    if (!status) return 'Inconnu';
+
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? statusObj.label : 'Inconnu';
   }
@@ -3114,7 +3490,9 @@ loadTiersForAssignment(): void {
   /**
    * Obtient l'icône du statut
    */
-  getStatusIcon(status: VehicleStatus): string {
+  getStatusIcon(status: VehicleStatus | null | undefined): string {
+    if (!status) return 'bx bx-question-mark';
+
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? statusObj.icon : 'bx bx-question-mark';
   }
@@ -3122,7 +3500,9 @@ loadTiersForAssignment(): void {
   /**
    * Obtient le texte du type de véhicule
    */
-  getTypeText(type: VehicleType): string {
+  getTypeText(type: VehicleType | null | undefined): string {
+    if (!type) return 'Inconnu';
+
     const vehicleType = this.vehicleTypes.find(t => t.value === type);
     return vehicleType ? vehicleType.label : 'Inconnu';
   }
@@ -3220,7 +3600,9 @@ loadTiersForAssignment(): void {
   /**
    * Obtient l'icône d'un véhicule selon son type
    */
-  getVehicleIcon(type: VehicleType): string {
+  getVehicleIcon(type: VehicleType | null | undefined): string {
+    if (!type) return 'bx bx-car';
+
     switch (type) {
       case VehicleType.Motorcycle: return 'bx bx-cycling';
       case VehicleType.Car: return 'bx bx-car';

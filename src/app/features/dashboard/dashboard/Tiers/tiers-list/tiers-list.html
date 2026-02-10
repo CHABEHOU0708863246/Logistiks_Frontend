@@ -9,272 +9,416 @@
   <!-- =========================================================================== -->
   <!-- SECTION : SIDEBAR PRINCIPALE (NAVIGATION) -->
   <!-- =========================================================================== -->
-  <aside class="layout-menu" id="sidebar">
-    <div class="app-brand">
-      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-      <div>
-        <span class="app-brand-text">Logistik</span>
-        <div class="app-brand-subtitle">Gestion de flotte et locations</div>
-      </div>
+<aside class="layout-menu" id="sidebar">
+  <div class="app-brand">
+    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+    <div>
+      <span class="app-brand-text">LOGISTIK</span>
     </div>
+  </div>
 
-    <ul class="menu-inner">
-      <li class="menu-item" routerLinkActive="active">
-        <a [routerLink]="['/dashboard']" class="menu-link">
-          <i class="menu-icon bx bx-home-circle"></i>
-          <div>Dashboard</div>
-        </a>
-      </li>
+  <ul class="menu-inner">
+    <!-- Dashboard -->
+    <li class="menu-item" routerLinkActive="active">
+      <a [routerLink]="['/dashboard']" class="menu-link">
+        <i class="menu-icon bx bx-home-circle"></i>
+        <div>Tableau de bord</div>
+      </a>
+    </li>
 
-      <li class="menu-header">
-        <span>RÉFÉRENTIELS</span>
-      </li>
+    <!-- TABLEAUX DE BORD & ANALYTICS -->
+    <li class="menu-header">
+      <span>TABLEAUX DE BORD</span>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-group"></i>
-          <div>Tiers</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-              <div>Tous les tiers</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-              <div>Documents à valider</div>
-              <span class="badge badge-warning" *ngIf="dashboardStats.documentsPending > 0">
-                {{ dashboardStats.documentsPending }}
-              </span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-              <div>Gestion des documents</div>
-              <span class="badge badge-info">
-                <i class='bx bx-upload'></i>
-                {{ dashboardStats.documentsPending > 0 ? dashboardStats.documentsPending : '' }}
-              </span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-              <div>Nouveau tier</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-bar-chart-alt-2"></i>
+        <div>Analytics & Rapports</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/analytics/kpi']" class="menu-link">
+            <div>KPIs Globaux</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/analytics/finance']" class="menu-link">
+            <div>Tableau de bord financier</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/analytics/flotte']" class="menu-link">
+            <div>Statistiques flotte</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/analytics/contrats']" class="menu-link">
+            <div>Performance contrats</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-car"></i>
-          <div>Véhicules</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-              <div>Tous les véhicules</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
-              <div>Ajouter vehicule</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <!-- RÉFÉRENTIELS -->
+    <li class="menu-header">
+      <span>RÉFÉRENTIELS</span>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-folder"></i>
-          <div>Documents</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents']" class="menu-link">
-              <div>Tous les documents</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents/factures']" class="menu-link">
-              <div>Factures fournisseurs</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-group"></i>
+        <div>Tiers</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
+            <div>Tous les tiers</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
+            <div>Documents à valider</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
+            <div>Gestion des documents</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
+            <div>Nouveau tier</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-header">
-        <span>CŒUR MÉTIER</span>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-car"></i>
+        <div>Véhicules</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
+            <div>Tous les véhicules</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
+            <div>Ajouter véhicule</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-file"></i>
-          <div>Contrats</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-              <div>Tous les contrats</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats/new']" class="menu-link">
-              <div>Nouveau contrat</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-folder"></i>
+        <div>Documents</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/documents']" class="menu-link">
+            <div>Tous les documents</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active">
-        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-          <i class="menu-icon bx bx-calendar"></i>
-          <div>Calendrier & Échéances</div>
-        </a>
-      </li>
+    <!-- CŒUR MÉTIER -->
+    <li class="menu-header">
+      <span>CŒUR MÉTIER</span>
+    </li>
 
-      <li class="menu-header">
-        <span>FINANCE & COMPTABILITÉ</span>
-      </li>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-file"></i>
+        <div>Contrats</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
+            <div>Tous les contrats</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
+            <div>Statistiques contrats</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/contrats/payment']" class="menu-link">
+            <div>Liste des paiements</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-credit-card"></i>
-          <div>Comptes</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-              <div>Comptes bancaires</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-              <div>Mobile Money</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-              <div>Soldes & Bilans</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <li class="menu-item" routerLinkActive="active">
+      <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
+        <i class="menu-icon bx bx-calendar"></i>
+        <div>Calendrier & Échéances</div>
+      </a>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-wallet"></i>
-          <div>Paiements</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-              <div>Tous les paiements</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/retard']" class="menu-link">
-              <div>En retard</div><span class="badge badge-danger">5</span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/attente']" class="menu-link">
-              <div>En attente</div><span class="badge badge-warning">8</span>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <!-- FINANCE & COMPTABILITÉ -->
+    <li class="menu-header">
+      <span>FINANCE & COMPTABILITÉ</span>
+    </li>
 
-      <li class="menu-header">
-        <span>ADMINISTRATION</span>
-      </li>
+    <!-- CHARGES & DÉPENSES -->
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-money"></i>
+        <div>Charges & Dépenses</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/charges/vehicules']" class="menu-link">
+            <div>Charges véhicules</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/charges/generales']" class="menu-link">
+            <div>Charges générales</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/charges/fournisseurs']" class="menu-link">
+            <div>Paiement fournisseurs</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/charges/affectation-compte']" class="menu-link">
+            <div>Affectation compte</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-user"></i>
-          <div>Utilisateurs</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-              <div>Liste utilisateurs</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-detail']" class="menu-link">
-              <div>Détail utilisateur</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-              <div>Formulaire utilisateur</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-              <div>Gestion rôles</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-              <div>Permissions</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-profile']" class="menu-link">
-              <div>Profil utilisateur</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-sessions']" class="menu-link">
-              <div>Sessions</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-activity']" class="menu-link">
-              <div>Activité</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-groups']" class="menu-link">
-              <div>Groupes</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <!-- MOUVEMENTS INTERNES -->
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-transfer"></i>
+        <div>Mouvements Internes</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/mouvements/transferts']" class="menu-link">
+            <div>Transferts entre comptes</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/mouvements/tracabilite']" class="menu-link">
+            <div>Traçabilité complète</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/mouvements/historique']" class="menu-link">
+            <div>Historique mouvements</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-cog"></i>
-          <div>Paramétrage</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-              <div>Paramètres généraux</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-              <div>Types de véhicules</div>
-            </a>
-          </li>
-        </ul>
-      </li>
+    <!-- COMPTES & PAIEMENTS -->
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-credit-card"></i>
+        <div>Comptes</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
+            <div>Comptes bancaires</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
+            <div>Mobile Money</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
+            <div>Soldes & Bilans</div>
+          </a>
+        </li>
+      </ul>
+    </li>
 
-      <li class="menu-item" style="margin-top: 2rem;">
-        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-          <i class="menu-icon bx bx-log-out"></i>
-          <div>Déconnexion</div>
-        </a>
-      </li>
-    </ul>
-  </aside>
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-wallet"></i>
+        <div>Paiements</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
+            <div>Tous les paiements</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements/report']" class="menu-link">
+            <div>Rapports</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/finance/paiements/methods']" class="menu-link">
+            <div>Méthodes paiement</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- RENTABILITÉ & ROI -->
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-trending-up"></i>
+        <div>Rentabilité & ROI</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/rentabilite/roi-vehicule']" class="menu-link">
+            <div>ROI par véhicule</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="menu-link">
+            <div>Comparaisons périodes</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/rentabilite/historique']" class="menu-link">
+            <div>Historique rentabilité</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/rentabilite/rapports']" class="menu-link">
+            <div>Rapports détaillés</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- CALCULS FINANCIERS (Module technique avec UI minimale) -->
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-calculator"></i>
+        <div>Calculs Financiers</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/calculs/agregation']" class="menu-link">
+            <div>Agrégation loyers/charges</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/calculs/resultats-nets']" class="menu-link">
+            <div>Résultats nets</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/calculs/base-roi']" class="menu-link">
+            <div>Base de calcul ROI</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/calculs/parametres']" class="menu-link">
+            <div>Paramètres calculs</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- ADMINISTRATION -->
+    <li class="menu-header">
+      <span>ADMINISTRATION</span>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-user"></i>
+        <div>Utilisateurs</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+            <div>Liste utilisateurs</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+            <div>Créer un utilisateur</div>
+            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+            <div>Gestion rôles</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
+            <div>Permissions</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active open">
+      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
+        <i class="menu-icon bx bx-cog"></i>
+        <div>Paramétrage</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
+            <div>Paramètres généraux</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
+            <div>Types de véhicules</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/finance']" class="menu-link">
+            <div>Paramètres financiers</div>
+          </a>
+        </li>
+        <li class="menu-item" routerLinkActive="active">
+          <a [routerLink]="['/dashboard/settings/notifications']" class="menu-link">
+            <div>Notifications & Alertes</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- À PROPOS & INFORMATIONS -->
+    <li class="menu-header">
+      <span>À PROPOS</span>
+    </li>
+
+    <li class="menu-item" routerLinkActive="active">
+      <a [routerLink]="['/dashboard/about']" class="menu-link">
+        <i class="menu-icon bx bx-info-circle"></i>
+        <div>À propos de Logistik</div>
+      </a>
+    </li>
+
+    <!-- DÉCONNEXION -->
+    <li class="menu-item" style="margin-top: 2rem;">
+      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
+        <i class="menu-icon bx bx-log-out"></i>
+        <div>Déconnexion</div>
+      </a>
+    </li>
+  </ul>
+</aside>
 
   <!-- =========================================================================== -->
   <!-- SECTION : CONTENU PRINCIPAL -->
@@ -591,7 +735,7 @@
 
                       <!-- Cellule : Rôles (badges) -->
                       <td>
-                        <div class="d-flex flex-wrap gap-1">
+                        <div class="d-flex flex-wrap gap-5">
                           <span *ngFor="let role of getActiveRoles(tier)" class="badge"
                             [ngClass]="getRoleBadgeClass(role)">
                             {{ getRoleText(role) }}
@@ -612,18 +756,16 @@
                       <td>
                         <div class="document-status-indicator">
                           <!-- Indicateur principal -->
-                          <div *ngIf="getDocumentsStatus(tier).valid" class="text-success">
+                          <!-- <div *ngIf="getDocumentsStatus(tier).missing" class="text-success">
                             <i class='bx bx-check-circle'></i> Complet
-                          </div>
+                          </div> -->
 
-                          <div *ngIf="!getDocumentsStatus(tier).valid" class="text-warning">
-                            <!-- Affiche le nombre de documents manquants -->
+                          <!-- <div *ngIf="!getDocumentsStatus(tier).valid" class="text-warning">
                             <div class="d-flex align-items-center gap-1">
                               <i class='bx bx-error-circle'></i>
                               <span>{{ getDocumentsStatus(tier).missing.length }} manquant(s)</span>
                             </div>
 
-                            <!-- Tooltip détaillé au survol -->
                             <div class="missing-docs-tooltip">
                               <small class="text-muted d-block">Documents requis :</small>
                               <ul class="mb-0 ps-2">
@@ -632,7 +774,7 @@
                                 </li>
                               </ul>
                             </div>
-                          </div>
+                          </div> -->
 
                           <!-- Indicateurs secondaires -->
                           <div class="d-flex gap-1 mt-1">
@@ -647,33 +789,38 @@
                       </td>
 
                       <!-- Cellule : Actions -->
+                      <!-- Cellule : Actions -->
                       <td>
                         <div class="btn-group" role="group">
-                          <!-- Bouton : Bloquer -->
-                          <button class="btn btn-sm btn-outline-danger" (click)="blockTier(tier)" title="Bloquer">
+                          <!-- Bouton : Bloquer (toujours visible si tier n'est pas bloqué) -->
+                          <button *ngIf="tier.status !== TierStatus.Blocked" class="btn btn-sm btn-outline-danger"
+                            (click)="blockTier(tier)" title="Bloquer">
                             <i class='bx bx-block'></i>
                           </button>
 
-                          <!-- Bouton : Activer (si bloqué) - AVEC VÉRIFICATION -->
-                          <button *ngIf="tier.status === TierStatus.Blocked" class="btn btn-sm btn-outline-success"
-                            (click)="checkActivationEligibility(tier)" title="Vérifier l'éligibilité avant activation">
-                            <i class='bx bx-check-double'></i> Vérifier
+                          <!-- Bouton : Activer directement (si bloqué OU en attente) -->
+                          <button
+                            *ngIf="tier.status === TierStatus.Blocked || tier.status === TierStatus.PendingValidation"
+                            class="btn btn-sm btn-outline-success" (click)="activateTier(tier)" title="Activer le tier">
+                            <i class='bx bx-power-off'></i> Activer
                           </button>
 
-                          <!-- Bouton : Activer (si bloqué) AVEC VÉRIFICATION -->
-                          <button *ngIf="tier.status === TierStatus.Blocked" class="btn btn-sm btn-outline-success"
-                            (click)="checkActivationEligibility(tier)" title="Vérifier et activer">
-                            <i class='bx bx-power-off'></i>
+                          <!-- Bouton : Vérifier avant activation (optionnel, si bloqué) -->
+                          <button *ngIf="tier.status === TierStatus.Blocked" class="btn btn-sm btn-outline-info"
+                            (click)="checkActivationEligibility(tier)" title="Vérifier l'éligibilité">
+                            <i class='bx bx-check-double'></i> Vérifier
                           </button>
                         </div>
 
-                        <!-- Indicateur d'état des documents (si en attente de validation) -->
-                        <div *ngIf="tier.status === TierStatus.PendingValidation" class="mt-1">
+                        <!-- Indicateur d'état des documents -->
+                        <div *ngIf="tier.status === TierStatus.PendingValidation || tier.status === TierStatus.Blocked"
+                          class="mt-1">
                           <small class="document-status">
                             <span *ngIf="getDocumentsStatus(tier).valid" class="text-success">
                               <i class='bx bx-check-circle'></i> Documents OK
                             </span>
-                            <span *ngIf="!getDocumentsStatus(tier).valid" class="text-warning">
+                            <span *ngIf="!getDocumentsStatus(tier).valid && getDocumentsStatus(tier).missing.length > 0"
+                              class="text-warning">
                               <i class='bx bx-error-circle'></i> {{ getDocumentsStatus(tier).missing.length }} doc.
                               manquant(s)
                             </span>
@@ -735,6 +882,8 @@
     <app-confirm-dialog [title]="confirmDialogTitle" [message]="confirmDialogMessage" [details]="confirmDialogDetails"
       [visible]="confirmDialogVisible" (confirm)="onConfirmDialogConfirm()" (cancel)="onConfirmDialogCancel()">
     </app-confirm-dialog>
+
+     <app-notification-component></app-notification-component>
 
     <!-- Dialogue de confirmation avec saisie (pour le blocage) -->
     <app-confirm-dialog-with-input [visible]="showBlockConfirmDialog" [title]="'Blocage du tier'"

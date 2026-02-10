@@ -1543,6 +1543,1129 @@ tr:hover {
   }
 }
 
+
+
+
+/* Styles pour le modal de raison */
+.modal {
+  .modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: none;
+
+    .modal-icon {
+      i {
+        font-size: 2rem;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 2rem;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .vehicle-card-reason {
+    .vehicle-avatar {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        color: white;
+        font-size: 1.8rem;
+      }
+    }
+
+    .status-indicator {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+
+      &.status-available {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+      }
+
+      &.status-rented {
+        background: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.2);
+      }
+
+      &.status-maintenance {
+        background: rgba(23, 162, 184, 0.1);
+        color: #17a2b8;
+        border: 1px solid rgba(23, 162, 184, 0.2);
+      }
+
+      &.status-outofservice {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+      }
+    }
+  }
+
+  .alert-section {
+    .alert {
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fef3cd 0%, #fff8e1 100%);
+
+      ul {
+        margin-bottom: 0;
+
+        li {
+          margin-bottom: 0.25rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .categories-section {
+    .card-category {
+      .category-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+
+        &:hover {
+          border-color: #696cff;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        &.selected {
+          border-color: #696cff;
+          background: rgba(105, 108, 255, 0.05);
+        }
+
+        i {
+          color: #696cff;
+        }
+      }
+
+      .form-check-input:checked + .form-check-label .category-card {
+        border-color: #696cff;
+        background: rgba(105, 108, 255, 0.05);
+      }
+    }
+  }
+
+  .documentation-section {
+    .card.border-dashed {
+      border: 2px dashed #dee2e6;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #696cff;
+        background: rgba(105, 108, 255, 0.02);
+      }
+    }
+  }
+
+  .summary-section {
+    .card {
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+  }
+
+  textarea.form-control-lg {
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+
+    &:focus {
+      border-color: #696cff;
+      box-shadow: 0 0 0 0.25rem rgba(105, 108, 255, 0.25);
+    }
+
+    &::placeholder {
+      color: #adb5bd;
+      font-style: italic;
+    }
+  }
+
+  .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1.5rem 2rem;
+    background: #f8f9fa;
+
+    .btn {
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+/* Animation d'entrée du modal */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal.show .modal-dialog {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal {
+    .modal-dialog {
+      margin: 1rem;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      flex-direction: column;
+      gap: 1rem;
+
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+/* ================================================
+   STYLES SPÉCIFIQUES POUR LE MODAL DE RAISON
+   (Mise en maintenance et Hors service)
+   ================================================ */
+
+/* Style spécifique pour le modal de raison */
+.modal.show .modal-dialog {
+  animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Header spécifique pour les différents états */
+.modal-header {
+  &.bg-warning {
+    background: linear-gradient(135deg, #ffab00 0%, #ff8c00 100%);
+
+    .modal-icon i {
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(255, 140, 0, 0.3);
+    }
+  }
+
+  &.bg-danger {
+    background: linear-gradient(135deg, #ff3e1d 0%, #e03616 100%);
+
+    .modal-icon i {
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(255, 62, 29, 0.3);
+    }
+  }
+
+  &.bg-success {
+    background: linear-gradient(135deg, #71dd37 0%, #5ac52d 100%);
+
+    .modal-icon i {
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(113, 221, 55, 0.3);
+    }
+  }
+}
+
+/* Carte du véhicule dans le modal de raison */
+.vehicle-card-reason {
+  .card {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    .vehicle-avatar {
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 20px;
+        height: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+/* Indicateur de statut */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.875rem;
+
+  i {
+    font-size: 1.1rem;
+  }
+
+  &.status-available {
+    background: linear-gradient(135deg, rgba(113, 221, 55, 0.1) 0%, rgba(113, 221, 55, 0.2) 100%);
+    color: #71dd37;
+    border: 1px solid rgba(113, 221, 55, 0.3);
+  }
+
+  &.status-rented {
+    background: linear-gradient(135deg, rgba(105, 108, 255, 0.1) 0%, rgba(105, 108, 255, 0.2) 100%);
+    color: #696cff;
+    border: 1px solid rgba(105, 108, 255, 0.3);
+  }
+
+  &.status-maintenance {
+    background: linear-gradient(135deg, rgba(255, 171, 0, 0.1) 0%, rgba(255, 171, 0, 0.2) 100%);
+    color: #ffab00;
+    border: 1px solid rgba(255, 171, 0, 0.3);
+  }
+
+  &.status-outofservice {
+    background: linear-gradient(135deg, rgba(255, 62, 29, 0.1) 0%, rgba(255, 62, 29, 0.2) 100%);
+    color: #ff3e1d;
+    border: 1px solid rgba(255, 62, 29, 0.3);
+  }
+}
+
+/* Section des alertes améliorées */
+.alert-section {
+  .alert {
+    border-radius: 12px;
+    border: none;
+    padding: 1.25rem;
+
+    &.alert-warning {
+      background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+      border-left: 4px solid #ffc107;
+
+      h6.alert-heading {
+        color: #856404;
+        font-weight: 600;
+      }
+
+      ul {
+        li {
+          color: #856404;
+          line-height: 1.6;
+
+          strong {
+            font-weight: 700;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Section de raison principale */
+.reason-section {
+  label {
+    display: flex;
+    align-items: center;
+
+    .text-danger {
+      margin-left: 4px;
+    }
+  }
+
+  textarea.form-control-lg {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+
+    &:focus {
+      border-color: #696cff;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.1);
+    }
+
+    &::placeholder {
+      color: #94a3b8;
+      font-style: italic;
+    }
+  }
+
+  .d-flex.justify-content-between {
+    small {
+      font-size: 0.75rem;
+
+      i {
+        font-size: 0.875rem;
+      }
+
+      &.text-success {
+        color: #28a745;
+        font-weight: 500;
+      }
+
+      &.text-warning {
+        color: #ffc107;
+        font-weight: 500;
+      }
+
+      &.text-danger {
+        color: #dc3545;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+/* Section des catégories */
+.categories-section {
+  .card-category {
+    .category-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      height: 100%;
+
+      &:hover {
+        border-color: #696cff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(105, 108, 255, 0.15);
+      }
+
+      i {
+        color: #696cff;
+        font-size: 2rem;
+      }
+
+      h6 {
+        color: #1a202c;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      small {
+        color: #718096;
+        font-size: 0.75rem;
+        line-height: 1.4;
+      }
+    }
+
+    .form-check-input:checked + .form-check-label .category-card {
+      border-color: #696cff;
+      background: rgba(105, 108, 255, 0.05);
+      position: relative;
+
+      &::before {
+        content: '✓';
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background: #696cff;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+/* Section date estimée */
+.date-section {
+  input[type="date"] {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    width: 100%;
+
+    &:focus {
+      border-color: #696cff;
+      outline: none;
+    }
+  }
+}
+
+/* Section documentation */
+.documentation-section {
+  .card.border-dashed {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #696cff;
+      background: rgba(105, 108, 255, 0.02);
+
+      i {
+        color: #696cff;
+      }
+    }
+
+    i.bx-cloud-upload {
+      font-size: 3rem;
+      color: #9ca3af;
+    }
+
+    h6 {
+      color: #1f2937;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    p.text-muted {
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      border: 2px solid #696cff;
+      color: #696cff;
+      font-weight: 500;
+
+      &:hover {
+        background: #696cff;
+        color: white;
+      }
+    }
+  }
+}
+
+/* Section récapitulative */
+.summary-section {
+  .card {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+
+    .card-title {
+      color: #28a745;
+      font-weight: 600;
+
+      i {
+        color: #28a745;
+      }
+    }
+
+    .badge {
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .bx-right-arrow-alt {
+      color: #6c757d;
+    }
+  }
+}
+
+/* Footer amélioré */
+.modal-footer {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+  .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &.btn-warning {
+      background: linear-gradient(135deg, #ffab00 0%, #ff8c00 100%);
+      border: none;
+      color: white;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(255, 171, 0, 0.3);
+      }
+    }
+
+    &.btn-danger {
+      background: linear-gradient(135deg, #ff3e1d 0%, #e03616 100%);
+      border: none;
+      color: white;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(255, 62, 29, 0.3);
+      }
+    }
+
+    &.btn-success {
+      background: linear-gradient(135deg, #71dd37 0%, #5ac52d 100%);
+      border: none;
+      color: white;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(113, 221, 55, 0.3);
+      }
+    }
+  }
+}
+
+/* Animation d'entrée spécifique */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive spécifique */
+@media (max-width: 768px) {
+  .modal {
+    .modal-dialog {
+      margin: 1rem;
+      max-height: 85vh;
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+      max-height: 60vh;
+    }
+
+    .vehicle-card-reason {
+      .card-body {
+        flex-direction: column;
+        text-align: center;
+
+        .vehicle-avatar {
+          margin: 0 auto 1rem;
+        }
+
+        .text-end {
+          text-align: center !important;
+          margin-top: 1rem;
+        }
+      }
+    }
+
+    .categories-section {
+      .row {
+        margin: 0;
+
+        .col-md-6 {
+          padding: 0.5rem;
+        }
+      }
+    }
+
+    .modal-footer {
+      flex-direction: column;
+
+      .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+}
+
+/* Dark mode support (optionnel) */
+@media (prefers-color-scheme: dark) {
+  .vehicle-card-reason .card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .categories-section .card-category .category-card {
+    background: #1e293b;
+    border-color: #334155;
+
+    h6 {
+      color: #e2e8f0;
+    }
+
+    small {
+      color: #94a3b8;
+    }
+  }
+
+  .summary-section .card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+}
+
+/* Style pour le spinner de chargement */
+.spinner-border.text-primary {
+  border-color: #696cff;
+  border-right-color: transparent;
+}
+
+/* Style pour les messages d'erreur */
+.invalid-feedback.d-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+/* Amélioration visuelle du compteur de caractères */
+.d-flex.justify-content-between {
+  margin-top: 0.5rem;
+
+  small {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    &.text-muted {
+      color: #6c757d;
+    }
+  }
+}
+
+/* Style pour les icônes dans les titres */
+.modal-title, .form-label {
+  i {
+    vertical-align: middle;
+  }
+}
+
+/* Effet de focus sur les cartes cliquables */
+.category-card:focus-within {
+  outline: 2px solid #696cff;
+  outline-offset: 2px;
+}
+
+/* Transition douce pour tous les états */
+.reason-section, .categories-section, .date-section, .documentation-section, .summary-section {
+  transition: all 0.3s ease;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* MODAL DE RÉSERVATION - Même style que vehicle-edit-modal */
+.vehicle-reservation-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: 95%;
+  max-width: 800px;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+}
+
+/* Header avec gradient spécifique pour réservation */
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #1a3f8f 0%, #1a3f8f 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+  }
+
+  .modal-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+
+    i {
+      font-size: 1.8rem;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+  }
+
+  .btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    z-index: 1;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+
+    i {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+/* Body avec scrollbar stylisée */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+
+  /* Scrollbar personnalisée */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    margin: 4px 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #1a3f8f, #1a3f8f);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(to bottom, #1a3f8f, #1a3f8f);
+    }
+  }
+
+  /* Pour Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #1a3f8f rgba(0, 0, 0, 0.05);
+}
+
+/* En-tête du véhicule */
+.vehicle-header {
+  .vehicle-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 2rem;
+      color: white;
+    }
+  }
+
+  h4 {
+    font-weight: 700;
+    color: #1a202c;
+  }
+
+  .badge {
+    padding: 0.35rem 0.75rem;
+    font-weight: 600;
+    border-radius: 8px;
+  }
+}
+
+/* Cards */
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  background: white;
+
+  .card-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0 !important;
+
+    h6 {
+      font-weight: 700;
+      color: #2d3748;
+      margin: 0;
+      display: flex;
+      align-items: center;
+
+      i {
+        font-size: 1.2rem;
+        color: #4CAF50;
+      }
+    }
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+/* Form controls */
+.form-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: #210d57;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  }
+
+  &:disabled {
+    background-color: #f8fafc;
+    opacity: 0.7;
+  }
+}
+
+.form-select {
+  option {
+    padding: 0.5rem;
+  }
+}
+
+/* Footer */
+.modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  backdrop-filter: blur(10px);
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  .btn-secondary {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+
+    &:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #1e2ad1 0%, #34179c 100%);
+    border: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+    }
+  }
+}
+
+/* Alertes */
+.alert {
+  border-radius: 10px;
+  border: none;
+  padding: 1rem 1.25rem;
+
+  &.alert-danger {
+    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+    color: #c53030;
+  }
+
+  &.alert-success {
+    background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+    color: #22543d;
+  }
+
+  &.alert-info {
+    background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+    color: #2c5282;
+  }
+}
+
+/* Validation */
+.invalid-feedback {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+
+  i {
+    margin-right: 0.25rem;
+  }
+}
+
+/* Badges pour types de véhicules */
+.badge {
+  &.bg-secondary {
+    background: linear-gradient(135deg, #a0aec0 0%, #718096 100%) !important;
+  }
+
+  &.badge-primary {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%) !important;
+  }
+
+  &.badge-success {
+    background: linear-gradient(135deg, #2b15a8 0%, #4715bd 100%) !important;
+  }
+
+  &.badge-warning {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%) !important;
+  }
+}
+
+/* Animation backdrop */
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ===== CONTENU DES DÉTAILS ===== */
 
 .vehicle-details {
