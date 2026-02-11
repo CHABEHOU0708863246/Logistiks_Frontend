@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, throwError } from 'rxjs';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 import { ApiResponseData } from '../../models/Common/ApiResponseData';
 import { RoleDto } from '../../models/Core/Roles/DTOs/RoleDto';
 import { RoleRequest } from '../../models/Core/Roles/DTOs/RoleRequest';
