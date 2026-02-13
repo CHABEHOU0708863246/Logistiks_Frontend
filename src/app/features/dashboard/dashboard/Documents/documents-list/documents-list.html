@@ -1167,174 +1167,241 @@
       <!-- Répétez pour les autres modales (showReplaceFileModal, showRejectModal, showSignModal, showDeleteModal) -->
 
       <!-- MODAL DE DÉTAILS -->
+<!-- MODAL DE DÉTAILS - VERSION AMÉLIORÉE -->
       <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
 
       <div class="document-details-modal" *ngIf="showDetailsModal" [class.show]="showDetailsModal">
         <div class="modal-content" (click)="$event.stopPropagation()">
 
-          <!-- HEADER -->
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class='bx bx-file me-2'></i>
-              Détails du document
-            </h5>
-            <button type="button" class="btn-close" (click)="closeDetailsModal()" aria-label="Close">
+          <!-- HEADER MODERNE -->
+          <div class="modal-header-modern">
+            <div class="header-content">
+              <div class="header-icon">
+                <i class='bx bx-file-blank'></i>
+              </div>
+              <div class="header-text">
+                <h3 class="header-title">Détails du document</h3>
+                <p class="header-subtitle">Informations complètes et actions disponibles</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close-modern" (click)="closeDetailsModal()" aria-label="Close">
               <i class='bx bx-x'></i>
             </button>
           </div>
 
           <!-- BODY -->
-          <div class="modal-body" *ngIf="selectedDocument">
+          <div class="modal-body-modern" *ngIf="selectedDocument">
 
             <!-- CHARGEMENT -->
-            <div *ngIf="documentDetailsLoading" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status"></div>
-              <p class="mt-2">Chargement des détails...</p>
+            <div *ngIf="documentDetailsLoading" class="loading-container">
+              <div class="loading-spinner"></div>
+              <p class="loading-text">Chargement des détails...</p>
             </div>
 
             <!-- CONTENU DES DÉTAILS -->
-            <div *ngIf="!documentDetailsLoading">
+            <div *ngIf="!documentDetailsLoading" class="details-container">
 
-              <!-- SECTION PRINCIPALE -->
-              <div class="row mb-4">
-                <div class="col-md-8">
-                  <h4 class="mb-3">{{ selectedDocument.name }}</h4>
-                  <div class="d-flex flex-wrap gap-2 mb-3">
-                    <span class="badge" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">
-                      {{ getDocumentStatusLabel(selectedDocument) }}
-                    </span>
-                    <span class="badge bg-secondary">
-                      {{ getDocumentTypeName(selectedDocument.type) }}
-                    </span>
-                    <span *ngIf="selectedDocument.isSigned" class="badge bg-success">
-                      <i class='bx bx-check-circle me-1'></i> Signé
-                    </span>
-                    <span *ngIf="selectedDocument.isArchived" class="badge bg-dark">
-                      <i class='bx bx-archive me-1'></i> Archivé
-                    </span>
+              <!-- HERO SECTION - APERÇU DU DOCUMENT -->
+              <div class="document-hero">
+                <div class="document-preview">
+                  <div class="preview-icon-wrapper">
+                    <i [class]="getDocumentTypeIcon(selectedDocument.mimeType)" class="preview-icon"></i>
                   </div>
-
-                  <!-- DESCRIPTION -->
-                  <div *ngIf="selectedDocument.description" class="mb-4">
-                    <h6 class="text-muted mb-2">Description :</h6>
-                    <p class="mb-0">{{ selectedDocument.description }}</p>
+                  <div class="preview-info">
+                    <h2 class="document-name">{{ selectedDocument.name }}</h2>
+                    <p class="document-filename">
+                      <i class='bx bx-paperclip'></i>
+                      {{ selectedDocument.fileName }}
+                    </p>
+                    <div class="document-meta">
+                      <span class="meta-item">
+                        <i class='bx bx-data'></i>
+                        {{ formatFileSize(selectedDocument.fileSize) }}
+                      </span>
+                      <span class="meta-separator">•</span>
+                      <span class="meta-item">
+                        <i class='bx bx-file'></i>
+                        {{ selectedDocument.mimeType }}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div class="col-md-4">
-                  <!-- FICHIER -->
-                  <div class="card">
-                    <div class="card-body text-center">
-                      <i [class]="getDocumentTypeIcon(selectedDocument.mimeType)"
-                        class="display-4 text-primary mb-3"></i>
-                      <h6 class="mb-1">{{ selectedDocument.fileName }}</h6>
-                      <p class="text-muted small mb-2">
-                        {{ formatFileSize(selectedDocument.fileSize) }} • {{ selectedDocument.mimeType }}
-                      </p>
-                      <button class="btn btn-primary btn-sm" (click)="downloadDocument(selectedDocument)">
-                        <i class='bx bx-download me-1'></i> Télécharger
+                <!-- BADGES DE STATUT -->
+                <div class="status-badges">
+                  <span class="status-badge" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">
+                    <i class='bx bx-time-five'></i>
+                    {{ getDocumentStatusLabel(selectedDocument) }}
+                  </span>
+                  <span class="status-badge badge-type">
+                    <i class='bx bx-category'></i>
+                    {{ getDocumentTypeName(selectedDocument.type) }}
+                  </span>
+                  <span *ngIf="selectedDocument.isSigned" class="status-badge badge-signed">
+                    <i class='bx bx-check-shield'></i>
+                    Signé
+                  </span>
+                  <span *ngIf="selectedDocument.isArchived" class="status-badge badge-archived">
+                    <i class='bx bx-archive'></i>
+                    Archivé
+                  </span>
+                </div>
+
+                <!-- ACTIONS RAPIDES -->
+                <div class="quick-actions">
+                  <button class="action-btn primary" (click)="downloadDocument(selectedDocument)">
+                    <i class='bx bx-download'></i>
+                    <span>Télécharger</span>
+                  </button>
+                  <button class="action-btn secondary" (click)="openEditMetadataModal(selectedDocument)">
+                    <i class='bx bx-edit'></i>
+                    <span>Modifier</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- DESCRIPTION -->
+              <div *ngIf="selectedDocument.description" class="info-card description-card">
+                <div class="card-icon">
+                  <i class='bx bx-text'></i>
+                </div>
+                <div class="card-content">
+                  <h4 class="card-title">Description</h4>
+                  <p class="card-text">{{ selectedDocument.description }}</p>
+                </div>
+              </div>
+
+              <!-- GRILLE D'INFORMATIONS -->
+              <div class="info-grid">
+
+                <!-- INFORMATIONS TEMPORELLES -->
+                <div class="info-card">
+                  <div class="card-header-icon">
+                    <i class='bx bx-calendar'></i>
+                    <h4 class="card-title">Informations temporelles</h4>
+                  </div>
+                  <div class="card-content">
+                    <div class="info-item">
+                      <div class="info-label">
+                        <i class='bx bx-calendar-plus'></i>
+                        <span>Date de création</span>
+                      </div>
+                      <div class="info-value">{{ formatDate(selectedDocument.createdAt) }}</div>
+                    </div>
+
+                    <div *ngIf="selectedDocument.expiryDate" class="info-item"
+                         [class.danger]="selectedDocument.isExpired">
+                      <div class="info-label">
+                        <i class='bx bx-calendar-x'></i>
+                        <span>Date d'expiration</span>
+                      </div>
+                      <div class="info-value">
+                        {{ formatDate(selectedDocument.expiryDate) }}
+                        <span class="expiry-badge" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">
+                          {{ getDaysUntilExpiry(selectedDocument.expiryDate) }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div *ngIf="selectedDocument.signedAt" class="info-item">
+                      <div class="info-label">
+                        <i class='bx bx-pen'></i>
+                        <span>Date de signature</span>
+                      </div>
+                      <div class="info-value success">
+                        {{ formatDate(selectedDocument.signedAt) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ASSOCIATION -->
+                <div class="info-card">
+                  <div class="card-header-icon">
+                    <i class='bx bx-link'></i>
+                    <h4 class="card-title">Association</h4>
+                  </div>
+                  <div class="card-content">
+                    <div *ngIf="selectedDocument.relatedEntityType && selectedDocument.relatedEntityId" class="entity-link">
+                      <div class="entity-icon-wrapper">
+                        <i [class]="getEntityTypeIcon(selectedDocument.relatedEntityType)"></i>
+                      </div>
+                      <div class="entity-details">
+                        <span class="entity-type">{{ selectedDocument.relatedEntityType }}</span>
+                        <span class="entity-name">{{ selectedDocument.relatedEntityName || selectedDocument.relatedEntityId }}</span>
+                      </div>
+                      <button class="btn-view-entity"
+                              (click)="navigateToEntity(selectedDocument.relatedEntityType, selectedDocument.relatedEntityId)">
+                        <i class='bx bx-right-arrow-circle'></i>
                       </button>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- INFORMATIONS DÉTAILLÉES -->
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="card mb-3">
-                    <div class="card-header">
-                      <h6 class="mb-0"><i class='bx bx-info-circle me-2'></i> Informations</h6>
-                    </div>
-                    <div class="card-body">
-                      <table class="table table-sm mb-0">
-                        <tr>
-                          <td width="120"><strong>Créé le :</strong></td>
-                          <td>{{ formatDate(selectedDocument.createdAt) }}</td>
-                        </tr>
-                        <tr *ngIf="selectedDocument.expiryDate">
-                          <td><strong>Expiration :</strong></td>
-                          <td [class.text-danger]="selectedDocument.isExpired">
-                            {{ formatDate(selectedDocument.expiryDate) }}
-                            <span class="badge ms-2" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">
-                              {{ getDaysUntilExpiry(selectedDocument.expiryDate) }}
-                            </span>
-                          </td>
-                        </tr>
-                        <tr *ngIf="selectedDocument.signedAt">
-                          <td><strong>Signé le :</strong></td>
-                          <td>{{ formatDate(selectedDocument.signedAt) }}</td>
-                        </tr>
-                        <tr>
-                          <td><strong>Type MIME :</strong></td>
-                          <td>{{ selectedDocument.mimeType }}</td>
-                        </tr>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="card mb-3">
-                    <div class="card-header">
-                      <h6 class="mb-0"><i class='bx bx-link me-2'></i> Association</h6>
-                    </div>
-                    <div class="card-body">
-                      <div *ngIf="selectedDocument.relatedEntityType && selectedDocument.relatedEntityId">
-                        <p class="mb-2">
-                          <i [class]="getEntityTypeIcon(selectedDocument.relatedEntityType)" class="me-2"></i>
-                          <strong>{{ selectedDocument.relatedEntityType }} :</strong>
-                          {{ selectedDocument.relatedEntityName || selectedDocument.relatedEntityId }}
-                        </p>
-                        <button *ngIf="selectedDocument.relatedEntityId" class="btn btn-outline-primary btn-sm"
-                          (click)="navigateToEntity(selectedDocument.relatedEntityType, selectedDocument.relatedEntityId)">
-                          <i class='bx bx-link-external me-1'></i> Voir l'entité
-                        </button>
-                      </div>
-                      <div *ngIf="!selectedDocument.relatedEntityType">
-                        <p class="text-muted mb-0">
-                          <i class='bx bx-unlink me-2'></i> Non associé à une entité
-                        </p>
-                      </div>
+                    <div *ngIf="!selectedDocument.relatedEntityType" class="no-association">
+                      <i class='bx bx-unlink'></i>
+                      <span>Aucune entité associée</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- ACTIONS -->
-              <div class="card">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-cog me-2'></i> Actions</h6>
-                </div>
-                <div class="card-body">
-                  <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-outline-primary" (click)="downloadDocument(selectedDocument)">
-                      <i class='bx bx-download me-1'></i> Télécharger
-                    </button>
-                    <button class="btn btn-outline-secondary" (click)="openEditMetadataModal(selectedDocument)">
-                      <i class='bx bx-edit me-1'></i> Modifier
-                    </button>
-                    <button class="btn btn-outline-warning" (click)="openReplaceFileModal(selectedDocument)">
-                      <i class='bx bx-refresh me-1'></i> Remplacer
-                    </button>
-                    <button *ngIf="!selectedDocument.isSigned" class="btn btn-outline-success"
-                      (click)="openSignModal(selectedDocument)">
-                      <i class='bx bx-edit me-1'></i> Signer
-                    </button>
-                    <button class="btn btn-outline-danger" (click)="openDeleteModal(selectedDocument)">
-                      <i class='bx bx-trash me-1'></i> Archiver
-                    </button>
-                  </div>
+              <!-- ACTIONS COMPLÈTES -->
+              <div class="actions-section">
+                <h4 class="section-title">
+                  <i class='bx bx-cog'></i>
+                  Actions disponibles
+                </h4>
+                <div class="actions-grid">
+                  <button class="action-card" (click)="downloadDocument(selectedDocument)">
+                    <div class="action-icon blue">
+                      <i class='bx bx-download'></i>
+                    </div>
+                    <div class="action-info">
+                      <span class="action-title">Télécharger</span>
+                      <span class="action-desc">Obtenir une copie du fichier</span>
+                    </div>
+                  </button>
+
+                  <button class="action-card" (click)="openEditMetadataModal(selectedDocument)">
+                    <div class="action-icon gray">
+                      <i class='bx bx-edit'></i>
+                    </div>
+                    <div class="action-info">
+                      <span class="action-title">Modifier</span>
+                      <span class="action-desc">Éditer les métadonnées</span>
+                    </div>
+                  </button>
+
+                  <button class="action-card" (click)="openReplaceFileModal(selectedDocument)">
+                    <div class="action-icon orange">
+                      <i class='bx bx-refresh'></i>
+                    </div>
+                    <div class="action-info">
+                      <span class="action-title">Remplacer</span>
+                      <span class="action-desc">Mettre à jour le fichier</span>
+                    </div>
+                  </button>
+
+                  <button *ngIf="!selectedDocument.isSigned" class="action-card" (click)="openSignModal(selectedDocument)">
+                    <div class="action-icon green">
+                      <i class='bx bx-pen'></i>
+                    </div>
+                    <div class="action-info">
+                      <span class="action-title">Signer</span>
+                      <span class="action-desc">Apposer une signature</span>
+                    </div>
+                  </button>
+
+                  <button class="action-card danger" (click)="openDeleteModal(selectedDocument)">
+                    <div class="action-icon red">
+                      <i class='bx bx-trash'></i>
+                    </div>
+                    <div class="action-info">
+                      <span class="action-title">Archiver</span>
+                      <span class="action-desc">Déplacer vers les archives</span>
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- FOOTER -->
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">
-              <i class='bx bx-x me-1'></i> Fermer
-            </button>
           </div>
         </div>
       </div>

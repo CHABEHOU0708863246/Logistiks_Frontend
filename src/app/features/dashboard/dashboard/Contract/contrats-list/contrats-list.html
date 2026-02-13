@@ -2007,7 +2007,6 @@
                             <th>Montant</th>
                             <th>Méthode</th>
                             <th>Référence</th>
-                            <th>Enregistré par</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -2017,7 +2016,6 @@
                             <td><strong class="text-success">{{ formatCurrency(payment.amountPaid) }}</strong></td>
                             <td><span class="badge bg-info">{{ getPaymentMethodLabel(payment.method) }}</span></td>
                             <td><small class="text-muted">{{ payment.reference || '-' }}</small></td>
-                            <td><small class="text-muted">{{ payment.recordedBy || '-' }}</small></td>
                           </tr>
                         </tbody>
                       </table>
