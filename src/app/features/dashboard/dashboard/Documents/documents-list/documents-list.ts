@@ -16,11 +16,12 @@ import { NotificationComponent } from '../../../../../core/components/notificati
 import { Tiers } from '../../../../../core/services/Tiers/tiers';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 import { CreateDocumentRequest } from '../../../../../core/models/Documents/Document-request.models';
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 @Component({
   selector: 'app-documents-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
   templateUrl: './documents-list.html',
   styleUrl: './documents-list.scss',
 })

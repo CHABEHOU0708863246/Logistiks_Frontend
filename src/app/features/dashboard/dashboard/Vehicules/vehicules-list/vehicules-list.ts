@@ -18,6 +18,7 @@ import { ContractBasic, RentalContract } from '../../../../../core/models/Contra
 import { Contract } from '../../../../../core/services/Contract/contract';
 import { ContractDto } from '../../../../../core/models/Contracts/ContractDto';
 import { ConfirmDialog } from '../../../../../core/components/confirm-dialog/confirm-dialog';
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 /**
  * Réponse paginée du serveur pour les contrats
@@ -42,7 +43,7 @@ export interface ContractPaginatedResponse {
  */
 @Component({
   selector: 'app-vehicules-list',
-  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule, NotificationComponent, ConfirmDialog],
+  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule, NotificationComponent, ConfirmDialog, SidebarComponent],
   templateUrl: './vehicules-list.html',
   styleUrls: ['./vehicules-list.scss'],
 })
@@ -3698,6 +3699,58 @@ export class VehiculesList implements OnInit, OnDestroy {
       'Le téléchargement va démarrer...'
     );
   }
+
+  // ============================================================================
+// SECTION : MÉTHODES DE FORMATAGE POUR LES STATISTIQUES
+// ============================================================================
+
+/**
+ * Formate un montant en FCFA
+ */
+formatAmount(amount: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XOF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount).replace('XOF', 'FCFA');
+}
+
+/**
+ * Calcule le taux d'occupation du parc
+ */
+get occupancyRate(): number {
+  if (this.stats.totalVehicles === 0) return 0;
+  return (this.stats.rentedVehicles / this.stats.totalVehicles) * 100;
+}
+
+/**
+ * Calcule le taux de disponibilité
+ */
+get availabilityRate(): number {
+  if (this.stats.totalVehicles === 0) return 0;
+  return (this.stats.availableVehicles / this.stats.totalVehicles) * 100;
+}
+
+/**
+ * Obtient le statut de santé du parc
+ */
+get fleetHealthStatus(): { text: string; class: string; icon: string } {
+  const healthScore =
+    (this.stats.availableVehicles * 100 +
+     this.stats.rentedVehicles * 80 +
+     this.stats.inMaintenanceVehicles * 30) / this.stats.totalVehicles;
+
+  if (healthScore >= 80) {
+    return { text: 'Excellent', class: 'text-success', icon: 'bx bx-smile' };
+  } else if (healthScore >= 60) {
+    return { text: 'Bon', class: 'text-info', icon: 'bx bx-neutral' };
+  } else if (healthScore >= 40) {
+    return { text: 'Moyen', class: 'text-warning', icon: 'bx bx-meh' };
+  } else {
+    return { text: 'Critique', class: 'text-danger', icon: 'bx bx-sad' };
+  }
+}
 
   /**
    * Charge les réservations d'un véhicule spécifique

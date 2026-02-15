@@ -31,6 +31,7 @@ import { ConfirmDialog } from "../../../../../core/components/confirm-dialog/con
 
 // Environnement
 import { environment } from '../../../../../../environments/environment.development';
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 /**
  * Composant de gestion des documents manquants des tiers
@@ -40,7 +41,7 @@ import { environment } from '../../../../../../environments/environment.developm
  */
 @Component({
   selector: 'app-documents-management',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, RouterLink, ConfirmDialog],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, RouterLink, ConfirmDialog, SidebarComponent],
   templateUrl: './documents-management.html',
   styleUrl: './documents-management.scss',
 })

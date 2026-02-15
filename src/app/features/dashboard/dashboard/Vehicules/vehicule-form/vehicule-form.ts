@@ -12,6 +12,7 @@ import { NotificationService } from '../../../../../core/services/Notification/n
 import { Token } from '../../../../../core/services/Token/token';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 /**
  * Composant pour la création et la gestion de formulaires de véhicules
@@ -21,7 +22,7 @@ import { NotificationComponent } from "../../../../../core/components/notificati
  */
 @Component({
   selector: 'app-vehicule-form',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
   templateUrl: './vehicule-form.html',
   styleUrls: ['./vehicule-form.scss'],
 })

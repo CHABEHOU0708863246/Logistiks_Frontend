@@ -23,6 +23,7 @@ import { ConfirmDialogWithInput } from "../../../../../core/components/confirm-d
 // Environnement
 import { environment } from '../../../../../../environments/environment.development';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 /**
  * Composant de gestion de la liste des tiers (clients, fournisseurs, partenaires)
  * @class TiersList
@@ -37,7 +38,8 @@ import { NotificationComponent } from "../../../../../core/components/notificati
     RouterModule,
     ConfirmDialog,
     ConfirmDialogWithInput,
-    NotificationComponent
+    NotificationComponent,
+    SidebarComponent
 ],
   templateUrl: './tiers-list.html',
   styleUrls: ['./tiers-list.scss']
@@ -585,173 +587,182 @@ export class TiersList implements OnInit, OnDestroy {
     this.openBlockDialog(tier);
   }
 
-/**
- * Active un tier directement sans vérification préalable
- * @param tier - Tier à activer
- */
-activateTier(tier: Tier): void {
-  this.openConfirmDialog(
-    'Activation du tier',
-    `Voulez-vous activer le tier ${tier.tierNumber} ?`,
-    'Le tier sera activé même si certains documents sont manquants.',
-    () => {
-      this.tiersService.activateTier(tier.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            if (response.success) {
-              this.notificationService.success(
-                '✅ Tier activé',
-                `Le tier ${tier.tierNumber} a été activé avec succès`
-              );
-              this.loadTiers(this.pagination.currentPage);
-            } else {
-              // ✅ AMÉLIORATION : Afficher les erreurs spécifiques
-              let errorMessage = response.message || 'Échec de l\'activation';
-              let errorDetails = '';
-
-              if (response.errors?.length) {
-                errorDetails = response.errors.join('\n');
-                // Afficher le message d'erreur sans HTML
-                this.notificationService.error(
-                  errorMessage,
-                  errorDetails
+  /**
+   * Active un tier directement sans vérification préalable
+   * @param tier - Tier à activer
+   */
+  activateTier(tier: Tier): void {
+    this.openConfirmDialog(
+      'Activation du tier',
+      `Voulez-vous activer le tier ${tier.tierNumber} ?`,
+      'Le tier sera activé même si certains documents sont manquants.',
+      () => {
+        this.tiersService.activateTier(tier.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.notificationService.success(
+                  '✅ Tier activé',
+                  `Le tier ${tier.tierNumber} a été activé avec succès`
                 );
+                this.loadTiers(this.pagination.currentPage);
               } else {
-                this.notificationService.error('Erreur d\'activation', errorMessage);
+                // ✅ AMÉLIORATION : Afficher les erreurs spécifiques
+                let errorMessage = response.message || 'Échec de l\'activation';
+                let errorDetails = '';
+
+                if (response.errors?.length) {
+                  errorDetails = response.errors.join('\n');
+                  // Afficher le message d'erreur sans HTML
+                  this.notificationService.error(
+                    errorMessage,
+                    errorDetails
+                  );
+                } else {
+                  this.notificationService.error('Erreur d\'activation', errorMessage);
+                }
               }
+            },
+            error: (error) => {
+              // ✅ AMÉLIORATION : Extraire proprement les erreurs de l'API
+              const apiError = error.error;
+              let title = 'Erreur d\'activation';
+              let message = apiError?.message || 'Erreur lors de l\'activation verifiez les documents requis si tous ont été fournis et validés';
+
+              // Construire le message d'erreur détaillé (sans HTML)
+              if (apiError?.errors?.length) {
+                title = 'Documents manquants ou invalides';
+                message = `${apiError.message || 'Impossible d\'activer le tier'}\n\n`;
+                message += 'Documents manquants :\n';
+                message += apiError.errors.map((err: string) => `• ${err}`).join('\n');
+                message += '\n\nVeuillez ajouter les documents requis avant de réessayer.';
+              }
+
+              // Afficher la notification (sans options supplémentaires)
+              this.notificationService.error(title, message);
+
+              console.error('Erreur d\'activation:', apiError);
             }
-          },
-          error: (error) => {
-            // ✅ AMÉLIORATION : Extraire proprement les erreurs de l'API
-            const apiError = error.error;
-            let title = 'Erreur d\'activation';
-            let message = apiError?.message || 'Erreur lors de l\'activation verifiez les documents requis si tous ont été fournis et validés';
+          });
+      }
+    );
+  }
 
-            // Construire le message d'erreur détaillé (sans HTML)
-            if (apiError?.errors?.length) {
-              title = 'Documents manquants ou invalides';
-              message = `${apiError.message || 'Impossible d\'activer le tier'}\n\n`;
-              message += 'Documents manquants :\n';
-              message += apiError.errors.map((err: string) => `• ${err}`).join('\n');
-              message += '\n\nVeuillez ajouter les documents requis avant de réessayer.';
-            }
-
-            // Afficher la notification (sans options supplémentaires)
-            this.notificationService.error(title, message);
-
-            console.error('Erreur d\'activation:', apiError);
-          }
-        });
-    }
-  );
-}
+  /**
+   * Calcule le taux d'activation des tiers
+   * @returns Taux d'activation en pourcentage
+   */
+  get activationRate(): number {
+    if (this.stats.total === 0) return 0;
+    return (this.stats.active / this.stats.total) * 100;
+  }
 
 
 
-// ===========================================================================
-// VÉRIFICATION D'ÉLIGIBILITÉ ET ÉTAT DES DOCUMENTS
-// ===========================================================================
+  // ===========================================================================
+  // VÉRIFICATION D'ÉLIGIBILITÉ ET ÉTAT DES DOCUMENTS
+  // ===========================================================================
 
-/**
- * Vérifie l'éligibilité à l'activation avant de lancer le processus
- * @param tier - Tier à vérifier
- */
-checkActivationEligibility(tier: Tier): void {
-  this.notificationService.info(
-    '🔍 Vérification en cours',
-    'Vérification des conditions d\'activation...'
-  );
-
-  // Vérifier d'abord localement l'état des documents
-  const documentsStatus = this.getDocumentsStatus(tier);
-
-  if (!documentsStatus.valid) {
-    // Afficher les documents manquants
-    let message = 'Le tier ne peut pas être activé pour les raisons suivantes :\n\n';
-    message += '📋 Documents manquants ou non validés :\n';
-    documentsStatus.missing.forEach(doc => {
-      message += `• ${doc}\n`;
-    });
-    message += '\nVeuillez valider tous les documents obligatoires avant l\'activation.';
-
-    this.notificationService.warning(
-      '⛔ Activation impossible',
-      message,
+  /**
+   * Vérifie l'éligibilité à l'activation avant de lancer le processus
+   * @param tier - Tier à vérifier
+   */
+  checkActivationEligibility(tier: Tier): void {
+    this.notificationService.info(
+      '🔍 Vérification en cours',
+      'Vérification des conditions d\'activation...'
     );
 
-    return;
-  }
+    // Vérifier d'abord localement l'état des documents
+    const documentsStatus = this.getDocumentsStatus(tier);
 
-  // Si les documents sont OK, procéder à l'activation
-  this.activateTier(tier);
-}
+    if (!documentsStatus.valid) {
+      // Afficher les documents manquants
+      let message = 'Le tier ne peut pas être activé pour les raisons suivantes :\n\n';
+      message += '📋 Documents manquants ou non validés :\n';
+      documentsStatus.missing.forEach(doc => {
+        message += `• ${doc}\n`;
+      });
+      message += '\nVeuillez valider tous les documents obligatoires avant l\'activation.';
 
-/**
- * Vérifie si le tier a des documents requis
- * @param tier - Tier à vérifier
- * @returns True si des documents sont requis
- */
-hasRequiredDocuments(tier: Tier): boolean {
-  const requiredDocuments = this.getRequiredDocumentsForTier(tier);
-  return requiredDocuments.length > 0;
-}
-
-/**
- * Détermine les documents obligatoires selon le type de tier
- * @param tier - Tier
- * @returns Liste des documents obligatoires
- */
-private getRequiredDocumentsForTier(tier: Tier): Array<{type: DocumentType, name: string}> {
-  const documents: Array<{type: DocumentType, name: string}> = [];
-  const activeRoles = this.getActiveRoles(tier);
-
-  // Pour les clients particuliers sans autres rôles, aucun document obligatoire
-  if (activeRoles.length === 1 && activeRoles.includes(TierRoleType.ClientParticulier)) {
-    return []; // Aucun document requis
-  }
-
-  return documents;
-}
-
-/**
- * Vérifie l'état des documents d'un tier
- * @param tier - Tier à vérifier
- * @returns État des documents
- */
-getDocumentsStatus(tier: Tier): { valid: boolean; missing: string[] } {
-  const requiredDocuments = this.getRequiredDocumentsForTier(tier);
-
-  // Si aucun document n'est requis, retourner valide
-  if (requiredDocuments.length === 0) {
-    return { valid: true, missing: [] };
-  }
-
-  const missingDocs: string[] = [];
-
-  // Vérifier chaque document obligatoire
-  if (tier.documents && tier.documents.length > 0) {
-    requiredDocuments.forEach(reqDoc => {
-      const foundDoc = tier.documents?.find(d =>
-        d.type === reqDoc.type && d.status === DocumentStatus.Validated
+      this.notificationService.warning(
+        '⛔ Activation impossible',
+        message,
       );
 
-      if (!foundDoc) {
-        missingDocs.push(reqDoc.name);
-      }
-    });
-  } else if (requiredDocuments.length > 0) {
-    // Aucun document mais des documents sont requis
-    requiredDocuments.forEach(reqDoc => {
-      missingDocs.push(reqDoc.name);
-    });
+      return;
+    }
+
+    // Si les documents sont OK, procéder à l'activation
+    this.activateTier(tier);
   }
 
-  return {
-    valid: missingDocs.length === 0,
-    missing: missingDocs
-  };
-}
+  /**
+   * Vérifie si le tier a des documents requis
+   * @param tier - Tier à vérifier
+   * @returns True si des documents sont requis
+   */
+  hasRequiredDocuments(tier: Tier): boolean {
+    const requiredDocuments = this.getRequiredDocumentsForTier(tier);
+    return requiredDocuments.length > 0;
+  }
+
+  /**
+   * Détermine les documents obligatoires selon le type de tier
+   * @param tier - Tier
+   * @returns Liste des documents obligatoires
+   */
+  private getRequiredDocumentsForTier(tier: Tier): Array<{ type: DocumentType, name: string }> {
+    const documents: Array<{ type: DocumentType, name: string }> = [];
+    const activeRoles = this.getActiveRoles(tier);
+
+    // Pour les clients particuliers sans autres rôles, aucun document obligatoire
+    if (activeRoles.length === 1 && activeRoles.includes(TierRoleType.ClientParticulier)) {
+      return []; // Aucun document requis
+    }
+
+    return documents;
+  }
+
+  /**
+   * Vérifie l'état des documents d'un tier
+   * @param tier - Tier à vérifier
+   * @returns État des documents
+   */
+  getDocumentsStatus(tier: Tier): { valid: boolean; missing: string[] } {
+    const requiredDocuments = this.getRequiredDocumentsForTier(tier);
+
+    // Si aucun document n'est requis, retourner valide
+    if (requiredDocuments.length === 0) {
+      return { valid: true, missing: [] };
+    }
+
+    const missingDocs: string[] = [];
+
+    // Vérifier chaque document obligatoire
+    if (tier.documents && tier.documents.length > 0) {
+      requiredDocuments.forEach(reqDoc => {
+        const foundDoc = tier.documents?.find(d =>
+          d.type === reqDoc.type && d.status === DocumentStatus.Validated
+        );
+
+        if (!foundDoc) {
+          missingDocs.push(reqDoc.name);
+        }
+      });
+    } else if (requiredDocuments.length > 0) {
+      // Aucun document mais des documents sont requis
+      requiredDocuments.forEach(reqDoc => {
+        missingDocs.push(reqDoc.name);
+      });
+    }
+
+    return {
+      valid: missingDocs.length === 0,
+      missing: missingDocs
+    };
+  }
 
 
 

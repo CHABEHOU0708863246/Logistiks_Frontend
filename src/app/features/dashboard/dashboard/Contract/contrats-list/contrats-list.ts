@@ -25,10 +25,11 @@ import { Tiers } from '../../../../../core/services/Tiers/tiers';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 import { VehicleDto, VehicleSearchCriteria } from '../../../../../core/models/Vehicles/Vehicle.dtos';
 import { VehicleReturnResult } from '../../../../../core/models/Contracts/VehicleReturnResult';
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 @Component({
   selector: 'app-contrats-list',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
   templateUrl: './contrats-list.html',
   styleUrl: './contrats-list.scss',
 })
@@ -3310,6 +3311,53 @@ export class ContratsList implements OnInit, OnDestroy {
   onReasonChange(event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     this.rejectContractForm.patchValue({ reason: selectElement.value });
+  }
+
+
+  // ============================================================================
+  // SECTION : PROPRIÉTÉS CALCULÉES POUR LES STATISTIQUES
+  // ============================================================================
+
+  /**
+   * Calcule le taux de recouvrement (paiements reçus / montant total dû)
+   */
+  get recoveryRate(): number {
+    const totalContractsValue = this.contracts
+      .filter(c => c.status === ContractStatus.Active || c.status === ContractStatus.Completed)
+      .reduce((sum, contract) => sum + contract.totalAmount, 0);
+
+    const totalPaid = this.dashboardStats.totalOutstanding ?
+      totalContractsValue - this.dashboardStats.totalOutstanding : 0;
+
+    if (totalContractsValue === 0) return 0;
+    return (totalPaid / totalContractsValue) * 100;
+  }
+
+  /**
+   * Calcule la valeur totale du portefeuille de contrats actifs
+   */
+  get totalActiveContractsValue(): number {
+    return this.contracts
+      .filter(c => c.status === ContractStatus.Active)
+      .reduce((sum, contract) => sum + contract.totalAmount, 0);
+  }
+
+  /**
+   * Obtient le nombre total de semaines restantes pour tous les contrats actifs
+   */
+  get totalWeeksRemaining(): number {
+    return this.contracts
+      .filter(c => c.status === ContractStatus.Active)
+      .reduce((sum, contract) => sum + (contract.weeksRemaining || 0), 0);
+  }
+
+  /**
+   * Obtient le nombre de contrats avec des paiements en retard
+   */
+  get contractsWithOverduePayments(): ContractDto[] {
+    return this.contracts.filter(c =>
+      c.status === ContractStatus.Active && this.isPaymentOverdue(c)
+    );
   }
 
 }

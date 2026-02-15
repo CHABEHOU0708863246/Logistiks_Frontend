@@ -2,416 +2,9 @@
   <!-- =========================================================================== -->
   <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
   <!-- =========================================================================== -->
-  <aside class="layout-menu" id="sidebar">
-    <div class="app-brand">
-      <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
-      <div>
-        <span class="app-brand-text">LOGISTIK</span>
-      </div>
-    </div>
+<app-sidebar-component></app-sidebar-component>
 
-    <ul class="menu-inner">
-      <!-- Dashboard -->
-      <li class="menu-item" routerLinkActive="active">
-        <a [routerLink]="['/dashboard']" class="menu-link">
-          <i class="menu-icon bx bx-home-circle"></i>
-          <div>Tableau de bord</div>
-        </a>
-      </li>
 
-      <!-- TABLEAUX DE BORD & ANALYTICS -->
-      <li class="menu-header">
-        <span>TABLEAUX DE BORD</span>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-bar-chart-alt-2"></i>
-          <div>Analytics & Rapports</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/analytics/kpi']" class="menu-link">
-              <div>KPIs Globaux</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/analytics/finance']" class="menu-link">
-              <div>Tableau de bord financier</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/analytics/flotte']" class="menu-link">
-              <div>Statistiques flotte</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/analytics/contrats']" class="menu-link">
-              <div>Performance contrats</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- RÉFÉRENTIELS -->
-      <li class="menu-header">
-        <span>RÉFÉRENTIELS</span>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-group"></i>
-          <div>Tiers</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-              <div>Tous les tiers</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-              <div>Documents à valider</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-              <div>Gestion des documents</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-              <div>Nouveau tier</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-car"></i>
-          <div>Véhicules</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-              <div>Tous les véhicules</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
-              <div>Ajouter véhicule</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-folder"></i>
-          <div>Documents</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/documents']" class="menu-link">
-              <div>Tous les documents</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- CŒUR MÉTIER -->
-      <li class="menu-header">
-        <span>CŒUR MÉTIER</span>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-file"></i>
-          <div>Contrats</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-              <div>Tous les contrats</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
-              <div>Statistiques contrats</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/contrats/payment']" class="menu-link">
-              <div>Liste des paiements</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active">
-        <a [routerLink]="['/dashboard/calendrier']" class="menu-link">
-          <i class="menu-icon bx bx-calendar"></i>
-          <div>Calendrier & Échéances</div>
-        </a>
-      </li>
-
-      <!-- FINANCE & COMPTABILITÉ -->
-      <li class="menu-header">
-        <span>FINANCE & COMPTABILITÉ</span>
-      </li>
-
-      <!-- CHARGES & DÉPENSES -->
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-money"></i>
-          <div>Charges & Dépenses</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/charges/vehicules']" class="menu-link">
-              <div>Charges véhicules</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/charges/generales']" class="menu-link">
-              <div>Charges générales</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/charges/fournisseurs']" class="menu-link">
-              <div>Paiement fournisseurs</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/charges/affectation-compte']" class="menu-link">
-              <div>Affectation compte</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- MOUVEMENTS INTERNES -->
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-transfer"></i>
-          <div>Mouvements Internes</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/mouvements/transferts']" class="menu-link">
-              <div>Transferts entre comptes</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/mouvements/tracabilite']" class="menu-link">
-              <div>Traçabilité complète</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/mouvements/historique']" class="menu-link">
-              <div>Historique mouvements</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- COMPTES & PAIEMENTS -->
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-credit-card"></i>
-          <div>Comptes</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/comptes-bancaires']" class="menu-link">
-              <div>Comptes bancaires</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/mobile-money']" class="menu-link">
-              <div>Mobile Money</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/bilans']" class="menu-link">
-              <div>Soldes & Bilans</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-wallet"></i>
-          <div>Paiements</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements']" class="menu-link">
-              <div>Tous les paiements</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/report']" class="menu-link">
-              <div>Rapports</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/finance/paiements/methods']" class="menu-link">
-              <div>Méthodes paiement</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- RENTABILITÉ & ROI -->
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-trending-up"></i>
-          <div>Rentabilité & ROI</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/rentabilite/roi-vehicule']" class="menu-link">
-              <div>ROI par véhicule</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="menu-link">
-              <div>Comparaisons périodes</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/rentabilite/historique']" class="menu-link">
-              <div>Historique rentabilité</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/rentabilite/rapports']" class="menu-link">
-              <div>Rapports détaillés</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- CALCULS FINANCIERS (Module technique avec UI minimale) -->
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-calculator"></i>
-          <div>Calculs Financiers</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/calculs/agregation']" class="menu-link">
-              <div>Agrégation loyers/charges</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/calculs/resultats-nets']" class="menu-link">
-              <div>Résultats nets</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/calculs/base-roi']" class="menu-link">
-              <div>Base de calcul ROI</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/calculs/parametres']" class="menu-link">
-              <div>Paramètres calculs</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- ADMINISTRATION -->
-      <li class="menu-header">
-        <span>ADMINISTRATION</span>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-user"></i>
-          <div>Utilisateurs</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
-              <div>Liste utilisateurs</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
-              <div>Créer un utilisateur</div>
-              <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
-              <div>Gestion rôles</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/admin/user-permissions']" class="menu-link">
-              <div>Permissions</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active open">
-        <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-          <i class="menu-icon bx bx-cog"></i>
-          <div>Paramétrage</div>
-        </a>
-        <ul class="menu-sub">
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-              <div>Paramètres généraux</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/vehicules-types']" class="menu-link">
-              <div>Types de véhicules</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/finance']" class="menu-link">
-              <div>Paramètres financiers</div>
-            </a>
-          </li>
-          <li class="menu-item" routerLinkActive="active">
-            <a [routerLink]="['/dashboard/settings/notifications']" class="menu-link">
-              <div>Notifications & Alertes</div>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- À PROPOS & INFORMATIONS -->
-      <li class="menu-header">
-        <span>À PROPOS</span>
-      </li>
-
-      <li class="menu-item" routerLinkActive="active">
-        <a [routerLink]="['/dashboard/about']" class="menu-link">
-          <i class="menu-icon bx bx-info-circle"></i>
-          <div>À propos de Logistik</div>
-        </a>
-      </li>
-
-      <!-- DÉCONNEXION -->
-      <li class="menu-item" style="margin-top: 2rem;">
-        <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-          <i class="menu-icon bx bx-log-out"></i>
-          <div>Déconnexion</div>
-        </a>
-      </li>
-    </ul>
-  </aside>
 
   <!-- =========================================================================== -->
   <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
@@ -482,38 +75,159 @@
       <!-- COMPOSANT DE NOTIFICATION -->
       <app-notification-component></app-notification-component>
 
-      <!-- SECTION STATISTIQUES -->
+      <!-- =========================================================== -->
+      <!-- SECTION : STATISTIQUES CONTRATS - Version améliorée -->
+      <!-- =========================================================== -->
       <div class="row mb-4">
+        <!-- Carte : Contrats Actifs -->
         <div class="col-12 col-md-6 col-lg-3 mb-3">
           <div class="card stat-card">
-            <div class="stat-icon primary">
-              <i class='bx bx-file'></i>
+            <div class="stat-icon success">
+              <i class='bx bx-check-circle'></i>
             </div>
             <div class="stat-content">
               <h3>{{ dashboardStats.activeContracts }}</h3>
               <p>Contrats Actifs</p>
+              <span class="stat-trend trend-up" *ngIf="dashboardStats.activeContracts > 0">
+                <i class='bx bx-trending-up'></i>
+                {{ ((dashboardStats.activeContracts / dashboardStats.totalContracts) * 100).toFixed(1) || 0 }}% du total
+              </span>
+              <span class="stat-trend" *ngIf="dashboardStats.activeContracts === 0">
+                <i class='bx bx-minus-circle'></i>
+                Aucun contrat actif
+              </span>
             </div>
           </div>
         </div>
+
+        <!-- Carte : En attente / Brouillons -->
         <div class="col-12 col-md-6 col-lg-3 mb-3">
           <div class="card stat-card">
             <div class="stat-icon warning">
               <i class='bx bx-time'></i>
             </div>
             <div class="stat-content">
-              <h3>{{ dashboardStats.contractsExpiring }}</h3>
-              <p>Expirent sous 7j</p>
+              <h3>{{ dashboardStats.pendingContracts + dashboardStats.draftContracts }}</h3>
+              <p>En attente / Brouillons</p>
+              <span class="stat-trend"
+                [class.trend-up]="(dashboardStats.pendingContracts + dashboardStats.draftContracts) > 0">
+                <i class='bx bx-hourglass'></i>
+                {{ dashboardStats.pendingContracts }} en attente, {{ dashboardStats.draftContracts }} brouillon(s)
+              </span>
             </div>
           </div>
         </div>
+
+        <!-- Carte : Expirent sous 7j -->
         <div class="col-12 col-md-6 col-lg-3 mb-3">
           <div class="card stat-card">
             <div class="stat-icon danger">
+              <i class='bx bx-calendar-exclamation'></i>
+            </div>
+            <div class="stat-content">
+              <h3 [class.text-danger]="dashboardStats.contractsExpiring > 0">{{ dashboardStats.contractsExpiring }}</h3>
+              <p>Expirent sous 7 jours</p>
+              <span class="stat-trend" [class.trend-down]="dashboardStats.contractsExpiring > 0"
+                [class.trend-up]="dashboardStats.contractsExpiring === 0">
+                <i [class]="dashboardStats.contractsExpiring > 0 ? 'bx bx-error' : 'bx bx-check-shield'"></i>
+                {{ dashboardStats.contractsExpiring > 0 ? 'Renouvellement à prévoir' : 'Aucune expiration imminente' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte : Paiements en retard -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon" [class.danger]="dashboardStats.paymentsOverdue > 0"
+              [class.success]="dashboardStats.paymentsOverdue === 0">
               <i class='bx bx-error-circle'></i>
             </div>
             <div class="stat-content">
-              <h3>{{ dashboardStats.paymentsOverdue }}</h3>
+              <h3 [class.text-danger]="dashboardStats.paymentsOverdue > 0">{{ dashboardStats.paymentsOverdue }}</h3>
               <p>Paiements en retard</p>
+              <span class="stat-trend" [class.trend-down]="dashboardStats.paymentsOverdue > 0">
+                <i class='bx bx-coin-stack'></i>
+                {{ formatCurrency(dashboardStats.paymentsOverdue) }} dûs
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================== -->
+      <!-- DEUXIÈME LIGNE : Statistiques avancées (optionnelle) -->
+      <!-- =========================================================== -->
+      <div class="row mb-4" *ngIf="dashboardStats.completedContracts > 0 || dashboardStats.terminatedContracts > 0">
+        <!-- Carte : Contrats terminés -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon info">
+              <i class='bx bx-check-double'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ dashboardStats.completedContracts }}</h3>
+              <p>Contrats terminés</p>
+              <span class="stat-trend">
+                <i class='bx bx-history'></i>
+                Historique
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte : Contrats résiliés -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon secondary">
+              <i class='bx bx-x-circle'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ dashboardStats.terminatedContracts }}</h3>
+              <p>Contrats résiliés</p>
+              <span class="stat-trend">
+                <i class='bx bx-block'></i>
+                Non actifs
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte : Montant total dû -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon primary">
+              <i class='bx bx-coin'></i>
+            </div>
+            <div class="stat-content">
+              <h3>{{ formatCurrency(dashboardStats.totalOutstanding) }}</h3>
+              <p>Montant total dû</p>
+              <span class="stat-trend" [class.trend-up]="dashboardStats.totalOutstanding > 0">
+                <i class='bx bx-trending-up'></i>
+                Sur {{ dashboardStats.activeContracts }} contrat(s) actif(s)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte : Taux de recouvrement -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+          <div class="card stat-card">
+            <div class="stat-icon" [class.success]="recoveryRate >= 80"
+              [class.warning]="recoveryRate < 80 && recoveryRate >= 50" [class.danger]="recoveryRate < 50">
+              <i class='bx bx-line-chart'></i>
+            </div>
+            <div class="stat-content">
+              <h3 [class.text-success]="recoveryRate >= 80"
+                [class.text-warning]="recoveryRate < 80 && recoveryRate >= 50" [class.text-danger]="recoveryRate < 50">
+                {{ recoveryRate.toFixed(1) }}%
+              </h3>
+              <p>Taux de recouvrement</p>
+              <span class="stat-trend" [class.trend-up]="recoveryRate >= 80" [class.trend-down]="recoveryRate < 50">
+                <i
+                  [class]="recoveryRate >= 80 ? 'bx bx-trending-up' : (recoveryRate < 50 ? 'bx bx-trending-down' : 'bx bx-minus')"></i>
+                Paiements reçus / attendus
+              </span>
             </div>
           </div>
         </div>

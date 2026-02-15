@@ -5673,3 +5673,123 @@ $dark-color: #233446;
 }
 
 
+
+
+
+
+/* ===========================================================================
+   STYLES SPÉCIFIQUES POUR LES STATISTIQUES CONTRATS
+   =========================================================================== */
+
+// Animation au survol des cartes
+.stat-card {
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 2px 8px rgba(67, 89, 113, 0.08);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(105, 108, 255, 0.15);
+
+    .stat-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+  }
+
+  .stat-icon {
+    transition: transform 0.3s ease;
+  }
+}
+
+// Style pour les badges de statut dans les cartes
+.status-badge-sm {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  i {
+    margin-right: 0.25rem;
+  }
+
+  &.active {
+    background-color: rgba(113, 221, 55, 0.1);
+    color: #71dd37;
+  }
+
+  &.pending {
+    background-color: rgba(255, 171, 0, 0.1);
+    color: #ffab00;
+  }
+
+  &.expiring {
+    background-color: rgba(255, 62, 29, 0.1);
+    color: #ff3e1d;
+  }
+
+  &.completed {
+    background-color: rgba(0, 207, 232, 0.1);
+    color: #00cfe8;
+  }
+}
+
+// Style pour la barre de progression dans les cartes
+.progress-mini {
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #696cff 0%, #5f61e6 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+}
+
+// Animation d'apparition des cartes
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.row.mb-4 .col-12 {
+  animation: slideInUp 0.5s ease forwards;
+
+  @for $i from 1 through 4 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Version mobile
+@media (max-width: 768px) {
+  .stat-card {
+    padding: 1rem;
+
+    h3 {
+      font-size: 1.5rem;
+    }
+
+    p {
+      font-size: 0.8rem;
+    }
+  }
+
+  .stat-trend {
+    font-size: 0.7rem;
+  }
+}
+
+

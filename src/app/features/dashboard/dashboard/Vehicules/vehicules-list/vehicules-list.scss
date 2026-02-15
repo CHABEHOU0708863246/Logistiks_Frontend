@@ -1765,6 +1765,90 @@ tr:hover {
 
 
 
+
+
+
+
+
+
+/* ===========================================================================
+   STYLES SPÉCIFIQUES POUR LES STATISTIQUES VÉHICULES
+   =========================================================================== */
+
+// Animation spécifique pour les cartes véhicules
+.stat-card {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+
+    .stat-icon {
+      transform: scale(1.1);
+    }
+  }
+
+  .stat-icon {
+    transition: transform 0.3s ease;
+  }
+}
+
+// Styles pour les différentes classes de statut
+.bg-success-light {
+  background-color: rgba(113, 221, 55, 0.1);
+}
+
+.bg-warning-light {
+  background-color: rgba(255, 171, 0, 0.1);
+}
+
+.bg-info-light {
+  background-color: rgba(0, 207, 232, 0.1);
+}
+
+.bg-primary-light {
+  background-color: rgba(105, 108, 255, 0.1);
+}
+
+.bg-danger-light {
+  background-color: rgba(255, 62, 29, 0.1);
+}
+
+// Styles pour les badges d'assurance
+.insurance-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  i {
+    margin-right: 0.25rem;
+  }
+
+  &.valid {
+    background-color: rgba(113, 221, 55, 0.1);
+    color: #71dd37;
+  }
+
+  &.expiring {
+    background-color: rgba(255, 171, 0, 0.1);
+    color: #ffab00;
+  }
+
+  &.expired {
+    background-color: rgba(255, 62, 29, 0.1);
+    color: #ff3e1d;
+  }
+}
+
+
+
+
+
+
+
 /* ================================================
    STYLES SPÉCIFIQUES POUR LE MODAL DE RAISON
    (Mise en maintenance et Hors service)

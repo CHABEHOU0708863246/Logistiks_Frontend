@@ -14,11 +14,12 @@ import { TierDocument, Tier } from '../../../../../core/models/Tiers/Tiers';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 
 @Component({
   selector: 'app-documents-validation',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
   templateUrl: './documents-validation.html',
   styleUrl: './documents-validation.scss',
 })

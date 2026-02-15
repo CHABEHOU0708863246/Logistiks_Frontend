@@ -21,13 +21,14 @@ import { VehicleType, VehicleStatus } from '../../../core/models/Enums/Logistiks
 // Import de Chart.js pour les graphiques
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { SidebarComponent } from "../../../core/components/sidebar-component/sidebar-component";
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, RouterLink, BaseChartDirective],
+  imports: [CommonModule, FormsModule, RouterModule, RouterLink, BaseChartDirective, SidebarComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })

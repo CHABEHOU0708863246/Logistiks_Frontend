@@ -1,0 +1,779 @@
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+<app-sidebar-component></app-sidebar-component>
+
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">
+          <i class='bx bx-plus-circle text-primary me-2'></i>
+          Nouvelle transaction financière
+        </h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- =========================================================== -->
+    <!-- SECTION : CONTENU PRINCIPAL - FORMULAIRE DE CRÉATION -->
+    <!-- =========================================================== -->
+    <div class="content-wrapper">
+
+      <!-- =========================================================== -->
+      <!-- INDICATEUR DE PROGRESSION -->
+      <!-- =========================================================== -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="steps-indicator">
+                <div class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+                  <div class="step-number">
+                    <i class='bx bx-check' *ngIf="currentStep > 1"></i>
+                    <span *ngIf="currentStep <= 1">1</span>
+                  </div>
+                  <div class="step-label">Type & Catégorie</div>
+                </div>
+                <div class="step-line" [class.completed]="currentStep > 1"></div>
+                <div class="step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+                  <div class="step-number">
+                    <i class='bx bx-check' *ngIf="currentStep > 2"></i>
+                    <span *ngIf="currentStep <= 2">2</span>
+                  </div>
+                  <div class="step-label">Montant & Paiement</div>
+                </div>
+                <div class="step-line" [class.completed]="currentStep > 2"></div>
+                <div class="step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+                  <div class="step-number">
+                    <i class='bx bx-check' *ngIf="currentStep > 3"></i>
+                    <span *ngIf="currentStep <= 3">3</span>
+                  </div>
+                  <div class="step-label">Description & Détails</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- =========================================================== -->
+        <!-- COLONNE PRINCIPALE : FORMULAIRE -->
+        <!-- =========================================================== -->
+        <div class="col-12 col-lg-8">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class='bx bx-edit me-2'></i>
+                Informations de la transaction
+              </h5>
+              <button
+                class="btn btn-sm btn-outline-info"
+                (click)="toggleHelpPanel()"
+                title="Aide">
+                <i class='bx bx-help-circle'></i> Aide
+              </button>
+            </div>
+
+            <div class="card-body">
+              <form [formGroup]="transactionForm">
+
+                <!-- =========================================================== -->
+                <!-- ÉTAPE 1 : TYPE ET CATÉGORIE -->
+                <!-- =========================================================== -->
+                <div *ngIf="currentStep === 1" class="form-step">
+                  <div class="step-header mb-4">
+                    <h4>
+                      <i class='bx bx-category text-primary me-2'></i>
+                      Étape 1 : Type et catégorie
+                    </h4>
+                    <p class="text-muted">
+                      Sélectionnez le type de transaction et sa catégorie
+                    </p>
+                  </div>
+
+                  <!-- Type de transaction -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Type de transaction <span class="text-danger">*</span>
+                    </label>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div
+                          class="transaction-type-card"
+                          [class.selected]="transactionForm.get('type')?.value === TransactionType.Revenue"
+                          (click)="transactionForm.patchValue({type: TransactionType.Revenue})">
+                          <div class="type-icon revenue">
+                            <i class='bx bx-trending-up'></i>
+                          </div>
+                          <h5>Revenu</h5>
+                          <p class="text-muted mb-0">Entrée d'argent</p>
+                          <small class="text-success">
+                            <i class='bx bx-plus-circle'></i> Augmente le solde
+                          </small>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div
+                          class="transaction-type-card"
+                          [class.selected]="transactionForm.get('type')?.value === TransactionType.Expense"
+                          (click)="transactionForm.patchValue({type: TransactionType.Expense})">
+                          <div class="type-icon expense">
+                            <i class='bx bx-trending-down'></i>
+                          </div>
+                          <h5>Dépense</h5>
+                          <p class="text-muted mb-0">Sortie d'argent</p>
+                          <small class="text-danger">
+                            <i class='bx bx-minus-circle'></i> Diminue le solde
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Catégorie -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Catégorie <span class="text-danger">*</span>
+                    </label>
+                    <div class="row g-3">
+                      <!-- Location -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Rental"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Rental})">
+                          <i class='bx bx-car'></i>
+                          <span>Location</span>
+                        </div>
+                      </div>
+                      <!-- Caution -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Deposit"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Deposit})">
+                          <i class='bx bx-money'></i>
+                          <span>Caution</span>
+                        </div>
+                      </div>
+                      <!-- Carburant -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Fuel"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Fuel})">
+                          <i class='bx bx-gas-pump'></i>
+                          <span>Carburant</span>
+                        </div>
+                      </div>
+                      <!-- Maintenance -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Maintenance"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Maintenance})">
+                          <i class='bx bx-wrench'></i>
+                          <span>Maintenance</span>
+                        </div>
+                      </div>
+                      <!-- Assurance -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Insurance"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Insurance})">
+                          <i class='bx bx-shield-alt-2'></i>
+                          <span>Assurance</span>
+                        </div>
+                      </div>
+                      <!-- Taxe -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Tax"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Tax})">
+                          <i class='bx bx-receipt'></i>
+                          <span>Taxe</span>
+                        </div>
+                      </div>
+                      <!-- Salaire -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Salary"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Salary})">
+                          <i class='bx bx-user'></i>
+                          <span>Salaire</span>
+                        </div>
+                      </div>
+                      <!-- Service -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Service"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Service})">
+                          <i class='bx bx-cog'></i>
+                          <span>Service</span>
+                        </div>
+                      </div>
+                      <!-- Autre -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="category-card"
+                          [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Other"
+                          (click)="transactionForm.patchValue({category: TransactionCategory.Other})">
+                          <i class='bx bx-dots-horizontal-rounded'></i>
+                          <span>Autre</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- =========================================================== -->
+                <!-- ÉTAPE 2 : MONTANT ET PAIEMENT -->
+                <!-- =========================================================== -->
+                <div *ngIf="currentStep === 2" class="form-step">
+                  <div class="step-header mb-4">
+                    <h4>
+                      <i class='bx bx-money text-primary me-2'></i>
+                      Étape 2 : Montant et paiement
+                    </h4>
+                    <p class="text-muted">
+                      Saisissez le montant et la méthode de paiement
+                    </p>
+                  </div>
+
+                  <!-- Montant -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Montant (FCFA) <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group input-group-lg">
+                      <span class="input-group-text">
+                        <i class='bx bx-money'></i>
+                      </span>
+                      <input
+                        type="number"
+                        class="form-control form-control-lg"
+                        formControlName="amount"
+                        placeholder="Ex: 50000"
+                        min="0"
+                        step="100"
+                        [class.is-invalid]="transactionForm.get('amount')?.touched && transactionForm.get('amount')?.invalid">
+                      <span class="input-group-text">FCFA</span>
+                    </div>
+                    <div class="invalid-feedback d-block" *ngIf="transactionForm.get('amount')?.touched && transactionForm.get('amount')?.invalid">
+                      <i class='bx bx-error-circle'></i> Le montant doit être supérieur à 0
+                    </div>
+
+                    <!-- Aperçu du montant -->
+                    <div class="amount-preview mt-3" *ngIf="transactionForm.get('amount')?.value > 0">
+                      <div class="preview-label">Montant saisi :</div>
+                      <div class="preview-amount" [class]="getBalanceImpactClass()">
+                        <i [class]="'bx ' + getBalanceImpactIcon()"></i>
+                        {{ formattedAmountPreview }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Date -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Date de la transaction <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class='bx bx-calendar'></i>
+                      </span>
+                      <input
+                        type="date"
+                        class="form-control"
+                        formControlName="date"
+                        [class.is-invalid]="transactionForm.get('date')?.touched && transactionForm.get('date')?.invalid">
+                    </div>
+                  </div>
+
+                  <!-- Méthode de paiement -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Méthode de paiement <span class="text-danger">*</span>
+                    </label>
+                    <div class="row g-3">
+                      <!-- Espèces -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="payment-method-card"
+                          [class.selected]="transactionForm.get('paymentMethod')?.value === PaymentMethod.Cash"
+                          (click)="transactionForm.patchValue({paymentMethod: PaymentMethod.Cash})">
+                          <i class='bx bx-money'></i>
+                          <span>Espèces</span>
+                        </div>
+                      </div>
+                      <!-- Virement -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="payment-method-card"
+                          [class.selected]="transactionForm.get('paymentMethod')?.value === PaymentMethod.BankTransfer"
+                          (click)="transactionForm.patchValue({paymentMethod: PaymentMethod.BankTransfer})">
+                          <i class='bx bx-transfer'></i>
+                          <span>Virement</span>
+                        </div>
+                      </div>
+                      <!-- Chèque -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="payment-method-card"
+                          [class.selected]="transactionForm.get('paymentMethod')?.value === PaymentMethod.Check"
+                          (click)="transactionForm.patchValue({paymentMethod: PaymentMethod.Check})">
+                          <i class='bx bx-receipt'></i>
+                          <span>Chèque</span>
+                        </div>
+                      </div>
+                      <!-- Mobile Money -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="payment-method-card"
+                          [class.selected]="transactionForm.get('paymentMethod')?.value === PaymentMethod.MobileMoney"
+                          (click)="transactionForm.patchValue({paymentMethod: PaymentMethod.MobileMoney})">
+                          <i class='bx bx-mobile'></i>
+                          <span>Mobile Money</span>
+                        </div>
+                      </div>
+                      <!-- Carte -->
+                      <div class="col-md-4 col-sm-6">
+                        <div
+                          class="payment-method-card"
+                          [class.selected]="transactionForm.get('paymentMethod')?.value === PaymentMethod.CreditCard"
+                          (click)="transactionForm.patchValue({paymentMethod: PaymentMethod.CreditCard})">
+                          <i class='bx bx-credit-card'></i>
+                          <span>Carte</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- =========================================================== -->
+                <!-- ÉTAPE 3 : DESCRIPTION ET DÉTAILS -->
+                <!-- =========================================================== -->
+                <div *ngIf="currentStep === 3" class="form-step">
+                  <div class="step-header mb-4">
+                    <h4>
+                      <i class='bx bx-message-square-detail text-primary me-2'></i>
+                      Étape 3 : Description et détails
+                    </h4>
+                    <p class="text-muted">
+                      Ajoutez une description et des informations complémentaires
+                    </p>
+                  </div>
+
+                  <!-- Description -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Description <span class="text-danger">*</span>
+                    </label>
+                    <div class="position-relative">
+                      <textarea
+                        class="form-control"
+                        formControlName="description"
+                        rows="4"
+                        placeholder="Décrivez la transaction en détail..."
+                        [class.is-invalid]="transactionForm.get('description')?.touched && transactionForm.get('description')?.invalid"></textarea>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary suggestion-btn"
+                        (click)="toggleSuggestions()"
+                        title="Suggestions">
+                        <i class='bx bx-bulb'></i>
+                      </button>
+                    </div>
+                    <div class="invalid-feedback d-block" *ngIf="transactionForm.get('description')?.touched && transactionForm.get('description')?.invalid">
+                      <i class='bx bx-error-circle'></i> La description doit contenir au moins 3 caractères
+                    </div>
+                    <small class="text-muted">
+                      {{ transactionForm.get('description')?.value?.length || 0 }} / 500 caractères
+                    </small>
+
+                    <!-- Suggestions de description -->
+                    <div class="suggestions-panel" *ngIf="showSuggestions && filteredSuggestions.length > 0">
+                      <div class="suggestions-header">
+                        <strong>Suggestions</strong>
+                        <button
+                          type="button"
+                          class="btn-close btn-sm"
+                          (click)="showSuggestions = false"></button>
+                      </div>
+                      <div class="suggestions-list">
+                        <div
+                          *ngFor="let suggestion of filteredSuggestions"
+                          class="suggestion-item"
+                          (click)="applySuggestion(suggestion)">
+                          <i [class]="'bx ' + suggestion.icon"></i>
+                          <span>{{ suggestion.text }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Référence externe -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Référence externe
+                      <small class="text-muted">(optionnel)</small>
+                    </label>
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class='bx bx-link-alt'></i>
+                      </span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="reference"
+                        placeholder="Ex: FAC-2025-001, REF-123">
+                    </div>
+                    <small class="text-muted">
+                      Numéro de facture, référence de paiement, etc.
+                    </small>
+                  </div>
+
+                  <!-- Notes additionnelles -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">
+                      Notes additionnelles
+                      <small class="text-muted">(optionnel)</small>
+                    </label>
+                    <textarea
+                      class="form-control"
+                      formControlName="notes"
+                      rows="3"
+                      placeholder="Informations complémentaires..."></textarea>
+                    <small class="text-muted">
+                      {{ transactionForm.get('notes')?.value?.length || 0 }} / 1000 caractères
+                    </small>
+                  </div>
+                </div>
+
+                <!-- =========================================================== -->
+                <!-- BOUTONS DE NAVIGATION -->
+                <!-- =========================================================== -->
+                <div class="form-navigation">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="previousStep()"
+                      *ngIf="currentStep > 1">
+                      <i class='bx bx-chevron-left'></i> Précédent
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger"
+                      (click)="cancelAndGoBack()">
+                      <i class='bx bx-x'></i> Annuler
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      (click)="nextStep()"
+                      *ngIf="currentStep < totalSteps">
+                      Suivant <i class='bx bx-chevron-right'></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-success"
+                      (click)="openConfirmModal()"
+                      *ngIf="currentStep === totalSteps">
+                      <i class='bx bx-check-circle'></i> Créer la transaction
+                    </button>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========================================================== -->
+        <!-- COLONNE LATÉRALE : RÉSUMÉ ET APERÇU -->
+        <!-- =========================================================== -->
+        <div class="col-12 col-lg-4">
+
+          <!-- Aperçu de la transaction -->
+          <div class="card mb-4 sticky-summary">
+            <div class="card-header bg-primary text-white">
+              <h6 class="mb-0">
+                <i class='bx bx-receipt me-2'></i>
+                Aperçu de la transaction
+              </h6>
+            </div>
+            <div class="card-body">
+
+              <!-- Type -->
+              <div class="summary-item">
+                <label>Type :</label>
+                <span
+                  class="badge"
+                  [class.badge-success]="transactionForm.get('type')?.value === TransactionType.Revenue"
+                  [class.badge-danger]="transactionForm.get('type')?.value === TransactionType.Expense">
+                  <i [class]="transactionForm.get('type')?.value === TransactionType.Revenue ? 'bx bx-trending-up' : 'bx bx-trending-down'"></i>
+                  {{ getTypeLabel(transactionForm.get('type')?.value) }}
+                </span>
+              </div>
+
+              <!-- Catégorie -->
+              <div class="summary-item">
+                <label>Catégorie :</label>
+                <span>
+                  <i [class]="'bx ' + getCategoryIcon(transactionForm.get('category')?.value)"></i>
+                  {{ getCategoryName(transactionForm.get('category')?.value) }}
+                </span>
+              </div>
+
+              <!-- Montant -->
+              <div class="summary-item">
+                <label>Montant :</label>
+                <strong [class]="getBalanceImpactClass()" class="fs-5">
+                  {{ formattedAmountPreview }}
+                </strong>
+              </div>
+
+              <!-- Date -->
+              <div class="summary-item" *ngIf="transactionForm.get('date')?.value">
+                <label>Date :</label>
+                <span>
+                  <i class='bx bx-calendar'></i>
+                  {{ transactionForm.get('date')?.value }}
+                </span>
+              </div>
+
+              <!-- Méthode de paiement -->
+              <div class="summary-item" *ngIf="transactionForm.get('paymentMethod')?.value !== null">
+                <label>Paiement :</label>
+                <span>
+                  {{ getPaymentMethodName(transactionForm.get('paymentMethod')?.value) }}
+                </span>
+              </div>
+
+              <!-- Référence -->
+              <div class="summary-item" *ngIf="transactionForm.get('reference')?.value">
+                <label>Référence :</label>
+                <span class="text-muted">
+                  {{ transactionForm.get('reference')?.value }}
+                </span>
+              </div>
+
+              <hr>
+
+              <!-- Impact sur le solde -->
+              <div class="impact-indicator">
+                <label class="fw-bold mb-2">Impact sur le solde :</label>
+                <div class="impact-value" [class]="getBalanceImpactClass()">
+                  <i [class]="'bx ' + getBalanceImpactIcon() + ' fs-4'"></i>
+                  <span class="fs-4 fw-bold">
+                    {{ balanceImpact >= 0 ? '+' : '' }}{{ formatAmount(Math.abs(balanceImpact)) }}
+                  </span>
+                </div>
+                <small class="text-muted d-block mt-2">
+                  Représente {{ budgetPercentage.toFixed(1) }}% du budget mensuel estimé
+                </small>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Panneau d'aide -->
+          <div class="card help-card" *ngIf="showHelpPanel">
+            <div class="card-header bg-info text-white">
+              <h6 class="mb-0">
+                <i class='bx bx-help-circle me-2'></i>
+                Aide & Conseils
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="help-section">
+                <h6><i class='bx bx-info-circle'></i> Type de transaction</h6>
+                <ul>
+                  <li><strong>Revenu :</strong> Utilisez pour les paiements reçus (locations, cautions, etc.)</li>
+                  <li><strong>Dépense :</strong> Utilisez pour les sorties d'argent (carburant, maintenance, salaires)</li>
+                </ul>
+              </div>
+              <div class="help-section">
+                <h6><i class='bx bx-category'></i> Catégories</h6>
+                <p class="small mb-0">
+                  Choisissez la catégorie qui correspond le mieux à votre transaction pour faciliter l'analyse financière.
+                </p>
+              </div>
+              <div class="help-section">
+                <h6><i class='bx bx-link-alt'></i> Référence externe</h6>
+                <p class="small mb-0">
+                  Ajoutez le numéro de facture, de contrat ou tout autre référence pour faciliter la traçabilité.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================================================== -->
+<!-- MODAL : CONFIRMATION DE CRÉATION -->
+<!-- =========================================================== -->
+<div class="modal-backdrop" *ngIf="showConfirmModal" (click)="closeConfirmModal()"></div>
+<div class="modal fade" [class.show]="showConfirmModal" *ngIf="showConfirmModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class='bx bx-check-circle'></i> Confirmer la création
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeConfirmModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center py-3">
+          <i class='bx bx-check-shield text-success' style="font-size: 4rem;"></i>
+          <h5 class="mt-3 mb-4">Vérifiez les informations avant de créer la transaction</h5>
+        </div>
+
+        <div class="transaction-summary">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="text-muted mb-1">Type</label>
+              <div>
+                <span
+                  class="badge badge-lg"
+                  [class.badge-success]="transactionForm.get('type')?.value === TransactionType.Revenue"
+                  [class.badge-danger]="transactionForm.get('type')?.value === TransactionType.Expense">
+                  {{ getTypeLabel(transactionForm.get('type')?.value) }}
+                </span>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted mb-1">Catégorie</label>
+              <div>
+                <i [class]="'bx ' + getCategoryIcon(transactionForm.get('category')?.value)"></i>
+                {{ getCategoryName(transactionForm.get('category')?.value) }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted mb-1">Montant</label>
+              <div class="fs-4 fw-bold" [class]="getBalanceImpactClass()">
+                {{ formattedAmountPreview }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted mb-1">Date</label>
+              <div>
+                <i class='bx bx-calendar'></i>
+                {{ transactionForm.get('date')?.value }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted mb-1">Méthode de paiement</label>
+              <div>
+                {{ getPaymentMethodName(transactionForm.get('paymentMethod')?.value) }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3" *ngIf="transactionForm.get('reference')?.value">
+              <label class="text-muted mb-1">Référence</label>
+              <div>{{ transactionForm.get('reference')?.value }}</div>
+            </div>
+            <div class="col-12 mb-3">
+              <label class="text-muted mb-1">Description</label>
+              <div>{{ transactionForm.get('description')?.value }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info mt-3">
+          <i class='bx bx-info-circle'></i>
+          Cette transaction sera enregistrée et affectera votre tableau de bord financier.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeConfirmModal()">
+          <i class='bx bx-x'></i> Annuler
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="submitTransaction()"
+          [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">
+            <i class='bx bx-check-circle'></i> Confirmer et créer
+          </span>
+          <span *ngIf="isSubmitting">
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Création en cours...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Component -->
+<app-notification-component></app-notification-component>

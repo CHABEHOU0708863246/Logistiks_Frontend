@@ -1055,3 +1055,172 @@ tr:hover {
   font-size: 0.65rem;
   padding: 0.2rem 0.4rem;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===========================================================================
+   STYLES SPÉCIFIQUES POUR LES STATISTIQUES TIERS
+   =========================================================================== */
+
+// Styles pour les cartes de statistiques
+.stat-card {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(67, 89, 113, 0.15);
+  }
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-size: 1.75rem;
+  flex-shrink: 0;
+
+  &.primary {
+    background-color: rgba(105, 108, 255, 0.12);
+    color: #696cff;
+  }
+
+  &.success {
+    background-color: rgba(113, 221, 55, 0.12);
+    color: #71dd37;
+  }
+
+  &.warning {
+    background-color: rgba(255, 171, 0, 0.12);
+    color: #ffab00;
+  }
+
+  &.danger {
+    background-color: rgba(255, 62, 29, 0.12);
+    color: #ff3e1d;
+  }
+
+  &.info {
+    background-color: rgba(0, 207, 232, 0.12);
+    color: #00cfe8;
+  }
+
+  &.secondary {
+    background-color: rgba(133, 146, 163, 0.12);
+    color: #8592a3;
+  }
+}
+
+.stat-content {
+  flex: 1;
+  margin-left: 1rem;
+
+  h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #566a7f;
+    transition: color 0.3s;
+  }
+
+  p {
+    color: #a1acb8;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+  }
+}
+
+.stat-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #8592a3;
+
+  i {
+    font-size: 0.875rem;
+  }
+
+  &.trend-up {
+    color: #71dd37;
+  }
+
+  &.trend-down {
+    color: #ff3e1d;
+  }
+}
+
+// Classes de couleur pour les textes
+.text-success {
+  color: #71dd37 !important;
+}
+
+.text-danger {
+  color: #ff3e1d !important;
+}
+
+.text-warning {
+  color: #ffab00 !important;
+}
+
+.text-info {
+  color: #00cfe8 !important;
+}
+
+// Animation subtile pour les cartes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.row.mb-4 .col-12 {
+  animation: fadeInUp 0.5s ease forwards;
+
+  @for $i from 1 through 4 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Version mobile
+@media (max-width: 768px) {
+  .stat-card {
+    padding: 1.25rem;
+
+    h3 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+}

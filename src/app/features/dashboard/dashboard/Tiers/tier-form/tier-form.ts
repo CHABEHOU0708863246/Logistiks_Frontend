@@ -18,6 +18,7 @@ import { NotificationService } from '../../../../../core/services/Notification/n
 // Environnement
 import { environment } from '../../../../../../environments/environment.development';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 /**
  * Composant de création et de gestion des formulaires de tiers
@@ -28,7 +29,7 @@ import { NotificationComponent } from "../../../../../core/components/notificati
 @Component({
   selector: 'app-tier-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
   templateUrl: './tier-form.html',
   styleUrls: ['./tier-form.scss']
 })
