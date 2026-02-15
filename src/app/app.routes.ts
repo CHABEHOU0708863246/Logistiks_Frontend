@@ -38,8 +38,8 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'dashboard/finances',
-    loadChildren: () => import('./features/dashboard/dashboard/Financials/finances.routes').then((m) => m.FINANCES_ROUTES),
+    path: 'dashboard/about',
+    loadChildren: () => import('./features/dashboard/dashboard/About/about.routes').then((m) => m.ABOUT_ROUTES),
     canActivate: [authGuard]
   },
   {

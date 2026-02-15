@@ -1,9 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Auth } from '../../services/Auth/auth';
-import { Token } from '../../services/Token/token';
-import { Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { CommonModule } from "@angular/common";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Router, RouterModule } from "@angular/router";
+import { Subject, takeUntil } from "rxjs";
+import { Auth } from "../../services/Auth/auth";
+import { Token } from "../../services/Token/token";
+//import { Permissions } from "../../services/Permission/permissions";
+import { Permissions } from "../../services/Permission/permissions-with-fallback.service";
+
 
 @Component({
   selector: 'app-sidebar-component',
@@ -19,18 +22,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   /**
-   * État de réduction de la sidebar (peut être contrôlé par le parent)
+   * État de réduction de la sidebar
    */
   isCollapsed: boolean = false;
 
   constructor(
     private authService: Auth,
     private tokenService: Token,
-    private router: Router
+    private router: Router,
+    public permission: Permissions
   ) {}
 
   ngOnInit(): void {
-    // Initialisation si nécessaire
+    // Recharger les permissions au démarrage
+    this.permission.reloadPermissions();
+
+    // Debug en développement
+    if (!this.isProduction()) {
+      this.permission.debugPermissions();
+    }
   }
 
   ngOnDestroy(): void {
@@ -77,5 +87,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
   toggleSidebar(): void {
     this.isCollapsed = !this.isCollapsed;
   }
-}
 
+  /**
+   * Vérifie si on est en environnement de production
+   */
+  private isProduction(): boolean {
+    return window.location.hostname !== 'localhost';
+  }
+}

@@ -1,54 +1,26 @@
-import { CommonModule } from '@angular/common';
 import { Component, HostListener } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { Subject, takeUntil } from 'rxjs';
+import { environment } from '../../../../../../environments/environment.development';
+import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import { VehicleType, FuelType } from '../../../../../core/models/Enums/Logistiks-enums';
+import { VehicleDto } from '../../../../../core/models/Vehicles/Vehicle.dtos';
 import { Auth } from '../../../../../core/services/Auth/auth';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 import { Token } from '../../../../../core/services/Token/token';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
-import { environment } from '../../../../../../environments/environment.development';
-import { User } from '../../../../../core/models/Core/Users/Entities/User';
-import { VehicleDto } from '../../../../../core/models/Vehicles/Vehicle.dtos';
-import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
-
-
-interface InsuranceRow {
-  vehicleId: string;
-  vehicleBrand: string;
-  vehicleModel: string;
-  plateNumber: string;
-  company: string;
-  policyNumber: string;
-  startDate: Date;
-  endDate: Date;
-  validityDays: number;
-  annualPremium: number;
-  status: 'valid' | 'expiring' | 'expired' | 'renewal';
-  daysUntilExpiry: number;
-  selected: boolean;
-}
-
-interface InsuranceAlert {
-  vehicleId: string;
-  vehicleName: string;
-  plateNumber: string;
-  company: string;
-  policyNumber: string;
-  expiryDate: Date;
-  daysRemaining?: number;
-  daysExpired?: number;
-}
+import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
+import { CommonModule } from '@angular/common';
+import { SidebarComponent } from '../../../../../core/components/sidebar-component/sidebar-component';
 
 @Component({
-  selector: 'app-vehicules-insurrance',
+  selector: 'app-about-home',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
-  templateUrl: './vehicules-insurrance.html',
-  styleUrl: './vehicules-insurrance.scss',
+  templateUrl: './about-home.html',
+  styleUrl: './about-home.scss',
 })
-export class VehiculesInsurrance {
+export class AboutHome {
 
   // ============================================================================
   // SECTION 2: PROPRIÉTÉS DE DONNÉES ET D'ÉTAT
@@ -74,15 +46,8 @@ export class VehiculesInsurrance {
   totalAnnualCost: number = 0;
 
   // Alertes
-  alerts: InsuranceAlert[] = [];
-  expiredAlerts: InsuranceAlert[] = [];
-  expiringAlerts: InsuranceAlert[] = [];
   monthlyRenewalCount: number = 0;
 
-  // Données
-  allInsurances: InsuranceRow[] = [];
-  filteredInsurances: InsuranceRow[] = [];
-  paginatedInsurances: InsuranceRow[] = [];
   allVehicles: VehicleDto[] = [];
 
   // Filtres
@@ -149,55 +114,6 @@ export class VehiculesInsurrance {
     private router: Router
   ) {
   }
-
-  mapVehiclesToInsurances(vehicles: VehicleDto[]): InsuranceRow[] {
-  return vehicles
-    .filter(v => v.insurance)  // Filtre les véhicules avec assurance
-    .map(v => {
-      const insurance = v.insurance!;
-      const endDate = new Date(insurance.endDate);
-      const startDate = new Date(insurance.startDate);
-      const today = new Date();
-
-      const daysUntilExpiry = Math.ceil(
-        (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      const validityDays = Math.ceil(
-        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      let status: 'valid' | 'expiring' | 'expired' | 'renewal';
-      if (daysUntilExpiry < 0) {
-        status = 'expired';
-      } else if (daysUntilExpiry <= 7) {
-        status = 'expiring';  // 7 jours ou moins
-      } else if (daysUntilExpiry <= 30) {
-        status = 'renewal';   // 30 jours ou moins
-      } else {
-        status = 'valid';
-      }
-
-      return {
-        vehicleId: v.id,
-        vehicleBrand: v.brand,
-        vehicleModel: v.model,
-        plateNumber: v.plateNumber,
-        company: insurance.company,
-        policyNumber: insurance.policyNumber,
-        startDate: startDate,
-        endDate: endDate,
-        validityDays: validityDays,
-        annualPremium: insurance.annualPremium,
-        status: status,
-        daysUntilExpiry: daysUntilExpiry,
-        selected: false,
-        vehicleCode: v.code,  // Ajouter le code du véhicule
-        vehicleType: v.typeLabel,  // Ajouter le type de véhicule
-        fuelType: v.fuelTypeLabel  // Ajouter le type de carburant
-      };
-    });
-}
 
 
   /**
@@ -418,3 +334,4 @@ export class VehiculesInsurrance {
 
 
 }
+
