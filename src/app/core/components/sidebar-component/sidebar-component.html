@@ -302,18 +302,18 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/users-list']" class="menu-link">
+          <a [routerLink]="['/dashboard/users/list']" class="menu-link">
             <div>Liste utilisateurs</div>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/admin/user-form']" class="menu-link">
+          <a [routerLink]="['/dashboard/users/create']" class="menu-link">
             <div>Créer un utilisateur</div>
             <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isSuperAdmin()">
-          <a [routerLink]="['/dashboard/admin/user-roles']" class="menu-link">
+          <a [routerLink]="['/dashboard/users/roles']" class="menu-link">
             <div>Gestion rôles</div>
           </a>
         </li>

@@ -316,38 +316,36 @@ export class Users {
    * Créer FormData pour l'inscription
    */
   private createUserFormData(userRequest: UserRequest): FormData {
-    const formData = new FormData();
+  const formData = new FormData();
 
-    // Ajouter les champs de base
-    formData.append('username', userRequest.username);
-    formData.append('email', userRequest.email);
-    formData.append('firstName', userRequest.firstName);
-    formData.append('lastName', userRequest.lastName);
-    formData.append('phone', userRequest.phone);
-    formData.append('isActive', userRequest.isActive.toString());
+  formData.append('username', userRequest.username);
+  formData.append('email', userRequest.email);
+  formData.append('firstName', userRequest.firstName);
+  formData.append('lastName', userRequest.lastName);
+  formData.append('phone', userRequest.phone);
+  formData.append('isActive', userRequest.isActive.toString());
 
-    // Ajouter la photo si fournie
-    if (userRequest.photoFile) {
-      formData.append('photoFile', userRequest.photoFile);
-    } else if (userRequest.photoUrl) {
-      formData.append('photoUrl', userRequest.photoUrl);
-    }
+  // IMPORTANT ✅
+  formData.append('photoUrl', userRequest.photoUrl || '');
 
-    // Ajouter le mot de passe
-    if (userRequest.password) {
-      formData.append('password', userRequest.password);
-      formData.append('confirmPassword', userRequest.confirmPassword || '');
-    }
-
-    // Ajouter les rôles
-    if (userRequest.roles && userRequest.roles.length > 0) {
-      userRequest.roles.forEach((role, index) => {
-        formData.append(`roles[${index}]`, role);
-      });
-    }
-
-    return formData;
+  if (userRequest.photoFile) {
+    formData.append('photoFile', userRequest.photoFile);
   }
+
+  if (userRequest.password) {
+    formData.append('password', userRequest.password);
+    formData.append('confirmPassword', userRequest.confirmPassword || '');
+  }
+
+  if (userRequest.roles?.length) {
+    userRequest.roles.forEach((role, index) => {
+      formData.append(`roles[${index}]`, role);
+    });
+  }
+
+  return formData;
+}
+
 
   /**
    * Créer FormData pour la mise à jour du profil

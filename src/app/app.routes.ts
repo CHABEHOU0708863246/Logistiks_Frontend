@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { NotFound } from './core/components/not-found/not-found';
 import { authGuard } from './core/guards/auth.guard';
+import { USERS_ROUTES } from './features/dashboard/dashboard/Users/users.routes';
 
 export const routes: Routes = [
   {
@@ -45,6 +46,11 @@ export const routes: Routes = [
   {
     path: 'dashboard/about',
     loadChildren: () => import('./features/dashboard/dashboard/About/about.routes').then((m) => m.ABOUT_ROUTES),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'dashboard/users',
+    loadChildren: () => import('./features/dashboard/dashboard/Users/users.routes').then((m) => m.USERS_ROUTES),
     canActivate: [authGuard]
   },
   {

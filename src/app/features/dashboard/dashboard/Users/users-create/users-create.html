@@ -1,0 +1,573 @@
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">Crée un utilisateur</h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/profile']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
+    <!-- ========================================== -->
+    <!-- =========================================================================== -->
+    <!-- CRÉATION D'UTILISATEUR - FORMULAIRE MULTI-ÉTAPES -->
+    <!-- =========================================================================== -->
+
+    <div class="content-wrapper">
+
+      <!-- ========================================== -->
+      <!-- HEADER -->
+      <!-- ========================================== -->
+      <div class="page-header">
+        <div class="header-content">
+          <button class="btn-back" [routerLink]="['/dashboard/admin/users-list']">
+            <i class='bx bx-arrow-back'></i>
+            Retour à la liste
+          </button>
+          <div class="header-info">
+            <h1 class="page-title">
+              <i class='bx bx-user-plus'></i>
+              Créer un Utilisateur
+            </h1>
+            <p class="page-subtitle">Remplissez les informations pour créer un nouveau compte utilisateur</p>
+          </div>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="steps-container">
+          <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+            <div class="step-circle">
+              <i class='bx bx-user' *ngIf="currentStep <= 1"></i>
+              <i class='bx bx-check' *ngIf="currentStep > 1"></i>
+            </div>
+            <div class="step-label">
+              <div class="step-title">Informations de base</div>
+              <div class="step-desc">Identité & contact</div>
+            </div>
+          </div>
+
+          <div class="step-line" [class.completed]="currentStep > 1"></div>
+
+          <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+            <div class="step-circle">
+              <i class='bx bx-shield-quarter' *ngIf="currentStep <= 2"></i>
+              <i class='bx bx-check' *ngIf="currentStep > 2"></i>
+            </div>
+            <div class="step-label">
+              <div class="step-title">Rôles & Permissions</div>
+              <div class="step-desc">Accès & sécurité</div>
+            </div>
+          </div>
+
+          <div class="step-line" [class.completed]="currentStep > 2"></div>
+
+          <div class="step" [class.active]="currentStep === 3">
+            <div class="step-circle">
+              <i class='bx bx-check-circle'></i>
+            </div>
+            <div class="step-label">
+              <div class="step-title">Vérification</div>
+              <div class="step-desc">Confirmer la création</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- FORMULAIRE -->
+      <!-- ========================================== -->
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+        <!-- ========================================== -->
+        <!-- ÉTAPE 1 : INFORMATIONS DE BASE -->
+        <!-- ========================================== -->
+        <div class="form-card" *ngIf="currentStep === 1" @slideIn>
+          <div class="form-card-header">
+            <h2>
+              <i class='bx bx-user'></i>
+              Informations Personnelles
+            </h2>
+            <p>Renseignez les informations d'identité de l'utilisateur</p>
+          </div>
+
+          <div class="form-card-body">
+
+            <!-- Photo de profil -->
+            <div class="photo-upload-section">
+              <div class="photo-preview">
+                <div class="photo-circle" [style.background-color]="getPreviewColor()">
+                  <img *ngIf="photoPreview" [src]="photoPreview" alt="Photo de profil" />
+                  <div *ngIf="!photoPreview" class="photo-placeholder">
+                    <i class='bx bx-user'></i>
+                    <span>{{ getPreviewInitials() }}</span>
+                  </div>
+                </div>
+                <button type="button" class="btn-change-photo" (click)="fileInput.click()">
+                  <i class='bx bx-camera'></i>
+                </button>
+              </div>
+              <div class="photo-info">
+                <h4>Photo de profil</h4>
+                <p>JPG, PNG ou GIF - Max 5 MB</p>
+                <div class="photo-actions">
+                  <button type="button" class="btn btn-outline-primary btn-sm" (click)="fileInput.click()">
+                    <i class='bx bx-upload'></i>
+                    Choisir une photo
+                  </button>
+                  <button *ngIf="photoPreview" type="button" class="btn btn-outline-danger btn-sm"
+                    (click)="removePhoto()">
+                    <i class='bx bx-trash'></i>
+                    Supprimer
+                  </button>
+                </div>
+                <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)"
+                  style="display: none;" />
+              </div>
+            </div>
+
+            <div class="form-divider"></div>
+
+            <!-- Nom d'utilisateur et Email -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class='bx bx-at'></i>
+                  Nom d'utilisateur
+                </label>
+                <input type="text" class="form-control" formControlName="username" placeholder="ex: amadou.diallo"
+                  [class.is-invalid]="isFieldInvalid('username')" />
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('username')">
+                  <span *ngIf="userForm.get('username')?.errors?.['required']">
+                    Le nom d'utilisateur est requis
+                  </span>
+                  <span *ngIf="userForm.get('username')?.errors?.['minlength']">
+                    Minimum 3 caractères
+                  </span>
+                  <span *ngIf="userForm.get('username')?.errors?.['pattern']">
+                    Lettres, chiffres, tirets et underscores uniquement
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class='bx bx-envelope'></i>
+                  Adresse email
+                </label>
+                <input type="email" class="form-control" formControlName="email" placeholder="exemple@logistiks.com"
+                  [class.is-invalid]="isFieldInvalid('email')" />
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                  <span *ngIf="userForm.get('email')?.errors?.['required']">
+                    L'email est requis
+                  </span>
+                  <span *ngIf="userForm.get('email')?.errors?.['email']">
+                    Format d'email invalide
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prénom et Nom -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class='bx bx-user'></i>
+                  Prénom
+                </label>
+                <input type="text" class="form-control" formControlName="firstName" placeholder="Amadou"
+                  [class.is-invalid]="isFieldInvalid('firstName')" />
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('firstName')">
+                  Le prénom est requis
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class='bx bx-user'></i>
+                  Nom
+                </label>
+                <input type="text" class="form-control" formControlName="lastName" placeholder="Diallo"
+                  [class.is-invalid]="isFieldInvalid('lastName')" />
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('lastName')">
+                  Le nom est requis
+                </div>
+              </div>
+            </div>
+
+            <!-- Téléphone -->
+            <div class="form-group">
+              <label class="form-label required">
+                <i class='bx bx-phone'></i>
+                Numéro de téléphone
+              </label>
+              <input type="tel" class="form-control" formControlName="phone" placeholder="+225 07 XX XX XX XX"
+                [class.is-invalid]="isFieldInvalid('phone')" />
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('phone')">
+                <span *ngIf="userForm.get('phone')?.errors?.['required']">
+                  Le téléphone est requis
+                </span>
+                <span *ngIf="userForm.get('phone')?.errors?.['pattern']">
+                  Format de téléphone invalide
+                </span>
+              </div>
+            </div>
+
+            <!-- Mots de passe -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class='bx bx-lock'></i>
+                  Mot de passe
+                </label>
+                <div class="password-field">
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control" formControlName="password"
+                    placeholder="••••••••" [class.is-invalid]="isFieldInvalid('password')" />
+                  <button type="button" class="btn-toggle-password" (click)="showPassword = !showPassword">
+                    <i [class]="showPassword ? 'bx bx-hide' : 'bx bx-show'"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+                  <span *ngIf="userForm.get('password')?.errors?.['required']">
+                    Le mot de passe est requis
+                  </span>
+                  <span *ngIf="userForm.get('password')?.errors?.['minlength']">
+                    Minimum 8 caractères
+                  </span>
+                </div>
+                <div class="password-strength" *ngIf="userForm.get('password')?.value">
+                  <div class="strength-bars">
+                    <div class="strength-bar" [class.weak]="passwordStrength >= 1"
+                      [class.medium]="passwordStrength >= 2" [class.strong]="passwordStrength >= 3"></div>
+                    <div class="strength-bar" [class.medium]="passwordStrength >= 2"
+                      [class.strong]="passwordStrength >= 3"></div>
+                    <div class="strength-bar" [class.strong]="passwordStrength >= 3"></div>
+                  </div>
+                  <span class="strength-label">
+                    {{ getPasswordStrengthLabel() }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class='bx bx-lock-alt'></i>
+                  Confirmer le mot de passe
+                </label>
+                <div class="password-field">
+                  <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-control"
+                    formControlName="confirmPassword" placeholder="••••••••"
+                    [class.is-invalid]="isFieldInvalid('confirmPassword')" />
+                  <button type="button" class="btn-toggle-password"
+                    (click)="showConfirmPassword = !showConfirmPassword">
+                    <i [class]="showConfirmPassword ? 'bx bx-hide' : 'bx bx-show'"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('confirmPassword')">
+                  <span *ngIf="userForm.get('confirmPassword')?.errors?.['required']">
+                    Confirmez le mot de passe
+                  </span>
+                  <span *ngIf="userForm.errors?.['passwordMismatch']">
+                    Les mots de passe ne correspondent pas
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Statut actif -->
+            <div class="form-group">
+              <label class="switch-label">
+                <input type="checkbox" formControlName="isActive" class="switch-input" />
+                <span class="switch-slider"></span>
+                <span class="switch-text">
+                  <i class='bx bx-check-circle'></i>
+                  Compte actif dès la création
+                </span>
+              </label>
+              <p class="form-hint">
+                Si désactivé, l'utilisateur devra être activé manuellement avant de pouvoir se connecter
+              </p>
+            </div>
+
+          </div>
+
+          <div class="form-card-footer">
+            <button type="button" class="btn btn-outline-secondary" [routerLink]="['/dashboard/admin/users-list']">
+              <i class='bx bx-x'></i>
+              Annuler
+            </button>
+            <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="!isStep1Valid()">
+              Suivant
+              <i class='bx bx-right-arrow-alt'></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ÉTAPE 2 : RÔLES & PERMISSIONS -->
+        <!-- ========================================== -->
+        <div class="form-card" *ngIf="currentStep === 2" @slideIn>
+          <div class="form-card-header">
+            <h2>
+              <i class='bx bx-shield-quarter'></i>
+              Rôles et Permissions
+            </h2>
+            <p>Définissez les accès et permissions de l'utilisateur</p>
+          </div>
+
+          <div class="form-card-body">
+
+            <!-- Sélection des rôles -->
+            <div class="roles-selection">
+              <h3 class="section-title">
+                <i class='bx bx-key'></i>
+                Sélectionner les rôles
+              </h3>
+              <p class="section-desc">
+                Choisissez un ou plusieurs rôles pour définir les permissions de base
+              </p>
+
+              <div class="roles-grid">
+                <div *ngFor="let role of availableRoles" class="role-card" [class.selected]="isRoleSelected(role.code)"
+                  (click)="toggleRole(role.code)">
+                  <div class="role-card-header">
+                    <div class="role-checkbox">
+                      <i class='bx bx-check' *ngIf="isRoleSelected(role.code)"></i>
+                    </div>
+                    <div class="role-icon" [ngClass]="getRoleIconClass(role.code)">
+                      <i [class]="getRoleIcon(role.code)"></i>
+                    </div>
+                  </div>
+                  <div class="role-card-body">
+                    <h4>{{ role.roleName }}</h4>
+                    <p>{{ role.description || 'Aucune description' }}</p>
+                    <div class="role-permissions-count">
+                      <i class='bx bx-shield-quarter'></i>
+                      {{ role.permissions.length || 0 }} permissions
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message si aucun rôle -->
+              <div class="empty-state-small" *ngIf="availableRoles.length === 0">
+                <i class='bx bx-info-circle'></i>
+                <p>Aucun rôle disponible. Créez d'abord des rôles dans la gestion des rôles.</p>
+              </div>
+            </div>
+
+            <!-- Permissions héritées -->
+            <div class="inherited-permissions" *ngIf="selectedRoles.length > 0">
+              <h3 class="section-title">
+                <i class='bx bx-shield-alt-2'></i>
+                Permissions héritées ({{ getTotalPermissions() }})
+              </h3>
+              <p class="section-desc">
+                Permissions automatiquement accordées via les rôles sélectionnés
+              </p>
+
+              <div class="permissions-preview">
+                <div *ngFor="let permission of getUniquePermissions() | slice:0:showAllPermissions ? undefined : 10"
+                  class="permission-badge">
+                  <i class='bx bx-check-circle'></i>
+                  {{ permission }}
+                </div>
+                <button *ngIf="getUniquePermissions().length > 10" type="button" class="btn-show-more"
+                  (click)="showAllPermissions = !showAllPermissions">
+                  {{ showAllPermissions ? 'Voir moins' : 'Voir tout (' + getUniquePermissions().length + ')' }}
+                  <i [class]="showAllPermissions ? 'bx bx-chevron-up' : 'bx bx-chevron-down'"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="form-card-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="previousStep()">
+              <i class='bx bx-left-arrow-alt'></i>
+              Précédent
+            </button>
+            <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="selectedRoles.length === 0">
+              Suivant
+              <i class='bx bx-right-arrow-alt'></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ÉTAPE 3 : VÉRIFICATION -->
+        <!-- ========================================== -->
+        <div class="form-card" *ngIf="currentStep === 3" @slideIn>
+          <div class="form-card-header">
+            <h2>
+              <i class='bx bx-check-double'></i>
+              Vérification et Confirmation
+            </h2>
+            <p>Vérifiez les informations avant de créer le compte</p>
+          </div>
+
+          <div class="form-card-body">
+
+            <!-- Récapitulatif -->
+            <div class="summary-section">
+              <div class="summary-card">
+                <div class="summary-header">
+                  <i class='bx bx-user'></i>
+                  <h3>Informations Personnelles</h3>
+                  <button type="button" class="btn-edit" (click)="goToStep(1)">
+                    <i class='bx bx-edit'></i>
+                    Modifier
+                  </button>
+                </div>
+                <div class="summary-content">
+                  <div class="summary-row">
+                    <div class="summary-avatar" [style.background-color]="getPreviewColor()">
+                      <img *ngIf="photoPreview" [src]="photoPreview" alt="Photo" />
+                      <span *ngIf="!photoPreview">{{ getPreviewInitials() }}</span>
+                    </div>
+                    <div class="summary-info">
+                      <div class="summary-name">
+                        {{ userForm.get('firstName')?.value }} {{ userForm.get('lastName')?.value }}
+                      </div>
+                      <div class="summary-detail">@{{ userForm.get('username')?.value }}</div>
+                    </div>
+                  </div>
+                  <div class="summary-details-grid">
+                    <div class="summary-detail-item">
+                      <i class='bx bx-envelope'></i>
+                      <span>{{ userForm.get('email')?.value }}</span>
+                    </div>
+                    <div class="summary-detail-item">
+                      <i class='bx bx-phone'></i>
+                      <span>{{ userForm.get('phone')?.value }}</span>
+                    </div>
+                    <div class="summary-detail-item">
+                      <i class='bx bx-check-circle'></i>
+                      <span>{{ userForm.get('isActive')?.value ? 'Compte actif' : 'Compte inactif' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="summary-card">
+                <div class="summary-header">
+                  <i class='bx bx-shield-quarter'></i>
+                  <h3>Rôles et Permissions</h3>
+                  <button type="button" class="btn-edit" (click)="goToStep(2)">
+                    <i class='bx bx-edit'></i>
+                    Modifier
+                  </button>
+                </div>
+                <div class="summary-content">
+                  <div class="summary-roles">
+                    <span *ngFor="let roleCode of selectedRoles" class="role-badge-large"
+                      [ngClass]="getRoleIconClass(roleCode)">
+                      <i [class]="getRoleIcon(roleCode)"></i>
+                      {{ getRoleName(roleCode) }}
+                    </span>
+                  </div>
+                  <div class="summary-permissions-info">
+                    <i class='bx bx-info-circle'></i>
+                    {{ getTotalPermissions() }} permissions accordées
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message de confirmation -->
+            <div class="confirmation-message">
+              <i class='bx bx-info-circle'></i>
+              <div>
+                <strong>Important :</strong> Un email de bienvenue sera envoyé à l'utilisateur
+                avec ses identifiants de connexion. {{ userForm.get('isActive')?.value ?
+                'Il pourra se connecter immédiatement.' :
+                'Le compte devra être activé avant la première connexion.' }}
+              </div>
+            </div>
+
+          </div>
+
+          <div class="form-card-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="previousStep()">
+              <i class='bx bx-left-arrow-alt'></i>
+              Précédent
+            </button>
+            <button type="submit" class="btn btn-success" [disabled]="isSubmitting">
+              <span *ngIf="!isSubmitting">
+                <i class='bx bx-check'></i>
+                Créer l'utilisateur
+              </span>
+              <span *ngIf="isSubmitting">
+                <i class='bx bx-loader-alt bx-spin'></i>
+                Création en cours...
+              </span>
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- COMPOSANT DE NOTIFICATION -->
+    <app-notification-component></app-notification-component>
+  </div>
+</div>
