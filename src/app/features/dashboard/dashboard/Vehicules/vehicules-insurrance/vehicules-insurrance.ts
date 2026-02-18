@@ -328,12 +328,4 @@ export class VehiculesInsurrance {
   }
 
 
-
-
-
-
-
-
-
 }
-

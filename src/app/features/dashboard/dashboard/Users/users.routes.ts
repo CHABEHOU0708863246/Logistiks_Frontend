@@ -22,5 +22,13 @@ export const USERS_ROUTES: Routes = [
       breadcrumb: 'Crée'
     }
   },
+  {
+    path: 'roles',
+    loadComponent: () => import('./users-roles/users-roles').then(m => m.UsersRoles),
+    data: {
+      title: 'Gestion des rôles',
+      breadcrumb: 'Rôles'
+    }
+  },
 
 ];

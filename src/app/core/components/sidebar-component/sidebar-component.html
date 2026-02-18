@@ -1,4 +1,5 @@
-<!-- SIDEBAR RÉUTILISABLE AVEC GESTION DES permission -->
+<!-- SIDEBAR RÉUTILISABLE AVEC GESTION DES PERMISSIONS -->
+<!-- AVEC ANNOTATIONS DES RÈGLES DE GESTION (RG) -->
 <aside class="layout-menu" id="sidebar">
   <div class="app-brand">
     <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
@@ -38,19 +39,35 @@
             <div>KPIs Globaux</div>
           </a>
         </li>
+
+        <!-- 📊 TABLEAU DE BORD FINANCIER -->
+        <!-- RG-016: Dashboard avec KPIs globaux (CA, dépenses, profit) -->
+        <!-- RG-016: Top 3 véhicules performants + Bottom 3 véhicules -->
+        <!-- RG-017: Taux d'utilisation flotte = (Véhicules loués / Total véhicules actifs) × 100 -->
+        <!-- RG-014: Paiements en attente (Pending) et en retard (Late) tracés séparément -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
           <a [routerLink]="['/dashboard/analytics/finance']" class="menu-link">
             <div>Tableau de bord financier</div>
+            <span class="badge badge-info"></span>
           </a>
         </li>
+
+        <!-- 📊 STATISTIQUES FLOTTE -->
+        <!-- RG-011: Taux d'utilisation par véhicule = (Jours loués / Jours total période) × 100 -->
+        <!-- RG-017: Taux d'utilisation global flotte -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewVehicles()">
           <a [routerLink]="['/dashboard/analytics/flotte']" class="menu-link">
             <div>Statistiques flotte</div>
+            <span class="badge badge-info"></span>
           </a>
         </li>
+
+        <!-- 📊 PERFORMANCE CONTRATS -->
+        <!-- RG-015: Contrats actifs ou terminés contribuent au calcul des jours de location -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewContracts()">
           <a [routerLink]="['/dashboard/analytics/contrats']" class="menu-link">
             <div>Performance contrats</div>
+            <span class="badge badge-info"></span>
           </a>
         </li>
       </ul>
@@ -137,39 +154,21 @@
         <div>Contrats</div>
       </a>
       <ul class="menu-sub">
+        <!-- 📄 TOUS LES CONTRATS -->
+        <!-- RG-015: Visualisation des statuts de contrat (Actif/Terminé) -->
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/contrats']" class="menu-link">
             <div>Tous les contrats</div>
+            <span class="badge badge-info"></span>
           </a>
         </li>
+
+        <!-- 📊 STATISTIQUES CONTRATS -->
+        <!-- RG-015: Analyse des contrats actifs et terminés -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
           <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
             <div>Statistiques</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <!-- PAIEMENTS - Visible si permission de lecture paiements -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewPayments()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-calendar"></i>
-        <div>Paiements</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/paiements/calendrier']" class="menu-link">
-            <div>Calendrier & Échéances</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/paiements/liste']" class="menu-link">
-            <div>Historique paiements</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
-          <a [routerLink]="['/dashboard/paiements/retards']" class="menu-link">
-            <div>Alertes retards</div>
+            <span class="badge badge-info"></span>
           </a>
         </li>
       </ul>
@@ -184,7 +183,11 @@
       <span>FINANCE & COMPTABILITÉ</span>
     </li>
 
-    <!-- TRANSACTIONS FINANCIÈRES -->
+    <!-- 💰 TRANSACTIONS FINANCIÈRES -->
+    <!-- RG-008: Revenus = Somme des paiements reçus (Status = Paid) -->
+    <!-- RG-009: Dépenses = Transactions de type Expense -->
+    <!-- RG-013: Seuls les paiements "Paid" comptent dans les revenus -->
+    <!-- RG-014: Paiements en retard (Late) et en attente (Pending) tracés -->
     <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewTransactions()">
       <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
         <i class="menu-icon bx bx-receipt"></i>
@@ -194,6 +197,7 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/finances/transactions']" class="menu-link">
             <div>Toutes les transactions</div>
+            <span class="badge badge-success"></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canCreateTransactions()">
@@ -205,7 +209,9 @@
       </ul>
     </li>
 
-    <!-- CHARGES & DÉPENSES -->
+    <!-- 💰 CHARGES & DÉPENSES -->
+    <!-- RG-009: Dépenses = Transactions de type Expense liées au véhicule -->
+    <!-- RG-010: Dépenses ventilées par catégorie (Maintenance, Fuel, Insurance, Taxes, Other) -->
     <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewExpenses()">
       <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
         <i class="menu-icon bx bx-money"></i>
@@ -215,6 +221,7 @@
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewVehicles()">
           <a [routerLink]="['/dashboard/finance/charges/vehicules']" class="menu-link">
             <div>Par véhicule</div>
+            <span class="badge badge-info"></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
@@ -225,12 +232,19 @@
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
           <a [routerLink]="['/dashboard/finance/charges/analyse']" class="menu-link">
             <div>Analyse dépenses</div>
+            <span class="badge badge-info"></span>
           </a>
         </li>
       </ul>
     </li>
 
-    <!-- RENTABILITÉ & ROI - Uniquement Manager et au-dessus -->
+    <!-- 📈 RENTABILITÉ & ROI - Uniquement Manager et au-dessus -->
+    <!-- RG-007: Rentabilité calculée par période (date début, date fin) -->
+    <!-- RG-008: Revenus = Somme paiements reçus (Status = Paid) sur période -->
+    <!-- RG-009: Dépenses = Transactions Expense liées véhicule sur période -->
+    <!-- RG-010: Dépenses ventilées par catégorie -->
+    <!-- RG-011: Taux d'utilisation = (Jours loués / Jours total période) × 100 -->
+    <!-- RG-012: ROI = (Bénéfice net / Coût d'acquisition) × 100 -->
     <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewROI()">
       <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
         <i class="menu-icon bx bx-trending-up"></i>
@@ -240,27 +254,32 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/finance/rentabilite/vue-ensemble']" class="menu-link">
             <div>Vue d'ensemble flotte</div>
+            <span class="badge badge-warning"></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/finance/rentabilite/vehicules']" class="menu-link">
             <div>ROI par véhicule</div>
+            <span class="badge badge-warning"></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
           <a [routerLink]="['/dashboard/finance/rentabilite/calculer']" class="menu-link">
             <div>Calculer rentabilité</div>
+            <span class="badge badge-warning"></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
           <a [routerLink]="['/dashboard/finance/rentabilite/comparaisons']" class="menu-link">
             <div>Comparaisons périodes</div>
+            <span class="badge badge-warning"></span>
           </a>
         </li>
       </ul>
     </li>
 
-    <!-- RAPPORTS FINANCIERS -->
+    <!-- 📑 RAPPORTS FINANCIERS -->
+    <!-- Toutes les RG peuvent être incluses dans les rapports -->
     <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewReports()">
       <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
         <i class="menu-icon bx bx-file-blank"></i>
@@ -270,11 +289,13 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/finance/rapports/mensuel']" class="menu-link">
             <div>Rapport mensuel</div>
+            <span class="badge badge-secondary">Toutes RG</span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
           <a [routerLink]="['/dashboard/finance/rapports/personnalise']" class="menu-link">
             <div>Rapport personnalisé</div>
+            <span class="badge badge-secondary">Toutes RG</span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">

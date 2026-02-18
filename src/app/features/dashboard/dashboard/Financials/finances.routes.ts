@@ -23,14 +23,5 @@ export const FINANCES_ROUTES: Routes = [
       title: 'Nouvelle transaction',
       breadcrumb: 'Nouvelle'
     }
-  },
-  // Valider les transactions
-  {
-    path: 'transactions/validation',
-    loadComponent: () => import('./finance-transactions-validate/finance-transactions-validate').then(m => m.FinanceTransactionsValidate),
-    data: {
-      title: 'Transactions à valider',
-      breadcrumb: 'Validation'
-    }
-  },
+  }
 ];

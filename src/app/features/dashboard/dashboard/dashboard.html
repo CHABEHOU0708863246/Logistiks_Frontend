@@ -440,9 +440,9 @@
           <div class="footer-text">
             © 2026 Logistik - Version 1.0.0
             <span style="margin: 0 8px;">•</span>
-            <a href="#" style="color: #696cff; text-decoration: none;" onclick="loadContent('aide')">Aide & Support</a>
+            <a [routerLink]="['/dashboard/about']" style="color: #696cff; text-decoration: none;">Aide & Support</a>
             <span style="margin: 0 8px;">•</span>
-            <a href="#" style="color: #696cff; text-decoration: none;" onclick="loadContent('apropos')">À propos</a>
+            <a style="color: #696cff; text-decoration: none;" [routerLink]="['/dashboard/about']">À propos</a>
             <span style="margin: 0 8px;">•</span>
           </div>
         </footer>
