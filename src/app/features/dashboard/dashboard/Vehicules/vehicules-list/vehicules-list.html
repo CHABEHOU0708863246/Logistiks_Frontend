@@ -1,6 +1,6 @@
 <div class="layout-wrapper">
   <!-- SIDEBAR COMPLÈTE -->
-<app-sidebar-component></app-sidebar-component>
+  <app-sidebar-component></app-sidebar-component>
 
 
 
@@ -502,11 +502,9 @@
                         <div class="btn-group" role="group">
                           <!-- Bouton principal avec dropdown -->
                           <div class="dropdown" [class.show]="vehicle.showActionsMenu">
-                            <button class="btn btn-sm btn-primary dropdown-toggle"
-                              [class.show]="vehicle.showActionsMenu" type="button"
-                              (click)="toggleActionsMenu(vehicle, $event)">
-                              <i class='bx bx-cog'></i>
-                              Actions
+                            <button class="btn-actions-trigger" (click)="toggleActionsMenu(vehicle, $event)"
+                              [class.active]="activeMenuVehicleId === vehicle.id">
+                              <i class='bx bx-dots-vertical-rounded'></i>
                             </button>
 
                             <ul class="dropdown-menu" [class.show]="vehicle.showActionsMenu">
@@ -529,7 +527,7 @@
                                 <li>
                                   <a class="dropdown-item item-info" (click)="openReservationModal(vehicle)">
                                     <i class='bx bx-time'></i>
-                                    Louer
+                                    Louer / Réserver
                                   </a>
                                 </li>
                                 <li>
@@ -662,6 +660,116 @@
           </div>
         </div>
       </div>
+
+
+      <!-- MENU ACTIONS FLOTTANT - en dehors de la table -->
+      <div class="floating-actions-menu" *ngIf="activeMenuVehicleId" [style.top.px]="menuPosition.top"
+        [style.left.px]="menuPosition.left" (clickOutside)="closeActionsMenu()">
+
+        <div class="fam-header">
+          <span>{{ getActiveVehicle()?.code }}</span>
+          <button class="fam-close" (click)="closeActionsMenu()">
+            <i class='bx bx-x'></i>
+          </button>
+        </div>
+
+        <ul class="fam-list">
+          <!-- MODIFIER - Toujours disponible -->
+          <li>
+            <a class="fam-item item-info" (click)="openEditModal(getActiveVehicle()); closeActionsMenu()">
+              <i class='bx bx-edit'></i> Modifier
+            </a>
+          </li>
+
+          <!-- DISPONIBLE -->
+          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Available">
+            <li>
+              <a class="fam-item item-info" (click)="openReservationModal(getActiveVehicle()); closeActionsMenu()">
+                <i class='bx bx-time'></i> Louer / Réserver
+              </a>
+            </li>
+            <li>
+              <a class="fam-item item-warning"
+                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Maintenance); closeActionsMenu()">
+                <i class='bx bx-wrench'></i> Mettre en maintenance
+              </a>
+            </li>
+          </ng-container>
+
+          <!-- LOUÉ -->
+          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Rented">
+            <li>
+              <a class="fam-item item-warning" (click)="releaseVehicle(getActiveVehicle()); closeActionsMenu()">
+                <i class='bx bx-check-circle'></i> Libérer
+              </a>
+            </li>
+            <li>
+              <a class="fam-item item-warning"
+                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Maintenance); closeActionsMenu()">
+                <i class='bx bx-wrench'></i> Mettre en maintenance
+              </a>
+            </li>
+          </ng-container>
+
+          <!-- RÉSERVÉ -->
+          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Reserved">
+            <li>
+              <a class="fam-item item-success" (click)="assignToRental(getActiveVehicle()); closeActionsMenu()">
+                <i class='bx bx-key'></i> Confirmer la location
+              </a>
+            </li>
+            <li>
+              <a class="fam-item item-secondary"
+                (click)="changeStatus(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
+                <i class='bx bx-x'></i> Annuler la réservation
+              </a>
+            </li>
+          </ng-container>
+
+          <!-- MAINTENANCE -->
+          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Maintenance">
+            <li>
+              <a class="fam-item item-success"
+                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
+                <i class='bx bx-check'></i> Marquer comme disponible
+              </a>
+            </li>
+          </ng-container>
+
+          <!-- HORS SERVICE -->
+          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.OutOfService">
+            <li>
+              <a class="fam-item item-success"
+                (click)="changeStatus(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
+                <i class='bx bx-refresh'></i> Réactiver
+              </a>
+            </li>
+          </ng-container>
+
+          <!-- METTRE HORS SERVICE -->
+          <ng-container *ngIf="getActiveVehicle()?.status !== VehicleStatus.OutOfService &&
+                         getActiveVehicle()?.status !== VehicleStatus.Rented &&
+                         getActiveVehicle()?.status !== VehicleStatus.Reserved">
+            <li class="fam-divider"></li>
+            <li>
+              <a class="fam-item item-danger"
+                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.OutOfService); closeActionsMenu()">
+                <i class='bx bx-block'></i> Mettre hors service
+              </a>
+            </li>
+          </ng-container>
+
+          <li class="fam-divider"></li>
+          <li>
+            <a class="fam-item item-info" (click)="showVehicleDetails(getActiveVehicle()); closeActionsMenu()">
+              <i class='bx bx-show'></i> Voir les détails
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Overlay transparent pour fermer au clic extérieur -->
+      <div class="fam-overlay" *ngIf="activeMenuVehicleId" (click)="closeActionsMenu()"></div>
 
       <!-- MODAL DE DÉTAILS DU VÉHICULE -->
       <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
@@ -1232,7 +1340,7 @@
           <div class="modal-header">
             <h5 class="modal-title">
               <i class='bx bx-time me-2'></i>
-              Louer un véhicule
+              Louer / Réserver un véhicule
             </h5>
             <button type="button" class="btn-close" (click)="closeReservationModal()" aria-label="Close">
               <i class='bx bx-x'></i>

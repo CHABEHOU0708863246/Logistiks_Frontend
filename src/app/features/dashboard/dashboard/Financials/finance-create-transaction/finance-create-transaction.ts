@@ -17,6 +17,10 @@ import { NotificationService } from '../../../../../core/services/Notification/n
 import { Token } from '../../../../../core/services/Token/token';
 import { Financials } from '../../../../../core/services/Financials/financials';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+import { VehicleDto, VehicleSearchCriteria } from '../../../../../core/models/Vehicles/Vehicle.dtos';
+import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
+import { ApiResponseData } from '../../../../../core/models/Common/ApiResponseData';
+import { VehicleStatus } from '../../../../../core/models/Enums/Logistiks-enums';
 
 /**
  * Interface pour la suggestion de description
@@ -45,6 +49,25 @@ interface DescriptionSuggestion {
   styleUrl: './finance-create-transaction.scss',
 })
 export class FinanceCreateTransaction implements OnInit, OnDestroy {
+
+  // ============================================================================
+// SECTION X: GESTION DES VÉHICULES
+// ============================================================================
+
+/** Liste des véhicules disponibles */
+availableVehicles: VehicleDto[] = [];
+
+/** Véhicule sélectionné */
+selectedVehicle: VehicleDto | null = null;
+
+/** Terme de recherche pour les véhicules */
+vehicleSearchTerm: string = '';
+
+/** Chargement des véhicules */
+loadingVehicles: boolean = false;
+
+/** Affichage de la liste des véhicules */
+showVehicleList: boolean = false;
   // ============================================================================
   // SECTION 1: ÉNUMÉRATIONS ET TYPES
   // ============================================================================
@@ -77,7 +100,7 @@ export class FinanceCreateTransaction implements OnInit, OnDestroy {
 
   /** Suggestions de descriptions selon la catégorie */
   descriptionSuggestions: DescriptionSuggestion[] = [
-    { icon: 'bx-car', text: 'Paiement location véhicule', category: TransactionCategory.Rental },
+    { icon: 'bx-car', text: 'Paiement location véhicule', category: TransactionCategory.RentalIncome },
     { icon: 'bx-money', text: 'Remboursement caution', category: TransactionCategory.Deposit },
     { icon: 'bx-gas-pump', text: 'Achat carburant', category: TransactionCategory.Fuel },
     { icon: 'bx-wrench', text: 'Réparation et entretien', category: TransactionCategory.Maintenance },
@@ -151,6 +174,7 @@ export class FinanceCreateTransaction implements OnInit, OnDestroy {
     private financialService: Financials,
     private notificationService: NotificationService,
     private authService: Auth,
+    private vehiclesService: Vehicles,
     private tokenService: Token,
     private router: Router
   ) {
@@ -167,6 +191,7 @@ export class FinanceCreateTransaction implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.checkAuthentication();
     this.loadCurrentUser();
+    this.loadAvailableVehicles();
     this.setupFormListeners();
   }
 
@@ -179,63 +204,166 @@ export class FinanceCreateTransaction implements OnInit, OnDestroy {
   }
 
   // ============================================================================
+// SECTION X: CHARGEMENT DES VÉHICULES
+// ============================================================================
+
+/**
+ * Charge les véhicules disponibles
+ */
+loadAvailableVehicles(searchTerm: string = ''): void {
+  this.loadingVehicles = true;
+
+  const criteria: VehicleSearchCriteria = {
+    searchTerm: searchTerm,
+    status: undefined, // On peut charger tous les véhicules
+    page: 1,
+    pageSize: 50,
+    sortBy: 'plateNumber',
+    sortDescending: false
+  };
+
+  this.vehiclesService.searchVehicles(criteria)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response: ApiResponseData<VehicleDto[]>) => {
+        if (response.success && response.data) {
+          this.availableVehicles = response.data;
+          console.log('✅ Véhicules chargés:', this.availableVehicles.length);
+        }
+        this.loadingVehicles = false;
+      },
+      error: (error) => {
+        console.error('❌ Erreur chargement véhicules:', error);
+        this.loadingVehicles = false;
+        this.notificationService.error(
+          'Erreur lors du chargement des véhicules',
+          'Erreur'
+        );
+      }
+    });
+}
+
+/**
+ * Sélectionne un véhicule
+ */
+selectVehicle(vehicle: VehicleDto): void {
+  this.selectedVehicle = vehicle;
+  this.vehicleSearchTerm = `${vehicle.plateNumber} - ${vehicle.brand} ${vehicle.model}`;
+
+  // Mettre à jour le formulaire avec les IDs de liaison
+  this.transactionForm.patchValue({
+    relatedId: vehicle.id,
+    relatedType: 'Vehicle'
+  });
+
+  this.showVehicleList = false;
+}
+
+/**
+ * Efface la sélection du véhicule
+ */
+clearVehicleSelection(): void {
+  this.selectedVehicle = null;
+  this.vehicleSearchTerm = '';
+  this.transactionForm.patchValue({
+    relatedId: '',
+    relatedType: ''
+  });
+}
+
+/**
+ * Gère la recherche de véhicules
+ */
+onVehicleSearchChange(term: string): void {
+  this.vehicleSearchTerm = term;
+  if (term.length >= 2) {
+    this.loadAvailableVehicles(term);
+    this.showVehicleList = true;
+  } else {
+    this.availableVehicles = [];
+    this.showVehicleList = false;
+  }
+}
+
+/**
+ * Formate l'affichage du statut du véhicule
+ */
+getVehicleStatusLabel(status: VehicleStatus): string {
+  const statusMap: { [key: number]: string } = {
+    [VehicleStatus.Available]: 'Disponible',
+    [VehicleStatus.Rented]: 'Loué',
+    [VehicleStatus.Maintenance]: 'Maintenance',
+    [VehicleStatus.Reserved]: 'Réservé',
+    [VehicleStatus.OutOfService]: 'Hors service'
+  };
+  return statusMap[status] || 'Inconnu';
+}
+
+/**
+ * Obtient la classe CSS du badge de statut
+ */
+getVehicleStatusClass(status: VehicleStatus): string {
+  const classMap: { [key: number]: string } = {
+    [VehicleStatus.Available]: 'badge-success',
+    [VehicleStatus.Rented]: 'badge-primary',
+    [VehicleStatus.Maintenance]: 'badge-warning',
+    [VehicleStatus.Reserved]: 'badge-info',
+    [VehicleStatus.OutOfService]: 'badge-danger'
+  };
+  return classMap[status] || 'badge-secondary';
+}
+
+  // ============================================================================
   // SECTION 10: INITIALISATION DU FORMULAIRE
   // ============================================================================
 
   /**
    * Initialise le formulaire de transaction
    */
-  private initializeForm(): void {
-    const today = new Date().toISOString().split('T')[0];
-
-    this.transactionForm = this.formBuilder.group({
-      // Étape 1: Type et catégorie
-      type: [TransactionType.Expense, Validators.required],
-      category: [TransactionCategory.Other, Validators.required],
-
-      // Étape 2: Montant et date
-      amount: [0, [Validators.required, Validators.min(0.01)]],
-      date: [today, Validators.required],
-      paymentMethod: [PaymentMethod.Cash, Validators.required],
-
-      // Étape 3: Description et références
-      description: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(500)]],
-      reference: ['', Validators.maxLength(100)],
-      relatedId: [''],
-      relatedType: [''],
-
-      // Champs optionnels
-      notes: ['', Validators.maxLength(1000)]
-    });
-  }
+ initializeForm(): void {
+  const today = new Date().toISOString().split('T')[0];
+  this.transactionForm = this.formBuilder.group({
+    type:          [TransactionType.Expense, Validators.required],
+    category:      [TransactionCategory.Other, Validators.required], // 109
+    amount:        [0, [Validators.required, Validators.min(0.01)]],
+    date:          [today, Validators.required],
+    paymentMethod: [PaymentMethod.Cash, Validators.required],
+    description:   ['', [Validators.required, Validators.minLength(3), Validators.maxLength(500)]],
+    reference:     ['', Validators.maxLength(100)],
+    relatedId:     [''],
+    relatedType:   [''],
+    notes:         ['', Validators.maxLength(1000)]
+  });
+}
 
   /**
    * Configure les écouteurs de changement du formulaire
    */
   private setupFormListeners(): void {
-    // Écoute les changements de montant pour mise à jour de l'aperçu
-    this.transactionForm.get('amount')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((amount) => {
-        this.updateAmountPreview(amount);
-        this.calculateBalanceImpact(amount);
-      });
+  this.transactionForm.get('amount')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(amount => {
+      this.updateAmountPreview(amount);
+      this.calculateBalanceImpact(amount);
+    });
 
-    // Écoute les changements de type pour mise à jour de l'impact
-    this.transactionForm.get('type')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        const amount = this.transactionForm.get('amount')?.value || 0;
-        this.calculateBalanceImpact(amount);
-      });
+  // ✅ Reset catégorie quand le type change
+  this.transactionForm.get('type')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(type => {
+      const defaultCategory = type === TransactionType.Revenue
+        ? TransactionCategory.RentalIncome
+        : TransactionCategory.Other;
+      this.transactionForm.patchValue({ category: defaultCategory }, { emitEvent: false });
 
-    // Écoute les changements de catégorie pour filtrer les suggestions
-    this.transactionForm.get('category')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((category) => {
-        this.filterDescriptionSuggestions(category);
-      });
-  }
+      const amount = this.transactionForm.get('amount')?.value || 0;
+      this.calculateBalanceImpact(amount);
+    });
+
+  this.transactionForm.get('category')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(category => this.filterDescriptionSuggestions(category));
+}
 
   // ============================================================================
   // SECTION 11: GESTION DES ÉTAPES
@@ -421,22 +549,6 @@ export class FinanceCreateTransaction implements OnInit, OnDestroy {
   }
 
   /**
-   * Version de test : soumet directement sans modal (pour debug)
-   */
-  submitTransactionDirect(): void {
-    console.log('🚀 submitTransactionDirect (TEST) appelé');
-    if (this.transactionForm.invalid) {
-      console.warn('⚠️ Formulaire invalide');
-      this.markFormGroupTouched(this.transactionForm);
-      this.notificationService.error('Formulaire invalide', 'Erreur');
-      return;
-    }
-
-    // Appeler submitTransaction directement
-    this.submitTransaction();
-  }
-
-  /**
    * Ferme le modal de confirmation
    */
   closeConfirmModal(): void {
@@ -481,8 +593,8 @@ export class FinanceCreateTransaction implements OnInit, OnDestroy {
       description: formValue.description,
       paymentMethod: formValue.paymentMethod,
       reference: formValue.reference || undefined,
-      relatedId: formValue.relatedId || undefined,
-      relatedType: formValue.relatedType || undefined
+      relatedId: this.selectedVehicle?.id || undefined,
+      relatedType: this.selectedVehicle ? 'Vehicle' : undefined
     };
 
     console.log('📤 Requête à envoyer:', request);

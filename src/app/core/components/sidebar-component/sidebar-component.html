@@ -76,7 +76,8 @@
     <!-- ================================================================ -->
     <!-- RÉFÉRENTIELS -->
     <!-- ================================================================ -->
-    <li class="menu-header" *ngIf="permission.canViewTiers() || permission.canViewVehicles() || permission.canViewDocuments()">
+    <li class="menu-header"
+      *ngIf="permission.canViewTiers() || permission.canViewVehicles() || permission.canViewDocuments()">
       <span>RÉFÉRENTIELS</span>
     </li>
 
@@ -159,7 +160,6 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/contrats']" class="menu-link">
             <div>Tous les contrats</div>
-            <span class="badge badge-info"></span>
           </a>
         </li>
 
@@ -168,7 +168,6 @@
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
           <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
             <div>Statistiques</div>
-            <span class="badge badge-info"></span>
           </a>
         </li>
       </ul>
@@ -197,7 +196,6 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/finances/transactions']" class="menu-link">
             <div>Toutes les transactions</div>
-            <span class="badge badge-success"></span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canCreateTransactions()">
@@ -212,7 +210,7 @@
     <!-- 💰 CHARGES & DÉPENSES -->
     <!-- RG-009: Dépenses = Transactions de type Expense liées au véhicule -->
     <!-- RG-010: Dépenses ventilées par catégorie (Maintenance, Fuel, Insurance, Taxes, Other) -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewExpenses()">
+    <!-- <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewExpenses()">
       <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
         <i class="menu-icon bx bx-money"></i>
         <div>Charges & Dépenses</div>
@@ -236,7 +234,7 @@
           </a>
         </li>
       </ul>
-    </li>
+    </li> -->
 
     <!-- 📈 RENTABILITÉ & ROI - Uniquement Manager et au-dessus -->
     <!-- RG-007: Rentabilité calculée par période (date début, date fin) -->
@@ -251,35 +249,31 @@
         <div>Rentabilité & ROI</div>
       </a>
       <ul class="menu-sub">
+
+        <!-- ROI par véhicule -->
         <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/rentabilite/vue-ensemble']" class="menu-link">
-            <div>Vue d'ensemble flotte</div>
-            <span class="badge badge-warning"></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/rentabilite/vehicules']" class="menu-link">
+          <a [routerLink]="['/dashboard/rentabilite/vehicules']" class="menu-link">
             <div>ROI par véhicule</div>
-            <span class="badge badge-warning"></span>
           </a>
         </li>
+
+        <!-- Calculer rentabilité -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
-          <a [routerLink]="['/dashboard/finance/rentabilite/calculer']" class="menu-link">
+          <a [routerLink]="['/dashboard/rentabilite/calculer']" class="menu-link">
             <div>Calculer rentabilité</div>
-            <span class="badge badge-warning"></span>
           </a>
         </li>
+
+        <!-- Comparaisons périodes -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
-          <a [routerLink]="['/dashboard/finance/rentabilite/comparaisons']" class="menu-link">
+          <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="menu-link">
             <div>Comparaisons périodes</div>
-            <span class="badge badge-warning"></span>
           </a>
         </li>
       </ul>
-    </li>
 
-    <!-- 📑 RAPPORTS FINANCIERS -->
-    <!-- Toutes les RG peuvent être incluses dans les rapports -->
+      <!-- 📑 RAPPORTS FINANCIERS -->
+      <!-- Toutes les RG peuvent être incluses dans les rapports -->
     <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewReports()">
       <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
         <i class="menu-icon bx bx-file-blank"></i>
@@ -289,13 +283,11 @@
         <li class="menu-item" routerLinkActive="active">
           <a [routerLink]="['/dashboard/finance/rapports/mensuel']" class="menu-link">
             <div>Rapport mensuel</div>
-            <span class="badge badge-secondary">Toutes RG</span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
           <a [routerLink]="['/dashboard/finance/rapports/personnalise']" class="menu-link">
             <div>Rapport personnalisé</div>
-            <span class="badge badge-secondary">Toutes RG</span>
           </a>
         </li>
         <li class="menu-item" routerLinkActive="active">

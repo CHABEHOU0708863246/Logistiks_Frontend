@@ -2,7 +2,7 @@
   <!-- =========================================================================== -->
   <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
   <!-- =========================================================================== -->
-<app-sidebar-component></app-sidebar-component>
+  <app-sidebar-component></app-sidebar-component>
 
 
 
@@ -498,11 +498,9 @@
                         <div class="btn-group" role="group">
                           <!-- Bouton principal avec dropdown -->
                           <div class="dropdown" [class.show]="openedActionsMenu === contract.id">
-                            <button class="btn btn-sm btn-primary dropdown-toggle"
-                              [class.show]="openedActionsMenu === contract.id" type="button"
-                              (click)="toggleActionsMenu(contract, $event)">
-                              <i class='bx bx-cog'></i>
-                              Actions
+                            <button class="btn-actions-trigger" (click)="toggleActionsMenu(contract, $event)"
+                              [class.active]="activeMenuContractId === contract.id">
+                              <i class='bx bx-dots-vertical-rounded'></i>
                             </button>
 
                             <ul class="dropdown-menu" [class.show]="openedActionsMenu === contract.id">
@@ -695,6 +693,107 @@
           </div>
         </div>
       </div>
+
+      <!-- MENU ACTIONS FLOTTANT CONTRATS -->
+      <div class="floating-actions-menu" *ngIf="activeMenuContractId" [style.top.px]="menuPosition.top"
+        [style.left.px]="menuPosition.left">
+
+        <div class="fam-header">
+          <span>{{ getActiveContract()?.contractNumber }}</span>
+          <button class="fam-close" (click)="closeActionsMenu()">
+            <i class='bx bx-x'></i>
+          </button>
+        </div>
+
+        <ul class="fam-list">
+
+          <!-- SIGNALER DOMMAGE -->
+          <li *ngIf="getActiveContract()?.status === contractStatus.Active">
+            <a class="fam-item item-danger" (click)="openDamageReportModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-error'></i> Signaler dommage
+            </a>
+          </li>
+
+          <li class="fam-divider" *ngIf="getActiveContract()?.status === contractStatus.Active"></li>
+
+          <!-- ANNULER CONTRAT -->
+          <li *ngIf="getActiveContract()?.status === contractStatus.Active">
+            <a class="fam-item item-danger" (click)="openCancelContractModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-stop-circle'></i> Annuler contrat
+            </a>
+          </li>
+
+          <!-- REJETER CONTRAT -->
+          <li
+            *ngIf="getActiveContract()?.status === contractStatus.Draft || getActiveContract()?.status === contractStatus.Pending">
+            <a class="fam-item item-warning"
+              (click)="openRejectContractModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-x'></i> Rejeter contrat
+            </a>
+          </li>
+
+          <!-- ENREGISTRER PAIEMENT -->
+          <li *ngIf="getActiveContract()?.status === contractStatus.Active">
+            <a class="fam-item item-success" (click)="openPaymentModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-dollar-circle'></i> Enregistrer paiement
+            </a>
+          </li>
+
+          <!-- VOIR SOLDE -->
+          <li>
+            <a class="fam-item item-info" (click)="openBalanceModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-wallet'></i> Voir solde détaillé
+            </a>
+          </li>
+
+          <!-- RAPPORT FINANCIER -->
+          <li>
+            <a class="fam-item item-warning"
+              (click)="openFinancialReportModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-bar-chart'></i> Rapport financier
+            </a>
+          </li>
+
+          <li class="fam-divider"></li>
+
+          <!-- TERMINER CONTRAT -->
+          <li *ngIf="getActiveContract()?.status === contractStatus.Active">
+            <a class="fam-item item-danger" (click)="openTerminateModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-x-circle'></i> Terminer contrat
+            </a>
+          </li>
+
+          <!-- ACTIVER AVEC LIVRAISON -->
+          <li *ngIf="canActivateContract(getActiveContract()!)">
+            <a class="fam-item item-success"
+              (click)="openActivateContractModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-check-circle'></i> Activer avec livraison
+            </a>
+          </li>
+
+          <li class="fam-divider"></li>
+
+          <!-- GÉNÉRER PDF -->
+          <li>
+            <a class="fam-item item-secondary" (click)="generatePdf(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-download'></i> Générer PDF
+            </a>
+          </li>
+
+          <li class="fam-divider"></li>
+
+          <!-- VÉRIFIER ÉLIGIBILITÉ CLIENT -->
+          <li>
+            <a class="fam-item item-info" (click)="openEligibilityModal(getActiveContract()!); closeActionsMenu()">
+              <i class='bx bx-check-shield'></i> Vérifier éligibilité client
+            </a>
+          </li>
+
+        </ul>
+      </div>
+
+      <!-- Overlay pour fermer au clic extérieur -->
+      <div class="fam-overlay" *ngIf="activeMenuContractId" (click)="closeActionsMenu()"></div>
 
       <!-- MODAL POUR ENREGISTRER LE RETOUR DU VÉHICULE -->
       <div class="modal-backdrop" *ngIf="showVehicleReturnModal" (click)="closeVehicleReturnModal()"></div>
@@ -1386,15 +1485,6 @@
                       </tbody>
                     </table>
 
-                    <!-- Prochain paiement -->
-                    <div *ngIf="contractBalance.nextPaymentDue" class="alert alert-warning mt-3">
-                      <i class='bx bx-time me-2'></i>
-                      <strong>Prochain paiement dû :</strong>
-                      {{ formatDate(contractBalance.nextPaymentDue) }}
-                      <span class="badge bg-warning ms-2">
-                        {{ formatCurrency(contractBalance.currentWeekDue) }}
-                      </span>
-                    </div>
                   </div>
                 </div>
 

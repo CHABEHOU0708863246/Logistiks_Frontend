@@ -97,6 +97,30 @@ export enum PaymentStatus {
   PartiallyPaid = 5
 }
 
+export enum TransactionType {
+  Income  = 1,   // Revenu
+  Expense = 2    // Dépense
+}
+
+export enum TransactionCategory {
+  // Revenus
+  RentalIncome = 1,
+  LateFees     = 2,
+  DamageFees   = 3,
+  OtherIncome  = 4,
+
+  // Dépenses
+  Maintenance    = 101,
+  Fuel           = 102,
+  Insurance      = 103,
+  Taxes          = 104,
+  Salary         = 105,
+  Utilities      = 106,
+  OfficeSupplies = 107,
+  Marketing      = 108,
+  OtherExpense   = 109
+}
+
 export enum PaymentMethod {
   Cash = 1,
   MobileMoney = 2,

@@ -2,14 +2,20 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { finalize, Subject, takeUntil } from 'rxjs';
+
+// ============================================================================
+// CORE IMPORTS
+// ============================================================================
 import { environment } from '../../../../../../environments/environment.development';
+import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
+import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+
+// ============================================================================
+// MODELS IMPORTS
+// ============================================================================
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import { ContractStatus, ContractType, DamageSeverity, PaymentFrequency, PaymentMethod, Permission, TierStatus, UserRole, VehicleStatus } from '../../../../../core/models/Enums/Logistiks-enums';
-import { Auth } from '../../../../../core/services/Auth/auth';
-import { NotificationService } from '../../../../../core/services/Notification/notification-service';
-import { Token } from '../../../../../core/services/Token/token';
 import { ApiResponseData } from '../../../../../core/models/Common/ApiResponseData';
 import { PaginatedResponse } from '../../../../../core/models/Common/PaginatedResponse';
 import { RecordPaymentRequest, RenewContractRequest, CreateContractRequest, ReportDamageRequest, VehicleReturnRequest, ActivateContractRequest } from '../../../../../core/models/Contracts/Contract-request.models';
@@ -19,13 +25,19 @@ import { ContractDto } from '../../../../../core/models/Contracts/ContractDto';
 import { ContractEligibilityResult } from '../../../../../core/models/Contracts/ContractEligibilityResult';
 import { ContractFinancialReport } from '../../../../../core/models/Contracts/ContractFinancialReport';
 import { PaymentRecord } from '../../../../../core/models/Contracts/PaymentRecord';
-import { Contract } from '../../../../../core/services/Contract/contract';
 import { LatePenaltyInfo, RenewalEligibilityResult } from '../../../../../core/models/Contracts/penalty.models';
-import { Tiers } from '../../../../../core/services/Tiers/tiers';
-import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 import { VehicleDto, VehicleSearchCriteria } from '../../../../../core/models/Vehicles/Vehicle.dtos';
 import { VehicleReturnResult } from '../../../../../core/models/Contracts/VehicleReturnResult';
-import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+
+// ============================================================================
+// SERVICES IMPORTS
+// ============================================================================
+import { Auth } from '../../../../../core/services/Auth/auth';
+import { NotificationService } from '../../../../../core/services/Notification/notification-service';
+import { Token } from '../../../../../core/services/Token/token';
+import { Contract } from '../../../../../core/services/Contract/contract';
+import { Tiers } from '../../../../../core/services/Tiers/tiers';
+import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 
 @Component({
   selector: 'app-contrats-list',
@@ -35,40 +47,29 @@ import { SidebarComponent } from "../../../../../core/components/sidebar-compone
 })
 export class ContratsList implements OnInit, OnDestroy {
   // ============================================================================
-  // SECTION 1: PROPRIÉTÉS DE DONNÉES ET D'ÉTAT
+  // SECTION 1: ÉTAT GLOBAL ET DONNÉES PRINCIPALES
   // ============================================================================
-  contractPayments: PaymentRecord[] = [];
 
-  showActivateContractModal: boolean = false;
-  activateContractForm!: FormGroup;
-  activateContractLoading: boolean = false;
-  activateContractSubmitted: boolean = false;
-
-  /** Modal de pénalités */
-  showPenaltiesModal: boolean = false;
-  penaltiesInfo: LatePenaltyInfo | null = null;
-  penaltiesLoading: boolean = false;
-  vehicleStatusEnum = VehicleStatus;
-
-  // Dans la classe ContratsList
-  availableTiers: any[] = [];
-  availableVehicles: any[] = [];
-  loadingTiers: boolean = false;
-  loadingVehicles: boolean = false;
-  searchTermCustomer: string = '';
-  searchTermVehicle: string = '';
-  selectedTier: any = null;
-  selectedVehicle: any = null;
-
-  /** Modal d'éligibilité au renouvellement */
-  showRenewalEligibilityModal: boolean = false;
-  renewalEligibility: RenewalEligibilityResult | null = null;
-  renewalEligibilityLoading: boolean = false;
-
-  /** Liste des contrats */
+  /** Données principales */
   contracts: ContractDto[] = [];
+  currentUser: User | null = null;
+
+  /** État de l'interface */
+  loading: boolean = false;
+  error: string | null = null;
   isMobileView: boolean = false;
-  /** Statistiques du tableau de bord */
+  isSidebarCollapsed: boolean = false;
+
+  /** Subject pour la gestion des abonnements */
+  private destroy$ = new Subject<void>();
+
+  activeMenuContractId: string | null = null;
+  menuPosition = { top: 0, left: 0 };
+
+  // ============================================================================
+  // SECTION 2: STATISTIQUES DU TABLEAU DE BORD
+  // ============================================================================
+
   dashboardStats = {
     totalContracts: 0,
     activeContracts: 0,
@@ -81,20 +82,30 @@ export class ContratsList implements OnInit, OnDestroy {
     contractsExpiring: 0
   };
 
-  /** Filtres */
+  // ============================================================================
+  // SECTION 3: FILTRES ET RECHERCHE
+  // ============================================================================
+
+  /** Filtres simples */
   searchTerm: string = '';
   selectedStatus: ContractStatus | null = null;
   selectedPaymentFrequency: PaymentFrequency | null = null;
+
+  /** Filtres avancés */
+  showAdvancedFilters: boolean = false;
   startDateFrom: string = '';
   startDateTo: string = '';
   endDateFrom: string = '';
   endDateTo: string = '';
   hasOutstandingBalance: boolean = false;
 
-  /** Critères de recherche */
+  /** Critères de recherche complets */
   searchCriteria: ContractSearchCriteria = { ...defaultContractSearchCriteria };
 
-  /** Pagination */
+  // ============================================================================
+  // SECTION 4: PAGINATION ET TRI
+  // ============================================================================
+
   pagination = {
     currentPage: 1,
     pageSize: 10,
@@ -104,164 +115,49 @@ export class ContratsList implements OnInit, OnDestroy {
     hasNextPage: false
   };
 
-  /** Options de pagination */
   pageSizeOptions = [10, 25, 50, 100];
+  visiblePages: number[] = [];
 
-  /** Tri */
+  /** Options de tri */
   selectedSort: string = 'createdAt';
   sortDescending: boolean = true;
 
-  /** État de chargement */
-  loading: boolean = false;
-  error: string | null = null;
-
-  /** Pages visibles pour la pagination */
-  visiblePages: number[] = [];
-
   // ============================================================================
-  // SECTION 2: MODALES ET FORMULAIRES
+  // SECTION 5: GESTION DES UTILISATEURS ET PERMISSIONS
   // ============================================================================
 
-  /** Modal d'enregistrement de paiement */
-  showPaymentModal: boolean = false;
-  selectedContractForPayment: ContractDto | null = null;
-  paymentForm: FormGroup;
-  paymentLoading: boolean = false;
-  paymentSubmitted: boolean = false;
-
-  /** Modal de renouvellement */
-  showRenewModal: boolean = false;
-  renewForm: FormGroup;
-  renewLoading: boolean = false;
-  renewSubmitted: boolean = false;
-
-  /** Modal de termination */
-  showTerminateModal: boolean = false;
-  terminateForm: FormGroup;
-  terminateLoading: boolean = false;
-  terminateSubmitted: boolean = false;
-  isSidebarCollapsed: boolean = false;
-
-  /** Modal de solde détaillé */
-  showBalanceModal: boolean = false;
-  contractBalance: ContractBalance | null = null;
-  balanceLoading: boolean = false;
-
-  /** Modal de rapport financier */
-  showFinancialReportModal: boolean = false;
-  financialReport: ContractFinancialReport | null = null;
-  financialReportLoading: boolean = false;
-
-  /** Modal de signature */
-  showSignatureModal: boolean = false;
-  signatureForm: FormGroup;
-  signatureFile: File | null = null;
-  signatureLoading: boolean = false;
-  signatureSubmitted: boolean = false;
-
-  /** Modal d'éligibilité */
-  showEligibilityModal: boolean = false;
-  eligibilityResult: ContractEligibilityResult | null = null;
-  eligibilityLoading: boolean = false;
-
-  /** Modal de détails */
-  showDetailsModal: boolean = false;
-  selectedContract: ContractDto | null = null;
-  contractDetailsLoading: boolean = false;
-
-  /** Modal de création */
-  showCreateModal: boolean = false;
-  createForm: FormGroup;
-  createLoading: boolean = false;
-  createSubmitted: boolean = false;
-
-  // ============================================================================
-  // SECTION 2bis: MODALES SUPPLEMENTAIRES
-  // ============================================================================
-
-  /** Modal pour enregistrer le retour du véhicule */
-  showVehicleReturnModal: boolean = false;
-  vehicleReturnForm!: FormGroup;
-  vehicleReturnLoading: boolean = false;
-  vehicleReturnSubmitted: boolean = false;
-
-  /** Modal pour signaler un dommage */
-  showDamageReportModal: boolean = false;
-  damageReportForm!: FormGroup;
-  damageReportLoading: boolean = false;
-  damageReportSubmitted: boolean = false;
-
-  /** Modal pour annuler un contrat */
-  showCancelContractModal: boolean = false;
-  cancelContractForm!: FormGroup;
-  cancelContractLoading: boolean = false;
-  cancelContractSubmitted: boolean = false;
-
-  /** Modal pour rejeter un contrat */
-  showRejectContractModal: boolean = false;
-  rejectContractForm!: FormGroup;
-  rejectContractLoading: boolean = false;
-  rejectContractSubmitted: boolean = false;
-
-  // ============================================================================
-  // SECTION 12bis: MODÈLES DE DONNÉES SUPPLÉMENTAIRES
-  // ============================================================================
-
-  damagePhotos: File[] = [];
-  previewUrls: string[] = [];
-
-  // ============================================================================
-  // SECTION 3: MENUS D'ACTIONS
-  // ============================================================================
-
-  /** Menu d'actions ouvert */
-  openedActionsMenu: string | null = null;
-
-  /** Filtres avancés */
-  showAdvancedFilters: boolean = false;
-
-  // ============================================================================
-  // SECTION 4: PROPRIÉTÉS DE GESTION UTILISATEUR
-  // ============================================================================
-
-  currentUser: any = null;
   userName: string = 'Utilisateur';
   userPhotoUrl: string = '';
   showUserMenu: boolean = false;
-
-  /** Rôles et permissions */
-  userRole = UserRole;
-  permission = Permission;
   userPermissions: Set<Permission> = new Set();
 
   // ============================================================================
-  // SECTION 5: ÉNUMÉRATIONS ET SERVICES
+  // SECTION 6: ÉNUMÉRATIONS ET OPTIONS DE LISTE
   // ============================================================================
 
-  contractStatus = ContractStatus;
-  paymentFrequency = PaymentFrequency;
-  paymentMethod = PaymentMethod;
-  contractType = ContractType;
+  readonly contractStatus = ContractStatus;
+  readonly paymentFrequency = PaymentFrequency;
+  readonly paymentMethod = PaymentMethod;
+  readonly contractType = ContractType;
+  readonly userRole = UserRole;
+  readonly permission = Permission;
+  readonly vehicleStatusEnum = VehicleStatus;
 
-  /** Options de statut */
   statusOptions = [
     { value: ContractStatus.Draft, label: 'Brouillon', icon: 'bx bx-edit', color: 'secondary' },
     { value: ContractStatus.Pending, label: 'En attente', icon: 'bx bx-time', color: 'warning' },
     { value: ContractStatus.Active, label: 'Actif', icon: 'bx bx-check-circle', color: 'success' },
     { value: ContractStatus.Suspended, label: 'Suspendu', icon: 'bx bx-pause-circle', color: 'warning' },
     { value: ContractStatus.Terminated, label: 'Terminé', icon: 'bx bx-x-circle', color: 'danger' },
-    { value: ContractStatus.Completed, label: 'Complété', icon: 'bx bx-check-circle', color: 'success' },
-    { value: ContractStatus.Assigned, label: 'Assigné', icon: 'bx bx-user-check', color: 'info' }
+    { value: ContractStatus.Completed, label: 'Complété', icon: 'bx bx-check-circle', color: 'success' }
   ];
 
-  /** Options de fréquence de paiement */
   frequencyOptions = [
     { value: PaymentFrequency.Weekly, label: 'Hebdomadaire', icon: 'bx bx-calendar-week' },
     { value: PaymentFrequency.BiWeekly, label: 'Bi-hebdomadaire', icon: 'bx bx-calendar' },
     { value: PaymentFrequency.Monthly, label: 'Mensuel', icon: 'bx bx-calendar' }
   ];
 
-  /** Options de méthode de paiement */
   paymentMethodOptions = [
     { value: 1, label: 'Espèces', icon: 'bx bx-money' },
     { value: 2, label: 'Mobile Money', icon: 'bx bx-mobile-alt' },
@@ -269,11 +165,147 @@ export class ContratsList implements OnInit, OnDestroy {
     { value: 4, label: 'Chèque', icon: 'bx bx-receipt' }
   ];
 
-  /** Subject pour la gestion de la destruction des observables */
-  private destroy$ = new Subject<void>();
+  // ============================================================================
+  // SECTION 7: GESTION DES MENUS D'ACTIONS
+  // ============================================================================
+
+  openedActionsMenu: string | null = null;
 
   // ============================================================================
-  // SECTION 6: CONSTRUCTEUR ET INITIALISATION
+  // SECTION 8: DONNÉES POUR SÉLECTEURS (CLIENTS/VÉHICULES)
+  // ============================================================================
+
+  availableTiers: any[] = [];
+  availableVehicles: any[] = [];
+  loadingTiers: boolean = false;
+  loadingVehicles: boolean = false;
+  searchTermCustomer: string = '';
+  searchTermVehicle: string = '';
+  selectedTier: any = null;
+  selectedVehicle: any = null;
+
+  // ============================================================================
+  // SECTION 9: FORMULAIRES - DÉCLARATION
+  // ============================================================================
+
+  /** Formulaire de création */
+  createForm!: FormGroup;
+
+  /** Formulaire de paiement */
+  paymentForm!: FormGroup;
+
+  /** Formulaire de renouvellement */
+  renewForm!: FormGroup;
+
+  /** Formulaire de résiliation */
+  terminateForm!: FormGroup;
+
+  /** Formulaire de signature */
+  signatureForm!: FormGroup;
+
+  /** Formulaire d'activation */
+  activateContractForm!: FormGroup;
+
+  /** Formulaire de retour véhicule */
+  vehicleReturnForm!: FormGroup;
+
+  /** Formulaire de signalement dommage */
+  damageReportForm!: FormGroup;
+
+  /** Formulaire d'annulation */
+  cancelContractForm!: FormGroup;
+
+  /** Formulaire de rejet */
+  rejectContractForm!: FormGroup;
+
+  // ============================================================================
+  // SECTION 10: MODALES - ÉTATS D'AFFICHAGE
+  // ============================================================================
+
+  /** Modales principales */
+  showCreateModal: boolean = false;
+  showDetailsModal: boolean = false;
+  showPaymentModal: boolean = false;
+  showRenewModal: boolean = false;
+  showTerminateModal: boolean = false;
+  showSignatureModal: boolean = false;
+  showBalanceModal: boolean = false;
+  showFinancialReportModal: boolean = false;
+  showEligibilityModal: boolean = false;
+
+  /** Modales d'activation et retour */
+  showActivateContractModal: boolean = false;
+  showVehicleReturnModal: boolean = false;
+
+  /** Modales de gestion des incidents */
+  showDamageReportModal: boolean = false;
+  showCancelContractModal: boolean = false;
+  showRejectContractModal: boolean = false;
+  showPenaltiesModal: boolean = false;
+  showRenewalEligibilityModal: boolean = false;
+
+  // ============================================================================
+  // SECTION 11: DONNÉES DES MODALES
+  // ============================================================================
+
+  /** Contrat sélectionné */
+  selectedContract: ContractDto | null = null;
+  selectedContractForPayment: ContractDto | null = null;
+
+  /** Données financières */
+  contractBalance: ContractBalance | null = null;
+  financialReport: ContractFinancialReport | null = null;
+  contractPayments: PaymentRecord[] = [];
+  penaltiesInfo: LatePenaltyInfo | null = null;
+  renewalEligibility: RenewalEligibilityResult | null = null;
+  eligibilityResult: ContractEligibilityResult | null = null;
+
+  // ============================================================================
+  // SECTION 12: ÉTATS DE CHARGEMENT DES MODALES
+  // ============================================================================
+
+  /** États de chargement */
+  createLoading: boolean = false;
+  paymentLoading: boolean = false;
+  renewLoading: boolean = false;
+  terminateLoading: boolean = false;
+  signatureLoading: boolean = false;
+  balanceLoading: boolean = false;
+  financialReportLoading: boolean = false;
+  eligibilityLoading: boolean = false;
+  activateContractLoading: boolean = false;
+  vehicleReturnLoading: boolean = false;
+  damageReportLoading: boolean = false;
+  cancelContractLoading: boolean = false;
+  rejectContractLoading: boolean = false;
+  penaltiesLoading: boolean = false;
+  renewalEligibilityLoading: boolean = false;
+  contractDetailsLoading: boolean = false;
+
+  // ============================================================================
+  // SECTION 13: ÉTATS DE SOUMISSION DES FORMULAIRES
+  // ============================================================================
+
+  createSubmitted: boolean = false;
+  paymentSubmitted: boolean = false;
+  renewSubmitted: boolean = false;
+  terminateSubmitted: boolean = false;
+  signatureSubmitted: boolean = false;
+  activateContractSubmitted: boolean = false;
+  vehicleReturnSubmitted: boolean = false;
+  damageReportSubmitted: boolean = false;
+  cancelContractSubmitted: boolean = false;
+  rejectContractSubmitted: boolean = false;
+
+  // ============================================================================
+  // SECTION 14: DONNÉES POUR GESTION DES DOMMAGES
+  // ============================================================================
+
+  damagePhotos: File[] = [];
+  previewUrls: string[] = [];
+
+  // ============================================================================
+  // SECTION 15: CONSTRUCTEUR ET INITIALISATION
   // ============================================================================
 
   constructor(
@@ -286,25 +318,32 @@ export class ContratsList implements OnInit, OnDestroy {
     private tokenService: Token,
     private router: Router
   ) {
-    // Initialisation des formulaires
+    this.initializeForms();
+  }
+
+  /**
+   * Initialise tous les formulaires du composant
+   */
+  private initializeForms(): void {
+    this.createForm = this.formBuilder.group({
+      customerId: ['', Validators.required],
+      vehicleId: ['', Validators.required],
+      startDate: [new Date().toISOString().split('T')[0], Validators.required],
+      durationInWeeks: [4, [Validators.required, Validators.min(1), Validators.max(52)]],
+      weeklyAmount: [0, [Validators.required, Validators.min(0.01)]],
+      securityDeposit: [0, [Validators.min(0)]],
+      paymentFrequency: [PaymentFrequency.Weekly, Validators.required],
+      paymentDay: [1, [Validators.required, Validators.min(1), Validators.max(7)]],
+      weeklyMileageLimit: [1000, [Validators.min(0)]],
+      notes: ['']
+    });
+
     this.paymentForm = this.formBuilder.group({
       paymentDate: [new Date().toISOString().split('T')[0], Validators.required],
       amountPaid: [0, [Validators.required, Validators.min(0.01)]],
       method: [1, Validators.required],
       reference: [''],
       notes: ['']
-    });
-
-    this.activateContractForm = this.formBuilder.group({
-      depositPaid: [true, Validators.required],
-      paymentReference: [''],
-      deliveryDate: [new Date().toISOString().split('T')[0], Validators.required],
-      deliveryLocation: ['Siège social', [Validators.required, Validators.minLength(3)]],
-      mileageAtDelivery: [0, [Validators.required, Validators.min(0)]],
-      fuelLevel: [100, [Validators.required, Validators.min(0), Validators.max(100)]],
-      conditionNotes: ['Véhicule en bon état'],
-      deliveredBy: ['', [Validators.required, Validators.minLength(2)]],
-      receivedBy: ['', [Validators.required, Validators.minLength(2)]]
     });
 
     this.renewForm = this.formBuilder.group({
@@ -323,20 +362,18 @@ export class ContratsList implements OnInit, OnDestroy {
       notes: ['']
     });
 
-    this.createForm = this.formBuilder.group({
-      customerId: ['', Validators.required],
-      vehicleId: ['', Validators.required],
-      startDate: [new Date().toISOString().split('T')[0], Validators.required],
-      durationInWeeks: [4, [Validators.required, Validators.min(1), Validators.max(52)]],
-      weeklyAmount: [0, [Validators.required, Validators.min(0.01)]],
-      securityDeposit: [0, [Validators.min(0)]],
-      paymentFrequency: [PaymentFrequency.Weekly, Validators.required],
-      paymentDay: [1, [Validators.required, Validators.min(1), Validators.max(7)]],
-      weeklyMileageLimit: [1000, [Validators.min(0)]],
-      notes: ['']
+    this.activateContractForm = this.formBuilder.group({
+      depositPaid: [true, Validators.required],
+      paymentReference: [''],
+      deliveryDate: [new Date().toISOString().split('T')[0], Validators.required],
+      deliveryLocation: ['Siège social', [Validators.required, Validators.minLength(3)]],
+      mileageAtDelivery: [0, [Validators.required, Validators.min(0)]],
+      fuelLevel: [100, [Validators.required, Validators.min(0), Validators.max(100)]],
+      conditionNotes: ['Véhicule en bon état'],
+      deliveredBy: ['', [Validators.required, Validators.minLength(2)]],
+      receivedBy: ['', [Validators.required, Validators.minLength(2)]]
     });
 
-    // Formulaire pour le retour du véhicule
     this.vehicleReturnForm = this.formBuilder.group({
       returnDate: [new Date().toISOString().split('T')[0], Validators.required],
       endMileage: [0, [Validators.required, Validators.min(0)]],
@@ -347,18 +384,16 @@ export class ContratsList implements OnInit, OnDestroy {
       hasOverdueMileage: [false]
     });
 
-    // Formulaire pour signaler un dommage
     this.damageReportForm = this.formBuilder.group({
       damageDate: [new Date().toISOString().split('T')[0], Validators.required],
       description: ['', [Validators.required, Validators.minLength(10)]],
       estimatedRepairCost: [0, [Validators.required, Validators.min(0)]],
-      severity: [DamageSeverity.Minor, Validators.required], // ✅ Valeur numérique par défaut
+      severity: [DamageSeverity.Minor, Validators.required],
       locationOnVehicle: ['', Validators.required],
       responsibleParty: ['CUSTOMER', Validators.required],
       notes: ['']
     });
 
-    // Formulaire pour annuler un contrat
     this.cancelContractForm = this.formBuilder.group({
       reason: ['', [Validators.required, Validators.minLength(10)]],
       refundAmount: [0, [Validators.min(0)]],
@@ -366,1224 +401,35 @@ export class ContratsList implements OnInit, OnDestroy {
       effectiveDate: [new Date().toISOString().split('T')[0], Validators.required]
     });
 
-    // Formulaire pour rejeter un contrat
     this.rejectContractForm = this.formBuilder.group({
       reason: ['', [Validators.required, Validators.minLength(10)]],
       notes: ['']
     });
-
   }
 
   // ============================================================================
-  // SECTION 16: GESTION DU RETOUR DU VÉHICULE
+  // SECTION 16: CYCLE DE VIE DU COMPOSANT
   // ============================================================================
 
-  /**
-   * Ouvre la modal de retour du véhicule
-   */
-  openVehicleReturnModal(contract: ContractDto): void {
-    // ✅ AJOUT : Vérifier que le contrat a des informations de livraison
-    if (!contract.deliveryInfo) {
-      this.notificationService.error(
-        'Impossible d\'enregistrer le retour',
-        'Ce contrat n\'a pas d\'informations de livraison. Veuillez d\'abord activer le contrat avec les informations de livraison.'
-      );
-      return;
-    }
-
-    this.selectedContract = contract;
-    this.showVehicleReturnModal = true;
-    this.vehicleReturnSubmitted = false;
-
-    // Pré-remplir avec les données actuelles
-    this.vehicleReturnForm.patchValue({
-      returnDate: new Date().toISOString().split('T')[0],
-      endMileage: 0, // L'utilisateur doit saisir le kilométrage de retour
-      fuelLevel: 'FULL',
-      vehicleCondition: 'GOOD'
-    });
-  }
-
-  /**
- * Ouvre la modal d'activation du contrat
- */
-  openActivateContractModal(contract: ContractDto): void {
-    this.selectedContract = contract;
-    this.showActivateContractModal = true;
-    this.activateContractSubmitted = false;
-
-    // Pré-remplir avec des valeurs par défaut
-    this.activateContractForm.patchValue({
-      depositPaid: true,
-      deliveryDate: new Date().toISOString().split('T')[0],
-      deliveryLocation: 'Siège social',
-      mileageAtDelivery: 0,
-      fuelLevel: 100,
-      conditionNotes: 'Véhicule en bon état',
-      deliveredBy: this.currentUser?.username || 'Livreur',
-      receivedBy: contract.customerName || 'Client'
-    });
-  }
-
-
-  /**
-   * Ferme la modal d'activation
-   */
-  closeActivateContractModal(): void {
-    this.showActivateContractModal = false;
-    this.selectedContract = null;
-    this.activateContractForm.reset({
-      depositPaid: true,
-      deliveryDate: new Date().toISOString().split('T')[0],
-      deliveryLocation: 'Siège social',
-      mileageAtDelivery: 0,
-      fuelLevel: 100,
-      conditionNotes: 'Véhicule en bon état'
-    });
-  }
-
-  /**
-   * Soumet le formulaire d'activation
-   */
-  onActivateContractSubmit(): void {
-    this.activateContractSubmitted = true;
-
-    if (this.activateContractForm.invalid || !this.selectedContract) {
-      this.notificationService.error(
-        'Formulaire incomplet',
-        'Veuillez remplir tous les champs obligatoires'
-      );
-      return;
-    }
-
-    this.activateContractLoading = true;
-
-    const request: ActivateContractRequest = {
-      depositPaid: this.activateContractForm.value.depositPaid,
-      paymentReference: this.activateContractForm.value.paymentReference || '',
-      deliveryDate: new Date(this.activateContractForm.value.deliveryDate),
-      deliveryLocation: this.activateContractForm.value.deliveryLocation,
-      mileageAtDelivery: Number(this.activateContractForm.value.mileageAtDelivery),
-      fuelLevel: Number(this.activateContractForm.value.fuelLevel),
-      conditionNotes: this.activateContractForm.value.conditionNotes || '',
-      deliveredBy: this.activateContractForm.value.deliveredBy,
-      receivedBy: this.activateContractForm.value.receivedBy
-    };
-
-    console.log('✅ Activation du contrat:', request);
-
-    this.contractService.activateContract(this.selectedContract.id, request)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.activateContractLoading = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<ContractDto>) => {
-          this.notificationService.success(
-            'Contrat activé',
-            `Le contrat ${this.selectedContract?.contractNumber} a été activé avec succès.`
-          );
-
-          this.closeActivateContractModal();
-          this.loadContracts();
-          this.loadDashboardStats();
-        },
-        error: (error) => {
-          console.error('❌ Erreur activation contrat:', error);
-          const errorMessage = this.extractApiError(error);
-          this.notificationService.error(
-            'Erreur lors de l\'activation du contrat',
-            errorMessage
-          );
-        }
-      });
-  }
-
-  /**
-   * Vérifie si un contrat peut être activé
-   */
-  canActivateContract(contract: ContractDto): boolean {
-    // Seuls les contrats PENDING ou DRAFT peuvent être activés
-    return contract.status === ContractStatus.Pending ||
-      contract.status === ContractStatus.Draft;
-  }
-
-  /**
-   * Vérifie si un contrat a des informations de livraison
-   */
-  hasDeliveryInfo(contract: ContractDto): boolean {
-    return !!contract.deliveryInfo;
-  }
-
-  /**
-   * Ferme la modal de retour du véhicule
-   */
-  closeVehicleReturnModal(): void {
-    this.showVehicleReturnModal = false;
-    this.selectedContract = null;
-    this.vehicleReturnForm.reset({
-      returnDate: new Date().toISOString().split('T')[0],
-      endMileage: 0,
-      fuelLevel: 'FULL',
-      vehicleCondition: 'GOOD',
-      hasDamage: false,
-      hasOverdueMileage: false
-    });
-  }
-
-  /**
- * Soumet le formulaire de retour du véhicule (VERSION CORRIGÉE)
- */
-  onVehicleReturnSubmit(): void {
-    this.vehicleReturnSubmitted = true;
-
-    if (this.vehicleReturnForm.invalid || !this.selectedContract) {
-      this.notificationService.error('Formulaire incomplet', 'Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    // ✅ AJOUT : Vérifier à nouveau les deliveryInfo
-    if (!this.selectedContract.deliveryInfo) {
-      this.notificationService.error(
-        'Erreur de données',
-        'Les informations de livraison sont manquantes pour ce contrat.'
-      );
-      return;
-    }
-
-    this.vehicleReturnLoading = true;
-
-    // Convertir fuelLevel de chaîne à enum/nombre
-    const fuelLevelMap: { [key: string]: number } = {
-      'EMPTY': 0,
-      'QUARTER': 25,
-      'HALF': 50,
-      'THREE_QUARTERS': 75,
-      'FULL': 100
-    };
-
-    // Récupérer les valeurs de l'utilisateur actuel
-    const currentUserId = this.currentUser?.id || '';
-    const currentUserName = this.currentUser?.username || 'System';
-
-    const request: VehicleReturnRequest = {
-      returnDate: new Date(this.vehicleReturnForm.value.returnDate),
-      returnLocation: this.selectedContract.deliveryInfo, // ✅ Utiliser deliveryInfo existant
-      mileageAtReturn: Number(this.vehicleReturnForm.value.endMileage),
-      fuelLevel: fuelLevelMap[this.vehicleReturnForm.value.fuelLevel] || 100,
-      conditionNotes: this.vehicleReturnForm.value.vehicleCondition,
-      photos: [],
-      damages: [],
-      returnedBy: this.selectedContract.customerName || 'Client',
-      receivedBy: currentUserName
-    };
-
-    console.log('✅ Envoi retour véhicule:', request);
-
-    this.contractService.recordVehicleReturn(this.selectedContract.id, request)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.vehicleReturnLoading = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<VehicleReturnResult>) => {
-          this.notificationService.success(
-            'Retour du véhicule enregistré',
-            `Le véhicule a été retourné avec succès. Contrat ${this.selectedContract?.contractNumber} clôturé.`
-          );
-
-          if (response.data) {
-            this.showReturnSummary(response.data);
-          }
-
-          this.closeVehicleReturnModal();
-          this.loadContracts();
-          this.loadDashboardStats();
-        },
-        error: (error) => {
-          console.error('❌ Erreur retour véhicule:', error);
-
-          if (error.error && error.error.errors) {
-            console.log('Erreurs de validation:', error.error.errors);
-          }
-
-          const errorMessage = this.extractApiError(error);
-          this.notificationService.error('Erreur lors du retour du véhicule', errorMessage);
-        }
-      });
-  }
-
-  /**
-   * Affiche le récapitulatif du retour
-   */
-  private showReturnSummary(result: VehicleReturnResult): void {
-    // Calculer si il y a des frais supplémentaires
-    const hasExtraCharges = result.mileageOverageFee > 0 || result.fuelCharge > 0 || result.totalDamageCost > 0;
-    const totalExtraCharges = result.mileageOverageFee + result.fuelCharge + result.totalDamageCost;
-
-    // Vérifier s'il y a des dommages
-    const hasDamages = result.damages && result.damages.length > 0;
-
-    // Formater la date
-    const formattedReturnDate = result.returnedAt ? this.formatDate(result.returnedAt) : 'N/A';
-
-    // Créer le récapitulatif
-    const summary = `
-    <div class="return-summary">
-      <h6 class="mb-3">📋 Récapitulatif du retour</h6>
-      <div class="row">
-        <div class="col-md-6">
-          <ul class="list-unstyled">
-            <li class="mb-2">
-              <i class='bx bx-calendar me-2'></i>
-              <strong>Date de retour:</strong> ${formattedReturnDate}
-            </li>
-            <li class="mb-2">
-              <i class='bx bx-tachometer me-2'></i>
-              <strong>Kilométrage:</strong>
-              <div class="ms-4">
-                <small>Livraison: ${result.mileageAtDelivery} km</small><br>
-                <small>Retour: ${result.mileageAtReturn} km</small><br>
-                <small>Total parcouru: ${result.totalMileage} km</small>
-              </div>
-            </li>
-            <li class="mb-2">
-              <i class='bx bx-gas-pump me-2'></i>
-              <strong>Niveau carburant:</strong>
-              <div class="ms-4">
-                <small>Livraison: ${result.fuelLevelAtDelivery}%</small><br>
-                <small>Retour: ${result.fuelLevelAtReturn}%</small>
-              </div>
-            </li>
-          </ul>
-        </div>
-        <div class="col-md-6">
-          <ul class="list-unstyled">
-            <li class="mb-2">
-              <i class='bx bx-dollar-circle me-2'></i>
-              <strong>Détails financiers:</strong>
-              <div class="ms-4">
-                ${result.mileageOverage > 0 ? `
-                  <small class="text-warning">
-                    Dépassement: ${result.mileageOverage} km
-                    <span class="badge bg-warning ms-2">${this.formatCurrency(result.mileageOverageFee)}</span>
-                  </small><br>
-                ` : ''}
-                ${result.fuelCharge > 0 ? `
-                  <small class="text-danger">
-                    Frais carburant
-                    <span class="badge bg-danger ms-2">${this.formatCurrency(result.fuelCharge)}</span>
-                  </small><br>
-                ` : ''}
-                ${result.totalDamageCost > 0 ? `
-                  <small class="text-danger">
-                    Réparation dommages
-                    <span class="badge bg-danger ms-2">${this.formatCurrency(result.totalDamageCost)}</span>
-                  </small><br>
-                ` : ''}
-                ${hasExtraCharges ? `
-                  <small class="text-primary mt-1 d-block">
-                    <strong>Total frais: ${this.formatCurrency(totalExtraCharges)}</strong>
-                  </small>
-                ` : '<small class="text-success">Aucun frais supplémentaire</small>'}
-              </div>
-            </li>
-            ${hasDamages ? `
-              <li class="mb-2">
-                <i class='bx bx-error me-2'></i>
-                <strong>Dommages signalés:</strong>
-                <div class="ms-4">
-                  <small class="text-danger">${result.damages.length} dommage(s) détecté(s)</small>
-                </div>
-              </li>
-            ` : ''}
-            ${result.mileageLimit ? `
-              <li class="mb-2">
-                <i class='bx bx-flag me-2'></i>
-                <strong>Limite kilométrique:</strong>
-                <div class="ms-4">
-                  <small>${result.mileageLimit} km (${result.mileageOverage > 0 ? 'Dépassé' : 'Respecté'})</small>
-                </div>
-              </li>
-            ` : ''}
-          </ul>
-        </div>
-      </div>
-
-      ${hasDamages ? `
-        <div class="mt-3 p-2 border rounded bg-light">
-          <h6 class="mb-2">📝 Détail des dommages:</h6>
-          <div class="table-responsive">
-            <table class="table table-sm">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Description</th>
-                  <th class="text-end">Coût</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${result.damages.map((damage: any, index: number) => `
-                  <tr>
-                    <td>${damage.type || 'Dommage'}</td>
-                    <td>${damage.description || 'Non spécifié'}</td>
-                    <td class="text-end">${this.formatCurrency(damage.cost || 0)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ` : ''}
-
-      <div class="mt-3 alert ${hasExtraCharges ? 'alert-warning' : 'alert-success'}">
-        <i class='bx ${hasExtraCharges ? 'bx-error-circle' : 'bx-check-circle'} me-2'></i>
-        <strong>${result.message || (hasExtraCharges ? 'Frais supplémentaires appliqués' : 'Retour validé sans frais')}</strong>
-      </div>
-    </div>
-  `;
-
-    // Afficher la notification avec le récapitulatif
-    this.notificationService.info(
-      '🔄 Retour du véhicule - Récapitulatif',
-      summary,
-      15000, // Durée plus longue pour la lecture
-    );
-  }
-
-  /**
-   * Formate une date avec heure (optionnel)
-   */
-  private formatDateTime(date: Date | string | undefined): string {
-    if (!date) return 'N/A';
-    const dateObj = new Date(date);
-    return dateObj.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  /**
-   * Obtient le label du type de dommage
-   */
-  private getDamageTypeLabel(type: string): string {
-    const types: { [key: string]: string } = {
-      'SCRATCH': 'Rayure',
-      'DENT': 'Boss',
-      'BREAK': 'Cassure',
-      'CRACK': 'Fêlure',
-      'STAIN': 'Tache',
-      'OTHER': 'Autre'
-    };
-    return types[type] || type;
-  }
-
-  // ============================================================================
-  // SECTION 17: GESTION DES DOMMAGES
-  // ============================================================================
-
-  /**
- * Ouvre la modal de signalement de dommage (VERSION CORRIGÉE)
- */
-  openDamageReportModal(contract: ContractDto): void {
-    this.selectedContract = contract;
-    this.showDamageReportModal = true;
-    this.damageReportSubmitted = false;
-    this.damagePhotos = [];
-    this.previewUrls = [];
-
-    this.damageReportForm.patchValue({
-      damageDate: new Date().toISOString().split('T')[0],
-      severity: DamageSeverity.Minor, // ✅ Valeur numérique (1)
-      responsibleParty: 'CUSTOMER',
-      estimatedRepairCost: 0
-    });
-  }
-
-  /**
-   * Ferme la modal de signalement de dommage
-   */
-  closeDamageReportModal(): void {
-    this.showDamageReportModal = false;
-    this.selectedContract = null;
-    this.damagePhotos = [];
-    this.previewUrls = [];
-    this.damageReportForm.reset({
-      damageDate: new Date().toISOString().split('T')[0],
-      severity: 'MINOR',
-      responsibleParty: 'CUSTOMER',
-      estimatedRepairCost: 0
-    });
-  }
-
-  /**
-   * Gère la sélection de photos de dommage
-   */
-  onDamagePhotoSelected(event: any): void {
-    const files: FileList = event.target.files;
-
-    if (files.length > 0) {
-      // Limiter à 5 photos
-      const maxFiles = 5;
-      const filesToAdd = Array.from(files).slice(0, maxFiles - this.damagePhotos.length);
-
-      filesToAdd.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          this.damagePhotos.push(file);
-
-          // Créer une URL de prévisualisation
-          const reader = new FileReader();
-          reader.onload = (e: any) => {
-            this.previewUrls.push(e.target.result);
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-
-      if (files.length > maxFiles) {
-        this.notificationService.warning('Limite de photos', `Maximum ${maxFiles} photos autorisées.`);
-      }
-    }
-  }
-
-  /**
-   * Supprime une photo de dommage
-   */
-  removeDamagePhoto(index: number): void {
-    this.damagePhotos.splice(index, 1);
-    this.previewUrls.splice(index, 1);
-  }
-
-  /**
-   * Soumet le formulaire de signalement de dommage
-   */
-  onDamageReportSubmit(): void {
-    this.damageReportSubmitted = true;
-
-    if (this.damageReportForm.invalid || !this.selectedContract) {
-      this.notificationService.error('Formulaire incomplet', 'Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    // ✅ Récupérer et valider severity
-    let severityValue = this.damageReportForm.value.severity;
-
-    // Si severity est une chaîne, la convertir
-    if (typeof severityValue === 'string') {
-      severityValue = this.getDamageSeverityValue(severityValue);
-    }
-
-    // Valider que severity est un nombre valide
-    if (!severityValue || severityValue < 1 || severityValue > 4) {
-      this.notificationService.error(
-        'Sévérité invalide',
-        'Veuillez sélectionner une sévérité de dommage valide.'
-      );
-      return;
-    }
-
-    // Vérifier les photos pour les dommages graves
-    if ((severityValue === DamageSeverity.Major || severityValue === DamageSeverity.Total)
-      && this.damagePhotos.length === 0) {
-      this.notificationService.warning(
-        'Photos requises',
-        'Veuillez ajouter au moins une photo pour les dommages graves.'
-      );
-      return;
-    }
-
-    this.damageReportLoading = true;
-
-    // Convertir les photos en URLs
-    const photoUrls: string[] = this.damagePhotos.map((photo, index) =>
-      `damage_${this.selectedContract!.id}_${Date.now()}_${index}.jpg`
-    );
-
-    const request: ReportDamageRequest = {
-      description: this.damageReportForm.value.description,
-      severity: Number(severityValue), // ✅ S'assurer que c'est un nombre
-      estimatedCost: Number(this.damageReportForm.value.estimatedRepairCost),
-      photoUrls: photoUrls,
-      notes: this.damageReportForm.value.notes || ''
-    };
-
-    console.log('✅ Envoi signalement dommage:', request);
-
-    this.contractService.reportDamage(this.selectedContract.id, request)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.damageReportLoading = false)
-      )
-      .subscribe({
-        next: () => {
-          this.notificationService.success(
-            'Dommage signalé',
-            `Le dommage a été signalé avec succès pour le contrat ${this.selectedContract?.contractNumber}.`
-          );
-
-          this.uploadDamagePhotos();
-          this.closeDamageReportModal();
-          this.loadContracts();
-        },
-        error: (error) => {
-          console.error('❌ Erreur signalement dommage:', error);
-
-          if (error.error && error.error.errors) {
-            console.log('Erreurs de validation:', error.error.errors);
-          }
-
-          const errorMessage = this.extractApiError(error);
-          this.notificationService.error('Erreur lors du signalement du dommage', errorMessage);
-        }
-      });
-  }
-
-  /**
-   * Upload les photos de dommage (méthode séparée)
-   */
-  private uploadDamagePhotos(): void {
-    if (this.damagePhotos.length === 0) return;
-
-    // TODO: Implémenter l'upload des photos vers votre API
-    console.log(`${this.damagePhotos.length} photos à uploader`);
-  }
-
-  // ============================================================================
-  // SECTION 18: ANNULATION DE CONTRAT
-  // ============================================================================
-
-  /**
-   * Ouvre la modal d'annulation de contrat
-   */
-  openCancelContractModal(contract: ContractDto): void {
-    this.selectedContract = contract;
-    this.showCancelContractModal = true;
-    this.cancelContractSubmitted = false;
-
-    // Calculer les frais d'annulation potentiels
-    this.calculateCancellationFees(contract);
-  }
-
-  /**
-   * Calcule les frais d'annulation
-   */
-  private calculateCancellationFees(contract: ContractDto): void {
-    const today = new Date();
-    const startDate = new Date(contract.startDate);
-    const endDate = new Date(contract.endDate);
-
-    // Calculer la durée totale et la durée écoulée
-    const totalDuration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
-    const elapsedDuration = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
-
-    // Calculer le pourcentage de durée écoulée
-    const percentageElapsed = (elapsedDuration / totalDuration) * 100;
-
-    let cancellationFee = 0;
-    let refundAmount = 0;
-
-    if (percentageElapsed <= 25) {
-      // Moins de 25% de la durée : frais de 50% du reste
-      cancellationFee = (contract.weeklyAmount * (totalDuration - elapsedDuration)) * 0.5;
-      refundAmount = (contract.weeklyAmount * (totalDuration - elapsedDuration)) - cancellationFee;
-    } else if (percentageElapsed <= 50) {
-      // Moins de 50% de la durée : frais de 75% du reste
-      cancellationFee = (contract.weeklyAmount * (totalDuration - elapsedDuration)) * 0.75;
-      refundAmount = (contract.weeklyAmount * (totalDuration - elapsedDuration)) - cancellationFee;
-    } else {
-      // Plus de 50% de la durée : pas de remboursement
-      cancellationFee = contract.weeklyAmount * (totalDuration - elapsedDuration);
-      refundAmount = 0;
-    }
-
-    this.cancelContractForm.patchValue({
-      cancellationFee: Math.round(cancellationFee),
-      refundAmount: Math.round(refundAmount),
-      effectiveDate: new Date().toISOString().split('T')[0]
-    });
-  }
-
-  /**
-   * Ferme la modal d'annulation de contrat
-   */
-  closeCancelContractModal(): void {
-    this.showCancelContractModal = false;
-    this.selectedContract = null;
-    this.cancelContractForm.reset({
-      reason: '',
-      refundAmount: 0,
-      cancellationFee: 0,
-      effectiveDate: new Date().toISOString().split('T')[0]
-    });
-  }
-
-  /**
-   * Soumet le formulaire d'annulation de contrat
-   */
-  onCancelContractSubmit(): void {
-    this.cancelContractSubmitted = true;
-
-    if (this.cancelContractForm.invalid || !this.selectedContract) {
-      this.notificationService.error('Formulaire incomplet', 'Veuillez indiquer la raison de l\'annulation');
-      return;
-    }
-
-    // Confirmation supplémentaire pour l'annulation
-    if (!confirm('Êtes-vous sûr de vouloir annuler ce contrat ? Cette action est irréversible.')) {
-      return;
-    }
-
-    this.cancelContractLoading = true;
-
-    this.contractService.cancelContract(
-      this.selectedContract.id,
-      this.cancelContractForm.value.reason
-    )
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.cancelContractLoading = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<ContractDto>) => {
-          this.notificationService.success(
-            'Contrat annulé',
-            `Le contrat ${this.selectedContract?.contractNumber} a été annulé avec succès.`
-          );
-
-          // Afficher les détails financiers
-          this.showCancellationSummary();
-
-          this.closeCancelContractModal();
-          this.loadContracts();
-          this.loadDashboardStats();
-        },
-        error: (error) => {
-          console.error('Erreur annulation contrat:', error);
-          const errorMessage = this.extractApiError(error);
-          this.notificationService.error('Erreur lors de l\'annulation du contrat', errorMessage);
-        }
-      });
-  }
-
-  /**
-   * Affiche le récapitulatif de l'annulation
-   */
-  private showCancellationSummary(): void {
-    const summary = `
-    <div class="cancellation-summary">
-      <h6>Récapitulatif de l'annulation</h6>
-      <ul>
-        <li><strong>Contrat:</strong> ${this.selectedContract?.contractNumber}</li>
-        <li><strong>Frais d'annulation:</strong> ${this.formatCurrency(this.cancelContractForm.value.cancellationFee)}</li>
-        <li><strong>Remboursement client:</strong> ${this.formatCurrency(this.cancelContractForm.value.refundAmount)}</li>
-        <li><strong>Motif:</strong> ${this.cancelContractForm.value.reason}</li>
-      </ul>
-    </div>
-  `;
-
-    this.notificationService.info('Détails de l\'annulation', summary, 8000);
-  }
-
-  // ============================================================================
-  // SECTION 19: REJET DE CONTRAT
-  // ============================================================================
-
-  /**
-   * Ouvre la modal de rejet de contrat
-   */
-  openRejectContractModal(contract: ContractDto): void {
-    this.selectedContract = contract;
-    this.showRejectContractModal = true;
-    this.rejectContractSubmitted = false;
-
-    // Suggestions de motifs courants
-    const suggestions = [
-      'Documentation incomplète',
-      'Vérification d\'identité échouée',
-      'Historique de crédit insuffisant',
-      'Véhicule non disponible',
-      'Conditions contractuelles non acceptées',
-      'Informations fournies incorrectes'
-    ];
-
-    // Pré-remplir avec un motif suggéré
-    this.rejectContractForm.patchValue({
-      reason: suggestions[0]
-    });
-  }
-
-  /**
-   * Ferme la modal de rejet de contrat
-   */
-  closeRejectContractModal(): void {
-    this.showRejectContractModal = false;
-    this.selectedContract = null;
-    this.rejectContractForm.reset({
-      reason: '',
-      notes: ''
-    });
-  }
-
-  /**
-   * Soumet le formulaire de rejet de contrat
-   */
-  onRejectContractSubmit(): void {
-    this.rejectContractSubmitted = true;
-
-    if (this.rejectContractForm.invalid || !this.selectedContract) {
-      this.notificationService.error('Formulaire incomplet', 'Veuillez indiquer le motif du rejet');
-      return;
-    }
-
-    // Confirmation pour le rejet
-    if (!confirm('Êtes-vous sûr de vouloir rejeter ce contrat ? Cette action est irréversible.')) {
-      return;
-    }
-
-    this.rejectContractLoading = true;
-
-    this.contractService.rejectContract(
-      this.selectedContract.id,
-      this.rejectContractForm.value.reason
-    )
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.rejectContractLoading = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<ContractDto>) => {
-          this.notificationService.success(
-            'Contrat rejeté',
-            `Le contrat ${this.selectedContract?.contractNumber} a été rejeté.`
-          );
-
-          this.closeRejectContractModal();
-          this.loadContracts();
-        },
-        error: (error) => {
-          console.error('Erreur rejet contrat:', error);
-          const errorMessage = this.extractApiError(error);
-          this.notificationService.error('Erreur lors du rejet du contrat', errorMessage);
-        }
-      });
-  }
-
-  // ============================================================================
-  // SECTION 20: HELPERS SUPPLÉMENTAIRES
-  // ============================================================================
-
-  /**
-   * Obtient le label de l'état du véhicule
-   */
-  getVehicleConditionLabel(condition: string): string {
-    const conditions: { [key: string]: string } = {
-      'EXCELLENT': 'Excellent',
-      'GOOD': 'Bon',
-      'FAIR': 'Correct',
-      'POOR': 'Mauvais',
-      'DAMAGED': 'Endommagé'
-    };
-    return conditions[condition] || condition;
-  }
-
-  /**
-   * Obtient le label de la sévérité du dommage
-   */
-  getDamageSeverityLabel(severityValue: number): string {
-    const severities: { [key: number]: string } = {
-      1: 'Mineur',
-      2: 'Modéré',
-      3: 'Majeur',
-      4: 'Critique'
-    };
-    return severities[severityValue] || 'Inconnu';
-  }
-
-  /**
-   * Convertir le niveau de carburant de chaîne à nombre (pour l'envoi)
-   */
-  getFuelLevelValue(levelString: string): number {
-    const fuelLevelMap: { [key: string]: number } = {
-      'EMPTY': 0,
-      'QUARTER': 25,
-      'HALF': 50,
-      'THREE_QUARTERS': 75,
-      'FULL': 100
-    };
-    return fuelLevelMap[levelString] || 50;
-  }
-
-
-  /**
-   * Convertir la sévérité de chaîne à nombre (pour l'envoi)
-   */
-  getDamageSeverityValue(severityString: string): number {
-    const severityMap: { [key: string]: number } = {
-      'MINOR': DamageSeverity.Minor,      // 1
-      'MODERATE': DamageSeverity.Moderate, // 2
-      'MAJOR': DamageSeverity.Major,       // 3
-      'CRITICAL': DamageSeverity.Total,    // 4
-      'TOTAL': DamageSeverity.Total        // 4
-    };
-
-    const upperString = severityString.toUpperCase();
-    return severityMap[upperString] || DamageSeverity.Minor;
-  }
-
-  /**
-   * Obtient le label de la partie responsable
-   */
-  getResponsiblePartyLabel(party: string): string {
-    const parties: { [key: string]: string } = {
-      'CUSTOMER': 'Client',
-      'COMPANY': 'Société',
-      'THIRD_PARTY': 'Tiers',
-      'UNKNOWN': 'Inconnu'
-    };
-    return parties[party] || party;
-  }
-
-  /**
-   * Obtient le label du niveau de carburant
-   */
-  getFuelLevelLabel(levelValue: number): string {
-    const levels: { [key: number]: string } = {
-      0: 'Vide',
-      25: '¼',
-      50: '½',
-      75: '¾',
-      100: 'Plein'
-    };
-    return levels[levelValue] || `${levelValue}%`;
-  }
-
-  // ============================================================================
-  // SECTION 21: GETTERS SUPPLÉMENTAIRES
-  // ============================================================================
-
-  get vrf() { return this.vehicleReturnForm.controls; }
-  get drf() { return this.damageReportForm.controls; }
-  get ccf() { return this.cancelContractForm.controls; }
-  get rjf() { return this.rejectContractForm.controls; }
-  get acf() { return this.activateContractForm.controls; }
-
-
-  /**
-   * Vérifie si un contrat peut être retourné
-   */
-  canReturnVehicle(contract: ContractDto): boolean {
-    // Le contrat doit être actif
-    if (contract.status !== ContractStatus.Active) return false;
-
-    // Le contrat doit avoir des informations de livraison
-    if (!contract.deliveryInfo) return false;
-
-    const today = new Date();
-    const startDate = new Date(contract.startDate);
-
-    // Le véhicule ne peut être retourné qu'après le début du contrat
-    return today >= startDate;
-  }
-
-  /**
-   * Vérifie si un dommage peut être signalé
-   */
-  canReportDamage(contract: ContractDto): boolean {
-    if (contract.status !== ContractStatus.Active) return false;
-
-    const today = new Date();
-    const startDate = new Date(contract.startDate);
-    const endDate = new Date(contract.endDate);
-
-    // Le dommage ne peut être signalé que pendant la durée du contrat
-    return today >= startDate && today <= endDate;
-  }
-
-  /**
-   * Vérifie si un contrat peut être annulé
-   */
-  canCancelContract(contract: ContractDto): boolean {
-    if (contract.status !== ContractStatus.Active) return false;
-
-    const today = new Date();
-    const endDate = new Date(contract.endDate);
-
-    // Le contrat ne peut être annulé qu'avant sa date de fin
-    return today < endDate;
-  }
-
-  /**
-   * Vérifie si un contrat peut être rejeté
-   */
-  canRejectContract(contract: ContractDto): boolean {
-    // Seuls les contrats en brouillon ou en attente peuvent être rejetés
-    return contract.status === ContractStatus.Draft ||
-      contract.status === ContractStatus.Pending;
-  }
-
-  getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
-  }
-
-  toggleMenu(event: MouseEvent): void {
-    const element = event.currentTarget as HTMLElement;
-    if (element && element.parentElement) {
-      element.parentElement.classList.toggle('open');
-    }
-  }
-
-  /**
- * Charge les tiers actifs (pour le selectbox)
- */
-  loadAvailableTiers(searchTerm: string = ''): void {
-    this.loadingTiers = true;
-
-    // Utilisez le service tiers avec les paramètres appropriés
-    const params = {
-      search: searchTerm,
-      status: TierStatus.Active, // Seulement les tiers actifs
-      pageNumber: 1,
-      pageSize: 50, // Limite pour éviter trop de données
-      sortBy: 'fullName',
-      sortDescending: false
-    };
-
-    this.tierService.getTiersList(params)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.loadingTiers = false)
-      )
-      .subscribe({
-        next: (response: PaginatedResponse<any>) => {
-          this.availableTiers = response.data.map(tier => ({
-            id: tier.id,
-            value: tier.id,
-            label: `${tier.fullName} - ${tier.phone}`,
-            fullName: tier.fullName,
-            phone: tier.phone,
-            email: tier.email,
-            address: tier.address
-          }));
-        },
-        error: (error: { message: any; }) => {
-          console.error('Erreur chargement tiers:', error);
-          this.notificationService.error('Erreur lors du chargement des clients', error.message || '');
-        }
-      });
-  }
-
-  /**
-   * Charge les véhicules disponibles (Available ou Reserved)
-   */
-  loadAvailableVehicles(searchTerm: string = ''): void {
-    this.loadingVehicles = true;
-
-    const criteria: VehicleSearchCriteria = {
-      searchTerm: searchTerm,
-      status: undefined, // Nous filtrerons côté frontend
-      page: 1,
-      pageSize: 50,
-      sortBy: 'plateNumber',
-      sortDescending: false
-    };
-
-    this.vehicleService.searchVehicles(criteria)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.loadingVehicles = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<VehicleDto[]>) => {
-          // Filtrer pour n'avoir que les véhicules disponibles ou réservés
-          this.availableVehicles = (response.data || [])
-            .filter(vehicle =>
-              vehicle.status === VehicleStatus.Available ||
-              vehicle.status === VehicleStatus.Reserved
-            )
-            .map(vehicle => ({
-              id: vehicle.id,
-              value: vehicle.id,
-              label: `${vehicle.plateNumber} - ${vehicle.brand} ${vehicle.model} (${vehicle.code})`,
-              plateNumber: vehicle.plateNumber,
-              brand: vehicle.brand,
-              model: vehicle.model,
-              code: vehicle.code,
-              status: vehicle.status,
-              statusLabel: this.getVehicleStatusLabel(vehicle.status)
-            }));
-        },
-        error: (error: { message: any; }) => {
-          console.error('Erreur chargement véhicules:', error);
-          this.notificationService.error('Erreur lors du chargement des véhicules', error.message || '');
-        }
-      });
-  }
-
-  /**
-   * Obtient le label du statut d'un véhicule
-   */
-  getVehicleStatusLabel(status: VehicleStatus): string {
-    switch (status) {
-      case VehicleStatus.Available:
-        return 'Disponible';
-      case VehicleStatus.Reserved:
-        return 'Réservé';
-      case VehicleStatus.Rented:
-        return 'Loué';
-      case VehicleStatus.Maintenance:
-        return 'Maintenance';
-      case VehicleStatus.OutOfService:
-        return 'Hors service';
-      default:
-        return 'Inconnu';
-    }
-  }
-
-  /**
-   * Ouvre la modal de création et charge les données
-   */
-  openCreateModal(): void {
-    this.showCreateModal = true;
-    this.createSubmitted = false;
-
-    // Charger les données pour les selectboxes
-    this.loadAvailableTiers();
-    this.loadAvailableVehicles();
-
-    // Réinitialiser les sélections
-    this.selectedTier = null;
-    this.selectedVehicle = null;
-    this.searchTermCustomer = '';
-    this.searchTermVehicle = '';
-
-    // Réinitialiser le formulaire
-    const today = new Date().toISOString().split('T')[0];
-    this.createForm.reset({
-      customerId: '',
-      vehicleId: '',
-      startDate: today,
-      durationInWeeks: 4,
-      weeklyAmount: 0,
-      securityDeposit: 0,
-      paymentFrequency: PaymentFrequency.Weekly,
-      paymentDay: 1,
-      weeklyMileageLimit: 1000,
-      notes: ''
-    });
-  }
-
-  /**
-   * Gère la recherche en temps réel pour les clients
-   */
-  onSearchCustomer(): void {
-    this.loadAvailableTiers(this.searchTermCustomer);
-  }
-
-  /**
-   * Gère la recherche en temps réel pour les véhicules
-   */
-  onSearchVehicle(): void {
-    this.loadAvailableVehicles(this.searchTermVehicle);
-  }
-
-  /**
-   * Sélectionne un client dans la liste
-   */
-  selectTier(tier: any): void {
-    this.selectedTier = tier;
-    this.searchTermCustomer = tier.fullName;
-    this.createForm.patchValue({ customerId: tier.id });
-    this.availableTiers = []; // Ferme la liste dropdown
-  }
-
-  /**
-   * Sélectionne un véhicule dans la liste
-   */
-  selectVehicle(vehicle: any): void {
-    this.selectedVehicle = vehicle;
-    this.searchTermVehicle = `${vehicle.plateNumber} - ${vehicle.brand} ${vehicle.model}`;
-    this.createForm.patchValue({ vehicleId: vehicle.id });
-    this.availableVehicles = []; // Ferme la liste dropdown
-  }
-
-  /**
-   * Efface la sélection du client
-   */
-  clearTierSelection(): void {
-    this.selectedTier = null;
-    this.searchTermCustomer = '';
-    this.createForm.patchValue({ customerId: '' });
-  }
-
-  /**
-   * Efface la sélection du véhicule
-   */
-  clearVehicleSelection(): void {
-    this.selectedVehicle = null;
-    this.searchTermVehicle = '';
-    this.createForm.patchValue({ vehicleId: '' });
-  }
-
-  getUserInitials(): string {
-    const name = this.userName;
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
-    }
-    return name.charAt(0).toUpperCase();
-  }
-
-  toggleSidebar(): void {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed;
-
-    const sidebar = document.getElementById('sidebar');
-    const layoutPage = document.querySelector('.layout-page');
-
-    if (sidebar && layoutPage) {
-      if (this.isSidebarCollapsed) {
-        sidebar.classList.add('collapsed');
-        (layoutPage as HTMLElement).style.marginLeft = '0';
-      } else {
-        sidebar.classList.remove('collapsed');
-        if (this.isMobileView) {
-          (layoutPage as HTMLElement).style.marginLeft = '0';
-        } else {
-          (layoutPage as HTMLElement).style.marginLeft = '280px';
-        }
-      }
-    }
-  }
-
-  /**
-   * Initialise le composant
-   */
   ngOnInit(): void {
     this.checkAuthentication();
     this.loadCurrentUser();
     this.loadContracts();
     this.loadDashboardStats();
-
-    // Configurer la recherche en temps réel
     this.setupSearchObservable();
   }
 
-  /**
-   * Nettoie les ressources à la destruction du composant
-   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   // ============================================================================
-  // SECTION 7: GESTION D'AUTHENTIFICATION ET UTILISATEUR
+  // SECTION 17: GESTION DE L'AUTHENTIFICATION
   // ============================================================================
 
   /**
-   * Vérifie la présence d'un token d'authentification
+   * Vérifie la présence d'un token valide
    */
   private checkAuthentication(): void {
     const token = this.tokenService.getToken();
@@ -1593,7 +439,7 @@ export class ContratsList implements OnInit, OnDestroy {
   }
 
   /**
-   * Charge les informations de l'utilisateur courant
+   * Charge les informations de l'utilisateur connecté
    */
   loadCurrentUser(): void {
     this.authService.getCurrentUser()
@@ -1607,32 +453,15 @@ export class ContratsList implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Erreur chargement utilisateur:', error);
-          this.handleUserLoadError(error);
+          this.setDefaultUser();
         }
       });
   }
 
   /**
-   * Charge les permissions de l'utilisateur
-   */
-  private loadUserPermissions(): void {
-    // À adapter selon votre système de permissions
-    this.userPermissions.add(Permission.Contract_Read);
-    this.userPermissions.add(Permission.Contract_Create);
-    // Ajouter d'autres permissions selon le rôle...
-  }
-
-  /**
-   * Vérifie si l'utilisateur a une permission
-   */
-  hasPermission(permission: Permission): boolean {
-    return this.userPermissions.has(permission);
-  }
-
-  /**
    * Formate le nom d'utilisateur pour l'affichage
    */
-  private formatUserName(user: any): string {
+  private formatUserName(user: User): string {
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     } else if (user.firstName) {
@@ -1652,34 +481,20 @@ export class ContratsList implements OnInit, OnDestroy {
     if (user.photoUrl && /^[0-9a-fA-F]{24}$/.test(user.photoUrl)) {
       return `${environment.apiUrl}/api/User/photo/${user.photoUrl}`;
     }
-
     if (user.photoUrl && user.photoUrl.startsWith('http')) {
       return user.photoUrl;
     }
-
     return this.generateAvatarUrl(user);
   }
 
   /**
-   * Génère une URL d'avatar
+   * Génère une URL d'avatar par défaut
    */
   private generateAvatarUrl(user: User): string {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
-
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
-  }
-
-  /**
-   * Gère les erreurs de chargement de l'utilisateur
-   */
-  private handleUserLoadError(error: any): void {
-    if (error.status === 401) {
-      this.tokenService.handleTokenExpired();
-    } else {
-      this.setDefaultUser();
-    }
   }
 
   /**
@@ -1690,18 +505,58 @@ export class ContratsList implements OnInit, OnDestroy {
     this.userPhotoUrl = this.generateAvatarUrl({ firstName: 'Utilisateur' } as User);
   }
 
+  /**
+   * Charge les permissions de l'utilisateur
+   */
+  private loadUserPermissions(): void {
+    this.userPermissions.add(Permission.Contract_Read);
+    this.userPermissions.add(Permission.Contract_Create);
+  }
+
+  /**
+   * Vérifie si l'utilisateur a une permission spécifique
+   */
+  hasPermission(permission: Permission): boolean {
+    return this.userPermissions.has(permission);
+  }
+
   // ============================================================================
-  // SECTION 8: CHARGEMENT DES DONNÉES
+  // SECTION 18: CHARGEMENT DES DONNÉES PRINCIPALES
   // ============================================================================
 
   /**
-   * Charge la liste des contrats
+   * Charge la liste des contrats avec les filtres appliqués
    */
   loadContracts(): void {
     this.loading = true;
     this.error = null;
 
-    // Mettre à jour les critères
+    this.updateSearchCriteria();
+
+    this.contractService.searchContracts(this.searchCriteria)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading = false)
+      )
+      .subscribe({
+        next: (response: PaginatedResponse<ContractDto>) => {
+          this.contracts = response.data;
+          this.updatePagination(response);
+          this.updateVisiblePages();
+          this.updateDashboardStatsFromContracts();
+        },
+        error: (error) => {
+          console.error('Erreur chargement contrats:', error);
+          this.error = error.message || 'Erreur lors du chargement des contrats';
+          this.notificationService.error('Erreur chargement contrats', "Impossible de charger les contrats. Veuillez réessayer plus tard.");
+        }
+      });
+  }
+
+  /**
+   * Met à jour les critères de recherche depuis les filtres
+   */
+  private updateSearchCriteria(): void {
     this.searchCriteria.searchTerm = this.searchTerm || undefined;
     this.searchCriteria.status = this.selectedStatus || undefined;
     this.searchCriteria.paymentFrequency = this.selectedPaymentFrequency || undefined;
@@ -1711,7 +566,6 @@ export class ContratsList implements OnInit, OnDestroy {
     this.searchCriteria.sortBy = this.selectedSort;
     this.searchCriteria.sortDescending = this.sortDescending;
 
-    // Gestion des dates
     if (this.startDateFrom) {
       this.searchCriteria.startDateFrom = new Date(this.startDateFrom);
     }
@@ -1724,53 +578,49 @@ export class ContratsList implements OnInit, OnDestroy {
     if (this.endDateTo) {
       this.searchCriteria.endDateTo = new Date(this.endDateTo);
     }
+  }
 
-    this.contractService.searchContracts(this.searchCriteria)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.loading = false)
-      )
-      .subscribe({
-        next: (response: PaginatedResponse<ContractDto>) => {
-          this.contracts = response.data;
-          this.pagination = {
-            currentPage: response.currentPage,
-            pageSize: response.pageSize,
-            totalCount: response.totalCount,
-            totalPages: response.totalPages,
-            hasPreviousPage: response.hasPreviousPage,
-            hasNextPage: response.hasNextPage
-          };
-          this.updateVisiblePages();
-
-          // ✅ NOUVEAU : Mettre à jour les statistiques du dashboard
-          this.updateDashboardStatsFromContracts();
-        },
-        error: (error) => {
-          console.error('Erreur chargement contrats:', error);
-          this.error = error.message || 'Erreur lors du chargement des contrats';
-          this.notificationService.error('Erreur chargement contrats', '' + this.error);
-        }
-      });
+  /**
+   * Met à jour les informations de pagination
+   */
+  private updatePagination(response: PaginatedResponse<ContractDto>): void {
+    this.pagination = {
+      currentPage: response.currentPage,
+      pageSize: response.pageSize,
+      totalCount: response.totalCount,
+      totalPages: response.totalPages,
+      hasPreviousPage: response.hasPreviousPage,
+      hasNextPage: response.hasNextPage
+    };
   }
 
   /**
    * Charge les statistiques du tableau de bord
    */
   loadDashboardStats(): void {
-    // Charger les contrats actifs
+    this.loadActiveContractsCount();
+    this.loadOverduePayments();
+    this.loadExpiringContracts();
+  }
+
+  /**
+   * Charge le nombre de contrats actifs
+   */
+  private loadActiveContractsCount(): void {
     this.contractService.getActiveContracts()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: ApiResponseData<ContractDto[]>) => {
           this.dashboardStats.activeContracts = response.data.length;
         },
-        error: (error) => {
-          console.error('Erreur chargement contrats actifs:', error);
-        }
+        error: (error) => console.error('Erreur chargement contrats actifs:', error)
       });
+  }
 
-    // Charger les paiements en retard
+  /**
+   * Charge les paiements en retard
+   */
+  private loadOverduePayments(): void {
     this.contractService.getOverduePayments()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -1780,37 +630,50 @@ export class ContratsList implements OnInit, OnDestroy {
             (sum, payment) => sum + payment.amountDue, 0
           );
         },
-        error: (error) => {
-          console.error('Erreur chargement paiements retard:', error);
-        }
+        error: (error) => console.error('Erreur chargement paiements retard:', error)
       });
+  }
 
-    // Charger les contrats arrivant à expiration
+  /**
+   * Charge les contrats expirant bientôt
+   */
+  private loadExpiringContracts(): void {
     this.contractService.getExpiringContracts(7)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: ApiResponseData<ContractDto[]>) => {
           this.dashboardStats.contractsExpiring = response.data.length;
         },
-        error: (error) => {
-          console.error('Erreur chargement contrats expirants:', error);
-        }
+        error: (error) => console.error('Erreur chargement contrats expirants:', error)
       });
   }
 
   /**
-   * Configure l'observable pour la recherche en temps réel
+   * Met à jour les statistiques à partir de la liste des contrats
+   */
+  private updateDashboardStatsFromContracts(): void {
+    if (!this.contracts?.length) return;
+
+    this.dashboardStats.totalContracts = this.contracts.length;
+    this.dashboardStats.draftContracts = this.contracts.filter(c => c.status === ContractStatus.Draft).length;
+    this.dashboardStats.pendingContracts = this.contracts.filter(c => c.status === ContractStatus.Pending).length;
+    this.dashboardStats.completedContracts = this.contracts.filter(c => c.status === ContractStatus.Completed).length;
+    this.dashboardStats.terminatedContracts = this.contracts.filter(c => c.status === ContractStatus.Terminated).length;
+  }
+
+  /**
+   * Configure la recherche en temps réel
    */
   private setupSearchObservable(): void {
-    // Implémentation de la recherche en temps réel si nécessaire
+    // Implémentation de la recherche différée si nécessaire
   }
 
   // ============================================================================
-  // SECTION 9: GESTION DES FILTRES ET RECHERCHE
+  // SECTION 19: GESTION DES FILTRES
   // ============================================================================
 
   /**
-   * Exécute la recherche
+   * Exécute la recherche avec les filtres actuels
    */
   onSearch(): void {
     this.pagination.currentPage = 1;
@@ -1818,7 +681,7 @@ export class ContratsList implements OnInit, OnDestroy {
   }
 
   /**
-   * Réinitialise les filtres
+   * Réinitialise tous les filtres
    */
   resetFilters(): void {
     this.searchTerm = '';
@@ -1868,42 +731,8 @@ export class ContratsList implements OnInit, OnDestroy {
     this.showAdvancedFilters = !this.showAdvancedFilters;
   }
 
-  /**
- * Ouvre la modal de pénalités
- */
-  openPenaltiesModal(contract: ContractDto): void {
-    this.selectedContract = contract;
-    this.penaltiesLoading = true;
-    this.showPenaltiesModal = true;
-
-    this.contractService.getContractPenalties(contract.id)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.penaltiesLoading = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<LatePenaltyInfo>) => {
-          this.penaltiesInfo = response.data;
-        },
-        error: (error) => {
-          console.error('Erreur chargement pénalités:', error);
-          this.notificationService.error('Erreur lors du chargement des pénalités', error.message || '');
-          this.closePenaltiesModal();
-        }
-      });
-  }
-
-  /**
-   * Ferme la modal de pénalités
-   */
-  closePenaltiesModal(): void {
-    this.showPenaltiesModal = false;
-    this.selectedContract = null;
-    this.penaltiesInfo = null;
-  }
-
   // ============================================================================
-  // SECTION 10: GESTION DE LA PAGINATION
+  // SECTION 20: GESTION DE LA PAGINATION
   // ============================================================================
 
   /**
@@ -1935,9 +764,7 @@ export class ContratsList implements OnInit, OnDestroy {
     const pages: number[] = [];
 
     if (total <= 7) {
-      for (let i = 1; i <= total; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= total; i++) pages.push(i);
     } else {
       if (current <= 4) {
         pages.push(1, 2, 3, 4, 5, -1, total);
@@ -1952,17 +779,350 @@ export class ContratsList implements OnInit, OnDestroy {
   }
 
   // ============================================================================
-  // SECTION 11: GESTION DES MODALES
+  // SECTION 21: GESTION DES MENUS D'ACTIONS
   // ============================================================================
 
   /**
-   * Ouvre la modal d'enregistrement de paiement
+   * Bascule l'affichage du menu d'actions
+   */
+  // ============================================================================
+// SECTION 21: GESTION DES MENUS D'ACTIONS
+// ============================================================================
+
+toggleActionsMenu(contract: ContractDto, event: MouseEvent): void {
+  event.stopPropagation();
+
+  if (this.activeMenuContractId === contract.id) {
+    this.closeActionsMenu();
+    return;
+  }
+
+  const btn = event.currentTarget as HTMLElement;
+  const rect = btn.getBoundingClientRect();
+
+  const menuWidth = 240;
+  const menuHeight = 380;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  let left = rect.right + 8;
+  let top = rect.top;
+
+  if (left + menuWidth > viewportWidth) {
+    left = rect.left - menuWidth - 8;
+  }
+
+  if (top + menuHeight > viewportHeight) {
+    top = viewportHeight - menuHeight - 16;
+  }
+
+  this.menuPosition = { top, left };
+  this.activeMenuContractId = contract.id;
+}
+
+closeActionsMenu(): void {
+  this.activeMenuContractId = null;
+}
+
+getActiveContract(): ContractDto | null {
+  return this.contracts.find(c => c.id === this.activeMenuContractId) ?? null;
+}
+
+@HostListener('window:scroll')
+@HostListener('window:resize')
+onWindowEvent(): void {
+  this.closeActionsMenu();
+}
+
+  // ============================================================================
+  // SECTION 22: GESTION DES CLIENTS ET VÉHICULES
+  // ============================================================================
+
+  /**
+   * Charge les tiers actifs pour le sélecteur
+   */
+  loadAvailableTiers(searchTerm: string = ''): void {
+    this.loadingTiers = true;
+    const params = {
+      search: searchTerm,
+      status: TierStatus.Active,
+      pageNumber: 1,
+      pageSize: 50,
+      sortBy: 'fullName',
+      sortDescending: false
+    };
+
+    this.tierService.getTiersList(params)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loadingTiers = false)
+      )
+      .subscribe({
+        next: (response: PaginatedResponse<any>) => {
+          this.availableTiers = response.data.map(tier => ({
+            id: tier.id,
+            value: tier.id,
+            label: `${tier.fullName} - ${tier.phone}`,
+            fullName: tier.fullName,
+            phone: tier.phone,
+            email: tier.email,
+            address: tier.address
+          }));
+        },
+        error: (error) => {
+          console.error('Erreur chargement tiers:', error);
+          this.notificationService.error('Erreur lors du chargement des clients', error.message || '');
+        }
+      });
+  }
+
+  /**
+   * Charge les véhicules disponibles
+   */
+  loadAvailableVehicles(searchTerm: string = ''): void {
+    this.loadingVehicles = true;
+    const criteria: VehicleSearchCriteria = {
+      searchTerm: searchTerm,
+      status: undefined,
+      page: 1,
+      pageSize: 50,
+      sortBy: 'plateNumber',
+      sortDescending: false
+    };
+
+    this.vehicleService.searchVehicles(criteria)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loadingVehicles = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<VehicleDto[]>) => {
+          this.availableVehicles = (response.data || [])
+            .filter(vehicle =>
+              vehicle.status === VehicleStatus.Available ||
+              vehicle.status === VehicleStatus.Reserved
+            )
+            .map(vehicle => ({
+              id: vehicle.id,
+              value: vehicle.id,
+              label: `${vehicle.plateNumber} - ${vehicle.brand} ${vehicle.model}`,
+              plateNumber: vehicle.plateNumber,
+              brand: vehicle.brand,
+              model: vehicle.model,
+              code: vehicle.code,
+              status: vehicle.status,
+              statusLabel: this.getVehicleStatusLabel(vehicle.status)
+            }));
+        },
+        error: (error) => {
+          console.error('Erreur chargement véhicules:', error);
+          this.notificationService.error('Erreur lors du chargement des véhicules', error.message || '');
+        }
+      });
+  }
+
+  /**
+   * Obtient le libellé du statut du véhicule
+   */
+  getVehicleStatusLabel(status: VehicleStatus): string {
+    const labels: Record<VehicleStatus, string> = {
+      [VehicleStatus.Available]: 'Disponible',
+      [VehicleStatus.Reserved]: 'Réservé',
+      [VehicleStatus.Rented]: 'Loué',
+      [VehicleStatus.Maintenance]: 'Maintenance',
+      [VehicleStatus.OutOfService]: 'Hors service'
+    };
+    return labels[status] || 'Inconnu';
+  }
+
+  /**
+   * Recherche en temps réel pour les clients
+   */
+  onSearchCustomer(): void {
+    this.loadAvailableTiers(this.searchTermCustomer);
+  }
+
+  /**
+   * Recherche en temps réel pour les véhicules
+   */
+  onSearchVehicle(): void {
+    this.loadAvailableVehicles(this.searchTermVehicle);
+  }
+
+  /**
+   * Sélectionne un client
+   */
+  selectTier(tier: any): void {
+    this.selectedTier = tier;
+    this.searchTermCustomer = tier.fullName;
+    this.createForm.patchValue({ customerId: tier.id });
+    this.availableTiers = [];
+  }
+
+  /**
+   * Sélectionne un véhicule
+   */
+  selectVehicle(vehicle: any): void {
+    this.selectedVehicle = vehicle;
+    this.searchTermVehicle = `${vehicle.plateNumber} - ${vehicle.brand} ${vehicle.model}`;
+    this.createForm.patchValue({ vehicleId: vehicle.id });
+    this.availableVehicles = [];
+  }
+
+  /**
+   * Efface la sélection du client
+   */
+  clearTierSelection(): void {
+    this.selectedTier = null;
+    this.searchTermCustomer = '';
+    this.createForm.patchValue({ customerId: '' });
+  }
+
+  /**
+   * Efface la sélection du véhicule
+   */
+  clearVehicleSelection(): void {
+    this.selectedVehicle = null;
+    this.searchTermVehicle = '';
+    this.createForm.patchValue({ vehicleId: '' });
+  }
+
+  // ============================================================================
+  // SECTION 23: GESTION DES MODALES PRINCIPALES
+  // ============================================================================
+
+  /**
+   * Ouvre la modal de création de contrat
+   */
+  openCreateModal(): void {
+    this.showCreateModal = true;
+    this.createSubmitted = false;
+    this.loadAvailableTiers();
+    this.loadAvailableVehicles();
+    this.resetCreateForm();
+  }
+
+  /**
+   * Réinitialise le formulaire de création
+   */
+  private resetCreateForm(): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.createForm.reset({
+      customerId: '',
+      vehicleId: '',
+      startDate: today,
+      durationInWeeks: 4,
+      weeklyAmount: 0,
+      securityDeposit: 0,
+      paymentFrequency: PaymentFrequency.Weekly,
+      paymentDay: 1,
+      weeklyMileageLimit: 1000,
+      notes: ''
+    });
+    this.selectedTier = null;
+    this.selectedVehicle = null;
+    this.searchTermCustomer = '';
+    this.searchTermVehicle = '';
+  }
+
+  /**
+   * Ferme la modal de création
+   */
+  closeCreateModal(): void {
+    this.showCreateModal = false;
+  }
+
+  /**
+   * Soumet le formulaire de création
+   */
+  onCreateSubmit(): void {
+    this.createSubmitted = true;
+
+    if (this.createForm.invalid) {
+      const errors = this.getFormErrors();
+      if (errors.length) {
+        this.notificationService.error('Formulaire incomplet', errors.join(', '));
+      }
+      return;
+    }
+
+    this.createLoading = true;
+    const request: CreateContractRequest = this.buildCreateRequest();
+
+    this.contractService.createContract(request)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.createLoading = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<ContractDto>) => {
+          if (response.success) {
+            this.notificationService.success('Contrat créé', `Contrat ${response.data.contractNumber} créé avec succès`);
+            this.closeCreateModal();
+            this.loadContracts();
+          } else {
+            this.notificationService.error('Échec de la création', this.extractErrorMessage(response));
+          }
+        },
+        error: (error) => {
+          console.error('Erreur création contrat:', error);
+          this.notificationService.error('Erreur création', this.extractApiError(error));
+        }
+      });
+  }
+
+  /**
+   * Construit la requête de création
+   */
+  private buildCreateRequest(): CreateContractRequest {
+    return {
+      customerId: this.createForm.value.customerId,
+      vehicleId: this.createForm.value.vehicleId,
+      startDate: new Date(this.createForm.value.startDate),
+      durationInWeeks: this.createForm.value.durationInWeeks,
+      weeklyAmount: this.createForm.value.weeklyAmount,
+      securityDeposit: this.createForm.value.securityDeposit,
+      paymentFrequency: this.createForm.value.paymentFrequency,
+      paymentDay: this.createForm.value.paymentDay,
+      weeklyMileageLimit: this.createForm.value.weeklyMileageLimit,
+      notes: this.createForm.value.notes
+    };
+  }
+
+  /**
+   * Obtient les erreurs de validation du formulaire
+   */
+  private getFormErrors(): string[] {
+    const errors: string[] = [];
+    const controls = this.createForm.controls;
+
+    if (controls['customerId']?.errors?.['required']) errors.push('Client requis');
+    if (controls['vehicleId']?.errors?.['required']) errors.push('Véhicule requis');
+    if (controls['startDate']?.errors?.['required']) errors.push('Date de début requise');
+    if (controls['durationInWeeks']?.errors?.['required']) errors.push('Durée requise');
+    if (controls['durationInWeeks']?.errors?.['min']) errors.push('Durée minimum 1 semaine');
+    if (controls['durationInWeeks']?.errors?.['max']) errors.push('Durée maximum 52 semaines');
+    if (controls['weeklyAmount']?.errors?.['required']) errors.push('Montant hebdomadaire requis');
+    if (controls['weeklyAmount']?.errors?.['min']) errors.push('Montant hebdomadaire doit être positif');
+    if (controls['paymentDay']?.errors?.['required']) errors.push('Jour de paiement requis');
+    if (controls['paymentDay']?.errors?.['min'] || controls['paymentDay']?.errors?.['max']) {
+      errors.push('Jour de paiement entre 1 (lundi) et 7 (dimanche)');
+    }
+
+    return errors;
+  }
+
+  // ============================================================================
+  // SECTION 24: GESTION DES PAIEMENTS
+  // ============================================================================
+
+  /**
+   * Ouvre la modal de paiement
    */
   openPaymentModal(contract: ContractDto): void {
     this.selectedContractForPayment = contract;
     this.penaltiesLoading = true;
 
-    // Charger les pénalités pour ce contrat
     this.contractService.getContractPenalties(contract.id)
       .pipe(
         takeUntil(this.destroy$),
@@ -1971,12 +1131,7 @@ export class ContratsList implements OnInit, OnDestroy {
       .subscribe({
         next: (response: ApiResponseData<LatePenaltyInfo>) => {
           this.penaltiesInfo = response.data;
-
-          // Calculer le montant total à payer (montant de base + pénalités en cours)
-          const currentPenalty = this.penaltiesInfo?.payments
-            .filter(p => p.daysLate > 0 && p.penaltyApplies)
-            .reduce((sum, p) => sum + p.penaltyAmount, 0) || 0;
-
+          const currentPenalty = this.calculateCurrentPenalty(response.data);
           this.paymentForm.patchValue({
             amountPaid: contract.weeklyAmount + currentPenalty,
             paymentDate: new Date().toISOString().split('T')[0]
@@ -1984,7 +1139,6 @@ export class ContratsList implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Erreur chargement pénalités:', error);
-          // Continuer quand même
           this.paymentForm.patchValue({
             amountPaid: contract.weeklyAmount,
             paymentDate: new Date().toISOString().split('T')[0]
@@ -1996,63 +1150,17 @@ export class ContratsList implements OnInit, OnDestroy {
     this.paymentSubmitted = false;
   }
 
-
   /**
-   * Ouvre la modal d'éligibilité au renouvellement
+   * Calcule le montant des pénalités courantes
    */
-  openRenewalEligibilityModal(contract: ContractDto): void {
-    this.selectedContract = contract;
-    this.renewalEligibilityLoading = true;
-    this.showRenewalEligibilityModal = true;
-
-    this.contractService.checkRenewalEligibility(contract.id)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.renewalEligibilityLoading = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<RenewalEligibilityResult>) => {
-          this.renewalEligibility = response.data;
-
-          // Si éligible, pré-remplir le formulaire
-          if (this.renewalEligibility?.isEligible) {
-            this.renewForm.patchValue({
-              durationInWeeks: 4,
-              newWeeklyAmount: contract.weeklyAmount,
-              newSecurityDeposit: contract.securityDeposit
-            });
-          }
-        },
-        error: (error) => {
-          console.error('Erreur vérification éligibilité renouvellement:', error);
-          this.notificationService.error('Erreur lors de la vérification d\'éligibilité', error.message || '');
-          this.closeRenewalEligibilityModal();
-        }
-      });
-  }
-
-
-  /**
-   * Ferme la modal d'éligibilité au renouvellement
-   */
-  closeRenewalEligibilityModal(): void {
-    this.showRenewalEligibilityModal = false;
-    this.selectedContract = null;
-    this.renewalEligibility = null;
+  private calculateCurrentPenalty(penaltiesInfo: LatePenaltyInfo | null): number {
+    return penaltiesInfo?.payments
+      .filter(p => p.daysLate > 0 && p.penaltyApplies)
+      .reduce((sum, p) => sum + p.penaltyAmount, 0) || 0;
   }
 
   /**
-   * Procéder au renouvellement depuis la modal d'éligibilité
-   */
-  proceedToRenewal(): void {
-    if (this.selectedContract && this.renewalEligibility?.isEligible) {
-      this.closeRenewalEligibilityModal();
-      this.openRenewModal(this.selectedContract);
-    }
-  }
-
-  /**
-   * Ferme la modal d'enregistrement de paiement
+   * Ferme la modal de paiement
    */
   closePaymentModal(): void {
     this.showPaymentModal = false;
@@ -2075,7 +1183,6 @@ export class ContratsList implements OnInit, OnDestroy {
     }
 
     this.paymentLoading = true;
-
     const request: RecordPaymentRequest = {
       paymentDate: new Date(this.paymentForm.value.paymentDate),
       amountPaid: Number(this.paymentForm.value.amountPaid),
@@ -2091,42 +1198,31 @@ export class ContratsList implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response: ApiResponseData<PaymentRecord>) => {
-          this.notificationService.success('Paiement enregistré avec succès', 'Succès');
+          this.notificationService.success('Paiement enregistré', 'Paiement enregistré avec succès');
+          this.recalculateAmountsAfterPayment(this.selectedContractForPayment!.id, request.amountPaid);
 
-          // ✅ Recalculer les montants après paiement
-          this.recalculateAmountsAfterPayment(
-            this.selectedContractForPayment!.id,
-            request.amountPaid
-          );
-
-          // ✅ Si le modal de solde est ouvert, le recharger
           if (this.showBalanceModal && this.selectedContract) {
             this.loadBalanceForCurrentContract();
           }
 
           this.closePaymentModal();
-          this.loadContracts(); // Recharger la liste
+          this.loadContracts();
           this.loadDashboardStats();
         },
         error: (error) => {
-          console.error('❌ Erreur enregistrement paiement:', error);
-          const errorMessage = this.extractApiError(error);
-          this.notificationService.error(
-            'Erreur lors de l\'enregistrement du paiement',
-            errorMessage
-          );
+          console.error('Erreur enregistrement paiement:', error);
+          this.notificationService.error('Erreur paiement', this.extractApiError(error));
         }
       });
   }
 
   /**
-   * Recharge le solde pour le contrat actuellement sélectionné
+   * Recharge le solde du contrat courant
    */
   private loadBalanceForCurrentContract(): void {
     if (!this.selectedContract) return;
 
     this.balanceLoading = true;
-
     this.contractService.getContractBalance(this.selectedContract.id)
       .pipe(
         takeUntil(this.destroy$),
@@ -2136,11 +1232,56 @@ export class ContratsList implements OnInit, OnDestroy {
         next: (response: ApiResponseData<ContractBalance>) => {
           this.contractBalance = response.data;
         },
-        error: (error) => {
-          console.error('Erreur rechargement solde:', error);
-        }
+        error: (error) => console.error('Erreur rechargement solde:', error)
       });
   }
+
+  /**
+   * Recalcule les montants après paiement
+   */
+  private recalculateAmountsAfterPayment(contractId: string, paymentAmount: number): void {
+    const contractIndex = this.contracts.findIndex(c => c.id === contractId);
+    if (contractIndex === -1) return;
+
+    const contract = this.contracts[contractIndex];
+    const currentTotalDue = contract.weeksRemaining * contract.weeklyAmount;
+    const newTotalDue = Math.max(0, currentTotalDue - paymentAmount);
+    const newWeeksRemaining = Math.ceil(newTotalDue / contract.weeklyAmount);
+
+    this.contracts[contractIndex] = {
+      ...contract,
+      weeksRemaining: newWeeksRemaining,
+      daysRemaining: this.calculateUpdatedDaysRemaining(contract, newWeeksRemaining)
+    };
+
+    this.updateDashboardStatsFromContracts();
+  }
+
+  /**
+   * Calcule les jours restants mis à jour
+   */
+  private calculateUpdatedDaysRemaining(contract: ContractDto, weeksRemaining: number): number {
+    if (weeksRemaining <= 0) return 0;
+
+    const today = new Date();
+    const originalEndDate = new Date(contract.endDate);
+
+    if (weeksRemaining < contract.weeksRemaining) {
+      const daysPerWeek = 7;
+      const daysReduced = (contract.weeksRemaining - weeksRemaining) * daysPerWeek;
+      const newEndDate = new Date(originalEndDate);
+      newEndDate.setDate(originalEndDate.getDate() - daysReduced);
+      const diffTime = newEndDate.getTime() - today.getTime();
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    const diffTime = originalEndDate.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // ============================================================================
+  // SECTION 25: GESTION DES RENOUVELLEMENTS
+  // ============================================================================
 
   /**
    * Ouvre la modal de renouvellement
@@ -2162,11 +1303,7 @@ export class ContratsList implements OnInit, OnDestroy {
   closeRenewModal(): void {
     this.showRenewModal = false;
     this.selectedContract = null;
-    this.renewForm.reset({
-      durationInWeeks: 4,
-      newWeeklyAmount: 0,
-      newSecurityDeposit: 0
-    });
+    this.renewForm.reset({ durationInWeeks: 4, newWeeklyAmount: 0, newSecurityDeposit: 0 });
   }
 
   /**
@@ -2180,7 +1317,6 @@ export class ContratsList implements OnInit, OnDestroy {
     }
 
     this.renewLoading = true;
-
     const request: RenewContractRequest = {
       durationInWeeks: this.renewForm.value.durationInWeeks,
       newWeeklyAmount: this.renewForm.value.newWeeklyAmount,
@@ -2195,19 +1331,492 @@ export class ContratsList implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response: ApiResponseData<ContractDto>) => {
-          this.notificationService.success('Contrat renouvelé avec succès', 'Succès');
+          this.notificationService.success('Contrat renouvelé', 'Contrat renouvelé avec succès');
           this.closeRenewModal();
           this.loadContracts();
         },
         error: (error) => {
-          console.error('Erreur renouvellement contrat:', error);
-          this.notificationService.error('Erreur lors du renouvellement du contrat', error.message || '');
+          console.error('Erreur renouvellement:', error);
+          this.notificationService.error('Erreur renouvellement', error.message || '');
         }
       });
   }
 
   /**
-   * Ouvre la modal de termination
+   * Ouvre la modal d'éligibilité au renouvellement
+   */
+  openRenewalEligibilityModal(contract: ContractDto): void {
+    this.selectedContract = contract;
+    this.renewalEligibilityLoading = true;
+    this.showRenewalEligibilityModal = true;
+
+    this.contractService.checkRenewalEligibility(contract.id)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.renewalEligibilityLoading = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<RenewalEligibilityResult>) => {
+          this.renewalEligibility = response.data;
+          if (this.renewalEligibility?.isEligible) {
+            this.renewForm.patchValue({
+              durationInWeeks: 4,
+              newWeeklyAmount: contract.weeklyAmount,
+              newSecurityDeposit: contract.securityDeposit
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Erreur vérification éligibilité:', error);
+          this.notificationService.error('Erreur', error.message || '');
+          this.closeRenewalEligibilityModal();
+        }
+      });
+  }
+
+  /**
+   * Ferme la modal d'éligibilité
+   */
+  closeRenewalEligibilityModal(): void {
+    this.showRenewalEligibilityModal = false;
+    this.selectedContract = null;
+    this.renewalEligibility = null;
+  }
+
+  /**
+   * Procède au renouvellement depuis l'éligibilité
+   */
+  proceedToRenewal(): void {
+    if (this.selectedContract && this.renewalEligibility?.isEligible) {
+      this.closeRenewalEligibilityModal();
+      this.openRenewModal(this.selectedContract);
+    }
+  }
+
+  // ============================================================================
+  // SECTION 26: GESTION DE L'ACTIVATION DES CONTRATS
+  // ============================================================================
+
+  /**
+   * Ouvre la modal d'activation
+   */
+  openActivateContractModal(contract: ContractDto): void {
+    this.selectedContract = contract;
+    this.showActivateContractModal = true;
+    this.activateContractSubmitted = false;
+
+    this.activateContractForm.patchValue({
+      depositPaid: true,
+      deliveryDate: new Date().toISOString().split('T')[0],
+      deliveryLocation: 'Siège social',
+      mileageAtDelivery: 0,
+      fuelLevel: 100,
+      conditionNotes: 'Véhicule en bon état',
+      deliveredBy: this.currentUser?.username || 'Livreur',
+      receivedBy: contract.customerName || 'Client'
+    });
+  }
+
+  /**
+   * Ferme la modal d'activation
+   */
+  closeActivateContractModal(): void {
+    this.showActivateContractModal = false;
+    this.selectedContract = null;
+    this.activateContractForm.reset({
+      depositPaid: true,
+      deliveryDate: new Date().toISOString().split('T')[0],
+      deliveryLocation: 'Siège social',
+      mileageAtDelivery: 0,
+      fuelLevel: 100,
+      conditionNotes: 'Véhicule en bon état'
+    });
+  }
+
+  /**
+   * Soumet le formulaire d'activation
+   */
+  onActivateContractSubmit(): void {
+    this.activateContractSubmitted = true;
+
+    if (this.activateContractForm.invalid || !this.selectedContract) {
+      this.notificationService.error('Formulaire incomplet', 'Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    this.activateContractLoading = true;
+    const request: ActivateContractRequest = {
+      depositPaid: this.activateContractForm.value.depositPaid,
+      paymentReference: this.activateContractForm.value.paymentReference || '',
+      deliveryDate: new Date(this.activateContractForm.value.deliveryDate),
+      deliveryLocation: this.activateContractForm.value.deliveryLocation,
+      mileageAtDelivery: Number(this.activateContractForm.value.mileageAtDelivery),
+      fuelLevel: Number(this.activateContractForm.value.fuelLevel),
+      conditionNotes: this.activateContractForm.value.conditionNotes || '',
+      deliveredBy: this.activateContractForm.value.deliveredBy,
+      receivedBy: this.activateContractForm.value.receivedBy
+    };
+
+    this.contractService.activateContract(this.selectedContract.id, request)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.activateContractLoading = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<ContractDto>) => {
+          this.notificationService.success(
+            'Contrat activé',
+            `Le contrat ${this.selectedContract?.contractNumber} a été activé`
+          );
+          this.closeActivateContractModal();
+          this.loadContracts();
+          this.loadDashboardStats();
+        },
+        error: (error) => {
+          console.error('Erreur activation:', error);
+          this.notificationService.error('Erreur activation', this.extractApiError(error));
+        }
+      });
+  }
+
+  /**
+   * Vérifie si un contrat peut être activé
+   */
+  canActivateContract(contract: ContractDto): boolean {
+    return contract.status === ContractStatus.Pending || contract.status === ContractStatus.Draft;
+  }
+
+  // ============================================================================
+  // SECTION 27: GESTION DU RETOUR DES VÉHICULES
+  // ============================================================================
+
+  /**
+   * Ouvre la modal de retour du véhicule
+   */
+  openVehicleReturnModal(contract: ContractDto): void {
+    if (!contract.deliveryInfo) {
+      this.notificationService.error(
+        'Impossible d\'enregistrer le retour',
+        'Ce contrat n\'a pas d\'informations de livraison'
+      );
+      return;
+    }
+
+    this.selectedContract = contract;
+    this.showVehicleReturnModal = true;
+    this.vehicleReturnSubmitted = false;
+
+    this.vehicleReturnForm.patchValue({
+      returnDate: new Date().toISOString().split('T')[0],
+      endMileage: 0,
+      fuelLevel: 'FULL',
+      vehicleCondition: 'GOOD'
+    });
+  }
+
+  /**
+   * Ferme la modal de retour
+   */
+  closeVehicleReturnModal(): void {
+    this.showVehicleReturnModal = false;
+    this.selectedContract = null;
+    this.vehicleReturnForm.reset({
+      returnDate: new Date().toISOString().split('T')[0],
+      endMileage: 0,
+      fuelLevel: 'FULL',
+      vehicleCondition: 'GOOD',
+      hasDamage: false,
+      hasOverdueMileage: false
+    });
+  }
+
+  /**
+   * Soumet le formulaire de retour
+   */
+  onVehicleReturnSubmit(): void {
+    this.vehicleReturnSubmitted = true;
+
+    if (this.vehicleReturnForm.invalid || !this.selectedContract) {
+      this.notificationService.error('Formulaire incomplet', 'Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    if (!this.selectedContract.deliveryInfo) {
+      this.notificationService.error('Erreur', 'Informations de livraison manquantes');
+      return;
+    }
+
+    this.vehicleReturnLoading = true;
+    const request: VehicleReturnRequest = this.buildVehicleReturnRequest();
+
+    this.contractService.recordVehicleReturn(this.selectedContract.id, request)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.vehicleReturnLoading = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<VehicleReturnResult>) => {
+          this.notificationService.success('Retour enregistré', `Véhicule retourné - Contrat ${this.selectedContract?.contractNumber}`);
+          if (response.data) this.showReturnSummary(response.data);
+          this.closeVehicleReturnModal();
+          this.loadContracts();
+          this.loadDashboardStats();
+        },
+        error: (error) => {
+          console.error('Erreur retour:', error);
+          this.notificationService.error('Erreur retour', this.extractApiError(error));
+        }
+      });
+  }
+
+  /**
+   * Construit la requête de retour véhicule
+   */
+  private buildVehicleReturnRequest(): VehicleReturnRequest {
+    const fuelLevelMap: Record<string, number> = {
+      'EMPTY': 0, 'QUARTER': 25, 'HALF': 50, 'THREE_QUARTERS': 75, 'FULL': 100
+    };
+
+    const currentUserName = this.currentUser?.username || 'System';
+
+    return {
+      returnDate: new Date(this.vehicleReturnForm.value.returnDate),
+      returnLocation: this.selectedContract!.deliveryInfo,
+      mileageAtReturn: Number(this.vehicleReturnForm.value.endMileage),
+      fuelLevel: fuelLevelMap[this.vehicleReturnForm.value.fuelLevel] || 100,
+      conditionNotes: this.vehicleReturnForm.value.vehicleCondition,
+      photos: [],
+      damages: [],
+      returnedBy: this.selectedContract!.customerName || 'Client',
+      receivedBy: currentUserName
+    };
+  }
+
+  /**
+   * Affiche le résumé du retour
+   */
+  private showReturnSummary(result: VehicleReturnResult): void {
+    const hasExtraCharges = result.mileageOverageFee > 0 || result.fuelCharge > 0 || result.totalDamageCost > 0;
+    const totalExtraCharges = result.mileageOverageFee + result.fuelCharge + result.totalDamageCost;
+    const hasDamages = result.damages && result.damages.length > 0;
+
+    const summary = `
+      <div class="return-summary">
+        <h6>📋 Récapitulatif du retour</h6>
+        <div class="row">
+          <div class="col-6">
+            <p><strong>Date:</strong> ${this.formatDate(result.returnedAt)}</p>
+            <p><strong>Kilométrage:</strong> ${result.mileageAtReturn} km</p>
+          </div>
+          <div class="col-6">
+            <p><strong>Carburant:</strong> ${this.getFuelLevelLabel(result.fuelLevelAtReturn)}</p>
+            <p><strong>Total parcouru:</strong> ${result.totalMileage} km</p>
+          </div>
+        </div>
+        ${hasExtraCharges ? `
+          <div class="alert alert-warning">
+            <strong>Frais supplémentaires: ${this.formatCurrency(totalExtraCharges)}</strong>
+          </div>
+        ` : `
+          <div class="alert alert-success">
+            <strong>Retour validé sans frais</strong>
+          </div>
+        `}
+      </div>
+    `;
+
+    this.notificationService.info('Retour véhicule', summary, 8000);
+  }
+
+  /**
+   * Vérifie si un véhicule peut être retourné
+   */
+  canReturnVehicle(contract: ContractDto): boolean {
+    if (contract.status !== ContractStatus.Active || !contract.deliveryInfo) return false;
+    const today = new Date();
+    const startDate = new Date(contract.startDate);
+    return today >= startDate;
+  }
+
+  // ============================================================================
+  // SECTION 28: GESTION DES DOMMAGES
+  // ============================================================================
+
+  /**
+   * Ouvre la modal de signalement de dommage
+   */
+  openDamageReportModal(contract: ContractDto): void {
+    this.selectedContract = contract;
+    this.showDamageReportModal = true;
+    this.damageReportSubmitted = false;
+    this.damagePhotos = [];
+    this.previewUrls = [];
+
+    this.damageReportForm.patchValue({
+      damageDate: new Date().toISOString().split('T')[0],
+      severity: DamageSeverity.Minor,
+      responsibleParty: 'CUSTOMER',
+      estimatedRepairCost: 0
+    });
+  }
+
+  /**
+   * Ferme la modal de signalement de dommage
+   */
+  closeDamageReportModal(): void {
+    this.showDamageReportModal = false;
+    this.selectedContract = null;
+    this.damagePhotos = [];
+    this.previewUrls = [];
+    this.damageReportForm.reset({
+      damageDate: new Date().toISOString().split('T')[0],
+      severity: 'MINOR',
+      responsibleParty: 'CUSTOMER',
+      estimatedRepairCost: 0
+    });
+  }
+
+  /**
+   * Gère la sélection des photos
+   */
+  onDamagePhotoSelected(event: any): void {
+    const files: FileList = event.target.files;
+    const maxFiles = 5;
+
+    if (files.length) {
+      const filesToAdd = Array.from(files).slice(0, maxFiles - this.damagePhotos.length);
+
+      filesToAdd.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          this.damagePhotos.push(file);
+          const reader = new FileReader();
+          reader.onload = (e: any) => this.previewUrls.push(e.target.result);
+          reader.readAsDataURL(file);
+        }
+      });
+
+      if (files.length > maxFiles) {
+        this.notificationService.warning('Limite', `Maximum ${maxFiles} photos`);
+      }
+    }
+  }
+
+  /**
+   * Supprime une photo
+   */
+  removeDamagePhoto(index: number): void {
+    this.damagePhotos.splice(index, 1);
+    this.previewUrls.splice(index, 1);
+  }
+
+  /**
+   * Soumet le formulaire de dommage
+   */
+  onDamageReportSubmit(): void {
+    this.damageReportSubmitted = true;
+
+    if (this.damageReportForm.invalid || !this.selectedContract) {
+      this.notificationService.error('Formulaire incomplet', 'Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    let severityValue = this.damageReportForm.value.severity;
+    if (typeof severityValue === 'string') {
+      severityValue = this.getDamageSeverityValue(severityValue);
+    }
+
+    if (!severityValue || severityValue < 1 || severityValue > 4) {
+      this.notificationService.error('Sévérité invalide', 'Veuillez sélectionner une sévérité valide');
+      return;
+    }
+
+    if ((severityValue === DamageSeverity.Major || severityValue === DamageSeverity.Total) && !this.damagePhotos.length) {
+      this.notificationService.warning('Photos requises', 'Ajoutez au moins une photo pour les dommages graves');
+      return;
+    }
+
+    this.damageReportLoading = true;
+    const request: ReportDamageRequest = {
+      description: this.damageReportForm.value.description,
+      severity: Number(severityValue),
+      estimatedCost: Number(this.damageReportForm.value.estimatedRepairCost),
+      photoUrls: this.damagePhotos.map((_, i) => `damage_${this.selectedContract!.id}_${Date.now()}_${i}.jpg`),
+      notes: this.damageReportForm.value.notes || ''
+    };
+
+    this.contractService.reportDamage(this.selectedContract.id, request)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.damageReportLoading = false)
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.success('Dommage signalé', `Signalé pour le contrat ${this.selectedContract?.contractNumber}`);
+          this.closeDamageReportModal();
+          this.loadContracts();
+        },
+        error: (error) => {
+          console.error('Erreur signalement:', error);
+          this.notificationService.error('Erreur', this.extractApiError(error));
+        }
+      });
+  }
+
+  /**
+   * Vérifie si un dommage peut être signalé
+   */
+  canReportDamage(contract: ContractDto): boolean {
+    if (contract.status !== ContractStatus.Active) return false;
+    const today = new Date();
+    const startDate = new Date(contract.startDate);
+    const endDate = new Date(contract.endDate);
+    return today >= startDate && today <= endDate;
+  }
+
+  // ============================================================================
+  // SECTION 29: GESTION DES PÉNALITÉS
+  // ============================================================================
+
+  /**
+   * Ouvre la modal des pénalités
+   */
+  openPenaltiesModal(contract: ContractDto): void {
+    this.selectedContract = contract;
+    this.penaltiesLoading = true;
+    this.showPenaltiesModal = true;
+
+    this.contractService.getContractPenalties(contract.id)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.penaltiesLoading = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<LatePenaltyInfo>) => {
+          this.penaltiesInfo = response.data;
+        },
+        error: (error) => {
+          console.error('Erreur chargement pénalités:', error);
+          this.notificationService.error('Erreur', error.message || '');
+          this.closePenaltiesModal();
+        }
+      });
+  }
+
+  /**
+   * Ferme la modal des pénalités
+   */
+  closePenaltiesModal(): void {
+    this.showPenaltiesModal = false;
+    this.selectedContract = null;
+    this.penaltiesInfo = null;
+  }
+
+  // ============================================================================
+  // SECTION 30: GESTION DE LA RÉSILIATION
+  // ============================================================================
+
+  /**
+   * Ouvre la modal de résiliation
    */
   openTerminateModal(contract: ContractDto): void {
     this.selectedContract = contract;
@@ -2216,7 +1825,7 @@ export class ContratsList implements OnInit, OnDestroy {
   }
 
   /**
-   * Ferme la modal de termination
+   * Ferme la modal de résiliation
    */
   closeTerminateModal(): void {
     this.showTerminateModal = false;
@@ -2225,7 +1834,7 @@ export class ContratsList implements OnInit, OnDestroy {
   }
 
   /**
-   * Soumet le formulaire de termination
+   * Soumet la résiliation
    */
   onTerminateSubmit(): void {
     this.terminateSubmitted = true;
@@ -2235,7 +1844,6 @@ export class ContratsList implements OnInit, OnDestroy {
     }
 
     this.terminateLoading = true;
-
     this.contractService.terminateContract(this.selectedContract.id, this.terminateForm.value.reason)
       .pipe(
         takeUntil(this.destroy$),
@@ -2243,26 +1851,214 @@ export class ContratsList implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response: ApiResponseData<ContractDto>) => {
-          this.notificationService.success('Contrat terminé avec succès', 'Succès');
+          this.notificationService.success('Contrat résilié', 'Contrat résilié avec succès');
           this.closeTerminateModal();
           this.loadContracts();
         },
         error: (error) => {
-          console.error('Erreur termination contrat:', error);
-          this.notificationService.error('Erreur lors de la termination du contrat', error.message || '');
+          console.error('Erreur résiliation:', error);
+          this.notificationService.error('Erreur', error.message || '');
+        }
+      });
+  }
+
+  // ============================================================================
+  // SECTION 31: GESTION DE L'ANNULATION ET DU REJET
+  // ============================================================================
+
+  /**
+   * Ouvre la modal d'annulation
+   */
+  openCancelContractModal(contract: ContractDto): void {
+    this.selectedContract = contract;
+    this.showCancelContractModal = true;
+    this.cancelContractSubmitted = false;
+    this.calculateCancellationFees(contract);
+  }
+
+  /**
+   * Calcule les frais d'annulation
+   */
+  private calculateCancellationFees(contract: ContractDto): void {
+    const today = new Date();
+    const startDate = new Date(contract.startDate);
+    const endDate = new Date(contract.endDate);
+    const totalWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+    const elapsedWeeks = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+    const percentageElapsed = (elapsedWeeks / totalWeeks) * 100;
+
+    let cancellationFee = 0;
+    let refundAmount = 0;
+    const remainingValue = contract.weeklyAmount * (totalWeeks - elapsedWeeks);
+
+    if (percentageElapsed <= 25) {
+      cancellationFee = remainingValue * 0.5;
+      refundAmount = remainingValue - cancellationFee;
+    } else if (percentageElapsed <= 50) {
+      cancellationFee = remainingValue * 0.75;
+      refundAmount = remainingValue - cancellationFee;
+    } else {
+      cancellationFee = remainingValue;
+      refundAmount = 0;
+    }
+
+    this.cancelContractForm.patchValue({
+      cancellationFee: Math.round(cancellationFee),
+      refundAmount: Math.round(refundAmount),
+      effectiveDate: new Date().toISOString().split('T')[0]
+    });
+  }
+
+  /**
+   * Ferme la modal d'annulation
+   */
+  closeCancelContractModal(): void {
+    this.showCancelContractModal = false;
+    this.selectedContract = null;
+    this.cancelContractForm.reset({
+      reason: '', refundAmount: 0, cancellationFee: 0,
+      effectiveDate: new Date().toISOString().split('T')[0]
+    });
+  }
+
+  /**
+   * Soumet l'annulation
+   */
+  onCancelContractSubmit(): void {
+    this.cancelContractSubmitted = true;
+
+    if (this.cancelContractForm.invalid || !this.selectedContract) {
+      this.notificationService.error('Formulaire incomplet', 'Indiquez la raison de l\'annulation');
+      return;
+    }
+
+    if (!confirm('Confirmer l\'annulation ? Cette action est irréversible.')) {
+      return;
+    }
+
+    this.cancelContractLoading = true;
+    this.contractService.cancelContract(this.selectedContract.id, this.cancelContractForm.value.reason)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.cancelContractLoading = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<ContractDto>) => {
+          this.notificationService.success('Contrat annulé', `Contrat ${this.selectedContract?.contractNumber} annulé`);
+          this.showCancellationSummary();
+          this.closeCancelContractModal();
+          this.loadContracts();
+          this.loadDashboardStats();
+        },
+        error: (error) => {
+          console.error('Erreur annulation:', error);
+          this.notificationService.error('Erreur', this.extractApiError(error));
         }
       });
   }
 
   /**
-   * Ouvre la modal de solde détaillé
+   * Affiche le résumé de l'annulation
+   */
+  private showCancellationSummary(): void {
+    const summary = `
+      <div>
+        <p><strong>Contrat:</strong> ${this.selectedContract?.contractNumber}</p>
+        <p><strong>Frais:</strong> ${this.formatCurrency(this.cancelContractForm.value.cancellationFee)}</p>
+        <p><strong>Remboursement:</strong> ${this.formatCurrency(this.cancelContractForm.value.refundAmount)}</p>
+      </div>
+    `;
+    this.notificationService.info('Détails annulation', summary, 5000);
+  }
+
+  /**
+   * Vérifie si un contrat peut être annulé
+   */
+  canCancelContract(contract: ContractDto): boolean {
+    if (contract.status !== ContractStatus.Active) return false;
+    return new Date() < new Date(contract.endDate);
+  }
+
+  /**
+   * Ouvre la modal de rejet
+   */
+  openRejectContractModal(contract: ContractDto): void {
+    this.selectedContract = contract;
+    this.showRejectContractModal = true;
+    this.rejectContractSubmitted = false;
+    this.rejectContractForm.patchValue({ reason: 'Documentation incomplète' });
+  }
+
+  /**
+   * Ferme la modal de rejet
+   */
+  closeRejectContractModal(): void {
+    this.showRejectContractModal = false;
+    this.selectedContract = null;
+    this.rejectContractForm.reset({ reason: '', notes: '' });
+  }
+
+  /**
+   * Soumet le rejet
+   */
+  onRejectContractSubmit(): void {
+    this.rejectContractSubmitted = true;
+
+    if (this.rejectContractForm.invalid || !this.selectedContract) {
+      this.notificationService.error('Formulaire incomplet', 'Indiquez le motif du rejet');
+      return;
+    }
+
+    if (!confirm('Confirmer le rejet ? Cette action est irréversible.')) {
+      return;
+    }
+
+    this.rejectContractLoading = true;
+    this.contractService.rejectContract(this.selectedContract.id, this.rejectContractForm.value.reason)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.rejectContractLoading = false)
+      )
+      .subscribe({
+        next: (response: ApiResponseData<ContractDto>) => {
+          this.notificationService.success('Contrat rejeté', `Contrat ${this.selectedContract?.contractNumber} rejeté`);
+          this.closeRejectContractModal();
+          this.loadContracts();
+        },
+        error: (error) => {
+          console.error('Erreur rejet:', error);
+          this.notificationService.error('Erreur', this.extractApiError(error));
+        }
+      });
+  }
+
+  /**
+   * Vérifie si un contrat peut être rejeté
+   */
+  canRejectContract(contract: ContractDto): boolean {
+    return contract.status === ContractStatus.Draft || contract.status === ContractStatus.Pending;
+  }
+
+  /**
+   * Gère le changement de motif
+   */
+  onReasonChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.rejectContractForm.patchValue({ reason: selectElement.value });
+  }
+
+  // ============================================================================
+  // SECTION 32: GESTION DU SOLDE ET RAPPORTS FINANCIERS
+  // ============================================================================
+
+  /**
+   * Ouvre la modal de solde
    */
   openBalanceModal(contract: ContractDto): void {
     this.selectedContract = contract;
     this.balanceLoading = true;
     this.showBalanceModal = true;
 
-    // Charger le solde
     this.contractService.getContractBalance(contract.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -2271,7 +2067,6 @@ export class ContratsList implements OnInit, OnDestroy {
         }
       });
 
-    // ✅ Charger l'historique des paiements
     this.contractService.getContractPayments(contract.id)
       .pipe(
         takeUntil(this.destroy$),
@@ -2284,195 +2079,24 @@ export class ContratsList implements OnInit, OnDestroy {
       });
   }
 
-
-
   /**
-   * Calcule le pourcentage de paiements manqués
-   */
-  getMissedPaymentPercentage(): number {
-    if (!this.financialReport) return 0;
-
-    const total = this.financialReport.paymentsMade + this.financialReport.paymentsMissed;
-    if (total === 0) return 0;
-
-    return Math.round((this.financialReport.paymentsMissed / total) * 100);
-  }
-
-  /**
-   * Calcule le pourcentage du montant restant
-   */
-  getOutstandingPercentage(): number {
-    if (!this.financialReport || this.financialReport.totalContractValue === 0) return 0;
-
-    return Math.round((this.financialReport.totalOutstanding / this.financialReport.totalContractValue) * 100);
-  }
-
-  /**
-   * Met à jour les données d'un contrat après un paiement
-   */
-  private updateContractAfterPayment(contractId: string, balance: ContractBalance): void {
-    const contractIndex = this.contracts.findIndex(c => c.id === contractId);
-
-    if (contractIndex !== -1) {
-      // Mettre à jour les propriétés calculées du contrat
-      this.contracts[contractIndex] = {
-        ...this.contracts[contractIndex],
-        weeksRemaining: this.calculateWeeksRemaining(this.contracts[contractIndex], balance),
-        daysRemaining: this.calculateDaysRemaining(this.contracts[contractIndex], balance)
-      };
-    }
-  }
-
-  /**
-   * Calcule les semaines restantes basé sur le solde
-   */
-  private calculateWeeksRemaining(contract: ContractDto, balance: ContractBalance): number {
-    if (balance.totalOutstanding <= 0) return 0;
-
-    // Calcul basé sur le montant hebdomadaire
-    if (contract.weeklyAmount > 0) {
-      return Math.ceil(balance.totalOutstanding / contract.weeklyAmount);
-    }
-
-    return contract.weeksRemaining;
-  }
-
-  /**
-   * Calcule les jours restants basé sur le solde
-   */
-  private calculateDaysRemaining(contract: ContractDto, balance: ContractBalance): number {
-    const today = new Date();
-    const endDate = new Date(contract.endDate);
-    const diffTime = endDate.getTime() - today.getTime();
-    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // Si le solde est payé, retourner 0
-    if (balance.totalOutstanding <= 0) {
-      return 0;
-    }
-
-    return Math.max(0, daysRemaining);
-  }
-
-
-  /**
-   * Recalcule les montants dûs après un paiement
-   */
-  private recalculateAmountsAfterPayment(contractId: string, paymentAmount: number): void {
-    const contractIndex = this.contracts.findIndex(c => c.id === contractId);
-
-    if (contractIndex === -1) return;
-
-    const contract = this.contracts[contractIndex];
-
-    // Calculer le nouveau montant total dû
-    const currentTotalDue = contract.weeksRemaining * contract.weeklyAmount;
-    const newTotalDue = Math.max(0, currentTotalDue - paymentAmount);
-
-    // Mettre à jour les semaines restantes
-    const newWeeksRemaining = Math.ceil(newTotalDue / contract.weeklyAmount);
-
-    // Mettre à jour le contrat
-    this.contracts[contractIndex] = {
-      ...contract,
-      weeksRemaining: newWeeksRemaining,
-      daysRemaining: this.calculateUpdatedDaysRemaining(contract, newWeeksRemaining)
-    };
-
-    // Mettre à jour les statistiques du dashboard
-    this.updateDashboardStatsFromContracts();
-  }
-
-  /**
-   * Calcule les jours restants mis à jour
-   */
-  private calculateUpdatedDaysRemaining(contract: ContractDto, weeksRemaining: number): number {
-    if (weeksRemaining <= 0) return 0;
-
-    const today = new Date();
-    const originalEndDate = new Date(contract.endDate);
-
-    // Si le contrat est payé en avance, ajuster la date de fin
-    if (weeksRemaining < contract.weeksRemaining) {
-      const daysPerWeek = 7;
-      const daysReduced = (contract.weeksRemaining - weeksRemaining) * daysPerWeek;
-      const newEndDate = new Date(originalEndDate);
-      newEndDate.setDate(originalEndDate.getDate() - daysReduced);
-
-      const diffTime = newEndDate.getTime() - today.getTime();
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    }
-
-    // Sinon, utiliser la date de fin originale
-    const diffTime = originalEndDate.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  }
-
-  /**
-   * Ferme la modal de solde détaillé et rafraîchit les données
+   * Ferme la modal de solde
    */
   closeBalanceModal(): void {
     this.showBalanceModal = false;
     this.selectedContract = null;
     this.contractBalance = null;
-
-    // ✅ Rafraîchir les données après fermeture
-    if (this.contracts.length > 0) {
-      this.loadContracts();
-    }
+    if (this.contracts.length) this.loadContracts();
   }
 
   /**
-   * Calcule le montant total dû pour un contrat
+   * Ouvre la modal de rapport financier
    */
-  getCurrentAmountDue(contract: ContractDto): number {
-    // Utiliser weeksRemaining s'il est disponible, sinon calculer
-    const weeksRemaining = contract.weeksRemaining || 0;
-    const weeklyAmount = contract.weeklyAmount || 0;
-
-    return weeksRemaining * weeklyAmount;
-  }
-
-  /**
-   * Formate le montant dû avec indication de statut
-   */
-  formatAmountDueWithStatus(contract: ContractDto): string {
-    const amountDue = this.getCurrentAmountDue(contract);
-    const formattedAmount = this.formatCurrency(amountDue);
-
-    // Ajouter un indicateur si le paiement est en retard
-    if (this.isPaymentOverdue(contract)) {
-      return `${formattedAmount} <span class="badge bg-danger ms-2">En retard</span>`;
-    }
-
-    return formattedAmount;
-  }
-
-
-  /**
-   * Affiche les détails du solde dans la console pour debug
-   */
-  private logBalanceDetails(balance: ContractBalance): void {
-    console.log('📊 Détails du solde:', {
-      contractNumber: balance.contractNumber,
-      totalContractAmount: balance.totalContractAmount,
-      totalPaid: balance.totalPaid,
-      paymentsMade: balance.paymentsMade,
-      totalPayments: balance.totalPayments,
-      totalOutstanding: balance.totalOutstanding,
-      currentWeekDue: balance.currentWeekDue
-    });
-  }
-
-  /**
-  * Ouvre la modal de rapport financier
-  */
   openFinancialReportModal(contract: ContractDto): void {
     this.selectedContract = contract;
     this.financialReportLoading = true;
     this.showFinancialReportModal = true;
 
-    // Charger le rapport financier
     this.contractService.getContractFinancialReport(contract.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -2481,7 +2105,6 @@ export class ContratsList implements OnInit, OnDestroy {
         }
       });
 
-    // ✅ Charger l'historique des paiements
     this.contractService.getContractPayments(contract.id)
       .pipe(
         takeUntil(this.destroy$),
@@ -2491,9 +2114,7 @@ export class ContratsList implements OnInit, OnDestroy {
         next: (response: ApiResponseData<PaymentRecord[]>) => {
           this.contractPayments = response.data;
         },
-        error: (error) => {
-          console.error('Erreur chargement historique paiements:', error);
-        }
+        error: (error) => console.error('Erreur chargement paiements:', error)
       });
   }
 
@@ -2507,69 +2128,7 @@ export class ContratsList implements OnInit, OnDestroy {
   }
 
   /**
-   * Ouvre la modal de signature
-   */
-  openSignatureModal(contract: ContractDto): void {
-    this.selectedContract = contract;
-    this.showSignatureModal = true;
-    this.signatureSubmitted = false;
-  }
-
-  /**
-   * Ferme la modal de signature
-   */
-  closeSignatureModal(): void {
-    this.showSignatureModal = false;
-    this.selectedContract = null;
-    this.signatureForm.reset({
-      signatureDate: new Date().toISOString().split('T')[0]
-    });
-    this.signatureFile = null;
-  }
-
-  /**
-   * Gère la sélection du fichier de signature
-   */
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      this.signatureFile = file;
-    } else {
-      this.notificationService.error('Veuillez sélectionner un fichier PDF', 'Fichier invalide');
-    }
-  }
-
-  /**
-   * Soumet le formulaire de signature
-   */
-  onSignatureSubmit(): void {
-    this.signatureSubmitted = true;
-
-    if (this.signatureForm.invalid || !this.signatureFile || !this.selectedContract) {
-      return;
-    }
-
-    this.signatureLoading = true;
-
-    this.contractService.uploadSignedContract(this.selectedContract.id, this.signatureFile)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.signatureLoading = false)
-      )
-      .subscribe({
-        next: (response: ApiResponseData<any>) => {
-          this.notificationService.success('Contrat signé uploadé avec succès', 'Succès');
-          this.closeSignatureModal();
-        },
-        error: (error) => {
-          console.error('Erreur upload signature:', error);
-          this.notificationService.error('Erreur lors de l\'upload du contrat signé', error.message || '');
-        }
-      });
-  }
-
-  /**
-   * Ouvre la modal d'éligibilité
+   * Ouvre la modal d'éligibilité client
    */
   openEligibilityModal(contract: ContractDto): void {
     this.selectedContract = contract;
@@ -2586,8 +2145,8 @@ export class ContratsList implements OnInit, OnDestroy {
           this.eligibilityResult = response.data;
         },
         error: (error) => {
-          console.error('Erreur vérification éligibilité:', error);
-          this.notificationService.error('Erreur lors de la vérification d\'éligibilité', error.message || '');
+          console.error('Erreur éligibilité:', error);
+          this.notificationService.error('Erreur', error.message || '');
           this.closeEligibilityModal();
         }
       });
@@ -2602,255 +2161,74 @@ export class ContratsList implements OnInit, OnDestroy {
     this.eligibilityResult = null;
   }
 
+  // ============================================================================
+  // SECTION 33: GESTION DES SIGNATURES
+  // ============================================================================
 
   /**
-   * Ferme la modal de création
+   * Ouvre la modal de signature
    */
-  closeCreateModal(): void {
-    this.showCreateModal = false;
-    this.createForm.reset({
-      startDate: new Date().toISOString().split('T')[0],
-      durationInWeeks: 4,
-      weeklyAmount: 0,
-      securityDeposit: 0,
-      paymentFrequency: PaymentFrequency.Weekly,
-      paymentDay: 1,
-      weeklyMileageLimit: 1000
-    });
+  openSignatureModal(contract: ContractDto): void {
+    this.selectedContract = contract;
+    this.showSignatureModal = true;
+    this.signatureSubmitted = false;
   }
 
   /**
-   * Soumet le formulaire de création
+   * Ferme la modal de signature
    */
-  onCreateSubmit(): void {
-    this.createSubmitted = true;
+  closeSignatureModal(): void {
+    this.showSignatureModal = false;
+    this.selectedContract = null;
+    this.signatureForm.reset({ signatureDate: new Date().toISOString().split('T')[0] });
+    this.signatureFile = null;
+  }
 
-    if (this.createForm.invalid) {
-      // Afficher une notification pour les erreurs de formulaire
-      const errors = this.getFormErrors();
-      if (errors.length > 0) {
-        this.notificationService.error(
-          'Formulaire incomplet',
-          `Veuillez corriger les erreurs suivantes : ${errors.join(', ')}`
-        );
-      }
+  /**
+   * Gère la sélection du fichier
+   */
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      this.signatureFile = file;
+    } else {
+      this.notificationService.error('Fichier invalide', 'Sélectionnez un fichier PDF');
+    }
+  }
+
+  signatureFile: File | null = null;
+
+  /**
+   * Soumet la signature
+   */
+  onSignatureSubmit(): void {
+    this.signatureSubmitted = true;
+
+    if (this.signatureForm.invalid || !this.signatureFile || !this.selectedContract) {
       return;
     }
 
-    this.createLoading = true;
-
-    const request: CreateContractRequest = {
-      customerId: this.createForm.value.customerId,
-      vehicleId: this.createForm.value.vehicleId,
-      startDate: new Date(this.createForm.value.startDate),
-      durationInWeeks: this.createForm.value.durationInWeeks,
-      weeklyAmount: this.createForm.value.weeklyAmount,
-      securityDeposit: this.createForm.value.securityDeposit,
-      paymentFrequency: this.createForm.value.paymentFrequency,
-      paymentDay: this.createForm.value.paymentDay,
-      weeklyMileageLimit: this.createForm.value.weeklyMileageLimit,
-      notes: this.createForm.value.notes
-    };
-
-    this.contractService.createContract(request)
+    this.signatureLoading = true;
+    this.contractService.uploadSignedContract(this.selectedContract.id, this.signatureFile)
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.createLoading = false)
+        finalize(() => this.signatureLoading = false)
       )
       .subscribe({
-        next: (response: ApiResponseData<ContractDto>) => {
-          if (response.success) {
-            this.notificationService.success(
-              'Contrat créé avec succès',
-              `Contrat ${response.data.contractNumber} a été créé avec succès.`
-            );
-            this.closeCreateModal();
-            this.loadContracts();
-          } else {
-            // Gérer le cas où l'API retourne success: false
-            const errorMessage = this.extractErrorMessage(response);
-            this.notificationService.error(
-              'Échec de la création du contrat',
-              errorMessage
-            );
-          }
+        next: (response: ApiResponseData<any>) => {
+          this.notificationService.success('Contrat signé uploadé', 'Succès');
+          this.closeSignatureModal();
         },
         error: (error) => {
-          console.error('Erreur création contrat:', error);
-
-          // Extraire le message d'erreur de manière plus précise
-          const errorMessage = this.extractApiError(error);
-
-          this.notificationService.error(
-            'Erreur lors de la création du contrat',
-            errorMessage
-          );
+          console.error('Erreur upload:', error);
+          this.notificationService.error('Erreur', error.message || '');
         }
       });
   }
 
-  /**
-   * Extrait les erreurs de validation du formulaire
-   */
-  private getFormErrors(): string[] {
-    const errors: string[] = [];
-
-    if (this.cf['customerId']?.errors?.['required']) {
-      errors.push('Client est requis');
-    }
-
-    if (this.cf['vehicleId']?.errors?.['required']) {
-      errors.push('Véhicule est requis');
-    }
-
-    if (this.cf['startDate']?.errors?.['required']) {
-      errors.push('Date de début est requise');
-    }
-
-    if (this.cf['durationInWeeks']?.errors?.['required']) {
-      errors.push('Durée est requise');
-    }
-
-    if (this.cf['durationInWeeks']?.errors?.['min']) {
-      errors.push('La durée doit être d\'au moins 1 semaine');
-    }
-
-    if (this.cf['durationInWeeks']?.errors?.['max']) {
-      errors.push('La durée ne peut pas dépasser 52 semaines');
-    }
-
-    if (this.cf['weeklyAmount']?.errors?.['required']) {
-      errors.push('Montant hebdomadaire est requis');
-    }
-
-    if (this.cf['weeklyAmount']?.errors?.['min']) {
-      errors.push('Le montant hebdomadaire doit être positif');
-    }
-
-    if (this.cf['paymentDay']?.errors?.['required']) {
-      errors.push('Jour de paiement est requis');
-    }
-
-    if (this.cf['paymentDay']?.errors?.['min'] || this.cf['paymentDay']?.errors?.['max']) {
-      errors.push('Le jour de paiement doit être entre 1 (Lundi) et 7 (Dimanche)');
-    }
-
-    return errors;
-  }
-
-  /**
-   * Extrait le message d'erreur de la réponse API
-   */
-  private extractErrorMessage(response: any): string {
-    if (!response) {
-      return 'Erreur inconnue';
-    }
-
-    // Priorité 1 : Message principal de la réponse
-    if (response.message) {
-      return response.message;
-    }
-
-    // Priorité 2 : Tableau d'erreurs
-    if (response.errors && Array.isArray(response.errors) && response.errors.length > 0) {
-      return response.errors.join(', ');
-    }
-
-    // Priorité 3 : Détails dans data
-    if (response.data && typeof response.data === 'string') {
-      return response.data;
-    }
-
-    // Priorité 4 : Status text
-    if (response.statusText) {
-      return response.statusText;
-    }
-
-    return 'Erreur lors de la création du contrat';
-  }
-
-  /**
-   * Extrait les messages d'erreur de l'objet error HTTP
-   */
-  private extractApiError(error: any): string {
-    console.log('📋 Structure de l\'erreur:', error);
-
-    // Cas spécifique : Informations de livraison manquantes
-    if (error.error && error.error.errors &&
-      error.error.errors.includes('DELIVERY_INFO_MISSING')) {
-      return 'Les informations de livraison sont manquantes. Le contrat doit d\'abord être activé avec les informations de livraison complètes.';
-    }
-
-    // Si c'est une erreur HTTP avec une réponse
-    if (error.error) {
-      // Cas 1 : Message principal
-      if (error.error.message) {
-        return error.error.message;
-      }
-
-      // Cas 2 : Tableau d'erreurs
-      if (error.error.errors && Array.isArray(error.error.errors)) {
-        return error.error.errors.join(', ');
-      }
-
-      // Cas 3 : Erreurs de validation
-      if (error.error.errors && typeof error.error.errors === 'object') {
-        const messages = Object.entries(error.error.errors)
-          .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-          .join('; ');
-        return messages;
-      }
-
-      // Cas 4 : Error simple (string)
-      if (typeof error.error === 'string') {
-        return error.error;
-      }
-    }
-
-    // Erreurs HTTP standard
-    if (error.status === 400) {
-      return 'Données invalides. Veuillez vérifier les informations saisies.';
-    }
-
-    if (error.status === 401) {
-      return 'Session expirée. Veuillez vous reconnecter.';
-    }
-
-    if (error.status === 403) {
-      return 'Vous n\'avez pas les autorisations nécessaires.';
-    }
-
-    if (error.status >= 500) {
-      return 'Erreur serveur. Veuillez réessayer plus tard.';
-    }
-
-    return error.message || 'Erreur lors de l\'opération';
-  }
-
   // ============================================================================
-  // SECTION 12: GESTION DES ACTIONS
+  // SECTION 34: GÉNÉRATION DE DOCUMENTS
   // ============================================================================
-
-  /**
-   * Bascule le menu d'actions
-   */
-  toggleActionsMenu(contract: ContractDto, event: MouseEvent): void {
-    event.stopPropagation();
-    if (this.openedActionsMenu === contract.id) {
-      this.openedActionsMenu = null;
-    } else {
-      this.openedActionsMenu = contract.id;
-    }
-  }
-
-  /**
-   * Ferme le menu d'actions
-   */
-  closeActionsMenu(event: MouseEvent): void {
-    if (!(event.target as HTMLElement).closest('.dropdown')) {
-      this.openedActionsMenu = null;
-    }
-  }
 
   /**
    * Génère le PDF du contrat
@@ -2860,19 +2238,18 @@ export class ContratsList implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: ApiResponseData<any>) => {
-          this.notificationService.success('PDF généré avec succès', 'Succès');
-          // Téléchargement automatique
+          this.notificationService.success('PDF généré', 'Succès');
           this.downloadPdf(contract.id);
         },
         error: (error) => {
           console.error('Erreur génération PDF:', error);
-          this.notificationService.error('Erreur lors de la génération du PDF', error.message || '');
+          this.notificationService.error('Erreur PDF', error.message || '');
         }
       });
   }
 
   /**
-   * Télécharge le PDF du contrat
+   * Télécharge le PDF
    */
   downloadPdf(contractId: string): void {
     this.contractService.downloadContractPdf(contractId)
@@ -2882,7 +2259,7 @@ export class ContratsList implements OnInit, OnDestroy {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `CONTRAT-LOCATION.pdf`;
+          a.download = `CONTRAT-${new Date().getTime()}.pdf`;
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);
@@ -2890,21 +2267,20 @@ export class ContratsList implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Erreur téléchargement PDF:', error);
-          this.notificationService.error('Erreur lors du téléchargement du PDF', error.message || '');
+          this.notificationService.error('Erreur téléchargement', error.message || '');
         }
       });
   }
 
   // ============================================================================
-  // SECTION 13: HELPERS D'AFFICHAGE
+  // SECTION 35: HELPER METHODS - AFFICHAGE
   // ============================================================================
 
   /**
-   * Obtient le label du statut
+   * Obtient le libellé du statut
    */
   getStatusLabel(status: ContractStatus): string {
-    const option = this.statusOptions.find(opt => opt.value === status);
-    return option ? option.label : 'Inconnu';
+    return this.statusOptions.find(opt => opt.value === status)?.label || 'Inconnu';
   }
 
   /**
@@ -2919,8 +2295,7 @@ export class ContratsList implements OnInit, OnDestroy {
    * Obtient l'icône du statut
    */
   getStatusIcon(status: ContractStatus): string {
-    const option = this.statusOptions.find(opt => opt.value === status);
-    return option ? option.icon : 'bx bx-question-mark';
+    return this.statusOptions.find(opt => opt.value === status)?.icon || 'bx bx-question-mark';
   }
 
   /**
@@ -2932,432 +2307,313 @@ export class ContratsList implements OnInit, OnDestroy {
   }
 
   /**
-   * Formate une devise
+   * Formate un montant
    */
   formatCurrency(amount: number | undefined): string {
     if (amount === undefined || amount === null) return '0 FCFA';
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'XOF',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      minimumFractionDigits: 0
     }).format(amount);
   }
 
   /**
-   * Calcule les jours restants
-   */
-  getDaysRemaining(endDate: Date | string): number {
-    if (!endDate) return 0;
-    const end = new Date(endDate);
-    const today = new Date();
-    const diff = end.getTime() - today.getTime();
-    return Math.ceil(diff / (1000 * 3600 * 24));
-  }
-
-  /**
-   * Formate la fréquence de paiement
+   * Obtient le libellé de la fréquence de paiement
    */
   getPaymentFrequencyLabel(frequency: PaymentFrequency): string {
-    const option = this.frequencyOptions.find(opt => opt.value === frequency);
-    return option ? option.label : 'Inconnu';
+    return this.frequencyOptions.find(opt => opt.value === frequency)?.label || 'Inconnu';
   }
 
   /**
-   * Formate la méthode de paiement
+   * Obtient le libellé de la méthode de paiement
    */
   getPaymentMethodLabel(method: PaymentMethod): string {
-    const option = this.paymentMethodOptions.find(opt => opt.value === method);
-    return option ? option.label : 'Inconnu';
+    return this.paymentMethodOptions.find(opt => opt.value === method)?.label || 'Inconnu';
+  }
+
+  /**
+   * Obtient le libellé de la sévérité
+   */
+  getDamageSeverityLabel(severityValue: number): string {
+    const severities: Record<number, string> = {
+      1: 'Mineur', 2: 'Modéré', 3: 'Majeur', 4: 'Critique'
+    };
+    return severities[severityValue] || 'Inconnu';
+  }
+
+  /**
+   * Obtient le libellé du niveau de carburant
+   */
+  getFuelLevelLabel(levelValue: number): string {
+    const levels: Record<number, string> = {
+      0: 'Vide', 25: '¼', 50: '½', 75: '¾', 100: 'Plein'
+    };
+    return levels[levelValue] || `${levelValue}%`;
+  }
+
+  /**
+   * Obtient le libellé de l'état du véhicule
+   */
+  getVehicleConditionLabel(condition: string): string {
+    const conditions: Record<string, string> = {
+      'EXCELLENT': 'Excellent', 'GOOD': 'Bon', 'FAIR': 'Correct',
+      'POOR': 'Mauvais', 'DAMAGED': 'Endommagé'
+    };
+    return conditions[condition] || condition;
+  }
+
+  /**
+   * Obtient le libellé de la partie responsable
+   */
+  getResponsiblePartyLabel(party: string): string {
+    const parties: Record<string, string> = {
+      'CUSTOMER': 'Client', 'COMPANY': 'Société',
+      'THIRD_PARTY': 'Tiers', 'UNKNOWN': 'Inconnu'
+    };
+    return parties[party] || party;
+  }
+
+  /**
+   * Convertit la sévérité string en nombre
+   */
+  getDamageSeverityValue(severityString: string): number {
+    const map: Record<string, number> = {
+      'MINOR': 1, 'MODERATE': 2, 'MAJOR': 3, 'CRITICAL': 4, 'TOTAL': 4
+    };
+    return map[severityString.toUpperCase()] || 1;
+  }
+
+  /**
+   * Obtient les initiales de l'utilisateur
+   */
+  getUserInitials(): string {
+    const parts = this.userName.split(' ');
+    return parts.length >= 2
+      ? (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase()
+      : this.userName.charAt(0).toUpperCase();
+  }
+
+  /**
+   * Obtient l'avatar par défaut
+   */
+  getDefaultAvatar(): string {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
   }
 
   // ============================================================================
-  // SECTION 14: GESTION DE L'INTERFACE UTILISATEUR
+  // SECTION 36: CALCULS STATISTIQUES
   // ============================================================================
 
   /**
-   * Bascule l'affichage du menu utilisateur
+   * Calcule le montant total dû
+   */
+  getTotalPaymentsDue(): number {
+    return this.contracts
+      .filter(c => c.status === ContractStatus.Active)
+      .reduce((sum, c) => sum + ((c.weeksRemaining || 0) * (c.weeklyAmount || 0)), 0);
+  }
+
+  /**
+   * Calcule le taux de recouvrement
+   */
+  get recoveryRate(): number {
+    const totalValue = this.contracts
+      .filter(c => c.status === ContractStatus.Active || c.status === ContractStatus.Completed)
+      .reduce((sum, c) => sum + c.totalAmount, 0);
+    const paid = totalValue - (this.dashboardStats.totalOutstanding || 0);
+    return totalValue ? (paid / totalValue) * 100 : 0;
+  }
+
+  /**
+   * Calcule la valeur totale des contrats actifs
+   */
+  get totalActiveContractsValue(): number {
+    return this.contracts
+      .filter(c => c.status === ContractStatus.Active)
+      .reduce((sum, c) => sum + c.totalAmount, 0);
+  }
+
+  /**
+   * Calcule le total des semaines restantes
+   */
+  get totalWeeksRemaining(): number {
+    return this.contracts
+      .filter(c => c.status === ContractStatus.Active)
+      .reduce((sum, c) => sum + (c.weeksRemaining || 0), 0);
+  }
+
+  /**
+   * Obtient les contrats avec paiements en retard
+   */
+  get contractsWithOverduePayments(): ContractDto[] {
+    return this.contracts.filter(c => c.status === ContractStatus.Active && this.isPaymentOverdue(c));
+  }
+
+  /**
+   * Vérifie si un paiement est en retard
+   */
+  isPaymentOverdue(contract: ContractDto): boolean {
+    if (!contract || contract.status !== ContractStatus.Active) return false;
+    const nextPayment = this.getNextPaymentDate(contract);
+    return nextPayment ? nextPayment < new Date() : false;
+  }
+
+  /**
+   * Obtient la date du prochain paiement
+   */
+  getNextPaymentDate(contract: ContractDto): Date | null {
+    if (!contract || contract.status !== ContractStatus.Active) return null;
+    const today = new Date();
+    const startDate = new Date(contract.startDate);
+    const weeksPassed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+    const nextPayment = new Date(startDate);
+    nextPayment.setDate(nextPayment.getDate() + ((weeksPassed + 1) * 7));
+    return nextPayment;
+  }
+
+  /**
+   * Obtient le nombre de jours de retard
+   */
+  getDaysOverdue(contract: ContractDto): number {
+    if (!this.isPaymentOverdue(contract)) return 0;
+    const nextPayment = this.getNextPaymentDate(contract);
+    if (!nextPayment) return 0;
+    return Math.ceil((new Date().getTime() - nextPayment.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  /**
+   * Calcule le pourcentage de paiements effectués
+   */
+  getPaymentCompletionPercentage(): number {
+    if (!this.financialReport) return 0;
+    const total = this.financialReport.paymentsMade + this.financialReport.paymentsMissed;
+    return total ? Math.round((this.financialReport.paymentsMade / total) * 100) : 0;
+  }
+
+  /**
+   * Calcule le pourcentage de paiements manqués
+   */
+  getMissedPaymentPercentage(): number {
+    if (!this.financialReport) return 0;
+    const total = this.financialReport.paymentsMade + this.financialReport.paymentsMissed;
+    return total ? Math.round((this.financialReport.paymentsMissed / total) * 100) : 0;
+  }
+
+  /**
+   * Calcule le pourcentage d'impayés
+   */
+  getOutstandingPercentage(): number {
+    if (!this.financialReport || this.financialReport.totalContractValue === 0) return 0;
+    return Math.round((this.financialReport.totalOutstanding / this.financialReport.totalContractValue) * 100);
+  }
+
+  // ============================================================================
+  // SECTION 37: GESTION DE L'INTERFACE UTILISATEUR
+  // ============================================================================
+
+  /**
+   * Bascule le menu utilisateur
    */
   toggleUserMenu(): void {
     this.showUserMenu = !this.showUserMenu;
   }
 
   /**
-   * Écouteur d'événement pour fermer le menu utilisateur
+   * Bascule la sidebar
    */
-  @HostListener('document:click', ['$event'])
-  closeUserMenu(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.dropdown-toggle') && !target.closest('.dropdown-menu')) {
-      this.showUserMenu = false;
+  toggleSidebar(): void {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    const sidebar = document.getElementById('sidebar');
+    const layoutPage = document.querySelector('.layout-page');
+
+    if (sidebar && layoutPage) {
+      sidebar.classList.toggle('collapsed', this.isSidebarCollapsed);
+      (layoutPage as HTMLElement).style.marginLeft =
+        this.isSidebarCollapsed || this.isMobileView ? '0' : '280px';
     }
   }
 
   /**
-   * Écouteur d'événement pour fermer le menu d'actions
+   * Bascule le menu (dropdown)
    */
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    this.closeActionsMenu(event);
+  toggleMenu(event: MouseEvent): void {
+    const element = event.currentTarget as HTMLElement;
+    element.parentElement?.classList.toggle('open');
   }
 
-  // ============================================================================
-  // SECTION 15: GESTION DE LA DÉCONNEXION
-  // ============================================================================
-
   /**
-   * Gère le processus de déconnexion
+   * Gère la déconnexion
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
-
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          console.log('✅ Déconnexion API réussie');
-          this.router.navigate(['/auth/login']);
-        },
-        error: (error) => {
-          console.warn('⚠️ Erreur API déconnexion (ignorée):', error);
-          this.router.navigate(['/auth/login']);
-        }
+        next: () => this.router.navigate(['/auth/login']),
+        error: () => this.router.navigate(['/auth/login'])
       });
   }
 
   // ============================================================================
-  // SECTION 16: GETTERS POUR LES FORMULAIRES
+  // SECTION 39: GESTION DES ERREURS API
   // ============================================================================
 
+  /**
+   * Extrait le message d'erreur d'une réponse API
+   */
+  private extractErrorMessage(response: any): string {
+    if (!response) return 'Erreur inconnue';
+    if (response.message) return response.message;
+    if (response.errors?.length) return response.errors.join(', ');
+    if (response.data && typeof response.data === 'string') return response.data;
+    if (response.statusText) return response.statusText;
+    return 'Erreur lors de l\'opération';
+  }
+
+  /**
+   * Extrait l'erreur d'une réponse HTTP
+   */
+  private extractApiError(error: any): string {
+    if (error.error?.errors?.includes('DELIVERY_INFO_MISSING')) {
+      return 'Informations de livraison manquantes. Activez d\'abord le contrat.';
+    }
+
+    if (error.error) {
+      if (error.error.message) return error.error.message;
+      if (Array.isArray(error.error.errors)) return error.error.errors.join(', ');
+      if (typeof error.error.errors === 'object') {
+        return Object.entries(error.error.errors)
+          .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+          .join('; ');
+      }
+      if (typeof error.error === 'string') return error.error;
+    }
+
+    if (error.status === 400) return 'Données invalides';
+    if (error.status === 401) return 'Session expirée';
+    if (error.status === 403) return 'Autorisation insuffisante';
+    if (error.status >= 500) return 'Erreur serveur';
+
+    return error.message || 'Erreur lors de l\'opération';
+  }
+
+  // ============================================================================
+  // SECTION 40: GETTERS POUR LES FORMULAIRES (CONTROLS)
+  // ============================================================================
+
+  get cf() { return this.createForm.controls; }
   get pf() { return this.paymentForm.controls; }
   get rf() { return this.renewForm.controls; }
   get tf() { return this.terminateForm.controls; }
   get sf() { return this.signatureForm.controls; }
-  get cf() { return this.createForm.controls; }
-
-  /**
- * Calcule le total des paiements dus pour tous les contrats
- * @returns Le montant total des paiements en attente
- */
-  getTotalPaymentsDue(): number {
-    if (!this.contracts || this.contracts.length === 0) {
-      return 0;
-    }
-
-    // Somme des weeklyAmount * weeksRemaining de chaque contrat actif
-    const totalFromContracts = this.contracts
-      .filter(c => c.status === ContractStatus.Active)
-      .reduce((sum, contract) => {
-        const weeksRemaining = contract.weeksRemaining || 0;
-        const weeklyAmount = contract.weeklyAmount || 0;
-        const remaining = weeksRemaining * weeklyAmount;
-        return sum + remaining;
-      }, 0);
-
-    return totalFromContracts;
-  }
-
-  /**
-   * Calcule le total des paiements en retard (overdue)
-   * @returns Le montant total des paiements en retard
-   */
-  getTotalOverduePayments(): number {
-    if (!this.contracts || this.contracts.length === 0) {
-      return 0;
-    }
-
-    // Cette valeur sera calculée depuis le backend via getOverduePayments()
-    return this.dashboardStats.totalOutstanding;
-  }
-
-  /**
-   * Calcule les statistiques de paiement pour le tableau de bord
-   */
-  calculatePaymentStats(): void {
-    if (!this.contracts || this.contracts.length === 0) {
-      this.dashboardStats.totalOutstanding = 0;
-      return;
-    }
-
-    // Calculer le total des soldes impayés
-    this.dashboardStats.totalOutstanding = this.getTotalPaymentsDue();
-
-    // Calculer le nombre de contrats avec paiements en retard
-    const today = new Date();
-    this.dashboardStats.paymentsOverdue = this.contracts.filter(contract => {
-      if (contract.status !== ContractStatus.Active) {
-        return false;
-      }
-
-      // Un contrat est en retard si la date de fin est passée et qu'il reste des paiements
-      const endDate = new Date(contract.endDate);
-      return endDate < today && (contract.weeksRemaining || 0) > 0;
-    }).length;
-  }
-
-  /**
-   * Obtient le montant des paiements dus pour un contrat spécifique
-   * @param contractId ID du contrat
-   * @returns Montant dû pour le contrat
-   */
-  getContractPaymentsDue(contractId: string): number {
-    const contract = this.contracts.find(c => c.id === contractId);
-    if (!contract) {
-      return 0;
-    }
-
-    const weeksRemaining = contract.weeksRemaining || 0;
-    const weeklyAmount = contract.weeklyAmount || 0;
-
-    return weeksRemaining * weeklyAmount;
-  }
-
-  /**
-   * Obtient les détails des paiements dus avec ventilation par contrat
-   */
-  getDetailedPaymentsDue(): Array<{
-    contractId: string;
-    contractReference: string;
-    amountDue: number;
-    daysOverdue: number;
-  }> {
-    if (!this.contracts || this.contracts.length === 0) {
-      return [];
-    }
-
-    const today = new Date();
-    const detailedPayments: Array<{
-      contractId: string;
-      contractReference: string;
-      amountDue: number;
-      daysOverdue: number;
-    }> = [];
-
-    this.contracts
-      .filter(c => c.status === ContractStatus.Active)
-      .forEach(contract => {
-        const weeksRemaining = contract.weeksRemaining || 0;
-        const weeklyAmount = contract.weeklyAmount || 0;
-        const amountDue = weeksRemaining * weeklyAmount;
-
-        if (amountDue > 0) {
-          let daysOverdue = 0;
-
-          // Calculer les jours de retard basé sur la date de fin
-          const endDate = new Date(contract.endDate);
-          if (endDate < today) {
-            const diffTime = Math.abs(today.getTime() - endDate.getTime());
-            daysOverdue = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          }
-
-          detailedPayments.push({
-            contractId: contract.id,
-            contractReference: contract.contractNumber,
-            amountDue: amountDue,
-            daysOverdue: daysOverdue
-          });
-        }
-      });
-
-    // Trier par montant dû décroissant
-    return detailedPayments.sort((a, b) => b.amountDue - a.amountDue);
-  }
-
-  /**
-   * Obtient le total des paiements dus pour les contrats expirant bientôt
-   * @param daysThreshold Nombre de jours pour définir "bientôt" (défaut: 7)
-   * @returns Montant total des paiements dus pour les contrats expirant bientôt
-   */
-  getTotalPaymentsDueForExpiringContracts(daysThreshold: number = 7): number {
-    if (!this.contracts || this.contracts.length === 0) {
-      return 0;
-    }
-
-    const today = new Date();
-    let total = 0;
-
-    this.contracts
-      .filter(c => c.status === ContractStatus.Active)
-      .forEach(contract => {
-        const endDate = new Date(contract.endDate);
-        const diffTime = endDate.getTime() - today.getTime();
-        const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (daysRemaining > 0 && daysRemaining <= daysThreshold) {
-          const weeksRemaining = contract.weeksRemaining || 0;
-          const weeklyAmount = contract.weeklyAmount || 0;
-          total += weeksRemaining * weeklyAmount;
-        }
-      });
-
-    return total;
-  }
-
-  /**
-   * Obtient le pourcentage de paiements complétés
-   * @param contract Le contrat
-   * @returns Pourcentage de paiements effectués (0-100)
-   */
-  /**
- * Calcule le pourcentage de paiements complétés
- */
-  getPaymentCompletionPercentage(): number {
-    if (!this.financialReport) return 0;
-
-    const total = this.financialReport.paymentsMade + this.financialReport.paymentsMissed;
-    if (total === 0) return 0;
-
-    return Math.round((this.financialReport.paymentsMade / total) * 100);
-  }
-
-  /**
-   * Obtient le prochain paiement dû pour un contrat
-   * @param contract Le contrat
-   * @returns Date du prochain paiement
-   */
-  getNextPaymentDate(contract: ContractDto): Date | null {
-    if (!contract || contract.status !== ContractStatus.Active) {
-      return null;
-    }
-
-    const today = new Date();
-    const startDate = new Date(contract.startDate);
-
-    // Calculer combien de semaines se sont écoulées
-    const diffTime = today.getTime() - startDate.getTime();
-    const weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-
-    // Le prochain paiement est dans 1 semaine après la dernière semaine écoulée
-    const nextPayment = new Date(startDate);
-    nextPayment.setDate(nextPayment.getDate() + ((weeksPassed + 1) * 7));
-
-    return nextPayment;
-  }
-
-  /**
-   * Vérifie si un paiement est en retard
-   * @param contract Le contrat
-   * @returns true si le paiement est en retard
-   */
-  isPaymentOverdue(contract: ContractDto): boolean {
-    if (!contract || contract.status !== ContractStatus.Active) {
-      return false;
-    }
-
-    const nextPayment = this.getNextPaymentDate(contract);
-    if (!nextPayment) {
-      return false;
-    }
-
-    const today = new Date();
-    return nextPayment < today;
-  }
-
-  /**
-   * Obtient le nombre de jours de retard pour un contrat
-   * @param contract Le contrat
-   * @returns Nombre de jours de retard (0 si pas de retard)
-   */
-  getDaysOverdue(contract: ContractDto): number {
-    if (!this.isPaymentOverdue(contract)) {
-      return 0;
-    }
-
-    const nextPayment = this.getNextPaymentDate(contract);
-    if (!nextPayment) {
-      return 0;
-    }
-
-    const today = new Date();
-    const diffTime = today.getTime() - nextPayment.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  }
-
-  /**
-   * Met à jour les statistiques après chargement des données
-   */
-  private updateDashboardStatsFromContracts(): void {
-    if (!this.contracts || this.contracts.length === 0) {
-      return;
-    }
-
-    // Compter les contrats par statut
-    this.dashboardStats.totalContracts = this.contracts.length;
-    this.dashboardStats.activeContracts = this.contracts.filter(c => c.status === ContractStatus.Active).length;
-    this.dashboardStats.draftContracts = this.contracts.filter(c => c.status === ContractStatus.Draft).length;
-    this.dashboardStats.pendingContracts = this.contracts.filter(c => c.status === ContractStatus.Pending).length;
-    this.dashboardStats.completedContracts = this.contracts.filter(c => c.status === ContractStatus.Completed).length;
-    this.dashboardStats.terminatedContracts = this.contracts.filter(c => c.status === ContractStatus.Terminated).length;
-
-    // Calculer les statistiques de paiement
-    this.calculatePaymentStats();
-
-    // Calculer les contrats expirant bientôt
-    const today = new Date();
-    this.dashboardStats.contractsExpiring = this.contracts.filter(contract => {
-      if (contract.status !== ContractStatus.Active) {
-        return false;
-      }
-
-      const endDate = new Date(contract.endDate);
-      const diffTime = endDate.getTime() - today.getTime();
-      const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      return daysRemaining > 0 && daysRemaining <= 7;
-    }).length;
-  }
-
-  onReasonChange(event: Event) {
-    const selectElement = event.target as HTMLSelectElement;
-    this.rejectContractForm.patchValue({ reason: selectElement.value });
-  }
-
+  get acf() { return this.activateContractForm.controls; }
+  get vrf() { return this.vehicleReturnForm.controls; }
+  get drf() { return this.damageReportForm.controls; }
+  get ccf() { return this.cancelContractForm.controls; }
+  get rjf() { return this.rejectContractForm.controls; }
 
   // ============================================================================
-  // SECTION : PROPRIÉTÉS CALCULÉES POUR LES STATISTIQUES
+  // FIN DU COMPOSANT
   // ============================================================================
-
-  /**
-   * Calcule le taux de recouvrement (paiements reçus / montant total dû)
-   */
-  get recoveryRate(): number {
-    const totalContractsValue = this.contracts
-      .filter(c => c.status === ContractStatus.Active || c.status === ContractStatus.Completed)
-      .reduce((sum, contract) => sum + contract.totalAmount, 0);
-
-    const totalPaid = this.dashboardStats.totalOutstanding ?
-      totalContractsValue - this.dashboardStats.totalOutstanding : 0;
-
-    if (totalContractsValue === 0) return 0;
-    return (totalPaid / totalContractsValue) * 100;
-  }
-
-  /**
-   * Calcule la valeur totale du portefeuille de contrats actifs
-   */
-  get totalActiveContractsValue(): number {
-    return this.contracts
-      .filter(c => c.status === ContractStatus.Active)
-      .reduce((sum, contract) => sum + contract.totalAmount, 0);
-  }
-
-  /**
-   * Obtient le nombre total de semaines restantes pour tous les contrats actifs
-   */
-  get totalWeeksRemaining(): number {
-    return this.contracts
-      .filter(c => c.status === ContractStatus.Active)
-      .reduce((sum, contract) => sum + (contract.weeksRemaining || 0), 0);
-  }
-
-  /**
-   * Obtient le nombre de contrats avec des paiements en retard
-   */
-  get contractsWithOverduePayments(): ContractDto[] {
-    return this.contracts.filter(c =>
-      c.status === ContractStatus.Active && this.isPaymentOverdue(c)
-    );
-  }
-
 }

@@ -270,7 +270,7 @@
             <div class="d-flex gap-2 flex-wrap">
               <button
                 *ngFor="let cat of [
-                  { value: TransactionCategory.Rental, icon: 'bx-car', label: 'Location' },
+                  { value: TransactionCategory.RentalIncome, icon: 'bx-car', label: 'Location' },
                   { value: TransactionCategory.Fuel, icon: 'bx-gas-pump', label: 'Carburant' },
                   { value: TransactionCategory.Maintenance, icon: 'bx-wrench', label: 'Maintenance' },
                   { value: TransactionCategory.Insurance, icon: 'bx-shield-alt-2', label: 'Assurance' }
@@ -538,12 +538,12 @@
                       </button>
 
                       <!-- Bouton : Supprimer -->
-                      <button
+                      <!-- <button
                         class="btn btn-sm btn-outline-danger"
                         (click)="confirmDelete(transaction)"
                         title="Supprimer">
                         <i class='bx bx-trash'></i>
-                      </button>
+                      </button> -->
                     </div>
                   </td>
                 </tr>
@@ -648,7 +648,7 @@
                 Catégorie <span class="text-danger">*</span>
               </label>
               <select class="form-select" formControlName="category">
-                <option [value]="TransactionCategory.Rental">Location</option>
+                <option [value]="TransactionCategory.RentalIncome">Location</option>
                 <option [value]="TransactionCategory.Deposit">Caution</option>
                 <option [value]="TransactionCategory.Service">Service</option>
                 <option [value]="TransactionCategory.Fuel">Carburant</option>

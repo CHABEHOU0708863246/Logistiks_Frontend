@@ -498,7 +498,7 @@ export class Financials {
    */
   getCategoryIcon(category: TransactionCategory): string {
     const icons: { [key: number]: string } = {
-      [TransactionCategory.Rental]: 'bx-car',
+      [TransactionCategory.RentalIncome]: 'bx-car',
       [TransactionCategory.Deposit]: 'bx-lock',
       [TransactionCategory.Service]: 'bx-wrench',
       [TransactionCategory.Fuel]: 'bx-gas-pump',

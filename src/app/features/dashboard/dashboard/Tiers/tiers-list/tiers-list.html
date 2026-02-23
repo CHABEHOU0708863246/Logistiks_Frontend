@@ -431,11 +431,11 @@
                       <td>
                         <div class="document-status-indicator">
                           <!-- Indicateur principal -->
-                          <div *ngIf="getDocumentsStatus(tier).missing" class="text-success">
+                          <!-- <div *ngIf="getDocumentsStatus(tier).missing" class="text-success">
                             <i class='bx bx-check-circle'></i> Complet
-                          </div>
+                          </div> -->
 
-                          <!-- <div *ngIf="!getDocumentsStatus(tier).valid" class="text-warning">
+                          <div *ngIf="!getDocumentsStatus(tier).valid" class="text-warning">
                             <div class="d-flex align-items-center gap-1">
                               <i class='bx bx-error-circle'></i>
                               <span>{{ getDocumentsStatus(tier).missing.length }} manquant(s)</span>
@@ -449,15 +449,15 @@
                                 </li>
                               </ul>
                             </div>
-                          </div> -->
+                          </div>
 
                           <!-- Indicateurs secondaires -->
-                          <div class="d-flex gap-1 mt-1">
+                          <div class="d-flex gap-5 mt-5">
                             <span *ngIf="hasExpiredDocuments(tier)" class="badge bg-danger badge-sm">
                               <i class='bx bx-time'></i> Expiré
                             </span>
                             <span *ngIf="canSignContract(tier)" class="badge bg-success badge-sm">
-                              <i class='bx bx-check'></i> Éligible
+                              <i class='bx bx-check'></i> Éligible à la signature d'un contrat
                             </span>
                           </div>
                         </div>
@@ -491,9 +491,9 @@
                         <div *ngIf="tier.status === TierStatus.PendingValidation || tier.status === TierStatus.Blocked"
                           class="mt-1">
                           <small class="document-status">
-                            <span *ngIf="getDocumentsStatus(tier).valid" class="text-success">
+                            <!-- <span *ngIf="getDocumentsStatus(tier).valid" class="text-success">
                               <i class='bx bx-check-circle'></i> Documents OK
-                            </span>
+                            </span> -->
                             <span *ngIf="!getDocumentsStatus(tier).valid && getDocumentsStatus(tier).missing.length > 0"
                               class="text-warning">
                               <i class='bx bx-error-circle'></i> {{ getDocumentsStatus(tier).missing.length }} doc.

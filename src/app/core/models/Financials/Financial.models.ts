@@ -5,7 +5,7 @@ export enum TransactionType {
 
 export enum TransactionCategory {
     // Revenus
-    Rental = 1,
+    RentalIncome = 1,
     Deposit = 2,
     Service = 3,
     // Dépenses

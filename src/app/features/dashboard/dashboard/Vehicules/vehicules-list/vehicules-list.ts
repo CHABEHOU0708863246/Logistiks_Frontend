@@ -52,6 +52,9 @@ export class VehiculesList implements OnInit, OnDestroy {
   /** Contrôle l'affichage du dialog de confirmation */
   showConfirmDialog = false;
 
+  activeMenuVehicleId: string | null = null;
+  menuPosition = { top: 0, left: 0 };
+
   showReasonModal = false;
   reasonForm!: FormGroup;
   reasonSubmitted = false;
@@ -1714,12 +1717,11 @@ export class VehiculesList implements OnInit, OnDestroy {
   /**
    * Écouteur d'événement pour fermer le menu utilisateur
    */
-  @HostListener('document:click', ['$event'])
-  closeUserMenu(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.dropdown-toggle') && !target.closest('.dropdown-menu')) {
-      this.showUserMenu = false;
-    }
+  // Fermer le menu si on scroll ou resize
+  @HostListener('window:scroll')
+  @HostListener('window:resize')
+  onWindowEvent(): void {
+    this.closeActionsMenu();
   }
 
   /**
@@ -3083,17 +3085,48 @@ export class VehiculesList implements OnInit, OnDestroy {
   /**
    * Bascule le menu d'actions d'un véhicule
    */
-  toggleActionsMenu(vehicle: VehicleDto, event: Event): void {
+
+  toggleActionsMenu(vehicle: any, event: MouseEvent): void {
     event.stopPropagation();
 
-    this.vehicles.forEach(v => {
-      if (v !== vehicle) {
-        v.showActionsMenu = false;
-      }
-    });
+    // Si le menu est déjà ouvert pour ce véhicule, on le ferme
+    if (this.activeMenuVehicleId === vehicle.id) {
+      this.closeActionsMenu();
+      return;
+    }
 
-    vehicle.showActionsMenu = !vehicle.showActionsMenu;
-    this.currentOpenDropdown = vehicle.showActionsMenu ? vehicle : null;
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+
+    const menuWidth = 220;
+    const menuHeight = 300; // hauteur estimée
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let left = rect.right + 8;
+    let top = rect.top;
+
+    // Si ça dépasse à droite, on affiche à gauche du bouton
+    if (left + menuWidth > viewportWidth) {
+      left = rect.left - menuWidth - 8;
+    }
+
+    // Si ça dépasse en bas, on remonte
+    if (top + menuHeight > viewportHeight) {
+      top = viewportHeight - menuHeight - 16;
+    }
+
+    this.menuPosition = { top, left };
+    this.activeMenuVehicleId = vehicle.id;
+  }
+
+
+  closeActionsMenu(): void {
+    this.activeMenuVehicleId = null;
+  }
+
+  getActiveVehicle(): any {
+    return this.vehicles.find(v => v.id === this.activeMenuVehicleId) ?? null;
   }
 
   /**
@@ -3701,56 +3734,56 @@ export class VehiculesList implements OnInit, OnDestroy {
   }
 
   // ============================================================================
-// SECTION : MÉTHODES DE FORMATAGE POUR LES STATISTIQUES
-// ============================================================================
+  // SECTION : MÉTHODES DE FORMATAGE POUR LES STATISTIQUES
+  // ============================================================================
 
-/**
- * Formate un montant en FCFA
- */
-formatAmount(amount: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'XOF',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount).replace('XOF', 'FCFA');
-}
-
-/**
- * Calcule le taux d'occupation du parc
- */
-get occupancyRate(): number {
-  if (this.stats.totalVehicles === 0) return 0;
-  return (this.stats.rentedVehicles / this.stats.totalVehicles) * 100;
-}
-
-/**
- * Calcule le taux de disponibilité
- */
-get availabilityRate(): number {
-  if (this.stats.totalVehicles === 0) return 0;
-  return (this.stats.availableVehicles / this.stats.totalVehicles) * 100;
-}
-
-/**
- * Obtient le statut de santé du parc
- */
-get fleetHealthStatus(): { text: string; class: string; icon: string } {
-  const healthScore =
-    (this.stats.availableVehicles * 100 +
-     this.stats.rentedVehicles * 80 +
-     this.stats.inMaintenanceVehicles * 30) / this.stats.totalVehicles;
-
-  if (healthScore >= 80) {
-    return { text: 'Excellent', class: 'text-success', icon: 'bx bx-smile' };
-  } else if (healthScore >= 60) {
-    return { text: 'Bon', class: 'text-info', icon: 'bx bx-neutral' };
-  } else if (healthScore >= 40) {
-    return { text: 'Moyen', class: 'text-warning', icon: 'bx bx-meh' };
-  } else {
-    return { text: 'Critique', class: 'text-danger', icon: 'bx bx-sad' };
+  /**
+   * Formate un montant en FCFA
+   */
+  formatAmount(amount: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XOF',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount).replace('XOF', 'FCFA');
   }
-}
+
+  /**
+   * Calcule le taux d'occupation du parc
+   */
+  get occupancyRate(): number {
+    if (this.stats.totalVehicles === 0) return 0;
+    return (this.stats.rentedVehicles / this.stats.totalVehicles) * 100;
+  }
+
+  /**
+   * Calcule le taux de disponibilité
+   */
+  get availabilityRate(): number {
+    if (this.stats.totalVehicles === 0) return 0;
+    return (this.stats.availableVehicles / this.stats.totalVehicles) * 100;
+  }
+
+  /**
+   * Obtient le statut de santé du parc
+   */
+  get fleetHealthStatus(): { text: string; class: string; icon: string } {
+    const healthScore =
+      (this.stats.availableVehicles * 100 +
+        this.stats.rentedVehicles * 80 +
+        this.stats.inMaintenanceVehicles * 30) / this.stats.totalVehicles;
+
+    if (healthScore >= 80) {
+      return { text: 'Excellent', class: 'text-success', icon: 'bx bx-smile' };
+    } else if (healthScore >= 60) {
+      return { text: 'Bon', class: 'text-info', icon: 'bx bx-neutral' };
+    } else if (healthScore >= 40) {
+      return { text: 'Moyen', class: 'text-warning', icon: 'bx bx-meh' };
+    } else {
+      return { text: 'Critique', class: 'text-danger', icon: 'bx bx-sad' };
+    }
+  }
 
   /**
    * Charge les réservations d'un véhicule spécifique

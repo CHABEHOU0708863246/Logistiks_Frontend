@@ -54,6 +54,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'dashboard/rentabilite',
+    loadChildren: () => import('./features/dashboard/dashboard/Rentability/rentability.routes').then(m => m.RENTABILITE_ROUTES),
+    data: {
+      title: 'Rentabilité',
+      breadcrumb: 'Rentabilité'
+    },
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     component: NotFound
   },
