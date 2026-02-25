@@ -2142,3 +2142,525 @@ tr:hover {
     flex: 1 1 calc(50% - 0.375rem);
   }
 }
+
+
+
+
+/* ============================================================================
+   MODAL DÉTAILS DU RÔLE — SCSS PREMIUM
+   Cohérent avec le design existant (gradients violet/bleu)
+   ============================================================================ */
+
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(15, 12, 41, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: overlayFadeIn 0.28s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Boîte de dialogue ───────────────────────────────────────────────────── */
+
+.modal-overlay .modal-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  max-height: calc(100vh - 3rem);
+  background: #ffffff;
+  border-radius: 2rem;
+  box-shadow:
+    0 32px 80px rgba(102, 126, 234, 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(102, 126, 234, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dialogSlideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Ligne décorative supérieure */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f5576c 100%);
+    z-index: 2;
+    border-radius: 2rem 2rem 0 0;
+  }
+}
+
+@keyframes dialogSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── En-tête du modal ────────────────────────────────────────────────────── */
+
+.modal-overlay .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.75rem 2rem 1.5rem;
+  background: linear-gradient(135deg,
+    rgba(102, 126, 234, 0.06) 0%,
+    rgba(118, 75, 162, 0.04) 100%);
+  border-bottom: 2px solid rgba(102, 126, 234, 0.08);
+  flex-shrink: 0;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+
+    i {
+      font-size: 1.75rem;
+      flex-shrink: 0;
+      /* Restore icon color — gradient clip ne fonctionne pas sur les icônes */
+      background: none;
+      -webkit-text-fill-color: #764ba2;
+      color: #764ba2;
+    }
+  }
+
+  .btn-close {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.08);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667eea;
+    flex-shrink: 0;
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+    i { font-size: 1.35rem; }
+
+    &:hover {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: #fff;
+      transform: rotate(90deg) scale(1.1);
+      box-shadow: 0 6px 18px rgba(245, 87, 108, 0.35);
+    }
+  }
+}
+
+/* ── Corps du modal ──────────────────────────────────────────────────────── */
+
+.modal-overlay .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0; /* padding géré dans .role-details */
+
+  /* Scrollbar custom */
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track {
+    background: rgba(102, 126, 234, 0.04);
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+    &:hover { background: linear-gradient(135deg, #5a6fd6, #6a3d96); }
+  }
+}
+
+/* ── Contenu : role-details ─────────────────────────────────────────────── */
+
+.role-details {
+  padding: 0;
+}
+
+/* ·· En-tête du rôle ·· */
+.role-details-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem 2rem 1.75rem;
+  background: linear-gradient(135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.03) 100%);
+  border-bottom: 2px solid rgba(102, 126, 234, 0.07);
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.role-details-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.1rem;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.3s ease;
+
+  &:hover { transform: scale(1.06) rotate(4deg); }
+
+  i { color: white; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.25)); }
+
+  /* Réutilise les classes de couleur existantes */
+  &.role-super-admin {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 12px 32px rgba(245, 87, 108, 0.38);
+  }
+  &.role-manager {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.38);
+  }
+  &.role-finance {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 12px 32px rgba(0, 242, 254, 0.38);
+  }
+  &.role-operations {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    box-shadow: 0 12px 32px rgba(67, 233, 123, 0.38);
+  }
+  &.role-driver {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    box-shadow: 0 12px 32px rgba(250, 112, 154, 0.38);
+  }
+  &.role-readonly {
+    background: linear-gradient(135deg, #a8a8a8 0%, #6b6b6b 100%);
+    box-shadow: 0 12px 32px rgba(107, 107, 107, 0.3);
+  }
+  &.role-default {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.38);
+  }
+}
+
+.role-details-info {
+  flex: 1;
+  min-width: 0;
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.35rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.role-code-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  color: #764ba2;
+  background: rgba(118, 75, 162, 0.1);
+  border: 1px solid rgba(118, 75, 162, 0.2);
+  padding: 0.28rem 0.85rem;
+  border-radius: 0.65rem;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.3px;
+}
+
+.role-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .badge {
+    font-size: 0.76rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+}
+
+/* ·· Sections de détail ·· */
+.details-section {
+  padding: 1.6rem 2rem;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.04);
+  animation: sectionFade 0.4s ease-out both;
+
+  &:last-child { border-bottom: none; }
+
+  h4 {
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #9ca3af;
+    margin: 0 0 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+
+    /* Ligne décorative avant le titre */
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 1em;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.7;
+    margin: 0;
+  }
+}
+
+@keyframes sectionFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ·· Grille permissions ·· */
+.permissions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.permission-badge-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.9rem;
+  background: linear-gradient(135deg,
+    rgba(102, 126, 234, 0.08) 0%,
+    rgba(118, 75, 162, 0.08) 100%);
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.18);
+  border-radius: 50px;
+  font-size: 0.815rem;
+  font-weight: 600;
+  transition: all 0.22s ease;
+  cursor: default;
+
+  i {
+    font-size: 0.9rem;
+    color: #764ba2;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(102, 126, 234, 0.32);
+
+    i { color: #fff; }
+  }
+}
+
+.empty-message {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1.1rem 1.3rem;
+  background: rgba(107, 114, 128, 0.06);
+  border-radius: 1rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px dashed rgba(107, 114, 128, 0.2);
+
+  i { font-size: 1.1rem; }
+}
+
+/* ·· Grille métadonnées ·· */
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.85rem;
+}
+
+.metadata-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg,
+    rgba(102, 126, 234, 0.04) 0%,
+    rgba(118, 75, 162, 0.03) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  border-radius: 1rem;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.1);
+  }
+}
+
+.metadata-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+
+  i { font-size: 0.9rem; color: #764ba2; }
+}
+
+.metadata-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* ── Pied du modal ───────────────────────────────────────────────────────── */
+
+.modal-overlay .modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.4rem 2rem;
+  background: linear-gradient(135deg,
+    rgba(102, 126, 234, 0.04) 0%,
+    rgba(118, 75, 162, 0.03) 100%);
+  border-top: 2px solid rgba(102, 126, 234, 0.07);
+  flex-shrink: 0;
+
+  .btn {
+    padding: 0.7rem 1.6rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+
+    i { font-size: 1rem; }
+
+    &:hover { transform: translateY(-2px); }
+    &:active { transform: translateY(0); }
+  }
+
+  .btn-outline-secondary {
+    background: white;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+
+    &:hover {
+      border-color: #f5576c;
+      color: #f5576c;
+      background: rgba(245, 87, 108, 0.05);
+      box-shadow: 0 4px 14px rgba(245, 87, 108, 0.15);
+    }
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.32);
+
+    &:hover {
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.45);
+    }
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal-overlay .modal-dialog {
+    max-width: 100%;
+    border-radius: 2rem 2rem 0 0;
+    max-height: 92vh;
+
+    &::before { border-radius: 2rem 2rem 0 0; }
+  }
+
+  .modal-overlay .modal-header {
+    padding: 1.4rem 1.5rem 1.2rem;
+
+    h3 { font-size: 1.25rem; }
+  }
+
+  .role-details-header { padding: 1.5rem; }
+
+  .role-details-info h2 {
+    font-size: 1.35rem;
+    white-space: normal;
+  }
+
+  .details-section { padding: 1.3rem 1.5rem; }
+
+  .metadata-grid { grid-template-columns: 1fr 1fr; }
+
+  .modal-overlay .modal-footer {
+    padding: 1.1rem 1.5rem;
+    flex-direction: row-reverse;
+
+    .btn {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .metadata-grid { grid-template-columns: 1fr; }
+}
