@@ -185,7 +185,6 @@ export class UsersList implements OnInit, OnDestroy {
           this.applyFilters();
           this.calculateStatistics(); // Calculer les stats depuis les données
           this.isLoading = false;
-          console.log('✅ Utilisateurs chargés:', users.length);
         },
         error: (error) => {
           console.error('❌ Erreur chargement utilisateurs:', error);
@@ -207,7 +206,6 @@ export class UsersList implements OnInit, OnDestroy {
       .subscribe({
         next: (stats) => {
           this.statistics = stats;
-          console.log('✅ Statistiques chargées:', stats);
         },
         error: (error) => {
           console.error('❌ Erreur chargement statistiques:', error);
@@ -224,11 +222,6 @@ export class UsersList implements OnInit, OnDestroy {
       .subscribe({
         next: (roles) => {
           this.availableRoles = roles.filter(role => role.isVisible);
-          console.log('✅ Rôles chargés:', roles.length);
-          console.log('📋 Rôles disponibles pour filtre:', this.availableRoles.map(r => ({
-            code: r.code,
-            name: r.roleName
-          })));
         },
         error: (error) => {
           console.error('❌ Erreur chargement rôles:', error);
@@ -246,17 +239,9 @@ export class UsersList implements OnInit, OnDestroy {
   applyFilters(): void {
     let filtered = [...this.allUsers];
 
-    console.log('🔍 Application des filtres:', {
-      searchTerm: this.searchTerm,
-      selectedRole: this.selectedRole,
-      selectedStatus: this.selectedStatus,
-      totalUsers: filtered.length
-    });
-
     // Filtre par recherche
     if (this.searchTerm) {
       filtered = this.usersService.searchUsersLocal(filtered, this.searchTerm);
-      console.log('Après recherche:', filtered.length);
     }
 
     // Filtre par rôle
@@ -271,7 +256,6 @@ export class UsersList implements OnInit, OnDestroy {
         });
         return hasRole;
       });
-      console.log('Après filtre rôle:', filtered.length, 'Rôle recherché:', this.selectedRole);
     }
 
     // Filtre par statut
@@ -281,14 +265,11 @@ export class UsersList implements OnInit, OnDestroy {
         if (this.selectedStatus === 'inactive') return !user.isActive;
         return true;
       });
-      console.log('Après filtre statut:', filtered.length);
     }
 
     this.filteredUsers = filtered;
     this.currentPage = 1;
     this.updatePagination();
-
-    console.log('✅ Filtrage terminé:', this.filteredUsers.length, 'résultats');
   }
 
   /**
@@ -512,12 +493,10 @@ export class UsersList implements OnInit, OnDestroy {
   // ============================================================================
 
   bulkActivate(): void {
-    console.log('Activation groupée:', this.selectedUserIds);
     this.notificationService.info('Fonctionnalité en développement', 'Info');
   }
 
   bulkDeactivate(): void {
-    console.log('Désactivation groupée:', this.selectedUserIds);
     this.notificationService.info('Fonctionnalité en développement', 'Info');
   }
 
@@ -601,8 +580,6 @@ export class UsersList implements OnInit, OnDestroy {
       }).length,
       usersByRole: this.calculateUsersByRole()
     };
-
-    console.log('📊 Statistiques calculées:', this.statistics);
   }
 
   /**
@@ -788,13 +765,11 @@ export class UsersList implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.router.navigate(['/auth/login']);
         },
         error: (error) => {

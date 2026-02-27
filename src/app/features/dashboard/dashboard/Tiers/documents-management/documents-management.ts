@@ -1032,7 +1032,6 @@ export class DocumentsManagement implements OnInit, OnDestroy {
    * Déconnecte l'utilisateur
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
 
     this.authService

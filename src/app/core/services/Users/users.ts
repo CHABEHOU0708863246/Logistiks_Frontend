@@ -53,20 +53,25 @@ export class Users {
    * Récupérer l'utilisateur actuellement connecté
    */
   getCurrentUser(): Observable<{
-    user: User;
-    profile?: UserProfile;
-    preferences?: UserPreferences;
-  }> {
-    return this.http.get<ApiResponseData<{
-      user: User;
-      profile?: UserProfile;
-      preferences?: UserPreferences;
-    }>>(`${this.baseUrl}/me`)
-      .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
-      );
-  }
+  user: User;
+  profile?: UserProfile;
+  preferences?: UserPreferences;
+}> {
+  return this.http.get<any>(`${this.baseUrl}/me`)
+    .pipe(
+      map(response => {
+        console.log('API /me raw response:', response); // à supprimer après vérification
+        // Cas 1 : { data: { user, profile } }
+        if (response?.data?.user) return response.data;
+        // Cas 2 : { user, profile } directement
+        if (response?.user) return response;
+        // Cas 3 : l'API retourne directement l'objet User
+        if (response?.email || response?.id) return { user: response };
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+}
 
   /**
    * Mettre à jour le profil de l'utilisateur connecté
@@ -362,7 +367,11 @@ export class Users {
     // Ajouter la photo si fournie
     if (updateRequest.photoFile) {
       formData.append('photoFile', updateRequest.photoFile);
+    } else {
+      // Fallback : envoyer l'URL existante ou une chaîne vide
+      formData.append('photoUrl', updateRequest.photoUrl || '');
     }
+
 
     // Ajouter les informations personnelles
     if (updateRequest.gender) formData.append('gender', updateRequest.gender);

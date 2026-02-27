@@ -833,11 +833,6 @@ getActiveContract(): ContractDto | null {
 onWindowEvent(): void {
   this.closeActionsMenu();
 }
-
-  // ============================================================================
-  // SECTION 22: GESTION DES CLIENTS ET VÉHICULES
-  // ============================================================================
-
   /**
    * Charge les tiers actifs pour le sélecteur
    */

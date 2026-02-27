@@ -1061,7 +1061,6 @@ export class TiersList implements OnInit, OnDestroy {
             'Export réussi',
             'Les données ont été exportées avec succès'
           );
-          console.log('Export réussi');
         },
         error: (error: any) => {
           const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';

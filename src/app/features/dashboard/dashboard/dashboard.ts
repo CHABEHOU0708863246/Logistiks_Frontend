@@ -283,7 +283,6 @@ export class Dashboard implements OnInit, OnDestroy {
         recentData: this.loadRecentData()
       }).subscribe({
         next: (results) => {
-          console.log('✅ Données du dashboard chargées:', results);
           this.isLoading = false;
           this.updateCharts();
         },
@@ -404,8 +403,6 @@ export class Dashboard implements OnInit, OnDestroy {
           this.dashboardStats.vehiclesNeedingAttention =
             this.dashboardStats.vehiclesInMaintenance +
             (stats.vehiclesWithExpiredInsurance || 0);
-
-          console.log('📊 Statistiques véhicules:', stats);
         }
         return { success: true };
       }),
@@ -562,7 +559,6 @@ export class Dashboard implements OnInit, OnDestroy {
             vehicleTypes[VehicleType.Scooter] || 0        // Utilitaire
           ];
 
-          console.log('📊 Graphique véhicules par type mis à jour:', this.vehicleChartData.vehiclesByType.datasets[0].data);
         }
       },
       error: (error) => {

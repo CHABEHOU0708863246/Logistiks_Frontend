@@ -527,7 +527,6 @@ export class UsersRoles {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          console.log('✅ Rôle créé:', response);
           this.notificationService.success(
             `Le rôle "${roleRequest.roleName}" a été créé avec succès`,
             'Rôle créé'
@@ -552,7 +551,6 @@ export class UsersRoles {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          console.log('✅ Rôle mis à jour:', response);
           this.notificationService.success(
             `Le rôle "${roleRequest.roleName}" a été mis à jour avec succès`,
             'Rôle modifié'
@@ -597,7 +595,6 @@ Cette action est irréversible et tous les utilisateurs ayant ce rôle perdront 
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          console.log('✅ Rôle supprimé:', response);
           this.notificationService.success(
             `Le rôle "${role.roleName}" a été supprimé avec succès`,
             'Rôle supprimé'
@@ -838,14 +835,12 @@ Cette action est irréversible et tous les utilisateurs ayant ce rôle perdront 
    * Nettoie le token et redirige vers la page de login
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
 
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.router.navigate(['/auth/login']);
         },
         error: (error: any) => {

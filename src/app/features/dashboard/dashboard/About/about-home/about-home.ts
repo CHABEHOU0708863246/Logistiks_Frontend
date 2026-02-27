@@ -308,14 +308,12 @@ export class AboutHome {
    * Nettoie le token et redirige vers la page de login
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
 
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.router.navigate(['/auth/login']);
         },
         error: (error) => {

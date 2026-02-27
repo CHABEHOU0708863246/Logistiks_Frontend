@@ -392,7 +392,6 @@ export class DocumentsValidation implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Validation réussie:', response);
 
           // Mettre à jour le document localement
           if (this.selectedDocument) {
@@ -481,7 +480,6 @@ export class DocumentsValidation implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Rejet réussi:', response);
 
           if (response.success) {
             // Mettre à jour le document localement
@@ -649,11 +647,6 @@ export class DocumentsValidation implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (blob: Blob) => {
-          console.log('Document téléchargé:', {
-            size: blob.size,
-            type: blob.type
-          });
-
           // Créer une URL blob sécurisée
           const blobUrl = window.URL.createObjectURL(blob);
           this.documentPreviewUrl = this.sanitizeUrl(blobUrl);
@@ -661,15 +654,12 @@ export class DocumentsValidation implements OnInit, OnDestroy {
           this.selectedDocument = document;
           this.isPreviewModalOpen = true;
           this.isLoading = false;
-
-          console.log('Blob URL créée:', this.documentPreviewUrl);
         },
         error: (error) => {
           console.error('Erreur téléchargement prévisualisation:', error);
 
           // Fallback: essayer avec l'URL directe
           if (document.fileUrl) {
-            console.log('Fallback vers URL directe');
             this.documentPreviewUrl = this.sanitizeUrl(document.fileUrl);
             this.selectedDocument = document;
             this.isPreviewModalOpen = true;
@@ -1023,9 +1013,7 @@ export class DocumentsValidation implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
-
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({

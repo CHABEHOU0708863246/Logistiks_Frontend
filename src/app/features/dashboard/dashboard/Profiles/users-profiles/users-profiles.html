@@ -1,0 +1,403 @@
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">Gestion des profils</h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+      <div class="main-content">
+
+        <!-- PAGE BODY -->
+        <div class="page-body">
+
+          <!-- PAGE HEADER -->
+          <div class="page-header">
+            <div class="page-title-block">
+              <h1 class="page-title">Mon Profil</h1>
+              <p class="page-subtitle">Gérez vos informations personnelles et vos préférences</p>
+            </div>
+          </div>
+
+          <!-- PROFILE LAYOUT -->
+          <div class="profile-layout">
+
+            <!-- ========== SIDEBAR CARD ========== -->
+            <div class="profile-sidebar-card">
+              <!-- Avatar -->
+              <div class="avatar-section">
+                <div class="avatar-wrapper" (click)="triggerPhotoUpload()">
+                  <img *ngIf="previewPhotoUrl || userPhotoUrl" [src]="previewPhotoUrl || userPhotoUrl" [alt]="userName"
+                    class="avatar-large" (error)="clearPreview()">
+                  <div *ngIf="!previewPhotoUrl && !userPhotoUrl" class="avatar-large-initials">{{ getUserInitials() }}
+                  </div>
+                  <div class="avatar-overlay">
+                    <span class="avatar-overlay-icon">📷</span>
+                    <span class="avatar-overlay-text">Modifier</span>
+                  </div>
+                </div>
+                <input type="file" #photoInput accept="image/*" (change)="onPhotoSelected($event)" class="hidden-input">
+                <h2 class="profile-name">{{ userName }}</h2>
+                <span class="profile-role-badge" *ngFor="let role of currentUser?.roles">{{ role }}</span>
+                <span class="profile-status" [class.active]="currentUser?.isActive">
+                  {{ currentUser?.isActive ? '● Actif' : '● Inactif' }}
+                </span>
+              </div>
+
+              <!-- Quick Info -->
+              <div class="quick-info">
+                <div class="quick-info-item" *ngIf="currentUser?.email">
+                  <span class="qi-icon">✉</span>
+                  <span class="qi-value">{{ currentUser?.email }}</span>
+                </div>
+                <div class="quick-info-item" *ngIf="currentUser?.phone">
+                  <span class="qi-icon">📞</span>
+                  <span class="qi-value">{{ currentUser?.phone }}</span>
+                </div>
+                <div class="quick-info-item" *ngIf="userProfile?.city">
+                  <span class="qi-icon">📍</span>
+                  <span class="qi-value">{{ userProfile?.city }}</span>
+                </div>
+              </div>
+
+              <!-- Navigation Tabs -->
+              <nav class="profile-nav">
+                <button class="pnav-item" [class.active]="activeTab === 'personal'" (click)="setTab('personal')">
+                  <span class="pnav-icon">👤</span> Informations personnelles
+                </button>
+                <button class="pnav-item" [class.active]="activeTab === 'address'" (click)="setTab('address')">
+                  <span class="pnav-icon">🏠</span> Adresse
+                </button>
+                <button class="pnav-item" [class.active]="activeTab === 'emergency'" (click)="setTab('emergency')">
+                  <span class="pnav-icon">🚨</span> Contact d'urgence
+                </button>
+                <button class="pnav-item" [class.active]="activeTab === 'security'" (click)="setTab('security')">
+                  <span class="pnav-icon">🔒</span> Sécurité
+                </button>
+              </nav>
+            </div>
+
+            <!-- ========== MAIN FORM CARD ========== -->
+            <div class="profile-form-card">
+
+              <!-- ======= SUCCESS / ERROR BANNERS ======= -->
+              <div class="alert alert-success" *ngIf="successMessage">
+                <span>✅</span> {{ successMessage }}
+              </div>
+              <div class="alert alert-error" *ngIf="errorMessage">
+                <span>❌</span> {{ errorMessage }}
+              </div>
+
+              <!-- ======================================== -->
+              <!-- SECTION 2.2: CONTENU DU FORMULAIRE      -->
+              <!-- ======================================== -->
+              <div class="content-wrapper">
+
+                <!-- LOADING SKELETON -->
+                <div class="loading-skeleton" *ngIf="isLoading && !currentUser">
+                  <div class="skeleton-line w-40"></div>
+                  <div class="skeleton-line w-full"></div>
+                  <div class="skeleton-line w-full"></div>
+                  <div class="skeleton-line w-60"></div>
+                </div>
+
+                <!-- *** TAB: INFORMATIONS PERSONNELLES *** -->
+                <form [formGroup]="personalForm" (ngSubmit)="savePersonalInfo()"
+                  *ngIf="activeTab === 'personal' && !isLoading" class="profile-form" @tabFade>
+                  <div class="form-section-header">
+                    <h3 class="form-section-title">
+                      <span class="section-icon">👤</span> Informations personnelles
+                    </h3>
+                    <p class="form-section-desc">Ces informations sont visibles sur votre profil.</p>
+                  </div>
+
+                  <div class="form-grid two-cols">
+                    <div class="form-group" [class.has-error]="isFieldInvalid(personalForm, 'firstName')">
+                      <label class="form-label">Prénom <span class="required">*</span></label>
+                      <input type="text" class="form-input" formControlName="firstName" placeholder="Votre prénom">
+                      <span class="form-error" *ngIf="isFieldInvalid(personalForm, 'firstName')">Le prénom est
+                        requis</span>
+                    </div>
+
+                    <div class="form-group" [class.has-error]="isFieldInvalid(personalForm, 'lastName')">
+                      <label class="form-label">Nom <span class="required">*</span></label>
+                      <input type="text" class="form-input" formControlName="lastName" placeholder="Votre nom">
+                      <span class="form-error" *ngIf="isFieldInvalid(personalForm, 'lastName')">Le nom est requis</span>
+                    </div>
+                  </div>
+
+                  <div class="form-grid two-cols">
+                    <div class="form-group">
+                      <label class="form-label">Téléphone</label>
+                      <input type="tel" class="form-input" formControlName="phone" placeholder="+33 6 00 00 00 00">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Genre</label>
+                      <select class="form-select" formControlName="gender">
+                        <option value="">Sélectionner</option>
+                        <option value="male">Homme</option>
+                        <option value="female">Femme</option>
+                        <option value="other">Autre</option>
+                        <option value="prefer_not">Préfère ne pas dire</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-grid two-cols">
+                    <div class="form-group">
+                      <label class="form-label">Date de naissance</label>
+                      <input type="date" class="form-input" formControlName="dateOfBirth">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Situation familiale</label>
+                      <select class="form-select" formControlName="maritalStatus">
+                        <option value="">Sélectionner</option>
+                        <option value="single">Célibataire</option>
+                        <option value="married">Marié(e)</option>
+                        <option value="divorced">Divorcé(e)</option>
+                        <option value="widowed">Veuf/Veuve</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-grid two-cols">
+                    <div class="form-group">
+                      <label class="form-label">Numéro national / CIN</label>
+                      <input type="text" class="form-input" formControlName="nationalId"
+                        placeholder="Numéro d'identité">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Nombre d'enfants</label>
+                      <input type="number" class="form-input" formControlName="numberOfChildren" min="0"
+                        placeholder="0">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Notes / Bio</label>
+                    <textarea class="form-textarea" formControlName="notes" rows="3"
+                      placeholder="Quelques mots sur vous..."></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" (click)="resetPersonalForm()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                      <span class="btn-spinner" *ngIf="isSaving"></span>
+                      {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+                    </button>
+                  </div>
+                </form>
+
+                <!-- *** TAB: ADRESSE *** -->
+                <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" *ngIf="activeTab === 'address' && !isLoading"
+                  class="profile-form" @tabFade>
+                  <div class="form-section-header">
+                    <h3 class="form-section-title">
+                      <span class="section-icon">🏠</span> Adresse
+                    </h3>
+                    <p class="form-section-desc">Votre adresse de résidence actuelle.</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Adresse</label>
+                    <input type="text" class="form-input" formControlName="address" placeholder="N° et nom de rue">
+                  </div>
+
+                  <div class="form-grid three-cols">
+                    <div class="form-group">
+                      <label class="form-label">Ville</label>
+                      <input type="text" class="form-input" formControlName="city" placeholder="Ville">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Code postal</label>
+                      <input type="text" class="form-input" formControlName="postalCode" placeholder="75001">
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" (click)="resetAddressForm()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                      <span class="btn-spinner" *ngIf="isSaving"></span>
+                      {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+                    </button>
+                  </div>
+                </form>
+
+                <!-- *** TAB: CONTACT D'URGENCE *** -->
+                <form [formGroup]="emergencyForm" (ngSubmit)="saveEmergency()"
+                  *ngIf="activeTab === 'emergency' && !isLoading" class="profile-form" @tabFade>
+                  <div class="form-section-header">
+                    <h3 class="form-section-title">
+                      <span class="section-icon">🚨</span> Contact d'urgence
+                    </h3>
+                    <p class="form-section-desc">Personne à contacter en cas d'urgence.</p>
+                  </div>
+
+                  <div class="form-grid two-cols">
+                    <div class="form-group">
+                      <label class="form-label">Nom du contact</label>
+                      <input type="text" class="form-input" formControlName="emergencyContact"
+                        placeholder="Prénom et Nom">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Téléphone d'urgence</label>
+                      <input type="tel" class="form-input" formControlName="emergencyPhone"
+                        placeholder="+33 6 00 00 00 00">
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" (click)="resetEmergencyForm()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                      <span class="btn-spinner" *ngIf="isSaving"></span>
+                      {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+                    </button>
+                  </div>
+                </form>
+
+                <!-- *** TAB: SÉCURITÉ *** -->
+                <form [formGroup]="securityForm" (ngSubmit)="savePassword()"
+                  *ngIf="activeTab === 'security' && !isLoading" class="profile-form" @tabFade>
+                  <div class="form-section-header">
+                    <h3 class="form-section-title">
+                      <span class="section-icon">🔒</span> Changer le mot de passe
+                    </h3>
+                    <p class="form-section-desc">Pour votre sécurité, utilisez un mot de passe fort et unique.</p>
+                  </div>
+
+                  <div class="form-group" [class.has-error]="isFieldInvalid(securityForm, 'currentPassword')">
+                    <label class="form-label">Mot de passe actuel <span class="required">*</span></label>
+                    <div class="input-password-wrapper">
+                      <input [type]="showCurrentPwd ? 'text' : 'password'" class="form-input"
+                        formControlName="currentPassword" placeholder="Votre mot de passe actuel">
+                      <button type="button" class="pwd-toggle" (click)="showCurrentPwd = !showCurrentPwd">{{
+                        showCurrentPwd ? '🙈' : '👁' }}</button>
+                    </div>
+                    <span class="form-error" *ngIf="isFieldInvalid(securityForm, 'currentPassword')">Champ requis</span>
+                  </div>
+
+                  <div class="form-group" [class.has-error]="isFieldInvalid(securityForm, 'newPassword')">
+                    <label class="form-label">Nouveau mot de passe <span class="required">*</span></label>
+                    <div class="input-password-wrapper">
+                      <input [type]="showNewPwd ? 'text' : 'password'" class="form-input" formControlName="newPassword"
+                        placeholder="Minimum 8 caractères">
+                      <button type="button" class="pwd-toggle" (click)="showNewPwd = !showNewPwd">{{ showNewPwd ? '🙈' :
+                        '👁' }}</button>
+                    </div>
+                    <!-- Password strength -->
+                    <div class="pwd-strength" *ngIf="securityForm.get('newPassword')?.value">
+                      <div class="pwd-strength-bar">
+                        <div class="pwd-strength-fill" [style.width.%]="passwordStrength"
+                          [class]="passwordStrengthClass"></div>
+                      </div>
+                      <span class="pwd-strength-label" [class]="passwordStrengthClass">{{ passwordStrengthLabel
+                        }}</span>
+                    </div>
+                    <span class="form-error" *ngIf="isFieldInvalid(securityForm, 'newPassword')">8 caractères minimum
+                      requis</span>
+                  </div>
+
+                  <div class="form-group"
+                    [class.has-error]="securityForm.errors?.['passwordMismatch'] && securityForm.get('confirmNewPassword')?.touched">
+                    <label class="form-label">Confirmer le mot de passe <span class="required">*</span></label>
+                    <div class="input-password-wrapper">
+                      <input [type]="showConfirmPwd ? 'text' : 'password'" class="form-input"
+                        formControlName="confirmNewPassword" placeholder="Répétez le mot de passe">
+                      <button type="button" class="pwd-toggle" (click)="showConfirmPwd = !showConfirmPwd">{{
+                        showConfirmPwd ? '🙈' : '👁' }}</button>
+                    </div>
+                    <span class="form-error"
+                      *ngIf="securityForm.errors?.['passwordMismatch'] && securityForm.get('confirmNewPassword')?.touched">
+                      Les mots de passe ne correspondent pas
+                    </span>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" (click)="resetSecurityForm()">Annuler</button>
+                    <button type="submit" class="btn btn-primary btn-danger-hover"
+                      [disabled]="isSaving || securityForm.invalid">
+                      <span class="btn-spinner" *ngIf="isSaving"></span>
+                      {{ isSaving ? 'Mise à jour...' : 'Mettre à jour le mot de passe' }}
+                    </button>
+                  </div>
+                </form>
+
+              </div>
+              <!-- END content-wrapper -->
+            </div>
+            <!-- END profile-form-card -->
+
+          </div>
+          <!-- END profile-layout -->
+
+        </div>
+        <!-- END page-body -->
+      </div>
+    <!-- COMPOSANT DE NOTIFICATION -->
+    <app-notification-component></app-notification-component>
+  </div>
+</div>

@@ -369,8 +369,6 @@ export class TierForm implements OnInit, OnDestroy {
    * Déconnecte l'utilisateur
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
-
     this.notificationService.info(
       'Déconnexion',
       'Vous allez être déconnecté...'
@@ -382,7 +380,6 @@ export class TierForm implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.notificationService.success(
             'Déconnecté',
             'Vous avez été déconnecté avec succès'
@@ -586,8 +583,6 @@ export class TierForm implements OnInit, OnDestroy {
       roles: this.selectedRoles,
       address: this.getAddressObject()
     };
-
-    console.log('📤 Envoi de la requête:', request);
 
     this.tiersService.createTier(request)
       .pipe(takeUntil(this.destroy$))
@@ -959,25 +954,16 @@ private handleApiError(error: any, context: string): void {
 private logErrorDetails(error: any, context: string): void {
   console.group(`🔍 Détails de l'erreur ${context}`);
 
-  // Informations générales
-  console.log('📍 Contexte:', context);
-  console.log('📊 Statut:', error.status);
-  console.log('📄 URL:', error.url);
-
   // Corps de l'erreur
   if (error.error) {
-    console.log('📦 Corps de l\'erreur:', error.error);
 
     // Extraction des messages détaillés
     if (error.error.errors) {
-      console.log('📋 Erreurs de validation:');
       Object.entries(error.error.errors).forEach(([field, messages]) => {
-        console.log(`  • ${field}:`, messages);
       });
     }
 
     if (error.error.message) {
-      console.log('💬 Message:', error.error.message);
     }
   }
 

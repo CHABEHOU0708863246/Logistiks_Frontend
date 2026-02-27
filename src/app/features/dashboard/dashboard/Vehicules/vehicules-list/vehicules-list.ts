@@ -796,21 +796,12 @@ export class VehiculesList implements OnInit, OnDestroy {
    * Exécute le changement de statut
    */
   private executeChangeStatus(vehicle: VehicleDto, newStatus: VehicleStatus, reason?: string): void {
-    console.log('🔄 Changement de statut:', {
-      vehicleId: vehicle.id,
-      vehicleCode: vehicle.code,
-      fromStatus: vehicle.status,
-      toStatus: newStatus,
-      reason: reason
-    });
-
     this.loading = true;
 
     this.vehiclesService.changeVehicleStatus(vehicle.id, newStatus, reason)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('✅ Réponse du serveur:', response);
           this.loading = false;
 
           // ✅ CORRECTION: Vérification flexible de la réussite
@@ -913,8 +904,6 @@ export class VehiculesList implements OnInit, OnDestroy {
    * Rafraîchit les données après un changement de statut
    */
   private refreshAfterStatusChange(): void {
-    console.log('🔄 Rafraîchissement des données...');
-
     // 1. Rafraîchir la liste des véhicules (garde la même page)
     this.loadVehicles(this.pagination.currentPage);
 
@@ -927,8 +916,6 @@ export class VehiculesList implements OnInit, OnDestroy {
     setTimeout(() => {
       this.loadActiveReservations();
     }, 500);
-
-    console.log('✅ Rafraîchissement terminé');
   }
 
   /**
@@ -1050,7 +1037,6 @@ export class VehiculesList implements OnInit, OnDestroy {
  * Ouvre le modal d'affectation pour un véhicule
  */
   openAssignRentalModal(vehicle: VehicleDto): void {
-    console.log('🚀 Ouverture du modal d\'affectation pour:', vehicle.code);
 
     this.assignRentalVehicle = vehicle;
     this.showAssignRentalModal = true;
@@ -1154,7 +1140,6 @@ export class VehiculesList implements OnInit, OnDestroy {
  * Rafraîchit la liste des contrats
  */
   refreshContracts(): void {
-    console.log('🔄 Rafraîchissement manuel des contrats...');
 
     if (this.showAssignRentalModal) {
       this.loadContractsForAssignment();
@@ -1172,25 +1157,19 @@ export class VehiculesList implements OnInit, OnDestroy {
   loadContractsForAssignment(): void {
     this.isLoadingContractsForAssignment = true;  // <-- Démarrer le loading
 
-    console.log('🔄 Chargement des contrats pour affectation...');
-
     // Critères de recherche pour les contrats disponibles
     const searchCriteria = {
       page: 1,
       pageSize: 100,
       sortBy: 'createdAt',
       sortDescending: true,
-      // On charge les contrats actifs OU en attente
-      // Le filtrage se fera côté client
     };
 
     this.contractService.searchContracts(searchCriteria)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: ContractPaginatedResponse) => {
-          this.isLoadingContractsForAssignment = false;  // <-- Arrêter le loading
-
-          console.log('📡 Réponse API contrats:', response);
+          this.isLoadingContractsForAssignment = false;
 
           if (response && response.data && Array.isArray(response.data)) {
             // Convertir les DTOs en ContractBasic
@@ -1198,13 +1177,9 @@ export class VehiculesList implements OnInit, OnDestroy {
               this.convertDtoToContractBasic(dto)
             );
 
-            console.log(`📦 ${allContracts.length} contrats récupérés du serveur`);
-
             // Filtrer les contrats disponibles pour affectation
             this.availableContracts = this.filterContractsForVehicleAssignment(allContracts);
             this.filteredContractsForAssignment = [...this.availableContracts];
-
-            console.log(`✅ ${this.filteredContractsForAssignment.length} contrats disponibles pour affectation`);
 
             // Notification si aucun contrat disponible
             if (this.filteredContractsForAssignment.length === 0) {
@@ -1272,9 +1247,6 @@ export class VehiculesList implements OnInit, OnDestroy {
       console.warn('⚠️ Aucun véhicule sélectionné pour le filtrage');
       return contracts;
     }
-
-    console.log(`🔍 Filtrage de ${contracts.length} contrats...`);
-
     const filtered = contracts.filter(contract => {
       // Debug pour chaque contrat
       const debugInfo = {
@@ -1288,21 +1260,18 @@ export class VehiculesList implements OnInit, OnDestroy {
 
       // 1. Vérifier si le contrat a déjà un véhicule
       if (contract.vehicleId && contract.vehicleId !== '' && contract.vehicleId !== null) {
-        console.log(`❌ Contrat ${contract.contractNumber} déjà affecté au véhicule ${contract.vehicleId}`);
         return false;
       }
 
       // 2. Vérifier le statut du contrat
       const validStatuses = [ContractStatus.Active, ContractStatus.Pending];
       if (!validStatuses.includes(contract.status)) {
-        console.log(`❌ Contrat ${contract.contractNumber} a un statut invalide: ${contract.status}`);
         return false;
       }
 
       // 3. Vérifier si le dépôt est payé (si la vérification est activée)
       if (contract.securityDeposit && contract.securityDeposit > 0) {
         if (contract.depositPaid === false) {
-          console.log(`❌ Contrat ${contract.contractNumber} - Dépôt non payé`);
           return false;
         }
       }
@@ -1320,7 +1289,6 @@ export class VehiculesList implements OnInit, OnDestroy {
         maxFutureDate.setDate(maxFutureDate.getDate() + 7);
 
         if (startDate > maxFutureDate) {
-          console.log(`❌ Contrat ${contract.contractNumber} commence trop dans le futur: ${startDate}`);
           return false;
         }
       }
@@ -1330,16 +1298,12 @@ export class VehiculesList implements OnInit, OnDestroy {
         endDate.setHours(0, 0, 0, 0);
 
         if (endDate < today) {
-          console.log(`❌ Contrat ${contract.contractNumber} expiré: ${endDate}`);
           return false;
         }
       }
-
-      console.log(`✅ Contrat ${contract.contractNumber} valide pour affectation`);
       return true;
     });
 
-    console.log(`✅ ${filtered.length} contrats passent les filtres`);
     return filtered;
   }
 
@@ -1520,7 +1484,6 @@ export class VehiculesList implements OnInit, OnDestroy {
               tier.status === TierStatus.PendingValidation
             );
 
-            console.log(`✅ ${this.filteredTiersForAssignment.length} clients chargés pour affectation`);
           } else {
             console.warn('Aucun tier dans la réponse:', response);
             this.filteredTiersForAssignment = [];
@@ -2033,7 +1996,6 @@ export class VehiculesList implements OnInit, OnDestroy {
             this.availableContracts = response.data;
             this.filteredContracts = [...this.availableContracts];
 
-            console.log(`${this.availableContracts.length} contrats chargés pour confirmation`);
           } else {
             console.warn('Aucun contrat disponible:', response.data);
             this.availableContracts = [];
@@ -2188,8 +2150,6 @@ export class VehiculesList implements OnInit, OnDestroy {
    * Affiche les détails d'une réservation
    */
   showReservationDetails(reservation: any): void {
-    console.log('Détails de la réservation:', reservation);
-
     // Vous pouvez créer un modal de détails ici
     this.notificationService.info(
       'Détails de la réservation',
@@ -2562,15 +2522,6 @@ export class VehiculesList implements OnInit, OnDestroy {
  */
   private handleReservationSuccess(response: any): void {
     this.reservationLoading = false;
-
-    // DEBUG: Afficher la structure complète de la réponse
-    console.log('📡 Réponse complète de la réservation:', response);
-    console.log('📡 Status:', response.status);
-    console.log('📡 StatusText:', response.statusText);
-    console.log('📡 Body:', response.body);
-    console.log('📡 Success property:', response.success);
-    console.log('📡 StatusCode property:', response.statusCode);
-
     // Vérifier différentes structures de réponse possibles
     const isSuccess =
       response.status === 200 ||
@@ -2664,9 +2615,6 @@ export class VehiculesList implements OnInit, OnDestroy {
  */
   private handleCancelReservationSuccess(response: any): void {
     this.cancelReservationLoading = false;
-
-    // Debug log
-    console.log('📡 Réponse annulation réservation:', response);
 
     try {
       // Vérification flexible du succès
@@ -2889,9 +2837,6 @@ export class VehiculesList implements OnInit, OnDestroy {
  */
   private handleConfirmReservationSuccess(response: any): void {
     this.confirmReservationLoading = false;
-
-    // Log pour débogage
-    console.log('📡 Réponse confirmation réservation:', response);
 
     try {
       // Vérifier différents formats de succès

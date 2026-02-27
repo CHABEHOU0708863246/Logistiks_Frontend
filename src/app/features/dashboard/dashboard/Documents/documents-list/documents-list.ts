@@ -459,8 +459,6 @@ private stopAutoRefresh(): void {
  * Actualiser toutes les données
  */
 private refreshData(): void {
-  console.log('🔄 Actualisation automatique des données...');
-
   // Actualiser seulement si l'utilisateur est sur cette page
   if (!this.router.url.includes('/documents')) {
     return;
@@ -539,8 +537,6 @@ private checkDocumentStatusChanges(): void {
         });
 
         if (hasChanges) {
-          console.log('📄 Mise à jour automatique des statuts de documents');
-          // Notifier l'utilisateur discrètement
           this.notificationService.info(
             'Mise à jour',
             'Les statuts des documents ont été actualisés',
@@ -750,9 +746,6 @@ refreshAllData(): void {
     if (this.showArchived === true) {
       criteria.isArchived = true;
     }
-
-    console.log('Critères de recherche:', criteria); // Pour déboguer
-
     this.documentService
       .searchDocuments(criteria as DocumentSearchCriteria)
       .pipe(takeUntil(this.destroy$))
@@ -1172,8 +1165,6 @@ private emitExpiringDocumentsUpdated(): void {
         ? new Date(formValue.expiryDate)
         : undefined,
     };
-
-    console.log('Envoi du document:', request); // Pour debug
 
     this.documentService
       .createDocument(request, this.selectedFile)
@@ -1698,7 +1689,6 @@ closeDetailsModal(): void {
   // ============================================================================
 
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
 
     this.authService
@@ -1706,7 +1696,6 @@ closeDetailsModal(): void {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.router.navigate(['/auth/login']);
         },
         error: (error) => {

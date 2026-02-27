@@ -63,6 +63,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'dashboard/profiles',
+    loadChildren: () => import('./features/dashboard/dashboard/Profiles/profiles.routes').then(m => m.PROFILES_ROUTES),
+    data: {
+      title: 'Profils des utilisateurs',
+      breadcrumb: 'Profils utilisateurs'
+    },
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     component: NotFound
   },

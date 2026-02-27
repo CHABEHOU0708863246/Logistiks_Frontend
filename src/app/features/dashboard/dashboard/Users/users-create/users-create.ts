@@ -245,7 +245,6 @@ export class UsersCreate implements OnInit, OnDestroy {
       .subscribe({
         next: (roles: RoleDto[]) => {
           this.availableRoles = roles;
-          console.log('✅ Rôles disponibles:', roles);
         },
         error: (error: any) => {
           console.error('❌ Erreur chargement rôles:', error);
@@ -333,8 +332,6 @@ export class UsersCreate implements OnInit, OnDestroy {
         this.photoPreview = e.target.result;
       };
       reader.readAsDataURL(file);
-
-      console.log('📷 Photo sélectionnée:', file.name);
     }
   }
 
@@ -377,7 +374,6 @@ export class UsersCreate implements OnInit, OnDestroy {
     } else {
       this.selectedRoles.push(roleCode);
     }
-    console.log('🔑 Rôles sélectionnés:', this.selectedRoles);
   }
 
   isRoleSelected(roleCode: string): boolean {
@@ -508,13 +504,10 @@ export class UsersCreate implements OnInit, OnDestroy {
       photoFile: this.photoFile || undefined
     };
 
-    console.log('📤 Création utilisateur:', userRequest);
-
     this.usersService.registerUser(userRequest)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          console.log('✅ Utilisateur créé:', response);
           this.notificationService.success(
             `L'utilisateur ${userRequest.firstName} ${userRequest.lastName} a été créé avec succès`,
             'Utilisateur créé'
@@ -713,14 +706,12 @@ export class UsersCreate implements OnInit, OnDestroy {
    * Nettoie le token et redirige vers la page de login
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
 
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.router.navigate(['/auth/login']);
         },
         error: (error) => {

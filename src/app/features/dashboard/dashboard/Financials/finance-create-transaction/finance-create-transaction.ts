@@ -228,7 +228,6 @@ loadAvailableVehicles(searchTerm: string = ''): void {
       next: (response: ApiResponseData<VehicleDto[]>) => {
         if (response.success && response.data) {
           this.availableVehicles = response.data;
-          console.log('✅ Véhicules chargés:', this.availableVehicles.length);
         }
         this.loadingVehicles = false;
       },
@@ -561,18 +560,12 @@ getVehicleStatusClass(status: VehicleStatus): string {
    * Soumet le formulaire après confirmation
    */
   submitTransaction(): void {
-    console.log('🚀 submitTransaction appelé');
-    console.log('📋 Formulaire valide?', this.transactionForm.valid);
-    console.log('⏳ isSubmitting?', this.isSubmitting);
-
     if (this.transactionForm.invalid || this.isSubmitting) {
       console.warn('⚠️ Formulaire invalide ou déjà en soumission');
       if (this.transactionForm.invalid) {
-        console.log('❌ Erreurs du formulaire:', this.transactionForm.errors);
         Object.keys(this.transactionForm.controls).forEach(key => {
           const control = this.transactionForm.get(key);
           if (control?.invalid) {
-            console.log(`  - ${key}:`, control.errors);
           }
         });
       }
@@ -583,7 +576,6 @@ getVehicleStatusClass(status: VehicleStatus): string {
     this.closeConfirmModal();
 
     const formValue = this.transactionForm.value;
-    console.log('📝 Valeurs du formulaire:', formValue);
 
     const request: CreateTransactionRequest = {
       type: formValue.type,
@@ -597,14 +589,11 @@ getVehicleStatusClass(status: VehicleStatus): string {
       relatedType: this.selectedVehicle ? 'Vehicle' : undefined
     };
 
-    console.log('📤 Requête à envoyer:', request);
-
     this.financialService
       .createTransaction(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('✅ Réponse reçue:', response);
           if (response.success) {
             this.notificationService.success(
               'La transaction a été créée avec succès',
@@ -944,7 +933,6 @@ getVehicleStatusClass(status: VehicleStatus): string {
    * Gère le processus de déconnexion
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
 
     this.authService
@@ -952,7 +940,6 @@ getVehicleStatusClass(status: VehicleStatus): string {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.router.navigate(['/auth/login']);
         },
         error: (error) => {

@@ -70,16 +70,17 @@ export class Auth {
    * Mot de passe oublié - Demande initiale
    */
   forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponseData<any>>(`${this.baseUrl}/forgot-password`, forgotPasswordRequest)
-      .pipe(
-        map(response => ({
-          success: response.success,
-          message: response.message
-        })),
-        catchError(this.handleError)
-      );
+    return this.http.post<ApiResponseData<any>>(
+      `${this.baseUrl}/forgot-password`,
+      forgotPasswordRequest
+    ).pipe(
+      map(response => ({
+        success: response.success,
+        message: response.message
+      })),
+      catchError(this.handleError)
+    );
   }
-
   /**
    * Valider un token de réinitialisation
    */

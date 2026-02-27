@@ -428,9 +428,6 @@ export class VehiculeForm implements OnInit, OnDestroy {
 
     const formValue = this.vehicleForm.value;
     const request = this.prepareCreateRequest(formValue);
-
-    console.log('📤 Envoi de la requête véhicule:', request);
-
     this.vehiclesService.createVehicle(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -716,14 +713,12 @@ export class VehiculeForm implements OnInit, OnDestroy {
    * Nettoie le token et redirige vers la page de login
    */
   logout(): void {
-    console.log('🚪 Déconnexion en cours...');
     this.tokenService.logout();
 
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ Déconnexion API réussie');
           this.router.navigate(['/auth/login']);
         },
         error: (error) => {

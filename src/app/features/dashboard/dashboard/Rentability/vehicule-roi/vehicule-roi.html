@@ -1,1 +1,436 @@
-<p>vehicule-roi works!</p>
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+<app-sidebar-component></app-sidebar-component>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">Retour d'investissement</h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+      <!-- ========================================== -->
+      <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
+      <!-- ========================================== -->
+      <div class="content-wrapper">
+
+        <!-- ── HERO HEADER ── -->
+        <div class="page-hero">
+          <div class="hero-eyebrow">
+            <span class="eyebrow-dot"></span>
+            Module Rentabilité
+          </div>
+          <h1 class="hero-title">Retour sur Investissement</h1>
+          <p class="hero-subtitle">Mesurez le ROI de vos véhicules et pilotez vos décisions d'investissement</p>
+        </div>
+
+        <!-- ── FORM CARD ── -->
+        <div class="calc-form-card" [class.has-results]="roiResult">
+
+          <div class="form-card-header">
+            <div class="header-icon">
+              <i class='bx bx-rocket'></i>
+            </div>
+            <div class="header-text">
+              <span class="header-label">Paramètres d'analyse ROI</span>
+              <span class="header-hint">Sélectionnez un véhicule et une période pour mesurer son retour sur investissement</span>
+            </div>
+          </div>
+
+          <div class="form-body">
+
+            <!-- Sélection véhicule -->
+            <div class="form-group full-width">
+              <label class="field-label">
+                <i class='bx bx-car'></i>
+                Véhicule à analyser
+              </label>
+              <div class="vehicle-select-wrapper">
+                <select [(ngModel)]="selectedVehicleId" (change)="onVehicleChange()" class="field-select"
+                  [class.has-value]="selectedVehicleId">
+                  <option value="">— Sélectionner un véhicule —</option>
+                  <option *ngFor="let v of allVehicles" [value]="v.id">
+                    {{ v.code }} · {{ v.brand }} {{ v.model }} ({{ v.plateNumber }})
+                  </option>
+                </select>
+                <i class='bx bx-chevron-down select-arrow'></i>
+
+                <div class="vehicle-preview" *ngIf="selectedVehicle">
+                  <div class="preview-badge">
+                    <i class='bx bx-chip'></i>
+                    {{ selectedVehicle.code }}
+                  </div>
+                  <span class="preview-name">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</span>
+                  <span class="preview-plate">{{ selectedVehicle.plateNumber }}</span>
+                  <span class="preview-cost" *ngIf="selectedVehicle.acquisitionCost">
+                    Acquisition : {{ formatAmount(selectedVehicle.acquisitionCost) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="form-row two-cols">
+              <div class="form-group">
+                <label class="field-label">
+                  <i class='bx bx-calendar-plus'></i>
+                  Date de début
+                </label>
+                <div class="date-field-wrapper">
+                  <input type="date" [(ngModel)]="periodStartStr" class="field-input" [max]="todayStr" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="field-label">
+                  <i class='bx bx-calendar-check'></i>
+                  Date de fin
+                </label>
+                <div class="date-field-wrapper">
+                  <input type="date" [(ngModel)]="periodEndStr" class="field-input" [max]="todayStr" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Raccourcis périodes -->
+            <div class="period-shortcuts">
+              <span class="shortcuts-label">Raccourcis :</span>
+              <button class="shortcut-btn" (click)="setShortcut('month')">Ce mois</button>
+              <button class="shortcut-btn" (click)="setShortcut('prev-month')">Mois précédent</button>
+              <button class="shortcut-btn" (click)="setShortcut('quarter')">Ce trimestre</button>
+              <button class="shortcut-btn" (click)="setShortcut('year')">Cette année</button>
+            </div>
+
+            <!-- CTA -->
+            <div class="form-actions">
+              <button class="btn-calculate" (click)="calculateRoi()"
+                [disabled]="isLoading || !selectedVehicleId || !periodStartStr || !periodEndStr">
+                <span class="btn-inner" *ngIf="!isLoading">
+                  <i class='bx bx-trending-up'></i>
+                  Calculer le ROI
+                </span>
+                <span class="btn-inner loading" *ngIf="isLoading">
+                  <span class="spinner"></span>
+                  Calcul en cours…
+                </span>
+              </button>
+              <button class="btn-reset" (click)="resetForm()" *ngIf="roiResult">
+                <i class='bx bx-refresh'></i>
+                Nouvelle analyse
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── RÉSULTATS ── -->
+        <div class="results-section" *ngIf="roiResult">
+
+          <!-- Header résultats -->
+          <div class="results-header">
+            <div class="results-period-tag">
+              <i class='bx bx-time-five'></i>
+              {{ formatShortDate(roiResult.periodStart) }} → {{ formatShortDate(roiResult.periodEnd) }}
+            </div>
+            <div class="results-vehicle-tag">
+              <i class='bx bx-car'></i>
+              {{ roiResult.vehicleCode }} · {{ roiResult.vehicleName }}
+            </div>
+          </div>
+
+          <!-- ── KPI CARDS ── -->
+          <div class="kpi-grid">
+
+            <div class="kpi-card revenue">
+              <div class="kpi-card-bg"></div>
+              <div class="kpi-icon"><i class='bx bx-money-withdraw'></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">Revenus totaux</span>
+                <span class="kpi-value">{{ formatAmount(roiResult.totalRevenue) }}</span>
+              </div>
+              <div class="kpi-trend positive"><i class='bx bx-up-arrow-alt'></i> Encaissé</div>
+            </div>
+
+            <div class="kpi-card expenses">
+              <div class="kpi-card-bg"></div>
+              <div class="kpi-icon"><i class='bx bx-money'></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">Dépenses totales</span>
+                <span class="kpi-value">{{ formatAmount(roiResult.totalExpenses) }}</span>
+              </div>
+              <div class="kpi-trend negative"><i class='bx bx-down-arrow-alt'></i> Engagé</div>
+            </div>
+
+            <div class="kpi-card profit"
+              [class.positive]="roiResult.netProfit >= 0"
+              [class.negative]="roiResult.netProfit < 0">
+              <div class="kpi-card-bg"></div>
+              <div class="kpi-icon"><i class='bx bx-bar-chart-alt-2'></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">Profit net</span>
+                <span class="kpi-value">{{ formatAmount(roiResult.netProfit) }}</span>
+              </div>
+              <div class="kpi-trend"
+                [class.positive]="roiResult.netProfit >= 0"
+                [class.negative]="roiResult.netProfit < 0">
+                <i class='bx'
+                  [class.bx-trending-up]="roiResult.netProfit >= 0"
+                  [class.bx-trending-down]="roiResult.netProfit < 0"></i>
+                Bénéfice net
+              </div>
+            </div>
+
+            <div class="kpi-card margin">
+              <div class="kpi-card-bg"></div>
+              <div class="kpi-icon"><i class='bx bx-pie-chart-alt-2'></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">Marge nette</span>
+                <span class="kpi-value">{{ roiResult.profitMarginPercent | number:'1.2-2' }}%</span>
+              </div>
+              <div class="kpi-trend positive">
+                <i class='bx bx-check-shield'></i> Ratio profit/CA
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ── PERFORMANCE BLOCK ── -->
+          <div class="performance-block">
+
+            <!-- ROI Gauge -->
+            <div class="gauge-card roi-gauge">
+              <div class="gauge-label">Retour sur Investissement (ROI)</div>
+              <div class="gauge-ring">
+                <svg viewBox="0 0 120 120" class="ring-svg">
+                  <circle class="ring-track" cx="60" cy="60" r="50"/>
+                  <circle class="ring-fill roi-fill" cx="60" cy="60" r="50"
+                    [style.stroke-dashoffset]="getRoiDashOffset(roiResult.roiPercent)"/>
+                </svg>
+                <div class="gauge-center">
+                  <span class="gauge-value"
+                    [class.positive]="roiResult.roiPercent >= 0"
+                    [class.negative]="roiResult.roiPercent < 0">
+                    {{ roiResult.roiPercent | number:'1.2-2' }}%
+                  </span>
+                  <span class="gauge-sub">ROI</span>
+                </div>
+              </div>
+              <div class="gauge-verdict"
+                [class.positive]="roiResult.roiPercent >= 0"
+                [class.negative]="roiResult.roiPercent < 0">
+                <i class='bx'
+                  [class.bx-trending-up]="roiResult.roiPercent >= 0"
+                  [class.bx-trending-down]="roiResult.roiPercent < 0"></i>
+                {{ roiResult.roiPercent >= 0 ? 'Investissement rentable' : 'Investissement déficitaire' }}
+              </div>
+              <div class="gauge-footnote">
+                Coût d'acquisition : {{ formatAmount(roiResult.acquisitionCost) }}
+              </div>
+            </div>
+
+            <!-- Utilisation Gauge -->
+            <div class="gauge-card util-gauge">
+              <div class="gauge-label">Taux d'utilisation</div>
+              <div class="gauge-ring">
+                <svg viewBox="0 0 120 120" class="ring-svg">
+                  <circle class="ring-track" cx="60" cy="60" r="50"/>
+                  <circle class="ring-fill util-fill" cx="60" cy="60" r="50"
+                    [style.stroke-dashoffset]="getUtilDashOffset(roiResult.utilizationRatePercent)"/>
+                </svg>
+                <div class="gauge-center">
+                  <span class="gauge-value">{{ roiResult.utilizationRatePercent | number:'1.1-1' }}%</span>
+                  <span class="gauge-sub">Loué</span>
+                </div>
+              </div>
+              <div class="gauge-footnote">Jours effectivement loués sur la période</div>
+            </div>
+
+            <!-- Ventilation dépenses -->
+            <div class="expense-breakdown-card">
+              <div class="breakdown-title">
+                <i class='bx bx-layer'></i>
+                Ventilation des dépenses
+              </div>
+              <div class="breakdown-list" *ngIf="roiResult.totalExpenses > 0; else noExpenses">
+                <div class="breakdown-item" *ngFor="let item of getExpenseBreakdown()">
+                  <div class="breakdown-row">
+                    <div class="breakdown-dot" [style.background]="item.color"></div>
+                    <span class="breakdown-cat">{{ item.label }}</span>
+                    <span class="breakdown-pct">{{ item.pct | number:'1.1-1' }}%</span>
+                  </div>
+                  <div class="breakdown-bar-track">
+                    <div class="breakdown-bar-fill"
+                      [style.width.%]="item.pct"
+                      [style.background]="item.color">
+                    </div>
+                  </div>
+                  <div class="breakdown-amount">{{ formatAmount(item.amount) }}</div>
+                </div>
+              </div>
+              <ng-template #noExpenses>
+                <div class="breakdown-empty">
+                  <i class='bx bx-check-circle'></i>
+                  Aucune dépense enregistrée
+                </div>
+              </ng-template>
+            </div>
+
+          </div>
+
+          <!-- ── ÉVOLUTION MENSUELLE ── -->
+          <div class="monthly-evolution" *ngIf="roiResult.monthlyBreakdown && roiResult.monthlyBreakdown.length > 0">
+            <div class="section-title">
+              <i class='bx bx-line-chart'></i>
+              Évolution mensuelle
+            </div>
+            <div class="monthly-grid">
+              <div class="monthly-card" *ngFor="let m of roiResult.monthlyBreakdown">
+                <div class="monthly-month">{{ m.month }}</div>
+                <div class="monthly-bars">
+                  <div class="bar-wrap">
+                    <div class="bar revenue-bar"
+                      [style.height.%]="getBarHeight(m.revenue, getMaxMonthlyValue())">
+                    </div>
+                    <span class="bar-label rev">{{ formatAmountShort(m.revenue) }}</span>
+                  </div>
+                  <div class="bar-wrap">
+                    <div class="bar expense-bar"
+                      [style.height.%]="getBarHeight(m.expenses, getMaxMonthlyValue())">
+                    </div>
+                    <span class="bar-label exp">{{ formatAmountShort(m.expenses) }}</span>
+                  </div>
+                </div>
+                <div class="monthly-profit"
+                  [class.positive]="m.profit >= 0"
+                  [class.negative]="m.profit < 0">
+                  {{ m.profit >= 0 ? '+' : '' }}{{ formatAmountShort(m.profit) }}
+                </div>
+              </div>
+            </div>
+            <div class="monthly-legend">
+              <span class="legend-item rev"><span class="legend-dot"></span>Revenus</span>
+              <span class="legend-item exp"><span class="legend-dot"></span>Dépenses</span>
+            </div>
+          </div>
+
+          <!-- ── SYNTHÈSE ROI ── -->
+          <div class="roi-synthesis">
+            <div class="synthesis-title">
+              <i class='bx bx-target-lock'></i>
+              Synthèse de l'investissement
+            </div>
+            <div class="synthesis-grid">
+              <div class="synth-item">
+                <span class="synth-label">Coût d'acquisition</span>
+                <span class="synth-value">{{ formatAmount(roiResult.acquisitionCost) }}</span>
+              </div>
+              <div class="synth-item">
+                <span class="synth-label">Revenus générés</span>
+                <span class="synth-value positive">{{ formatAmount(roiResult.totalRevenue) }}</span>
+              </div>
+              <div class="synth-item">
+                <span class="synth-label">Dépenses engagées</span>
+                <span class="synth-value negative">{{ formatAmount(roiResult.totalExpenses) }}</span>
+              </div>
+              <div class="synth-item highlight">
+                <span class="synth-label">ROI net</span>
+                <span class="synth-value"
+                  [class.positive]="roiResult.roiPercent >= 0"
+                  [class.negative]="roiResult.roiPercent < 0">
+                  {{ roiResult.roiPercent | number:'1.2-2' }}%
+                </span>
+              </div>
+              <div class="synth-item">
+                <span class="synth-label">Durée d'amortissement estimée</span>
+                <span class="synth-value">{{ getAmortizationDuration() }}</span>
+              </div>
+              <div class="synth-item">
+                <span class="synth-label">Revenu journalier moyen</span>
+                <span class="synth-value">{{ formatAmount(getDailyRevenue()) }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── ÉTAT VIDE ── -->
+        <div class="empty-state" *ngIf="!roiResult && !isLoading">
+          <div class="empty-icon">
+            <i class='bx bx-scatter-chart'></i>
+          </div>
+          <div class="empty-title">Aucune analyse en cours</div>
+          <div class="empty-subtitle">Sélectionnez un véhicule et une période pour calculer son retour sur investissement.</div>
+        </div>
+
+        <!-- ── CHARGEMENT ── -->
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="loading-rings">
+            <div class="ring r1"></div>
+            <div class="ring r2"></div>
+            <div class="ring r3"></div>
+          </div>
+          <div class="loading-text">Calcul du ROI en cours…</div>
+        </div>
+
+      </div>
+
+          <!-- COMPOSANT DE NOTIFICATION -->
+      <app-notification-component></app-notification-component>
+  </div>
+</div>
