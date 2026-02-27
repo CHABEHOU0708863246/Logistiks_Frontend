@@ -139,42 +139,40 @@ export class ResetPassword implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.resetPasswordForm.valid && !this.isLoading && this.tokenValid) {
-      this.isLoading = true;
-      this.errorMessage = '';
-      this.successMessage = '';
+  if (this.resetPasswordForm.valid && !this.isLoading && this.tokenValid) {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-      const { newPassword } = this.resetPasswordForm.value;
+    const { newPassword } = this.resetPasswordForm.value;
 
-      // Correction: passer directement le token sans modification
-      this.authService.resetPassword({
-        email: this.email, token: this.token,
-        password: ''
-      })
-        .pipe(
-          takeUntil(this.destroy$),
-          catchError(error => {
-            this.handleResetError(error);
-            return throwError(() => error);
-          })
-        )
-        .subscribe({
-          next: (response) => {
-            this.isLoading = false;
-            if (response.success === true) {
-              this.handleResetSuccess(response.message);
-            } else {
-              this.errorMessage = response.message;
-            }
-          },
-          error: () => {
-            // Erreur déjà gérée dans catchError
+    this.authService.resetPassword({
+      email: this.email,
+      token: this.token,
+      password: newPassword // ✅ utiliser la valeur du formulaire
+    })
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(error => {
+          this.handleResetError(error);
+          return throwError(() => error);
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          if (response.success === true) {
+            this.handleResetSuccess(response.message);
+          } else {
+            this.errorMessage = response.message;
           }
-        });
-    } else {
-      this.resetPasswordForm.markAllAsTouched();
-    }
+        },
+        error: () => {}
+      });
+  } else {
+    this.resetPasswordForm.markAllAsTouched();
   }
+}
 
   handleResetSuccess(message: string): void {
     this.successMessage = message;
