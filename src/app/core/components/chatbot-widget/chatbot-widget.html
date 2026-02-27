@@ -1,0 +1,161 @@
+<!-- chatbot-widget.component.html -->
+<div class="chatbot-wrapper">
+
+  <!-- ── Bouton flottant ──────────────────────────────────────────────── -->
+  <button
+    class="chat-fab"
+    [class.has-notif]="hasNewMessage"
+    [class.is-open]="isOpen"
+    (click)="toggleChat()">
+
+    <!-- Anneaux orbitaux 3D -->
+    <span class="fab-ring ring-1"></span>
+    <span class="fab-ring ring-2"></span>
+
+    <!-- Icône avec transition -->
+    <span class="fab-icon">
+      <i class='bx bx-message-dots' *ngIf="!isOpen"></i>
+      <i class='bx bx-x'           *ngIf="isOpen"></i>
+    </span>
+
+    <!-- Badge notification -->
+    <span class="notif-badge" *ngIf="hasNewMessage && !isOpen">1</span>
+  </button>
+
+  <!-- ── Fenêtre principale ────────────────────────────────────────────── -->
+  <div class="chat-panel" [class.open]="isOpen">
+
+    <!-- Particules neural (décor) -->
+    <div class="neural-bg" aria-hidden="true">
+      <span *ngFor="let p of neuralParticles" class="neural-dot"
+            [style.left.%]="p.x" [style.top.%]="p.y"
+            [style.animationDelay]="p.delay + 's'"
+            [style.width.px]="p.size" [style.height.px]="p.size">
+      </span>
+    </div>
+
+    <!-- Header ──────────────────────────────────────────────────────── -->
+    <div class="chat-header">
+
+      <!-- Avatar bot animé -->
+      <div class="bot-avatar-wrap">
+        <div class="bot-avatar">
+          <div class="avatar-core">
+            <i class='bx bx-chip'></i>
+          </div>
+          <div class="avatar-pulse"></div>
+          <div class="avatar-scan"></div>
+        </div>
+        <span class="status-dot"></span>
+      </div>
+
+      <!-- Infos -->
+      <div class="bot-info">
+        <span class="bot-name">
+          LOGISTIK <span class="ai-badge">AI</span>
+        </span>
+        <span class="bot-status">
+          <span class="status-blink"></span>
+          Système actif · Répond instantanément
+        </span>
+      </div>
+
+      <!-- Bouton fermeture -->
+      <button class="close-btn" (click)="closeChat()" type="button" aria-label="Fermer">
+        <i class='bx bx-x'></i>
+      </button>
+    </div>
+
+    <!-- Messages ─────────────────────────────────────────────────────── -->
+    <div class="messages-container" #messagesContainer>
+
+      <!-- Message d'intro si vide -->
+      <div class="intro-chip" *ngIf="messages.length === 0">
+        <i class='bx bx-brain'></i>
+        Initialisation du système neural...
+      </div>
+
+      <ng-container *ngFor="let msg of messages; let i = index">
+
+        <!-- Bot -->
+        <div class="message bot-message"
+             *ngIf="msg.role === 'bot' && !msg.isTyping"
+             [style.animationDelay]="(i * 0.05) + 's'">
+          <div class="avatar-sm">
+            <i class='bx bx-chip'></i>
+          </div>
+          <div class="bubble bot-bubble" [innerHTML]="formatText(msg.text)"></div>
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="message bot-message typing-row" *ngIf="msg.isTyping">
+          <div class="avatar-sm">
+            <i class='bx bx-chip'></i>
+          </div>
+          <div class="bubble bot-bubble typing-bubble">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Utilisateur -->
+        <div class="message user-message"
+             *ngIf="msg.role === 'user'"
+             [style.animationDelay]="(i * 0.05) + 's'">
+          <div class="bubble user-bubble">{{ msg.text }}</div>
+          <div class="user-avatar-sm">
+            <i class='bx bx-user'></i>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+
+    <!-- Quick Replies ────────────────────────────────────────────────── -->
+    <div class="quick-replies" *ngIf="quickReplies.length > 0 && !isTyping">
+      <button
+        class="quick-reply-btn"
+        *ngFor="let qr of quickReplies"
+        (click)="clickQuickReply(qr)">
+        {{ qr.label }}
+      </button>
+    </div>
+
+    <!-- Human Handoff ────────────────────────────────────────────────── -->
+    <div class="human-handoff-banner" *ngIf="showHumanHandoff">
+      <div class="handoff-icon"><i class='bx bx-user-voice'></i></div>
+      <div>
+        <strong>Transfert en cours</strong>
+        <span>Un conseiller humain prend le relais</span>
+      </div>
+    </div>
+
+    <!-- Zone de saisie ──────────────────────────────────────────────── -->
+    <div class="chat-input-area">
+      <div class="input-wrap">
+        <input
+          type="text"
+          class="chat-input"
+          placeholder="Envoyer un message..."
+          [(ngModel)]="inputText"
+          (keydown)="onEnter($event)"
+          [disabled]="isTyping"
+          autocomplete="off"/>
+        <button
+          class="send-btn"
+          (click)="sendMessage()"
+          [disabled]="!inputText.trim() || isTyping"
+          type="button">
+          <i class='bx bx-send'></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer ──────────────────────────────────────────────────────── -->
+    <div class="chat-footer">
+      <span class="footer-dot"></span>
+      Propulsé par <strong>LOGISTIK IA</strong>
+      <span class="footer-dot"></span>
+    </div>
+
+  </div>
+</div>

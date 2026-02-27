@@ -7,10 +7,11 @@ import { Token } from '../../../core/services/Token/token';
 import { jwtDecode } from 'jwt-decode';
 import { NotificationService } from '../../../core/services/Notification/notification-service';
 import { NotificationComponent } from "../../../core/components/notification-component/notification-component";
+import { ChatbotWidget } from "../../../core/components/chatbot-widget/chatbot-widget";
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, NotificationComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, NotificationComponent, ChatbotWidget],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
