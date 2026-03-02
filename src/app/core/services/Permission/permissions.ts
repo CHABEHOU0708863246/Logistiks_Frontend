@@ -29,9 +29,6 @@ export class Permissions {
     // Le backend peut envoyer les permissions dans différents claims
     this.userPermissions = this.extractPermissions(payload);
     this.userRoles = this.extractRoles(payload);
-
-    console.log('✅ Permissions chargées:', this.userPermissions);
-    console.log('✅ Rôles chargés:', this.userRoles);
   }
 
   /**
@@ -317,11 +314,21 @@ export class Permissions {
    */
   public canViewReports(): boolean {
     return this.hasAnyPermission(
-      'Report_Read',
       'Report_Generate',
-      'Report_Export'
+      'Report_Read',
+      'Report_Export',
+      'Report_Schedule'
     );
   }
+
+  public canReadReport(): boolean {
+  return this.hasAnyPermission(
+    'Report_Read',
+    'Report_Generate',
+    'Report_Export',
+    'Report_Schedule'
+  );
+}
 
   /**
    * Vérifie si l'utilisateur peut voir le tableau de bord
@@ -395,15 +402,15 @@ export class Permissions {
     return [...this.userRoles];
   }
 
-  /**
-   * Debug: Affiche toutes les permissions
-   */
-  public debugPermissions(): void {
-    console.log('=== DEBUG PERMISSIONS ===');
-    console.log('Rôles:', this.userRoles);
-    console.log('Permissions:', this.userPermissions);
-    console.log('Super Admin?', this.isSuperAdmin());
-    console.log('Manager or above?', this.isManagerOrAbove());
-    console.log('========================');
+  public canGenerateReport(): boolean {
+    return this.hasPermission('Report_Generate');
+  }
+
+  public canExportReport(): boolean {
+    return this.hasAnyPermission('Report_Export', 'Report_Generate');
+  }
+
+  public canScheduleReport(): boolean {
+    return this.hasPermission('Report_Schedule');
   }
 }

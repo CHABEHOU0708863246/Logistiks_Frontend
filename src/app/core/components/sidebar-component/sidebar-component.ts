@@ -36,11 +36,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Recharger les permissions au démarrage
     this.permission.reloadPermissions();
-
-    // Debug en développement
-    if (!this.isProduction()) {
-      this.permission.debugPermissions();
-    }
   }
 
   ngOnDestroy(): void {

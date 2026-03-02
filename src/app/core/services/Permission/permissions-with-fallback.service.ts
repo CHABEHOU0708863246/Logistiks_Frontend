@@ -414,14 +414,14 @@ export class Permissions {
 
   public isSuperAdmin(): boolean {
     return this.hasRole('SUPER_ADMIN') ||
-           this.hasRole('SUPER ADMINISTRATEUR') ||
-           this.hasRole('Super Administrateur');
+      this.hasRole('SUPER ADMINISTRATEUR') ||
+      this.hasRole('Super Administrateur');
   }
 
   public isManagerOrAbove(): boolean {
     return this.isSuperAdmin() ||
-           this.hasRole('MANAGER') ||
-           this.hasRole('RESPONSABLE LOGISTIKS');
+      this.hasRole('MANAGER') ||
+      this.hasRole('RESPONSABLE LOGISTIKS');
   }
 
   public canViewTiers(): boolean {
@@ -451,6 +451,27 @@ export class Permissions {
 
   public canCreateVehicles(): boolean {
     return this.hasPermission('Vehicle_Create');
+  }
+
+  public canReadReport(): boolean {
+    return this.hasAnyPermission(
+      'Report_Read',
+      'Report_Generate',
+      'Report_Export',
+      'Report_Schedule'
+    );
+  }
+
+  public canScheduleReport(): boolean {
+    return this.hasPermission('Report_Schedule');
+  }
+
+  public canGenerateReport(): boolean {
+    return this.hasPermission('Report_Generate');
+  }
+
+  public canExportReport(): boolean {
+    return this.hasAnyPermission('Report_Export', 'Report_Generate');
   }
 
   public canViewDocuments(): boolean {
@@ -586,14 +607,5 @@ export class Permissions {
 
   public getUserRoles(): string[] {
     return [...this.userRoles];
-  }
-
-  public debugPermissions(): void {
-    console.log('=== DEBUG PERMISSIONS ===');
-    console.log('Rôles:', this.userRoles);
-    console.log('Permissions:', this.userPermissions);
-    console.log('Super Admin?', this.isSuperAdmin());
-    console.log('Manager or above?', this.isManagerOrAbove());
-    console.log('========================');
   }
 }

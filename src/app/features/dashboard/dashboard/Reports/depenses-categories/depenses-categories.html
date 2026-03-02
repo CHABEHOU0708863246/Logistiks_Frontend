@@ -1,0 +1,474 @@
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+<app-sidebar-component></app-sidebar-component>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">Dépenses par catégorie</h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
+    <!-- ========================================== -->
+<!-- ══════════════════════════════════════════════════ -->
+      <!-- CONTENU PRINCIPAL                                 -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="content-wrapper">
+
+        <!-- ── EN-TÊTE ──────────────────────────────────── -->
+        <div class="exp-header">
+          <div class="exp-header__left">
+            <div class="exp-header__icon">
+              <i class="bx bx-pie-chart-alt-2"></i>
+            </div>
+            <div>
+              <h4 class="exp-header__title">Dépenses par catégorie</h4>
+              <p class="exp-header__subtitle">
+                Analyse et ventilation des charges opérationnelles de la flotte
+              </p>
+            </div>
+          </div>
+
+          <!-- Contrôles période + filtre -->
+          <div class="exp-controls">
+            <!-- Sélecteur période -->
+            <div class="exp-period">
+              <button class="exp-period__nav" (click)="previousMonth()">
+                <i class="bx bx-chevron-left"></i>
+              </button>
+              <div class="exp-period__selects">
+                <select [(ngModel)]="selectedMonth" (change)="onPeriodChange()">
+                  <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
+                </select>
+                <select [(ngModel)]="selectedYear" (change)="onPeriodChange()">
+                  <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                </select>
+              </div>
+              <button class="exp-period__nav" (click)="nextMonth()" [disabled]="isNextMonthDisabled">
+                <i class="bx bx-chevron-right"></i>
+              </button>
+              <button class="exp-period__refresh" (click)="loadReport()" [disabled]="isLoading">
+                <i class="bx bx-refresh" [class.spin]="isLoading"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SKELETON ─────────────────────────────────── -->
+        <div *ngIf="isLoading" class="exp-skeleton-wrapper">
+          <div class="exp-sk-row">
+            <div class="exp-sk exp-sk--kpi" *ngFor="let i of [1,2,3]"></div>
+          </div>
+          <div class="exp-sk-row">
+            <div class="exp-sk exp-sk--big"></div>
+            <div class="exp-sk exp-sk--side"></div>
+          </div>
+          <div class="exp-sk exp-sk--table"></div>
+        </div>
+
+        <!-- ── ERREUR ────────────────────────────────────── -->
+        <div *ngIf="hasError && !isLoading" class="exp-error">
+          <i class="bx bx-error-circle"></i>
+          <div>
+            <strong>Impossible de charger le rapport</strong>
+            <p>{{ errorMessage }}</p>
+          </div>
+          <button class="btn btn-sm btn-primary" (click)="loadReport()">
+            <i class="bx bx-refresh me-1"></i> Réessayer
+          </button>
+        </div>
+
+        <!-- ── RAPPORT ───────────────────────────────────── -->
+        <ng-container *ngIf="reportData && !isLoading && !hasError">
+
+          <!-- ══════════════════════════════════════════════ -->
+          <!-- BLOC 1 : KPI SUMMARY CARDS                    -->
+          <!-- ══════════════════════════════════════════════ -->
+          <div class="exp-kpi-row">
+
+            <!-- Total dépenses -->
+            <div class="exp-kpi exp-kpi--total">
+              <div class="exp-kpi__glow"></div>
+              <div class="exp-kpi__icon"><i class="bx bx-wallet-alt"></i></div>
+              <div class="exp-kpi__body">
+                <span class="exp-kpi__label">Total dépenses</span>
+                <span class="exp-kpi__value">{{ formatAmount(reportData.totalExpenses) }}</span>
+                <span class="exp-kpi__sub">{{ periodLabel }}</span>
+              </div>
+            </div>
+
+            <!-- Catégorie principale -->
+            <div class="exp-kpi exp-kpi--top"
+                 *ngIf="topCategory"
+                 [style.--cat-color]="getCategoryColor(topCategory.categoryLabel)">
+              <div class="exp-kpi__glow"></div>
+              <div class="exp-kpi__icon">
+                <i class="bx" [ngClass]="getCategoryIcon(topCategory.categoryLabel)"></i>
+              </div>
+              <div class="exp-kpi__body">
+                <span class="exp-kpi__label">Poste principal</span>
+                <span class="exp-kpi__value">{{ topCategory.categoryLabel }}</span>
+                <span class="exp-kpi__badge">
+                  {{ formatPercent(topCategory.percentOfTotal) }} du total
+                </span>
+              </div>
+            </div>
+
+            <!-- Nb transactions -->
+            <div class="exp-kpi exp-kpi--transactions">
+              <div class="exp-kpi__glow"></div>
+              <div class="exp-kpi__icon"><i class="bx bx-receipt"></i></div>
+              <div class="exp-kpi__body">
+                <span class="exp-kpi__label">Transactions</span>
+                <span class="exp-kpi__value">{{ totalTransactions }}</span>
+                <span class="exp-kpi__sub">opérations enregistrées</span>
+              </div>
+            </div>
+
+            <!-- Véhicule le + coûteux -->
+            <div class="exp-kpi exp-kpi--vehicle" *ngIf="mostExpensiveVehicle">
+              <div class="exp-kpi__glow"></div>
+              <div class="exp-kpi__icon"><i class="bx bx-car"></i></div>
+              <div class="exp-kpi__body">
+                <span class="exp-kpi__label">Véhicule le + coûteux</span>
+                <span class="exp-kpi__value">{{ mostExpensiveVehicle.vehicleCode }}</span>
+                <span class="exp-kpi__sub">{{ formatAmount(mostExpensiveVehicle.totalExpense) }}</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ══════════════════════════════════════════════ -->
+          <!-- BLOC 2 : GRAPHIQUE PRINCIPAL + LÉGENDE        -->
+          <!-- ══════════════════════════════════════════════ -->
+          <div class="exp-main-row">
+
+            <!-- Graphique barres horizontales -->
+            <div class="exp-card exp-card--chart">
+              <div class="exp-card__header">
+                <span class="exp-card__title">
+                  <i class="bx bx-bar-chart-alt-2"></i> Répartition par catégorie
+                </span>
+                <span class="exp-card__meta">{{ formatAmount(reportData.totalExpenses) }} total</span>
+              </div>
+              <div class="exp-card__body">
+                <div class="exp-category-list">
+                  <div class="exp-category-item"
+                       *ngFor="let cat of categories"
+                       (mouseenter)="hoveredCategory = cat.categoryLabel"
+                       (mouseleave)="hoveredCategory = null"
+                       [class.exp-category-item--hovered]="hoveredCategory === cat.categoryLabel">
+
+                    <!-- Icône + label -->
+                    <div class="exp-category-item__head">
+                      <div class="exp-category-item__icon"
+                           [style.background]="getCategorySoftColor(cat.categoryLabel)"
+                           [style.color]="getCategoryColor(cat.categoryLabel)">
+                        <i class="bx" [ngClass]="getCategoryIcon(cat.categoryLabel)"></i>
+                      </div>
+                      <div class="exp-category-item__info">
+                        <span class="exp-category-item__label">{{ cat.categoryLabel }}</span>
+                        <span class="exp-category-item__count">
+                          {{ cat.transactionCount }} transaction{{ cat.transactionCount > 1 ? 's' : '' }}
+                        </span>
+                      </div>
+                      <div class="exp-category-item__amounts">
+                        <span class="exp-category-item__amount">{{ formatAmount(cat.amount) }}</span>
+                        <span class="exp-category-item__pct"
+                              [style.color]="getCategoryColor(cat.categoryLabel)">
+                          {{ formatPercent(cat.percentOfTotal) }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Barre de progression -->
+                    <div class="exp-category-item__track">
+                      <div class="exp-category-item__bar"
+                           [style.width.%]="cat.percentOfTotal"
+                           [style.background]="getCategoryColor(cat.categoryLabel)">
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Donut visuel + récapitulatif -->
+            <div class="exp-card exp-card--donut">
+              <div class="exp-card__header">
+                <span class="exp-card__title">
+                  <i class="bx bx-pie-chart"></i> Synthèse
+                </span>
+              </div>
+              <div class="exp-card__body exp-card__body--center">
+
+                <!-- Faux donut CSS -->
+                <div class="exp-donut">
+                  <div class="exp-donut__inner">
+                    <span class="exp-donut__total">{{ formatAmount(reportData.totalExpenses) }}</span>
+                    <span class="exp-donut__label">Total</span>
+                  </div>
+                  <!-- Segments CSS conic-gradient -->
+                  <div class="exp-donut__ring"
+                       [style.background]="buildConicGradient()">
+                  </div>
+                </div>
+
+                <!-- Légende -->
+                <div class="exp-legend">
+                  <div class="exp-legend__item"
+                       *ngFor="let cat of categories"
+                       [class.exp-legend__item--active]="hoveredCategory === cat.categoryLabel"
+                       (mouseenter)="hoveredCategory = cat.categoryLabel"
+                       (mouseleave)="hoveredCategory = null">
+                    <span class="exp-legend__dot"
+                          [style.background]="getCategoryColor(cat.categoryLabel)">
+                    </span>
+                    <span class="exp-legend__name">{{ cat.categoryLabel }}</span>
+                    <span class="exp-legend__pct">{{ formatPercent(cat.percentOfTotal) }}</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ══════════════════════════════════════════════ -->
+          <!-- BLOC 3 : ÉVOLUTION MENSUELLE (mini sparkbars) -->
+          <!-- ══════════════════════════════════════════════ -->
+          <div class="exp-card exp-card--full" *ngIf="monthly.length > 0">
+            <div class="exp-card__header">
+              <span class="exp-card__title">
+                <i class="bx bx-line-chart"></i> Évolution mensuelle des dépenses
+              </span>
+            </div>
+            <div class="exp-card__body">
+              <div class="exp-monthly-chart">
+                <div class="exp-monthly-bar-group"
+                     *ngFor="let m of monthly"
+                     [title]="m.monthLabel + ' : ' + formatAmount(m.totalExpense)">
+                  <!-- Barre empilée -->
+                  <div class="exp-monthly-bars">
+                    <div class="exp-monthly-bar exp-monthly-bar--maint"
+                         [style.height.px]="barHeight(m.maintenanceCost)"
+                         [title]="'Maintenance : ' + formatAmount(m.maintenanceCost)">
+                    </div>
+                    <div class="exp-monthly-bar exp-monthly-bar--fuel"
+                         [style.height.px]="barHeight(m.fuelCost)"
+                         [title]="'Carburant : ' + formatAmount(m.fuelCost)">
+                    </div>
+                    <div class="exp-monthly-bar exp-monthly-bar--ins"
+                         [style.height.px]="barHeight(m.insuranceCost)"
+                         [title]="'Assurance : ' + formatAmount(m.insuranceCost)">
+                    </div>
+                  </div>
+                  <!-- Label mois -->
+                  <span class="exp-monthly-label">{{ m.monthLabel }}</span>
+                  <!-- Total au-dessus -->
+                  <span class="exp-monthly-total">{{ formatAmount(m.totalExpense) }}</span>
+                </div>
+              </div>
+
+              <!-- Légende barres -->
+              <div class="exp-monthly-legend">
+                <span><span class="exp-monthly-dot exp-monthly-dot--maint"></span> Maintenance</span>
+                <span><span class="exp-monthly-dot exp-monthly-dot--fuel"></span> Carburant</span>
+                <span><span class="exp-monthly-dot exp-monthly-dot--ins"></span> Assurance</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════════ -->
+          <!-- BLOC 4 : TABLEAU PAR VÉHICULE                 -->
+          <!-- ══════════════════════════════════════════════ -->
+          <div class="exp-card exp-card--full" *ngIf="byVehicle.length > 0">
+            <div class="exp-card__header">
+              <span class="exp-card__title">
+                <i class="bx bx-car"></i> Détail par véhicule
+              </span>
+              <!-- Toggle vue -->
+              <div class="exp-toggle">
+                <button [class.exp-toggle__btn--active]="vehicleView === 'bars'"
+                        class="exp-toggle__btn"
+                        (click)="vehicleView = 'bars'">
+                  <i class="bx bx-bar-chart"></i>
+                </button>
+                <button [class.exp-toggle__btn--active]="vehicleView === 'table'"
+                        class="exp-toggle__btn"
+                        (click)="vehicleView = 'table'">
+                  <i class="bx bx-table"></i>
+                </button>
+              </div>
+            </div>
+            <div class="exp-card__body">
+
+              <!-- VUE BARRES -->
+              <div *ngIf="vehicleView === 'bars'" class="exp-vehicle-bars">
+                <div class="exp-vehicle-bar-item"
+                     *ngFor="let v of sortedVehicles.slice(0, 8)">
+                  <div class="exp-vehicle-bar-item__label">
+                    <div class="exp-vehicle-avatar">
+                      <i class="bx bx-car"></i>
+                    </div>
+                    <div>
+                      <div class="exp-vehicle-bar-item__name">{{ v.vehicleName }}</div>
+                      <div class="exp-vehicle-bar-item__code">{{ v.vehicleCode }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Barre segmentée -->
+                  <div class="exp-vehicle-bar-item__track">
+                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--maint"
+                         [style.width.%]="(v.maintenanceCost / v.totalExpense) * 100"
+                         [title]="'Maintenance : ' + formatAmount(v.maintenanceCost)">
+                    </div>
+                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--fuel"
+                         [style.width.%]="(v.fuelCost / v.totalExpense) * 100"
+                         [title]="'Carburant : ' + formatAmount(v.fuelCost)">
+                    </div>
+                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--ins"
+                         [style.width.%]="(v.insuranceCost / v.totalExpense) * 100"
+                         [title]="'Assurance : ' + formatAmount(v.insuranceCost)">
+                    </div>
+                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--other"
+                         [style.width.%]="(v.otherCost / v.totalExpense) * 100"
+                         [title]="'Autres : ' + formatAmount(v.otherCost)">
+                    </div>
+                  </div>
+
+                  <span class="exp-vehicle-bar-item__total">
+                    {{ formatAmount(v.totalExpense) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- VUE TABLEAU -->
+              <div *ngIf="vehicleView === 'table'" class="exp-vehicle-table-wrapper">
+                <table class="exp-vehicle-table">
+                  <thead>
+                    <tr>
+                      <th>Véhicule</th>
+                      <th (click)="sortBy('totalExpense')" class="sortable">
+                        Total
+                        <i class="bx" [ngClass]="sortColumn === 'totalExpense' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                      </th>
+                      <th (click)="sortBy('maintenanceCost')" class="sortable">
+                        Maintenance
+                        <i class="bx" [ngClass]="sortColumn === 'maintenanceCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                      </th>
+                      <th (click)="sortBy('fuelCost')" class="sortable">
+                        Carburant
+                        <i class="bx" [ngClass]="sortColumn === 'fuelCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                      </th>
+                      <th (click)="sortBy('insuranceCost')" class="sortable">
+                        Assurance
+                        <i class="bx" [ngClass]="sortColumn === 'insuranceCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                      </th>
+                      <th>Autres</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let v of sortedVehicles">
+                      <td>
+                        <div class="exp-vehicle-cell">
+                          <div class="exp-vehicle-avatar">
+                            <i class="bx bx-car"></i>
+                          </div>
+                          <div>
+                            <div class="fw-bold text-sm">{{ v.vehicleName }}</div>
+                            <div class="text-muted text-xs">{{ v.vehicleCode }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><strong class="text-danger">{{ formatAmount(v.totalExpense) }}</strong></td>
+                      <td>{{ formatAmount(v.maintenanceCost) }}</td>
+                      <td>{{ formatAmount(v.fuelCost) }}</td>
+                      <td>{{ formatAmount(v.insuranceCost) }}</td>
+                      <td>{{ formatAmount(v.otherCost) }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td><strong>TOTAL</strong></td>
+                      <td><strong class="text-danger">{{ formatAmount(reportData.totalExpenses) }}</strong></td>
+                      <td><strong>{{ formatAmount(byVehicle | sum:'maintenanceCost') }}</strong></td>
+                      <td><strong>{{ formatAmount(byVehicle | sum:'fuelCost') }}</strong></td>
+                      <td><strong>{{ formatAmount(byVehicle | sum:'insuranceCost') }}</strong></td>
+                      <td><strong>{{ formatAmount(byVehicle | sum:'otherCost') }}</strong></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+        </ng-container>
+      </div>
+
+          <!-- COMPOSANT DE NOTIFICATION -->
+      <app-notification-component></app-notification-component>
+  </div>
+</div>

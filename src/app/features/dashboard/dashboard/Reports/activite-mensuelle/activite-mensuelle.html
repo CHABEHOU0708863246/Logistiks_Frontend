@@ -1,0 +1,512 @@
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+<app-sidebar-component></app-sidebar-component>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">Rapport d'activité mensuelle</h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
+                 [src]="userPhotoUrl"
+                 [alt]="userName"
+                 (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
+    <!-- ========================================== -->
+<!-- ══════════════════════════════════════════════════ -->
+      <!-- CONTENU PRINCIPAL -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="content-wrapper">
+
+        <!-- ── EN-TÊTE DE PAGE ──────────────────────────── -->
+        <div class="rpt-header">
+          <div class="rpt-header__left">
+            <div class="rpt-header__icon">
+              <i class="bx bx-bar-chart-alt-2"></i>
+            </div>
+            <div>
+              <h4 class="rpt-header__title">Rapport d'activité mensuelle</h4>
+              <p class="rpt-header__subtitle">
+                Synthèse des performances opérationnelles et financières de la flotte
+              </p>
+            </div>
+          </div>
+
+          <!-- Sélecteur de période -->
+          <div class="rpt-period-selector">
+            <button class="rpt-period-selector__nav"
+                    (click)="previousMonth()"
+                    title="Mois précédent">
+              <i class="bx bx-chevron-left"></i>
+            </button>
+
+            <div class="rpt-period-selector__controls">
+              <select class="rpt-period-selector__select"
+                      [(ngModel)]="selectedMonth"
+                      (change)="onPeriodChange()">
+                <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
+              </select>
+              <select class="rpt-period-selector__select"
+                      [(ngModel)]="selectedYear"
+                      (change)="onPeriodChange()">
+                <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+              </select>
+            </div>
+
+            <button class="rpt-period-selector__nav"
+                    (click)="nextMonth()"
+                    [disabled]="isNextMonthDisabled"
+                    title="Mois suivant">
+              <i class="bx bx-chevron-right"></i>
+            </button>
+
+            <!-- Bouton actualiser -->
+            <button class="rpt-period-selector__refresh"
+                    (click)="loadReport()"
+                    [disabled]="isLoading"
+                    title="Actualiser">
+              <i class="bx bx-refresh" [class.spin]="isLoading"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── ÉTAT DE CHARGEMENT ────────────────────────── -->
+        <div *ngIf="isLoading" class="rpt-skeleton-wrapper">
+          <div class="rpt-skeleton-row">
+            <div class="rpt-skeleton rpt-skeleton--kpi"></div>
+            <div class="rpt-skeleton rpt-skeleton--kpi"></div>
+            <div class="rpt-skeleton rpt-skeleton--kpi"></div>
+            <div class="rpt-skeleton rpt-skeleton--kpi"></div>
+          </div>
+          <div class="rpt-skeleton-row">
+            <div class="rpt-skeleton rpt-skeleton--chart"></div>
+            <div class="rpt-skeleton rpt-skeleton--panel"></div>
+          </div>
+        </div>
+
+        <!-- ── ÉTAT D'ERREUR ─────────────────────────────── -->
+        <div *ngIf="hasError && !isLoading" class="rpt-error">
+          <div class="rpt-error__icon"><i class="bx bx-error-circle"></i></div>
+          <div class="rpt-error__content">
+            <h6>Impossible de charger le rapport</h6>
+            <p>{{ errorMessage }}</p>
+          </div>
+          <button class="btn btn-sm btn-primary" (click)="loadReport()">
+            <i class="bx bx-refresh me-1"></i> Réessayer
+          </button>
+        </div>
+
+        <!-- ── CONTENU DU RAPPORT ────────────────────────── -->
+        <ng-container *ngIf="reportData && !isLoading && !hasError">
+
+          <!-- ════════════════════════════════════════════ -->
+          <!-- BLOC 1 : KPI CARDS                          -->
+          <!-- ════════════════════════════════════════════ -->
+          <div class="rpt-kpi-grid">
+
+            <!-- Revenus -->
+            <div class="rpt-kpi rpt-kpi--revenue">
+              <div class="rpt-kpi__icon"><i class="bx bx-trending-up"></i></div>
+              <div class="rpt-kpi__body">
+                <span class="rpt-kpi__label">Revenus totaux</span>
+                <span class="rpt-kpi__value">{{ formatAmount(reportData.totalRevenue) }}</span>
+                <span class="rpt-kpi__sub">{{ periodLabel }}</span>
+              </div>
+            </div>
+
+            <!-- Dépenses -->
+            <div class="rpt-kpi rpt-kpi--expense">
+              <div class="rpt-kpi__icon"><i class="bx bx-trending-down"></i></div>
+              <div class="rpt-kpi__body">
+                <span class="rpt-kpi__label">Dépenses totales</span>
+                <span class="rpt-kpi__value">{{ formatAmount(reportData.totalExpenses) }}</span>
+                <span class="rpt-kpi__sub">Ce mois</span>
+              </div>
+            </div>
+
+            <!-- Bénéfice net -->
+            <div class="rpt-kpi rpt-kpi--profit"
+                 [class.rpt-kpi--negative]="reportData.netProfit < 0">
+              <div class="rpt-kpi__icon"><i class="bx bx-coin-stack"></i></div>
+              <div class="rpt-kpi__body">
+                <span class="rpt-kpi__label">Bénéfice net</span>
+                <span class="rpt-kpi__value">{{ formatAmount(reportData.netProfit) }}</span>
+                <span class="rpt-kpi__badge"
+                      [style.color]="profitMarginColor">
+                  Marge {{ formatPercent(reportData.profitMarginPercent) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Taux d'utilisation -->
+            <div class="rpt-kpi rpt-kpi--util">
+              <div class="rpt-kpi__icon"><i class="bx bx-car"></i></div>
+              <div class="rpt-kpi__body">
+                <span class="rpt-kpi__label">Taux d'utilisation</span>
+                <span class="rpt-kpi__value">{{ formatPercent(reportData.fleetUtilizationPercent) }}</span>
+                <span class="rpt-kpi__sub">
+                  {{ reportData.rentedVehicles }}/{{ reportData.totalVehicles }} véhicules loués
+                </span>
+              </div>
+              <!-- Barre de progression circulaire -->
+              <div class="rpt-kpi__ring">
+                <svg viewBox="0 0 36 36">
+                  <path class="ring-bg"
+                    d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0 -32"/>
+                  <path class="ring-fill"
+                    [style.stroke-dasharray]="(reportData.fleetUtilizationPercent * 100.5 / 100) + ' 100.5'"
+                    d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0 -32"/>
+                </svg>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ════════════════════════════════════════════ -->
+          <!-- BLOC 2 : CONTRATS & FLOTTE                  -->
+          <!-- ════════════════════════════════════════════ -->
+          <div class="rpt-row rpt-row--3cols">
+
+            <!-- Contrats du mois -->
+            <div class="rpt-card">
+              <div class="rpt-card__header">
+                <span class="rpt-card__title"><i class="bx bx-file-blank"></i> Contrats</span>
+              </div>
+              <div class="rpt-card__body">
+                <div class="rpt-stat-list">
+                  <div class="rpt-stat-list__item">
+                    <span class="rpt-stat-list__label">Total période</span>
+                    <span class="rpt-stat-list__value rpt-stat-list__value--primary">
+                      {{ reportData.totalContracts }}
+                    </span>
+                  </div>
+                  <div class="rpt-stat-list__item">
+                    <span class="rpt-stat-list__label">Actifs</span>
+                    <span class="rpt-stat-list__value rpt-stat-list__value--success">
+                      {{ reportData.activeContracts }}
+                    </span>
+                  </div>
+                  <div class="rpt-stat-list__item">
+                    <span class="rpt-stat-list__label">Nouveaux</span>
+                    <span class="rpt-stat-list__value rpt-stat-list__value--info">
+                      +{{ reportData.newContracts }}
+                    </span>
+                  </div>
+                  <div class="rpt-stat-list__item">
+                    <span class="rpt-stat-list__label">Renouvelés</span>
+                    <span class="rpt-stat-list__value rpt-stat-list__value--warning">
+                      {{ reportData.renewedContracts }}
+                    </span>
+                  </div>
+                  <div class="rpt-stat-list__item">
+                    <span class="rpt-stat-list__label">Résiliés</span>
+                    <span class="rpt-stat-list__value rpt-stat-list__value--danger">
+                      {{ reportData.terminatedContracts }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Flotte -->
+            <div class="rpt-card">
+              <div class="rpt-card__header">
+                <span class="rpt-card__title"><i class="bx bx-car"></i> Flotte</span>
+              </div>
+              <div class="rpt-card__body">
+                <div class="rpt-fleet-donut">
+                  <div class="rpt-fleet-donut__segments">
+                    <div class="rpt-fleet-seg rpt-fleet-seg--rented"
+                         [style.width.%]="(reportData.rentedVehicles / reportData.totalVehicles) * 100">
+                    </div>
+                    <div class="rpt-fleet-seg rpt-fleet-seg--available"
+                         [style.width.%]="((reportData.totalVehicles - reportData.rentedVehicles) / reportData.totalVehicles) * 100">
+                    </div>
+                  </div>
+                  <div class="rpt-fleet-legend">
+                    <div class="rpt-fleet-legend__item">
+                      <span class="dot dot--rented"></span>
+                      <span>Loués ({{ reportData.rentedVehicles }})</span>
+                    </div>
+                    <div class="rpt-fleet-legend__item">
+                      <span class="dot dot--available"></span>
+                      <span>Disponibles ({{ reportData.totalVehicles - reportData.rentedVehicles }})</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Résumé financier -->
+            <div class="rpt-card">
+              <div class="rpt-card__header">
+                <span class="rpt-card__title"><i class="bx bx-wallet-alt"></i> Résumé financier</span>
+              </div>
+              <div class="rpt-card__body">
+                <div class="rpt-finance-summary">
+                  <div class="rpt-finance-row rpt-finance-row--revenue">
+                    <span>Revenus</span>
+                    <strong>{{ formatAmount(reportData.totalRevenue) }}</strong>
+                  </div>
+                  <div class="rpt-finance-row rpt-finance-row--expense">
+                    <span>Dépenses</span>
+                    <strong>{{ formatAmount(reportData.totalExpenses) }}</strong>
+                  </div>
+                  <div class="rpt-finance-divider"></div>
+                  <div class="rpt-finance-row rpt-finance-row--profit"
+                       [class.rpt-finance-row--negative]="reportData.netProfit < 0">
+                    <span>Bénéfice net</span>
+                    <strong>{{ formatAmount(reportData.netProfit) }}</strong>
+                  </div>
+                  <div class="rpt-finance-margin-bar">
+                    <div class="rpt-finance-margin-bar__fill"
+                         [style.width.%]="Math.min(Math.max(reportData.profitMarginPercent, 0), 100)"
+                         [style.background]="profitMarginColor">
+                    </div>
+                  </div>
+                  <div class="rpt-finance-margin-label"
+                       [style.color]="profitMarginColor">
+                    Marge {{ formatPercent(reportData.profitMarginPercent) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ════════════════════════════════════════════ -->
+          <!-- BLOC 3 : VENTILATION DES DÉPENSES           -->
+          <!-- ════════════════════════════════════════════ -->
+          <div class="rpt-card rpt-card--full">
+            <div class="rpt-card__header">
+              <span class="rpt-card__title">
+                <i class="bx bx-pie-chart-alt-2"></i> Ventilation des dépenses
+              </span>
+              <span class="rpt-card__total">
+                Total : {{ formatAmount(reportData.totalExpenses) }}
+              </span>
+            </div>
+            <div class="rpt-card__body">
+              <div class="rpt-expense-breakdown">
+
+                <!-- Maintenance -->
+                <div class="rpt-expense-item">
+                  <div class="rpt-expense-item__header">
+                    <div class="rpt-expense-item__dot rpt-expense-item__dot--maint"></div>
+                    <span class="rpt-expense-item__label">Maintenance</span>
+                    <span class="rpt-expense-item__amount">{{ formatAmount(reportData.maintenanceCost) }}</span>
+                    <span class="rpt-expense-item__pct">{{ maintenancePercent }}%</span>
+                  </div>
+                  <div class="rpt-expense-bar">
+                    <div class="rpt-expense-bar__fill rpt-expense-bar__fill--maint"
+                         [style.width.%]="maintenancePercent"></div>
+                  </div>
+                </div>
+
+                <!-- Carburant -->
+                <div class="rpt-expense-item">
+                  <div class="rpt-expense-item__header">
+                    <div class="rpt-expense-item__dot rpt-expense-item__dot--fuel"></div>
+                    <span class="rpt-expense-item__label">Carburant</span>
+                    <span class="rpt-expense-item__amount">{{ formatAmount(reportData.fuelCost) }}</span>
+                    <span class="rpt-expense-item__pct">{{ fuelPercent }}%</span>
+                  </div>
+                  <div class="rpt-expense-bar">
+                    <div class="rpt-expense-bar__fill rpt-expense-bar__fill--fuel"
+                         [style.width.%]="fuelPercent"></div>
+                  </div>
+                </div>
+
+                <!-- Assurance -->
+                <div class="rpt-expense-item">
+                  <div class="rpt-expense-item__header">
+                    <div class="rpt-expense-item__dot rpt-expense-item__dot--ins"></div>
+                    <span class="rpt-expense-item__label">Assurance</span>
+                    <span class="rpt-expense-item__amount">{{ formatAmount(reportData.insuranceCost) }}</span>
+                    <span class="rpt-expense-item__pct">{{ insurancePercent }}%</span>
+                  </div>
+                  <div class="rpt-expense-bar">
+                    <div class="rpt-expense-bar__fill rpt-expense-bar__fill--ins"
+                         [style.width.%]="insurancePercent"></div>
+                  </div>
+                </div>
+
+                <!-- Autres -->
+                <div class="rpt-expense-item">
+                  <div class="rpt-expense-item__header">
+                    <div class="rpt-expense-item__dot rpt-expense-item__dot--other"></div>
+                    <span class="rpt-expense-item__label">Taxes & Autres</span>
+                    <span class="rpt-expense-item__amount">
+                      {{ formatAmount(reportData.taxesCost + reportData.otherCost) }}
+                    </span>
+                    <span class="rpt-expense-item__pct">{{ otherExpensesPercent }}%</span>
+                  </div>
+                  <div class="rpt-expense-bar">
+                    <div class="rpt-expense-bar__fill rpt-expense-bar__fill--other"
+                         [style.width.%]="otherExpensesPercent"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ════════════════════════════════════════════ -->
+          <!-- BLOC 4 : CLASSEMENT VÉHICULES               -->
+          <!-- ════════════════════════════════════════════ -->
+          <div class="rpt-card rpt-card--full">
+            <div class="rpt-card__header">
+              <span class="rpt-card__title">
+                <i class="bx bx-trophy"></i> Classement des véhicules
+              </span>
+              <!-- Toggle top/bottom -->
+              <div class="rpt-toggle-pills">
+                <button class="rpt-toggle-pill"
+                        [class.rpt-toggle-pill--active]="vehicleView === 'top'"
+                        (click)="vehicleView = 'top'">
+                  <i class="bx bx-up-arrow-alt"></i> Top 3
+                </button>
+                <button class="rpt-toggle-pill"
+                        [class.rpt-toggle-pill--active]="vehicleView === 'bottom'"
+                        (click)="vehicleView = 'bottom'">
+                  <i class="bx bx-down-arrow-alt"></i> Bottom 3
+                </button>
+              </div>
+            </div>
+            <div class="rpt-card__body">
+
+              <!-- État vide -->
+              <div *ngIf="displayedVehicles.length === 0" class="rpt-empty">
+                <i class="bx bx-car"></i>
+                <span>Aucun véhicule actif sur cette période</span>
+              </div>
+
+              <!-- Tableau -->
+              <div *ngIf="displayedVehicles.length > 0" class="rpt-vehicle-table-wrapper">
+                <table class="rpt-vehicle-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Véhicule</th>
+                      <th>Revenus</th>
+                      <th>Dépenses</th>
+                      <th>Bénéfice net</th>
+                      <th>ROI</th>
+                      <th>Utilisation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let v of displayedVehicles; let i = index"
+                        [class.rpt-vehicle-table__row--winner]="vehicleView === 'top' && i === 0">
+                      <td>
+                        <span class="rpt-rank"
+                              [class.rpt-rank--gold]="vehicleView === 'top' && i === 0"
+                              [class.rpt-rank--silver]="vehicleView === 'top' && i === 1"
+                              [class.rpt-rank--bronze]="vehicleView === 'top' && i === 2">
+                          {{ i + 1 }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="rpt-vehicle-info">
+                          <div class="rpt-vehicle-avatar">
+                            <i class="bx bx-car"></i>
+                          </div>
+                          <div>
+                            <div class="rpt-vehicle-name">{{ v.vehicleName }}</div>
+                            <div class="rpt-vehicle-code">{{ v.vehicleCode }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="rpt-cell-revenue">{{ formatAmount(v.revenue) }}</td>
+                      <td class="rpt-cell-expense">{{ formatAmount(v.expenses) }}</td>
+                      <td [class.rpt-cell-positive]="v.netProfit >= 0"
+                          [class.rpt-cell-negative]="v.netProfit < 0">
+                        {{ formatAmount(v.netProfit) }}
+                      </td>
+                      <td>
+                        <span class="rpt-badge" [ngClass]="getRoiClass(v.roiPercent)">
+                          {{ formatPercent(v.roiPercent) }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="rpt-util-bar">
+                          <div class="rpt-util-bar__fill"
+                               [style.width.%]="v.utilizationRate">
+                          </div>
+                          <span>{{ formatPercent(v.utilizationRate) }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+        </ng-container>
+
+      </div>
+      <!-- /content-wrapper -->
+
+          <!-- COMPOSANT DE NOTIFICATION -->
+      <app-notification-component></app-notification-component>
+  </div>
+</div>

@@ -65,14 +65,14 @@ export enum FuelType {
 
 // CONTRACTS
 export enum ContractStatus {
-    Draft = 1,
-    Pending = 2,
-    Active = 3,
-    Suspended = 4,
-    Terminated = 5,
-    Completed = 6,
-    Template = 7,
-    Assigned = 8
+  Draft = 1,
+  Pending = 2,
+  Active = 3,
+  Suspended = 4,
+  Terminated = 5,
+  Completed = 6,
+  Template = 7,
+  Assigned = 8
 }
 
 export enum PaymentFrequency {
@@ -98,27 +98,27 @@ export enum PaymentStatus {
 }
 
 export enum TransactionType {
-  Income  = 1,   // Revenu
+  Income = 1,   // Revenu
   Expense = 2    // Dépense
 }
 
 export enum TransactionCategory {
   // Revenus
   RentalIncome = 1,
-  LateFees     = 2,
-  DamageFees   = 3,
-  OtherIncome  = 4,
+  LateFees = 2,
+  DamageFees = 3,
+  OtherIncome = 4,
 
   // Dépenses
-  Maintenance    = 101,
-  Fuel           = 102,
-  Insurance      = 103,
-  Taxes          = 104,
-  Salary         = 105,
-  Utilities      = 106,
+  Maintenance = 101,
+  Fuel = 102,
+  Insurance = 103,
+  Taxes = 104,
+  Salary = 105,
+  Utilities = 106,
   OfficeSupplies = 107,
-  Marketing      = 108,
-  OtherExpense   = 109
+  Marketing = 108,
+  OtherExpense = 109
 }
 
 export enum PaymentMethod {
@@ -240,9 +240,9 @@ export enum DocumentEntityType {
 }
 
 export enum ContractType {
-    Template = 0, // Contrat modèle sans client/véhicule assigné
-    Final = 1,    // Contrat final avec client/véhicule assigné
-    Draft = 2     // Brouillon en cours de création
+  Template = 0, // Contrat modèle sans client/véhicule assigné
+  Final = 1,    // Contrat final avec client/véhicule assigné
+  Draft = 2     // Brouillon en cours de création
 }
 
 /**
@@ -302,3 +302,77 @@ export function parseDocumentEntityType(value: string): DocumentEntityType | nul
 
   return null;
 }
+
+// ═══════════════════════════════════════════════════════════
+// MODULE RAPPORT — Enums
+// ═══════════════════════════════════════════════════════════
+
+export enum ReportType {
+  MonthlyActivity = 1,       // RPT-01 : Activité mensuelle flotte
+  VehicleRoiDetail = 2,      // RPT-02 : ROI détaillé par véhicule
+  ExpenseByCategory = 3,     // RPT-03 : Dépenses par catégorie
+  ExpiringContracts = 4,     // RPT-04 : Contrats arrivant à expiration
+  ClientPaymentHistory = 5,  // RPT-05 : Historique paiements client
+  OverduePayments = 6,       // RPT-06 : Impayés et retards
+  FleetUtilization = 7,      // RPT-07 : Taux utilisation flotte
+  MaintenanceSummary = 8,    // RPT-08 : Synthèse maintenance
+  InsuranceExpiry = 9,       // RPT-09 : Assurances à renouveler
+  PeriodComparison = 10      // RPT-10 : Comparaison de périodes
+}
+
+export enum ReportStatus {
+  Pending = 1,    // En attente de génération
+  Running = 2,    // En cours de génération
+  Completed = 3,  // Généré avec succès
+  Failed = 4,     // Échec de génération
+  Scheduled = 5   // Planifié (pas encore exécuté)
+}
+
+export enum ReportScheduleFrequency {
+  Daily = 1,
+  Weekly = 2,
+  Monthly = 3
+}
+
+export enum ExportFormat {
+  Pdf = 1,
+  Excel = 2,
+  Csv = 3,
+  Json = 4
+}
+
+// ── Labels lisibles pour l'UI ─────────────────────────────
+
+export const REPORT_TYPE_LABELS: Record<ReportType, string> = {
+  [ReportType.MonthlyActivity]: 'Activité mensuelle',
+  [ReportType.VehicleRoiDetail]: 'ROI par véhicule',
+  [ReportType.ExpenseByCategory]: 'Dépenses par catégorie',
+  [ReportType.ExpiringContracts]: 'Contrats expirants',
+  [ReportType.ClientPaymentHistory]: 'Historique paiements client',
+  [ReportType.OverduePayments]: 'Impayés et retards',
+  [ReportType.FleetUtilization]: 'Utilisation de la flotte',
+  [ReportType.MaintenanceSummary]: 'Synthèse maintenance',
+  [ReportType.InsuranceExpiry]: 'Assurances à renouveler',
+  [ReportType.PeriodComparison]: 'Comparaison de périodes',
+};
+
+export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
+  [ReportStatus.Pending]: 'En attente',
+  [ReportStatus.Running]: 'En cours',
+  [ReportStatus.Completed]: 'Généré',
+  [ReportStatus.Failed]: 'Échec',
+  [ReportStatus.Scheduled]: 'Planifié',
+};
+
+export const EXPORT_FORMAT_LABELS: Record<ExportFormat, string> = {
+  [ExportFormat.Pdf]: 'PDF',
+  [ExportFormat.Excel]: 'Excel',
+  [ExportFormat.Csv]: 'CSV',
+  [ExportFormat.Json]: 'JSON',
+};
+
+export const SCHEDULE_FREQUENCY_LABELS: Record<ReportScheduleFrequency, string> = {
+  [ReportScheduleFrequency.Daily]: 'Quotidien',
+  [ReportScheduleFrequency.Weekly]: 'Hebdomadaire',
+  [ReportScheduleFrequency.Monthly]: 'Mensuel',
+};

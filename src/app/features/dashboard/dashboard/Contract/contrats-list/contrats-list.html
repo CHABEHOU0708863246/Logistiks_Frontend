@@ -603,12 +603,12 @@
                               </li>
 
                               <!-- Dans le menu d'actions d'un contrat, ajouter : -->
-                              <li *ngIf="canActivateContract(contract)">
+                              <!-- <li *ngIf="canActivateContract(contract)">
                                 <a class="dropdown-item" (click)="openActivateContractModal(contract)">
                                   <i class='bx bx-check-circle text-success me-2'></i>
                                   Activer avec livraison
                                 </a>
-                              </li>
+                              </li> -->
 
                               <li>
                                 <hr class="dropdown-divider">
@@ -764,12 +764,12 @@
           </li>
 
           <!-- ACTIVER AVEC LIVRAISON -->
-          <li *ngIf="canActivateContract(getActiveContract()!)">
+          <!-- <li *ngIf="canActivateContract(getActiveContract()!)">
             <a class="fam-item item-success"
               (click)="openActivateContractModal(getActiveContract()!); closeActionsMenu()">
               <i class='bx bx-check-circle'></i> Activer avec livraison
             </a>
-          </li>
+          </li> -->
 
           <li class="fam-divider"></li>
 
