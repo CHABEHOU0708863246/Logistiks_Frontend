@@ -4,18 +4,24 @@ export enum TransactionType {
 }
 
 export enum TransactionCategory {
-    // Revenus
+    // Revenus (1-100)
     RentalIncome = 1,
-    Deposit = 2,
-    Service = 3,
-    // Dépenses
-    Fuel = 4,
-    Maintenance = 5,
-    Insurance = 6,
-    Tax = 7,
-    Salary = 8,
-    Other = 9
+    LateFees = 2,
+    DamageFees = 3,
+    OtherIncome = 4,
+
+    // Dépenses (101-109)
+    Maintenance = 101,
+    Fuel = 102,
+    Insurance = 103,
+    Taxes = 104,
+    Salary = 105,
+    Utilities = 106,
+    OfficeSupplies = 107,
+    Marketing = 108,
+    OtherExpense = 109
 }
+
 
 export enum PaymentMethod {
     Cash = 1,

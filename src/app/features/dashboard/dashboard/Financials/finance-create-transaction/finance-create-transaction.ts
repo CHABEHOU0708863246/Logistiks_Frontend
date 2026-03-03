@@ -99,16 +99,20 @@ showVehicleList: boolean = false;
   // ============================================================================
 
   /** Suggestions de descriptions selon la catégorie */
-  descriptionSuggestions: DescriptionSuggestion[] = [
-    { icon: 'bx-car', text: 'Paiement location véhicule', category: TransactionCategory.RentalIncome },
-    { icon: 'bx-money', text: 'Remboursement caution', category: TransactionCategory.Deposit },
-    { icon: 'bx-gas-pump', text: 'Achat carburant', category: TransactionCategory.Fuel },
-    { icon: 'bx-wrench', text: 'Réparation et entretien', category: TransactionCategory.Maintenance },
-    { icon: 'bx-shield-alt-2', text: 'Paiement assurance', category: TransactionCategory.Insurance },
-    { icon: 'bx-receipt', text: 'Paiement taxe', category: TransactionCategory.Tax },
-    { icon: 'bx-user', text: 'Salaire employé', category: TransactionCategory.Salary },
-    { icon: 'bx-cog', text: 'Service administratif', category: TransactionCategory.Service }
-  ];
+descriptionSuggestions: DescriptionSuggestion[] = [
+    // Revenus (1-100)
+    { icon: 'bx-car', text: 'Paiement location véhicule', category: TransactionCategory.RentalIncome }, // 1
+    { icon: 'bx-money', text: 'Remboursement caution', category: TransactionCategory.OtherIncome }, // 4 (Deposit n'existe plus, remplacé par OtherIncome)
+
+    // Dépenses (101-109)
+    { icon: 'bx-gas-pump', text: 'Achat carburant', category: TransactionCategory.Fuel }, // 102
+    { icon: 'bx-wrench', text: 'Réparation et entretien', category: TransactionCategory.Maintenance }, // 101
+    { icon: 'bx-shield-alt-2', text: 'Paiement assurance', category: TransactionCategory.Insurance }, // 103
+    { icon: 'bx-receipt', text: 'Paiement taxe', category: TransactionCategory.Taxes }, // 104 (corrigé de Tax à Taxes)
+    { icon: 'bx-user', text: 'Salaire employé', category: TransactionCategory.Salary }, // 105
+    { icon: 'bx-cog', text: 'Frais administratifs', category: TransactionCategory.OtherExpense } // 109 (Service n'existe plus, remplacé par OtherExpense)
+];
+
 
   /** Suggestions filtrées selon le type et la catégorie sélectionnés */
   filteredSuggestions: DescriptionSuggestion[] = [];
@@ -323,7 +327,7 @@ getVehicleStatusClass(status: VehicleStatus): string {
   const today = new Date().toISOString().split('T')[0];
   this.transactionForm = this.formBuilder.group({
     type:          [TransactionType.Expense, Validators.required],
-    category:      [TransactionCategory.Other, Validators.required], // 109
+    category:      [TransactionCategory.OtherExpense, Validators.required], // 109
     amount:        [0, [Validators.required, Validators.min(0.01)]],
     date:          [today, Validators.required],
     paymentMethod: [PaymentMethod.Cash, Validators.required],
@@ -352,7 +356,7 @@ getVehicleStatusClass(status: VehicleStatus): string {
     .subscribe(type => {
       const defaultCategory = type === TransactionType.Revenue
         ? TransactionCategory.RentalIncome
-        : TransactionCategory.Other;
+        : TransactionCategory.OtherExpense;
       this.transactionForm.patchValue({ category: defaultCategory }, { emitEvent: false });
 
       const amount = this.transactionForm.get('amount')?.value || 0;
@@ -649,7 +653,7 @@ getVehicleStatusClass(status: VehicleStatus): string {
     const today = new Date().toISOString().split('T')[0];
     this.transactionForm.reset({
       type: TransactionType.Expense,
-      category: TransactionCategory.Other,
+      category: TransactionCategory.OtherExpense,
       amount: 0,
       date: today,
       paymentMethod: PaymentMethod.Cash

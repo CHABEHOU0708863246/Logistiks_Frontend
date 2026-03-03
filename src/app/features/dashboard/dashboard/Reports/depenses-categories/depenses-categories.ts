@@ -298,8 +298,8 @@ buildConicGradient(): string {
   }
 
   formatAmount(v: number): string {
-    if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' M FCFA';
-    if (v >= 1_000)     return (v / 1_000).toFixed(0)     + ' K FCFA';
+    if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' 000 000 FCFA';
+    if (v >= 1_000)     return (v / 1_000).toFixed(0)     + ' 000 FCFA';
     return v.toFixed(0) + ' FCFA';
   }
 

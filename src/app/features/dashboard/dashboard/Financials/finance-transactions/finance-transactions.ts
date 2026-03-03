@@ -250,7 +250,7 @@ export class FinanceTransactions implements OnInit, OnDestroy {
   private initializeForm(): void {
     this.transactionForm = this.formBuilder.group({
       type: [TransactionType.Expense, Validators.required],
-      category: [TransactionCategory.Other, Validators.required],
+      category: [TransactionCategory.OtherExpense, Validators.required],
       amount: [0, [Validators.required, Validators.min(0.01)]],
       date: [new Date().toISOString().split('T')[0], Validators.required],
       description: ['', [Validators.required, Validators.minLength(3)]],
@@ -857,7 +857,7 @@ export class FinanceTransactions implements OnInit, OnDestroy {
     this.formMode = 'create';
     this.transactionForm.reset({
       type: TransactionType.Expense,
-      category: TransactionCategory.Other,
+      category: TransactionCategory.OtherExpense,
       amount: 0,
       date: new Date().toISOString().split('T')[0],
       paymentMethod: PaymentMethod.Cash

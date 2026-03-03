@@ -496,20 +496,28 @@ export class Financials {
   /**
    * Obtenir l'icône pour une catégorie de transaction
    */
-  getCategoryIcon(category: TransactionCategory): string {
-    const icons: { [key: number]: string } = {
-      [TransactionCategory.RentalIncome]: 'bx-car',
-      [TransactionCategory.Deposit]: 'bx-lock',
-      [TransactionCategory.Service]: 'bx-wrench',
-      [TransactionCategory.Fuel]: 'bx-gas-pump',
-      [TransactionCategory.Maintenance]: 'bx-brush',
-      [TransactionCategory.Insurance]: 'bx-shield',
-      [TransactionCategory.Tax]: 'bx-taxi',
-      [TransactionCategory.Salary]: 'bx-money',
-      [TransactionCategory.Other]: 'bx-category'
-    };
-    return icons[category] || 'bx-help-circle';
-  }
+ getCategoryIcon(category: TransactionCategory): string {
+  const icons: { [key: number]: string } = {
+    // Revenus (1-100)
+    [TransactionCategory.RentalIncome]: 'bx-car',
+    [TransactionCategory.LateFees]: 'bx-time',
+    [TransactionCategory.DamageFees]: 'bx-sad',
+    [TransactionCategory.OtherIncome]: 'bx-dots-horizontal-rounded',
+
+    // Dépenses (101-109)
+    [TransactionCategory.Maintenance]: 'bx-wrench',
+    [TransactionCategory.Fuel]: 'bx-gas-pump',
+    [TransactionCategory.Insurance]: 'bx-shield-alt-2',
+    [TransactionCategory.Taxes]: 'bx-receipt',
+    [TransactionCategory.Salary]: 'bx-user',
+    [TransactionCategory.Utilities]: 'bx-plug',
+    [TransactionCategory.OfficeSupplies]: 'bx-briefcase',
+    [TransactionCategory.Marketing]: 'bx-bullhorn',
+    [TransactionCategory.OtherExpense]: 'bx-dots-horizontal-rounded'
+  };
+  return icons[category] || 'bx-help-circle';
+}
+
 
   /**
    * Gestion centralisée des erreurs HTTP

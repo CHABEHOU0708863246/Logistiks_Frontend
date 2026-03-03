@@ -186,7 +186,7 @@
                       Catégorie <span class="text-danger">*</span>
                     </label>
 
-                    <!-- Revenus (visibles si type = Income) -->
+                    <!-- Revenus (visibles si type = Revenue) -->
                     <div *ngIf="transactionForm.get('type')?.value === TransactionType.Revenue">
                       <p class="text-muted small mb-2"><i class='bx bx-info-circle'></i> Catégories de revenus</p>
                       <div class="row g-3">
@@ -202,28 +202,28 @@
                         <!-- Frais de retard -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Tax"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Tax})">
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.LateFees"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.LateFees})">
                             <i class='bx bx-time'></i>
-                            <span>Frais retard</span>
+                            <span>Frais de retard</span>
                           </div>
                         </div>
-                        <!-- Dommages -->
+                        <!-- Frais de dommage -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Maintenance"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Maintenance})">
-                            <i class='bx bx-wrench'></i>
-                            <span>Maintenance</span>
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.DamageFees"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.DamageFees})">
+                            <i class='bx bx-sad'></i>
+                            <span>Frais de dommage</span>
                           </div>
                         </div>
                         <!-- Autre revenu -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Other"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Other})">
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.OtherIncome"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.OtherIncome})">
                             <i class='bx bx-dots-horizontal-rounded'></i>
-                            <span>Autre</span>
+                            <span>Autre revenu</span>
                           </div>
                         </div>
                       </div>
@@ -263,8 +263,8 @@
                         <!-- Taxes -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Tax"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Tax})">
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Taxes"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.Taxes})">
                             <i class='bx bx-receipt'></i>
                             <span>Taxes</span>
                           </div>
@@ -278,20 +278,20 @@
                             <span>Salaire</span>
                           </div>
                         </div>
-                        <!-- Charges -->
+                        <!-- Utilités -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Other"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Other})">
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Utilities"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.Utilities})">
                             <i class='bx bx-plug'></i>
-                            <span>Charges</span>
+                            <span>Utilités</span>
                           </div>
                         </div>
-                        <!-- Fournitures -->
+                        <!-- Fournitures de bureau -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Service"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Service})">
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.OfficeSupplies"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.OfficeSupplies})">
                             <i class='bx bx-briefcase'></i>
                             <span>Fournitures</span>
                           </div>
@@ -299,8 +299,8 @@
                         <!-- Marketing -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Service"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Service})">
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Marketing"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.Marketing})">
                             <i class='bx bx-bullhorn'></i>
                             <span>Marketing</span>
                           </div>
@@ -308,15 +308,16 @@
                         <!-- Autre dépense -->
                         <div class="col-md-4 col-sm-6">
                           <div class="category-card"
-                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.Other"
-                            (click)="transactionForm.patchValue({category: TransactionCategory.Other})">
+                            [class.selected]="transactionForm.get('category')?.value === TransactionCategory.OtherExpense"
+                            (click)="transactionForm.patchValue({category: TransactionCategory.OtherExpense})">
                             <i class='bx bx-dots-horizontal-rounded'></i>
-                            <span>Autre</span>
+                            <span>Autre dépense</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
+
                 </div>
 
                 <!-- =========================================================== -->
@@ -434,7 +435,7 @@
                   <!-- SECTION : SÉLECTEUR DE VÉHICULE -->
                   <!-- =========================================================== -->
                   <div class="mb-10">
-                     <label class="form-label fw-bold">
+                    <label class="form-label fw-bold">
                       Véhicule associé <small class="text-muted">(optionnel)</small>
                     </label>
 
