@@ -403,20 +403,24 @@ export class Financials {
   /**
    * Obtenir le nom de la catégorie en français
    */
-  getCategoryName(category: number): string {
-    const categories: { [key: number]: string } = {
-      1: 'Location',
-      2: 'Caution',
-      3: 'Service',
-      4: 'Carburant',
-      5: 'Maintenance',
-      6: 'Assurance',
-      7: 'Taxe',
-      8: 'Salaire',
-      9: 'Autre',
-    };
-    return categories[category] || 'Inconnu';
-  }
+ getCategoryName(category: TransactionCategory): string {
+  const map: Record<number, string> = {
+    [TransactionCategory.RentalIncome]:   'Loyer / Location',
+    [TransactionCategory.LateFees]:       'Pénalités retard',
+    [TransactionCategory.DamageFees]:     'Frais dommages',
+    [TransactionCategory.OtherIncome]:    'Autres revenus',
+    [TransactionCategory.Maintenance]:    'Maintenance',
+    [TransactionCategory.Fuel]:           'Carburant',
+    [TransactionCategory.Insurance]:      'Assurance',
+    [TransactionCategory.Taxes]:          'Taxes',
+    [TransactionCategory.Salary]:         'Salaires',
+    [TransactionCategory.Utilities]:      'Charges',
+    [TransactionCategory.OfficeSupplies]: 'Fournitures bureau',
+    [TransactionCategory.Marketing]:      'Marketing',
+    [TransactionCategory.OtherExpense]:   'Autres dépenses',
+  };
+  return map[category] ?? `Catégorie ${category}`;
+}
 
   /**
    * Calculer le taux de croissance entre deux valeurs

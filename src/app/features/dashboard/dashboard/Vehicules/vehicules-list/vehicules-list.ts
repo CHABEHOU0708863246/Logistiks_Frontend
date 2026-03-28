@@ -918,28 +918,43 @@ export class VehiculesList implements OnInit, OnDestroy {
     }, 500);
   }
 
-  /**
-   * Calcule la date de fin estimée en fonction de la date de début et de la durée
-   */
-  calculateEndDate(): string {
-    const startDate = this.reservationForm?.get('expectedStartDate')?.value;
-    const durationDays = this.reservationForm?.get('reservationDurationDays')?.value;
+/**
+ * Calcule la date de fin estimée en fonction de la date de début et de la durée
+ */
+calculateEndDate(): string {
+  const startDate = this.reservationForm?.get('expectedStartDate')?.value;
+  const durationDays = this.reservationForm?.get('reservationDurationDays')?.value;
 
-    if (!startDate || !durationDays) {
-      return '';
-    }
-
-    try {
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + parseInt(durationDays, 9));
-
-      return end.toISOString().split('T')[0];
-    } catch (error) {
-      console.error('Erreur lors du calcul de la date de fin:', error);
-      return '';
-    }
+  if (!startDate || !durationDays) {
+    return '';
   }
+
+  try {
+    const start = new Date(startDate);
+
+    // Vérifier que la date de début est valide
+    if (isNaN(start.getTime())) {
+      console.error('Date de début invalide:', startDate);
+      return '';
+    }
+
+    const duration = parseInt(durationDays, 10); // Correction: base 10 au lieu de 9
+    const end = new Date(start);
+
+    // Ajouter la durée en jours
+    end.setDate(start.getDate() + duration);
+
+    // Formater la date en YYYY-MM-DD
+    const year = end.getFullYear();
+    const month = String(end.getMonth() + 1).padStart(2, '0');
+    const day = String(end.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('Erreur lors du calcul de la date de fin:', error);
+    return '';
+  }
+}
 
   /**
    * Gère l'annulation du dialog

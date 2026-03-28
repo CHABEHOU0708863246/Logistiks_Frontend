@@ -355,8 +355,8 @@ getVehicleStatusClass(status: VehicleStatus): string {
     .pipe(takeUntil(this.destroy$))
     .subscribe(type => {
       const defaultCategory = type === TransactionType.Revenue
-        ? TransactionCategory.RentalIncome
-        : TransactionCategory.OtherExpense;
+          ? TransactionCategory.RentalIncome
+          : TransactionCategory.OtherExpense;
       this.transactionForm.patchValue({ category: defaultCategory }, { emitEvent: false });
 
       const amount = this.transactionForm.get('amount')?.value || 0;
@@ -744,8 +744,7 @@ getVehicleStatusClass(status: VehicleStatus): string {
       [PaymentMethod.Cash]: 'Espèces',
       [PaymentMethod.BankTransfer]: 'Virement bancaire',
       [PaymentMethod.Check]: 'Chèque',
-      [PaymentMethod.MobileMoney]: 'Mobile Money',
-      [PaymentMethod.CreditCard]: 'Carte de crédit'
+      [PaymentMethod.MobileMoney]: 'Mobile Money'
     };
     return methods[method] || 'Autre';
   }
