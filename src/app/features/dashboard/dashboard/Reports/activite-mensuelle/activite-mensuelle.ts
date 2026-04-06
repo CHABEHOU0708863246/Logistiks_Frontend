@@ -300,14 +300,15 @@ export class ActiviteMensuelle implements OnInit, OnDestroy {
 
   /** Formate un montant en FCFA */
   formatAmount(value: number): string {
-    if (value >= 1_000_000) {
-      return (value / 1_000_000).toFixed(1) + ' 000 000 FCFA';
-    }
-    if (value >= 1_000) {
-      return (value / 1_000).toFixed(0) + ' 000 FCFA';
-    }
-    return value.toFixed(0) + ' FCFA';
+  if (value == null || isNaN(value)) return '0 FCFA';
+
+  if (value >= 1_000_000) {
+    return new Intl.NumberFormat('fr-FR').format(Math.round(value)) + ' FCFA';
   }
+
+  // Utiliser toLocaleString pour garder tous les chiffres significatifs
+  return new Intl.NumberFormat('fr-FR').format(Math.round(value)) + ' FCFA';
+}
 
   /** Formate un pourcentage avec signe */
   formatPercent(value: number, showSign = false): string {

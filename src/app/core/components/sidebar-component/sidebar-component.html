@@ -30,8 +30,7 @@
 
     <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewAnalytics()">
       <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-bar-chart-alt-2"></i>
-        <div>Analytics & Rapports</div>
+        <div>Analyses et KPIs</div>
       </a>
       <ul class="menu-sub">
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewDashboard()">
@@ -40,34 +39,9 @@
           </a>
         </li>
 
-        <!-- 📊 TABLEAU DE BORD FINANCIER -->
-        <!-- RG-016: Dashboard avec KPIs globaux (CA, dépenses, profit) -->
-        <!-- RG-016: Top 3 véhicules performants + Bottom 3 véhicules -->
-        <!-- RG-017: Taux d'utilisation flotte = (Véhicules loués / Total véhicules actifs) × 100 -->
-        <!-- RG-014: Paiements en attente (Pending) et en retard (Late) tracés séparément -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
           <a [routerLink]="['/dashboard/analytics/finance']" class="menu-link">
             <div>Tableau de bord financier</div>
-            <span class="badge badge-info"></span>
-          </a>
-        </li>
-
-        <!-- 📊 STATISTIQUES FLOTTE -->
-        <!-- RG-011: Taux d'utilisation par véhicule = (Jours loués / Jours total période) × 100 -->
-        <!-- RG-017: Taux d'utilisation global flotte -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewVehicles()">
-          <a [routerLink]="['/dashboard/analytics/flotte']" class="menu-link">
-            <div>Statistiques flotte</div>
-            <span class="badge badge-info"></span>
-          </a>
-        </li>
-
-        <!-- 📊 PERFORMANCE CONTRATS -->
-        <!-- RG-015: Contrats actifs ou terminés contribuent au calcul des jours de location -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewContracts()">
-          <a [routerLink]="['/dashboard/analytics/contrats']" class="menu-link">
-            <div>Performance contrats</div>
-            <span class="badge badge-info"></span>
           </a>
         </li>
       </ul>
@@ -167,9 +141,16 @@
         <!-- RG-015: Analyse des contrats actifs et terminés -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
           <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
-            <div>Statistiques</div>
+            <div>Statistiques des contrats</div>
           </a>
         </li>
+
+        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
+          <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
+            <div>Contrats expirants</div>
+          </a>
+        </li>
+
       </ul>
     </li>
 
@@ -206,35 +187,6 @@
         </li>
       </ul>
     </li>
-
-    <!-- 💰 CHARGES & DÉPENSES -->
-    <!-- RG-009: Dépenses = Transactions de type Expense liées au véhicule -->
-    <!-- RG-010: Dépenses ventilées par catégorie (Maintenance, Fuel, Insurance, Taxes, Other) -->
-    <!-- <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewExpenses()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-money"></i>
-        <div>Charges & Dépenses</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewVehicles()">
-          <a [routerLink]="['/dashboard/finance/charges/vehicules']" class="menu-link">
-            <div>Par véhicule</div>
-            <span class="badge badge-info"></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finance/charges/generales']" class="menu-link">
-            <div>Charges générales</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
-          <a [routerLink]="['/dashboard/finance/charges/analyse']" class="menu-link">
-            <div>Analyse dépenses</div>
-            <span class="badge badge-info"></span>
-          </a>
-        </li>
-      </ul>
-    </li> -->
 
     <!-- 📈 RENTABILITÉ & ROI - Uniquement Manager et au-dessus -->
     <!-- RG-007: Rentabilité calculée par période (date début, date fin) -->
@@ -305,21 +257,7 @@
           </a>
         </li>
 
-        <!-- RPT-05 : Historique paiements client — Manager, Finance, Admin -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
-          <a [routerLink]="['/dashboard/rapports/historique-paiements']" class="menu-link">
-            <div>Historique paiements client</div>
-          </a>
-        </li>
-
         <!-- ── FLOTTE & OPÉRATIONS ────────────────────────────── -->
-
-        <!-- RPT-07 : Taux d'utilisation flotte — tous sauf Driver -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
-          <a [routerLink]="['/dashboard/rapports/utilisation-flotte']" class="menu-link">
-            <div>Utilisation de la flotte</div>
-          </a>
-        </li>
 
         <!-- RPT-08 : Synthèse maintenance — tous sauf Driver -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
@@ -330,13 +268,6 @@
 
         <!-- ── ALERTES & CONFORMITÉ ───────────────────────────── -->
 
-        <!-- RPT-04 : Contrats expirant — tous sauf Driver -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
-          <a [routerLink]="['/dashboard/rapports/contrats-expirants']" class="menu-link">
-            <div>Contrats expirants</div>
-          </a>
-        </li>
-
         <!-- RPT-09 : Assurances à renouveler — tous sauf Driver -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
           <a [routerLink]="['/dashboard/rapports/assurances']" class="menu-link">
@@ -345,13 +276,6 @@
         </li>
 
         <!-- ── HISTORIQUE & PLANIFICATION ────────────────────── -->
-
-        <!-- Liste de tous les rapports générés — tous sauf Driver -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
-          <a [routerLink]="['/dashboard/rapports/historique']" class="menu-link">
-            <div>Historique des rapports</div>
-          </a>
-        </li>
 
         <!-- Rapports planifiés — Manager, Finance, Admin -->
         <li class="menu-item" routerLinkActive="active" *ngIf="permission.canScheduleReport()">

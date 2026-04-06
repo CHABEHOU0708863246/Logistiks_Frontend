@@ -298,10 +298,11 @@ buildConicGradient(): string {
   }
 
   formatAmount(v: number): string {
-    if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' 000 000 FCFA';
-    if (v >= 1_000)     return (v / 1_000).toFixed(0)     + ' 000 FCFA';
-    return v.toFixed(0) + ' FCFA';
-  }
+  if (v == null || isNaN(v)) return '0 FCFA';
+  return new Intl.NumberFormat('fr-FR', {
+    maximumFractionDigits: 0
+  }).format(Math.round(v)) + ' FCFA';
+}
 
   formatPercent(v: number, sign = false): string {
     return `${sign && v > 0 ? '+' : ''}${v.toFixed(1)}%`;

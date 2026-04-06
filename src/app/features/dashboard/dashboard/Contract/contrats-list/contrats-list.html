@@ -1225,89 +1225,6 @@
       </div>
 
       <!-- MODAL D'ENREGISTREMENT DE PAIEMENT -->
-      <div class="modal-backdrop" *ngIf="showPaymentModal" (click)="closePaymentModal()"></div>
-
-      <div class="modal" *ngIf="showPaymentModal" [class.show]="showPaymentModal">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content" (click)="$event.stopPropagation()">
-            <div class="modal-header bg-success text-white">
-              <h5 class="modal-title">
-                <i class='bx bx-dollar-circle me-2'></i>Enregistrer un paiement
-              </h5>
-              <button type="button" class="btn-close btn-close-white" (click)="closePaymentModal()"></button>
-            </div>
-
-            <div class="modal-body">
-              <div *ngIf="selectedContractForPayment" class="alert alert-info mb-3">
-                <i class='bx bx-info-circle me-2'></i>
-                Contrat : <strong>{{ selectedContractForPayment.contractNumber }}</strong><br>
-                Client : {{ selectedContractForPayment.customerName }}
-              </div>
-
-              <form [formGroup]="paymentForm" (ngSubmit)="onPaymentSubmit()">
-                <!-- Date de paiement -->
-                <!-- <div class="mb-3">
-              <label class="form-label">Date de paiement *</label>
-              <input type="date" class="form-control" formControlName="paymentDate"
-                [max]="new Date().toISOString().split('T')[0]">
-              <div *ngIf="pf['paymentDate'].invalid && paymentSubmitted" class="text-danger small">
-                Date invalide
-              </div>
-            </div> -->
-
-                <!-- Montant -->
-                <div class="mb-3">
-                  <label class="form-label">Montant payé *</label>
-                  <div class="input-group">
-                    <input type="number" class="form-control" formControlName="amountPaid" min="0.01" step="0.01">
-                    <span class="input-group-text">FCFA</span>
-                  </div>
-                  <div class="form-text">
-                    Montant hebdomadaire: {{ formatCurrency(selectedContractForPayment?.weeklyAmount) }}
-                  </div>
-                  <div *ngIf="pf['amountPaid'].invalid && paymentSubmitted" class="text-danger small">
-                    Montant invalide
-                  </div>
-                </div>
-
-                <!-- Méthode de paiement -->
-                <div class="mb-3">
-                  <label class="form-label">Méthode de paiement *</label>
-                  <select class="form-select" formControlName="method">
-                    <option *ngFor="let method of paymentMethodOptions" [value]="method.value">
-                      {{ method.label }}
-                    </option>
-                  </select>
-                </div>
-
-                <!-- Référence -->
-                <div class="mb-3">
-                  <label class="form-label">Référence (optionnel)</label>
-                  <input type="text" class="form-control" formControlName="reference"
-                    placeholder="Ex: Transfert ref, numéro transaction...">
-                </div>
-
-                <!-- Notes -->
-                <div class="mb-3">
-                  <label class="form-label">Notes (optionnel)</label>
-                  <textarea class="form-control" formControlName="notes" rows="3"
-                    placeholder="Notes additionnelles..."></textarea>
-                </div>
-
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" (click)="closePaymentModal()">
-                    Annuler
-                  </button>
-                  <button type="submit" class="btn btn-success" [disabled]="paymentLoading">
-                    <span *ngIf="paymentLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-check me-1'></i> Enregistrer le paiement
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- MODAL DE TERMINATION -->
       <div class="modal-backdrop" *ngIf="showTerminateModal" (click)="closeTerminateModal()"></div>
@@ -1391,8 +1308,8 @@
                         </small>
                       </div>
                       <div class="col-md-6 text-end">
-                        <h4 class="text-primary mb-0">{{ formatCurrency(contractBalance.totalOutstanding) }}</h4>
                         <small class="text-muted">Montant total dû</small>
+                        <h4 class="text-primary mb-0">{{ formatCurrency(contractBalance.totalOutstanding) }}</h4>
                       </div>
                     </div>
                   </div>
@@ -1605,8 +1522,8 @@
                         <small class="text-muted">Généré le {{ formatDate(financialReport.generatedAt) }}</small>
                       </div>
                       <div class="col-md-4 text-end">
-                        <h4 class="text-primary mb-0">{{ formatCurrency(financialReport.netRevenue) }}</h4>
                         <small class="text-muted">Revenu net</small>
+                        <h4 class="text-primary mb-0">{{ formatCurrency(financialReport.netRevenue) }}</h4>
                       </div>
                     </div>
                   </div>
@@ -2193,7 +2110,10 @@
               <div *ngIf="selectedContractForPayment" class="alert alert-info mb-3">
                 <i class='bx bx-info-circle me-2'></i>
                 Contrat : <strong>{{ selectedContractForPayment.contractNumber }}</strong><br>
-                Client : {{ selectedContractForPayment.customerName }}
+              </div>
+              <div *ngIf="selectedContractForPayment" class="alert alert-info mb-3">
+                <i class='bx bx-info-circle me-2'></i>
+                Client :{{ selectedContractForPayment.customerName }}
               </div>
 
               <!-- AFFICHAGE DES PÉNALITÉS -->
