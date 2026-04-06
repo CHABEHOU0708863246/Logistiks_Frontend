@@ -19,6 +19,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+  path: 'dashboard/analytics',
+  loadChildren: () => import('./features/dashboard/dashboard/analytics/analytics.routes')
+    .then((m) => m.ANALYTICS_ROUTES),
+  canActivate: [authGuard]
+  },
+  {
     path: 'dashboard/tiers',
     loadChildren: () => import('./features/dashboard/dashboard/Tiers/tiers.routes').then((m) => m.TIERS_ROUTES),
     canActivate: [authGuard]

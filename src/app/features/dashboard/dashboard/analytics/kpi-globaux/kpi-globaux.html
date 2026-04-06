@@ -1,0 +1,406 @@
+<div class="layout-wrapper">
+  <!-- =========================================================================== -->
+  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
+  <!-- =========================================================================== -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- =========================================================================== -->
+  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
+  <!-- =========================================================================== -->
+  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
+    <!-- ========================================== -->
+    <nav class="layout-navbar">
+      <!-- Contrôles de navigation -->
+      <div class="d-flex align-items-center">
+        <!-- Bouton de bascule de la sidebar -->
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class='bx bx-menu'></i>
+        </button>
+        <!-- Titre de la page -->
+        <h3 class="mb-0 ms-3">Gestion des KPIs </h3>
+      </div>
+
+      <!-- Menu utilisateur -->
+      <ul class="navbar-nav">
+        <!-- Dropdown utilisateur avec photo dynamique -->
+        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="avatar dropdown-toggle">
+            <!-- Photo de profil -->
+            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
+              (error)="userPhotoUrl = getDefaultAvatar()" />
+            <!-- Avatar par défaut si pas de photo -->
+            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <!-- Menu déroulant utilisateur -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div style="padding: 1rem;">
+              <!-- Informations utilisateur -->
+              <div class="fw-bold">{{ userName }}</div>
+              <div class="text-muted fs-sm">
+                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
+              </div>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Liens du menu utilisateur -->
+              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+                <i class='bx bx-user me-2'></i> Mon profil
+              </a>
+              <a [routerLink]="['/settings']" class="dropdown-item">
+                <i class='bx bx-cog me-2'></i> Paramètres
+              </a>
+              <hr style="margin: 0.5rem 0;">
+
+              <!-- Déconnexion -->
+              <a (click)="logout()" class="dropdown-item logout-item">
+                <i class='bx bx-log-out me-2'></i> Déconnexion
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
+    <!-- ========================================== -->
+    <div class="content-wrapper">
+      <div class="kpi-page">
+
+        <!-- ═══ EN-TÊTE ═══ -->
+        <div class="page-header">
+          <div class="header-left">
+            <h1>KPIs Globaux</h1>
+            <p class="period-label">Période : {{ periodLabel }}</p>
+          </div>
+          <div class="header-actions">
+            <div class="period-buttons">
+              <button *ngFor="let p of periodOptions" class="period-btn" [class.active]="selectedPeriod === p.value"
+                (click)="setPeriod(p.value)">
+                {{ p.label }}
+              </button>
+            </div>
+            <button class="refresh-btn" (click)="loadDashboard()" [disabled]="isLoading">
+              <span class="icon-refresh" [class.spinning]="isLoading">↻</span>
+              Actualiser
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ LOADER ═══ -->
+        <div class="loading-bar" *ngIf="isLoading">
+          <div class="loading-bar-fill"></div>
+        </div>
+
+        <!-- ═══ ERREUR ═══ -->
+        <div class="error-banner" *ngIf="errorMessage">
+          <span>⚠ {{ errorMessage }}</span>
+          <button (click)="loadDashboard()">Réessayer</button>
+        </div>
+
+        <!-- ═══ KPIs FINANCIERS ═══ -->
+        <div class="section-label">Indicateurs financiers</div>
+        <div class="kpi-grid">
+
+          <div class="kpi-card accent-green">
+            <div class="kpi-label">Revenus totaux</div>
+            <div class="kpi-value">{{ kpis.totalRevenue | number:'1.0-0' }} FCFA</div>
+            <span class="kpi-badge" [ngClass]="kpis.revenueGrowthPercent >= 0 ? 'badge-up' : 'badge-down'">
+              {{ kpis.revenueGrowthPercent >= 0 ? '+' : '' }}{{ kpis.revenueGrowthPercent | number:'1.1-1' }}%
+              vs période préc.
+            </span>
+          </div>
+
+          <div class="kpi-card accent-red">
+            <div class="kpi-label">Dépenses totales</div>
+            <div class="kpi-value">{{ kpis.totalExpenses | number:'1.0-0' }} FCFA</div>
+            <span class="kpi-badge" [ngClass]="kpis.expenseGrowthPercent > 0 ? 'badge-down' : 'badge-up'">
+              {{ kpis.expenseGrowthPercent >= 0 ? '+' : '' }}{{ kpis.expenseGrowthPercent | number:'1.1-1' }}%
+              vs période préc.
+            </span>
+          </div>
+
+          <div class="kpi-card accent-blue">
+            <div class="kpi-label">Bénéfice net</div>
+            <div class="kpi-value">{{ kpis.netProfit | number:'1.0-0' }} FCFA</div>
+            <span class="kpi-badge" [ngClass]="kpis.profitGrowthPercent >= 0 ? 'badge-up' : 'badge-down'">
+              {{ kpis.profitGrowthPercent >= 0 ? '+' : '' }}{{ kpis.profitGrowthPercent | number:'1.1-1' }}%
+              vs période préc.
+            </span>
+          </div>
+
+          <div class="kpi-card accent-purple">
+            <div class="kpi-label">Marge bénéficiaire</div>
+            <div class="kpi-value">{{ kpis.profitMarginPercent | number:'1.1-1' }}%</div>
+            <span class="kpi-badge badge-neutral">vs période préc.</span>
+          </div>
+
+        </div>
+
+        <!-- ═══ KPIs FLOTTE & CONTRATS ═══ -->
+        <div class="section-label">Flotte & contrats</div>
+        <div class="kpi-grid">
+
+          <div class="kpi-card accent-amber">
+            <div class="kpi-label">Utilisation flotte</div>
+            <div class="kpi-value">{{ kpis.fleetUtilizationPercent | number:'1.1-1' }}%</div>
+            <div class="progress-bar">
+              <div class="progress-fill amber" [style.width.%]="kpis.fleetUtilizationPercent"></div>
+            </div>
+          </div>
+
+          <div class="kpi-card accent-green">
+            <div class="kpi-label">Contrats actifs</div>
+            <div class="kpi-value">{{ kpis.activeContracts }}</div>
+            <span class="kpi-badge badge-up">+{{ kpis.newContractsThisMonth }} ce mois</span>
+          </div>
+
+          <div class="kpi-card accent-red">
+            <div class="kpi-label">Expirent dans 30j</div>
+            <div class="kpi-value">{{ kpis.expiringIn30Days }}</div>
+            <span class="kpi-badge badge-down">à renouveler</span>
+          </div>
+
+          <div class="kpi-card accent-pink">
+            <div class="kpi-label">Impayés clients</div>
+            <div class="kpi-value">{{ kpis.totalOutstandingDebt | number:'1.0-0' }} FCFA</div>
+            <span class="kpi-badge badge-down">{{ kpis.clientsWithDebt }} clients concernés</span>
+          </div>
+
+        </div>
+
+        <!-- ═══ LIGNE DU MILIEU ═══ -->
+        <div class="mid-grid">
+
+          <!-- Graphique revenus -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Évolution financière — {{ chartMonths }} derniers mois</span>
+            </div>
+            <div class="chart-area">
+              <div class="y-axis">
+                <span>{{ chartMax | number:'1.0-0' }}</span>
+                <span>{{ (chartMax / 2) | number:'1.0-0' }}</span>
+                <span>0</span>
+              </div>
+              <div class="bars-container">
+                <div class="bar-group" *ngFor="let point of revenueChart">
+                  <div class="bar-col">
+                    <div class="bar-seg green" [style.height.px]="getBarHeight(point.revenue)"
+                      [title]="'Revenus : ' + (point.revenue | number:'1.0-0') + ' FCFA'"></div>
+                    <div class="bar-seg red" [style.height.px]="getBarHeight(point.expenses)"
+                      [title]="'Dépenses : ' + (point.expenses | number:'1.0-0') + ' FCFA'"></div>
+                    <div class="bar-seg blue" [style.height.px]="getBarHeight(point.profit)"
+                      [title]="'Bénéfice : ' + (point.profit | number:'1.0-0') + ' FCFA'"></div>
+                  </div>
+                  <span class="bar-label">{{ point.monthLabel }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <span class="leg-item"><span class="leg-dot green"></span>Revenus</span>
+              <span class="leg-item"><span class="leg-dot red"></span>Dépenses</span>
+              <span class="leg-item"><span class="leg-dot blue"></span>Bénéfice</span>
+            </div>
+          </div>
+
+          <!-- État de la flotte -->
+          <div class="card">
+            <div class="card-title">État de la flotte</div>
+            <div class="fleet-list">
+              <div class="fleet-row">
+                <span class="fleet-dot" style="background:#1D9E75"></span>
+                <span class="fleet-label">En location</span>
+                <span class="fleet-count">{{ fleetStats.rentedCount }}</span>
+                <span class="fleet-pct">{{ getFleetPct(fleetStats.rentedCount) }}%</span>
+              </div>
+              <div class="fleet-row">
+                <span class="fleet-dot" style="background:#378ADD"></span>
+                <span class="fleet-label">Disponibles</span>
+                <span class="fleet-count">{{ fleetStats.availableCount }}</span>
+                <span class="fleet-pct">{{ getFleetPct(fleetStats.availableCount) }}%</span>
+              </div>
+              <div class="fleet-row">
+                <span class="fleet-dot" style="background:#BA7517"></span>
+                <span class="fleet-label">Maintenance</span>
+                <span class="fleet-count">{{ fleetStats.maintenanceCount }}</span>
+                <span class="fleet-pct">{{ getFleetPct(fleetStats.maintenanceCount) }}%</span>
+              </div>
+              <div class="fleet-row">
+                <span class="fleet-dot" style="background:#E24B4A"></span>
+                <span class="fleet-label">Hors service</span>
+                <span class="fleet-count">{{ fleetStats.outOfServiceCount }}</span>
+                <span class="fleet-pct">{{ getFleetPct(fleetStats.outOfServiceCount) }}%</span>
+              </div>
+              <div class="fleet-row total-row">
+                <span class="fleet-label">Total véhicules</span>
+                <span class="fleet-count">{{ fleetStats.totalVehicles }}</span>
+              </div>
+            </div>
+            <div class="util-section">
+              <div class="util-label">Taux d'utilisation global</div>
+              <div class="progress-bar">
+                <div class="progress-fill green" [style.width.%]="fleetStats.utilizationPercent"></div>
+              </div>
+              <div class="util-pct-row">
+                <span>0%</span>
+                <strong>{{ fleetStats.utilizationPercent | number:'1.1-1' }}%</strong>
+                <span>100%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alertes -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Alertes actives</span>
+              <span class="alert-counter" *ngIf="alerts.criticalCount > 0">
+                {{ alerts.criticalCount }} critique{{ alerts.criticalCount > 1 ? 's' : '' }}
+              </span>
+            </div>
+            <div class="alerts-list">
+              <div class="alert-item" *ngFor="let a of alerts.items | slice:0:4" [ngClass]="'alert-' + a.severity">
+                <div class="alert-icon">
+                  <span *ngIf="a.severity === 'critical'">!</span>
+                  <span *ngIf="a.severity === 'warning'">~</span>
+                </div>
+                <div class="alert-body">
+                  <div class="alert-title">{{ a.title }}</div>
+                  <div class="alert-desc">{{ a.description }}</div>
+                </div>
+              </div>
+              <div class="no-alerts" *ngIf="alerts.items.length === 0">
+                Aucune alerte en cours
+              </div>
+            </div>
+            <button class="see-all-btn" [routerLink]="['/dashboard']">
+              Voir toutes les alertes →
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ═══ LIGNE BASSE ═══ -->
+        <div class="bottom-grid">
+
+          <!-- Donut dépenses -->
+          <div class="card">
+            <div class="card-title">Répartition des dépenses</div>
+            <div class="donut-wrap" *ngIf="expenseBreakdown.length > 0; else noExpenses">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle *ngFor="let slice of donutSlices" cx="50" cy="50" r="36" fill="none" [attr.stroke]="slice.color"
+                  stroke-width="16" [attr.stroke-dasharray]="slice.dashArray"
+                  [attr.stroke-dashoffset]="slice.dashOffset" transform="rotate(-90 50 50)">
+                </circle>
+                <circle cx="50" cy="50" r="28" fill="var(--color-background-primary)" />
+                <text x="50" y="47" text-anchor="middle" font-size="12" font-weight="500"
+                  fill="var(--color-text-primary)">
+                  {{ expenseBreakdown.length }}
+                </text>
+                <text x="50" y="58" text-anchor="middle" font-size="8" fill="var(--color-text-secondary)">
+                  catégories
+                </text>
+              </svg>
+              <div class="donut-labels">
+                <div class="donut-leg" *ngFor="let s of expenseBreakdown; let i = index">
+                  <div class="donut-leg-left">
+                    <span class="fleet-dot" [style.background]="donutColors[i]"></span>
+                    {{ s.categoryLabel }}
+                  </div>
+                  <div class="donut-leg-right">{{ s.percentOfTotal | number:'1.1-1' }}%</div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noExpenses>
+              <p class="empty-state">Aucune dépense sur la période</p>
+            </ng-template>
+          </div>
+
+          <!-- Top 5 véhicules -->
+          <div class="card">
+            <div class="card-title">Top 5 véhicules — bénéfice net</div>
+            <div class="top5-list" *ngIf="topVehicles.length > 0; else noVehicles">
+              <div class="top5-row" *ngFor="let v of topVehicles; let i = index">
+                <span class="rank">{{ i + 1 }}</span>
+                <div class="veh-info">
+                  <div class="veh-name">
+                    {{ v.vehicleName }}
+                    <span class="veh-code">{{ v.vehicleCode }}</span>
+                  </div>
+                  <div class="veh-bar-track">
+                    <div class="veh-bar-fill" [style.width.%]="getTopVehicleBarWidth(v.netProfit)"></div>
+                  </div>
+                </div>
+                <div class="veh-right">
+                  <div class="veh-profit">{{ v.netProfit | number:'1.0-0' }} FCFA</div>
+                  <div class="veh-sub">{{ v.utilizationRate | number:'1.0-0' }}% util.</div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noVehicles>
+              <p class="empty-state">Aucune donnée disponible</p>
+            </ng-template>
+          </div>
+
+        </div>
+
+        <!-- ═══ TOP 10 CONTRATS ═══ -->
+        <div class="card" style="margin-top:12px">
+          <div class="card-header">
+            <span class="card-title">Top 10 contrats — taux de recouvrement</span>
+            <span class="card-meta">
+              Taux global : {{ contractPerformance.collectionRate | number:'1.1-1' }}%
+            </span>
+          </div>
+          <div class="contracts-table-wrap">
+            <table class="contracts-table">
+              <thead>
+                <tr>
+                  <th>N° contrat</th>
+                  <th>Client</th>
+                  <th>Véhicule</th>
+                  <th class="text-right">Montant hebdo</th>
+                  <th class="text-right">Recouvré</th>
+                  <th class="text-right">Taux</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of contractPerformance.topContracts">
+                  <td class="contract-num">{{ c.contractNumber }}</td>
+                  <td>{{ c.customerName }}</td>
+                  <td class="text-muted">{{ c.vehicleName }}</td>
+                  <td class="text-right">{{ c.weeklyAmount | number:'1.0-0' }}</td>
+                  <td class="text-right">{{ c.totalPaid | number:'1.0-0' }}</td>
+                  <td class="text-right">
+                    <span class="rate-badge"
+                      [ngClass]="c.collectionRate >= 80 ? 'rate-good' : c.collectionRate >= 50 ? 'rate-mid' : 'rate-bad'">
+                      {{ c.collectionRate | number:'1.0-0' }}%
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-pill" [ngClass]="c.status === 'Active' ? 'pill-active' : 'pill-completed'">
+                      {{ c.status === 'Active' ? 'Actif' : 'Terminé' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer info -->
+        <div class="page-footer">
+          <span>Généré le {{ summary?.generatedAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+
+      </div>
+    </div>
+    <!-- COMPOSANT DE NOTIFICATION -->
+    <app-notification-component></app-notification-component>
+  </div>
+</div>
