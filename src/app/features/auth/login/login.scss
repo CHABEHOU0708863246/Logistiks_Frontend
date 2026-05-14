@@ -1,960 +1,53 @@
-// ============================================================
-// Variables
-// ============================================================
-$primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-$dark-gradient: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-$glass-bg: rgba(255, 255, 255, 0.08);
-$glass-border: rgba(255, 255, 255, 0.12);
-$neon-glow: 0 0 20px rgba(99, 102, 241, 0.3);
-$card-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-
-// ============================================================
-// Reset
-// ============================================================
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-// ============================================================
-// Base — mobile-first : on autorise le scroll sur mobile
-// ============================================================
-html {
-  overflow-x: hidden;
-  width: 100%;
-  height: 100%;
-}
-
-body {
-  font-family: 'Public Sans', 'Segoe UI', sans-serif;
-  background: $dark-gradient;
-  color: #e2e8f0;
-  min-height: 100vh;     // min-height au lieu de height fixe
-  overflow-x: hidden;
-  width: 100vw;
-  position: relative;
-
-  // Sur desktop : pas de scroll de page, tout tient en 100vh
-  @media (min-width: 993px) {
-    height: 100vh;
-    overflow: hidden;
-  }
-}
-
-// ============================================================
-// Host (Angular)
-// ============================================================
-:host {
-  display: block;
-  min-height: 100vh;
-
-  @media (min-width: 993px) {
-    height: 100vh;
-    overflow: hidden;
-  }
-}
-
-// ============================================================
-// Conteneur principal
-// ============================================================
-.logistiks-premium-container {
-  min-height: 100vh;
-  width: 100vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
-  position: relative;
-  overflow-x: hidden;
-  background:
-    radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
-    #0f172a;
-
-  // Desktop : hauteur fixe, pas de scroll de page
-  @media (min-width: 993px) {
-    height: 100vh;
-    overflow: hidden;
-    align-items: center;
-  }
-
-  // Mobile : padding confortable pour que la carte respire
-  @media (max-width: 576px) {
-    padding: 12px 10px;
-    align-items: flex-start;   // la carte commence en haut sur très petits écrans
-    padding-top: 20px;
-    padding-bottom: 20px;
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
-    z-index: 2;
-  }
-}
-
-// ============================================================
-// Grille de fond
-// ============================================================
-.background-grid {
-  position: fixed;   // fixed pour rester visible même quand on scrolle
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
-  background-size: 40px 40px;
-  opacity: 0.4;
-  pointer-events: none;
-  z-index: 0;
-}
-
-// ============================================================
-// Glow d'arrière-plan
-// ============================================================
-.bg-glow {
-  position: fixed;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-  filter: blur(100px);
-  top: -150px;
-  right: -150px;
-  opacity: 0.5;
-  z-index: 0;
-  pointer-events: none;
-
-  @media (max-width: 576px) {
-    width: 300px;
-    height: 300px;
-    top: -100px;
-    right: -100px;
-  }
-}
-
-// ============================================================
-// Carte principale
-// ============================================================
-.main-glass-card {
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  max-width: 1100px;
-  width: 100%;
-  max-height: 90vh;         // desktop : tient dans l'écran
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid $glass-border;
-  border-radius: 24px;
-  box-shadow: $card-shadow;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-  animation: cardFloat 0.8s ease-out;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  // Tablette portrait → colonne unique, scroll interne autorisé
-  @media (max-width: 992px) {
-    grid-template-columns: 1fr;
-    max-width: 520px;
-    max-height: none;         // plus de hauteur fixe → le contenu dicte la taille
-    border-radius: 20px;
-  }
-
-  // Mobile
-  @media (max-width: 576px) {
-    max-width: 100%;
-    border-radius: 16px;
-  }
-}
-
-// ============================================================
-// Section branding (gauche / haut sur mobile)
-// ============================================================
-.brand-side {
-  padding: 30px 25px;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(160deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
-  border-right: 1px solid $glass-border;
-  position: relative;
-  overflow: hidden;
-
-  @media (max-width: 992px) {
-    border-right: none;
-    border-bottom: 1px solid $glass-border;
-    padding: 24px 20px;
-  }
-
-  @media (max-width: 576px) {
-    padding: 20px 16px;
-  }
-}
-
-// ============================================================
-// Logo & branding
-// ============================================================
-.logo-section {
-  text-align: center;
-  margin-bottom: 25px;
-
-  @media (max-width: 992px) {
-    margin-bottom: 20px;
-  }
-
-  @media (max-width: 576px) {
-    margin-bottom: 16px;
-  }
-}
-
-.logo-3d-wrapper {
-  perspective: 1000px;
-  margin: 0 auto 15px;
-  width: 80px;
-  height: 80px;
-
-  @media (max-width: 576px) {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 10px;
-  }
-
-  .cube {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    animation: cubeFloat 20s infinite linear;
-
-    .face {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(99, 102, 241, 0.1);
-      backdrop-filter: blur(5px);
-
-      @media (max-width: 576px) {
-        width: 60px;
-        height: 60px;
-      }
-
-      &::before {
-        content: '';
-        position: absolute;
-        inset: 1px;
-        background: $primary-gradient;
-        opacity: 0.8;
-      }
-    }
-
-    .front  { transform: translateZ(40px); }
-    .back   { transform: rotateY(180deg) translateZ(40px); }
-    .right  { transform: rotateY(90deg) translateZ(40px); }
-    .left   { transform: rotateY(-90deg) translateZ(40px); }
-    .top    { transform: rotateX(90deg) translateZ(40px); }
-    .bottom { transform: rotateX(-90deg) translateZ(40px); }
-
-    @media (max-width: 576px) {
-      .front  { transform: translateZ(30px); }
-      .back   { transform: rotateY(180deg) translateZ(30px); }
-      .right  { transform: rotateY(90deg) translateZ(30px); }
-      .left   { transform: rotateY(-90deg) translateZ(30px); }
-      .top    { transform: rotateX(90deg) translateZ(30px); }
-      .bottom { transform: rotateX(-90deg) translateZ(30px); }
-    }
-  }
-}
-
-.brand-title {
-  margin-top: 10px;
-
-  h1 {
-    font-size: 2rem;
-    font-weight: 800;
-    background: $primary-gradient;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 5px;
-    letter-spacing: 2px;
-
-    @media (max-width: 768px) {
-      font-size: 1.7rem;
-    }
-
-    @media (max-width: 576px) {
-      font-size: 1.5rem;
-    }
-  }
-
-  .tagline {
-    font-size: 0.85rem;
-    color: #94a3b8;
-    font-weight: 300;
-    letter-spacing: 0.5px;
-
-    @media (max-width: 576px) {
-      font-size: 0.78rem;
-    }
-  }
-}
-
-// ============================================================
-// Grille de fonctionnalités
-// ============================================================
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-
-  @media (max-width: 992px) {
-    margin-top: 16px;
-    gap: 10px;
-  }
-
-  // Sur mobile très étroit : 1 colonne
-  @media (max-width: 360px) {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-}
-
-.feature-card {
-  background: $glass-bg;
-  border: 1px solid $glass-border;
-  border-radius: 12px;
-  padding: 15px;
-  text-align: center;
-  transition: all 0.3s ease;
-  cursor: pointer;
-
-  @media (max-width: 992px) {
-    padding: 12px 10px;
-  }
-
-  @media (max-width: 576px) {
-    padding: 10px 8px;
-  }
-
-  &:hover {
-    transform: translateY(-3px);
-    border-color: rgba(99, 102, 241, 0.3);
-    box-shadow: $neon-glow;
-
-    .feature-icon {
-      transform: scale(1.1);
-    }
-  }
-
-  // Pas de hover sur tactile (évite l'état bloqué)
-  @media (hover: none) {
-    &:hover {
-      transform: none;
-      box-shadow: none;
-    }
-  }
-
-  .feature-icon {
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-    color: #6366f1;
-    transition: transform 0.3s ease;
-
-    @media (max-width: 576px) {
-      font-size: 1.5rem;
-      margin-bottom: 6px;
-    }
-  }
-
-  h3 {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: #f8fafc;
-
-    @media (max-width: 576px) {
-      font-size: 0.82rem;
-      margin-bottom: 3px;
-    }
-  }
-
-  p {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    line-height: 1.4;
-
-    @media (max-width: 576px) {
-      font-size: 0.7rem;
-    }
-  }
-}
-
-// ============================================================
-// Section formulaire (droite / bas sur mobile)
-// ============================================================
-.form-side {
-  padding: 30px 35px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: rgba(15, 23, 42, 0.7);
-  position: relative;
-
-  // Desktop : scroll interne si le contenu dépasse
-  @media (min-width: 993px) {
-    overflow-y: auto;
-    max-height: 90vh;
-
-    &::-webkit-scrollbar {
-      width: 5px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.4);
-      border-radius: 10px;
-    }
-  }
-
-  // Tablette / Mobile : pas de scroll interne, la page gère le scroll
-  @media (max-width: 992px) {
-    padding: 24px 20px;
-    overflow: visible;
-    justify-content: flex-start;
-  }
-
-  @media (max-width: 576px) {
-    padding: 20px 16px;
-  }
-}
-
-// ============================================================
-// En-tête du formulaire
-// ============================================================
-.form-header {
-  text-align: center;
-  margin-bottom: 20px;
-
-  @media (max-width: 576px) {
-    margin-bottom: 16px;
-  }
-
-  h2 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-bottom: 5px;
-    color: #f8fafc;
-
-    @media (max-width: 576px) {
-      font-size: 1.35rem;
-    }
-  }
-
-  p {
-    font-size: 0.9rem;
-    color: #94a3b8;
-
-    @media (max-width: 576px) {
-      font-size: 0.82rem;
-    }
-  }
-}
-
-// ============================================================
-// Carte du formulaire
-// ============================================================
-.form-card {
-  background: $glass-bg;
-  border: 1px solid $glass-border;
-  border-radius: 16px;
-  padding: 25px;
-  position: relative;
-
-  @media (max-width: 768px) {
-    padding: 20px 16px;
-    border-radius: 12px;
-  }
-
-  @media (max-width: 576px) {
-    padding: 16px 14px;
-    border-radius: 10px;
-  }
-}
-
-// ============================================================
-// Groupes de champs
-// ============================================================
-.input-group-card {
-  margin-bottom: 18px;
-
-  @media (max-width: 576px) {
-    margin-bottom: 14px;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #cbd5e1;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-
-    @media (max-width: 576px) {
-      font-size: 0.74rem;
-      margin-bottom: 6px;
-    }
-  }
-
-  .input-with-icon {
-    position: relative;
-
-    i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #6366f1;
-      font-size: 1.1rem;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px 15px 14px 45px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid $glass-border;
-      border-radius: 10px;
-      color: #f8fafc;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      // Évite le zoom auto iOS sur focus (font-size ≥ 16px)
-      font-size: 16px;
-
-      @media (min-width: 577px) {
-        font-size: 0.95rem;  // taille normale sur tablette+
-      }
-
-      &::placeholder {
-        color: #64748b;
-      }
-
-      &:focus {
-        outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-      }
-
-      &:hover {
-        border-color: rgba(99, 102, 241, 0.3);
-      }
-    }
-
-    .password-toggle {
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      cursor: pointer;
-      transition: color 0.3s ease;
-      font-size: 1.2rem;
-      // Zone de tap plus grande sur mobile
-      padding: 4px;
-
-      &:hover {
-        color: #6366f1;
-      }
-    }
-  }
-}
-
-// ============================================================
-// Options (remember me / mot de passe oublié)
-// ============================================================
-.form-options-card {
-  background: rgba(15, 23, 42, 0.5);
-  border-radius: 10px;
-  padding: 12px 15px;
-  margin-bottom: 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-
-  @media (max-width: 576px) {
-    padding: 10px 12px;
-    margin-bottom: 14px;
-  }
-
-  // Très petits écrans : on garde sur une ligne mais on réduit
-  @media (max-width: 360px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .remember-me {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      min-width: 16px;
-      accent-color: #6366f1;
-      cursor: pointer;
-    }
-
-    label {
-      color: #cbd5e1;
-      font-size: 0.85rem;
-      cursor: pointer;
-      white-space: nowrap;
-
-      @media (max-width: 576px) {
-        font-size: 0.78rem;
-      }
-    }
-  }
-
-  .forgot-link {
-    color: #6366f1;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-    white-space: nowrap;
-
-    @media (max-width: 576px) {
-      font-size: 0.78rem;
-    }
-
-    &:hover {
-      color: #818cf8;
-      text-decoration: underline;
-    }
-  }
-}
-
-// ============================================================
-// Bouton principal
-// ============================================================
-.btn-primary-card {
-  width: 100%;
-  padding: 14px;
-  background: $primary-gradient;
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  // Zone de tap suffisante sur mobile
-  min-height: 48px;
-  touch-action: manipulation;
-
-  @media (max-width: 576px) {
-    padding: 13px;
-    font-size: 0.92rem;
-    border-radius: 10px;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  // Pas de hover sur tactile
-  @media (hover: none) {
-    &:hover {
-      transform: none;
-      box-shadow: none;
-    }
-
-    &:active {
-      opacity: 0.85;
-      transform: scale(0.98);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-
-    .btn-shine {
-      animation: none;
-    }
-  }
-
-  .btn-icon {
-    font-size: 1.1rem;
-  }
-
-  .btn-shine {
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: 0.5s;
-  }
-
-  &:hover .btn-shine {
-    left: 100%;
-  }
-}
-
-// ============================================================
-// Overlay de chargement
-// ============================================================
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  border-radius: inherit;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(99, 102, 241, 0.3);
-  border-radius: 50%;
-  border-top-color: #6366f1;
-  animation: spin 1s linear infinite;
-}
-
-// ============================================================
-// Messages d'erreur
-// ============================================================
-.error-message {
-  margin-top: 6px;
-  color: #ef4444;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-
-  i {
-    font-size: 14px;
-  }
-}
-
-.input-error {
-  border-color: #ef4444 !important;
-  background: rgba(239, 68, 68, 0.05) !important;
-}
-
-// ============================================================
-// Carte démo
-// ============================================================
-.demo-card {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 12px;
-  padding: 12px;
-  margin-top: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-
-  @media (max-width: 576px) {
-    padding: 10px;
-    margin-top: 12px;
-    border-radius: 10px;
-  }
-
-  i {
-    font-size: 1.1rem;
-    color: #6366f1;
-  }
-
-  span {
-    color: #cbd5e1;
-    font-size: 0.85rem;
-    text-align: center;
-
-    @media (max-width: 576px) {
-      font-size: 0.78rem;
-    }
-
-    strong {
-      color: #f8fafc;
-      font-weight: 600;
-    }
-  }
-}
-
-// ============================================================
-// Footer
-// ============================================================
-.footer-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-top: 25px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 18px;
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-}
-
-.footer-card {
-  background: $glass-bg;
-  border: 1px solid $glass-border;
-  border-radius: 12px;
-  padding: 15px;
-  text-align: center;
-  transition: all 0.3s ease;
-
-  @media (max-width: 576px) {
-    padding: 12px 10px;
-    border-radius: 10px;
-  }
-
-  &:hover {
-    transform: translateY(-3px);
-    border-color: rgba(99, 102, 241, 0.3);
-  }
-
-  @media (hover: none) {
-    &:hover {
-      transform: none;
-    }
-  }
-
-  i {
-    font-size: 1.5rem;
-    color: #6366f1;
-    margin-bottom: 8px;
-
-    @media (max-width: 576px) {
-      font-size: 1.3rem;
-      margin-bottom: 5px;
-    }
-  }
-
-  p {
-    font-size: 0.8rem;
-    color: #94a3b8;
-
-    @media (max-width: 576px) {
-      font-size: 0.72rem;
-    }
-  }
-}
-
-// ============================================================
-// Form footer
-// ============================================================
-.form-footer {
-  margin-top: 20px;
-  text-align: center;
-
-  @media (max-width: 576px) {
-    margin-top: 16px;
-  }
-
-  .support-text {
-    color: #94a3b8;
-    font-size: 14px;
-
-    @media (max-width: 576px) {
-      font-size: 12px;
-    }
-
-    i {
-      margin-right: 5px;
-      color: #6366f1;
-    }
-
-    a {
-      color: #6366f1;
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-}
-
-// ============================================================
-// Animations
-// ============================================================
+// ══════════════════════════════════════════════════════════════════════
+// LOGISTIK v2 — Login Component SCSS
+// Design system aligné sur le dashboard (variables, typographie, style)
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Variables (reprises du dashboard) ────────────────────────────────
+$primary:        #696CFF;
+$primary-dark:   #3C3489;
+$primary-light:  #8B8EFF;
+$primary-glow:   rgba(105, 108, 255, 0.16);
+$primary-ultra:  rgba(105, 108, 255, 0.05);
+
+$accent:         #FFAB00;
+$accent-dark:    #D48E00;
+$accent-light:   #FFD166;
+$accent-glow:    rgba(255, 171, 0, 0.18);
+
+$success:        #12B76A;
+$success-bg:     rgba(18, 183, 106, 0.10);
+$danger:         #F04438;
+$danger-bg:      rgba(240, 68, 56, 0.10);
+
+// ── Couleurs de fond (thème sombre du login) ─────────────────────────
+$login-bg-deep:  #0E0A2E;
+$login-bg-mid:   #1A0E5C;
+$login-bg-dark:  #090720;
+$glass-bg:       rgba(255, 255, 255, 0.06);
+$glass-border:   rgba(255, 255, 255, 0.10);
+$surface-dark:   rgba(10, 7, 32, 0.75);
+
+// ── Typographie ───────────────────────────────────────────────────────
+$font:           'Plus Jakarta Sans', sans-serif;
+$font-display:   'Space Grotesk', sans-serif;
+
+// ── Rayons / ombres ───────────────────────────────────────────────────
+$radius-sm:      6px;
+$radius:         10px;
+$radius-lg:      16px;
+$radius-xl:      22px;
+
+$shadow-lg:      0 12px 40px rgba(60, 52, 137, 0.30), 0 4px 12px rgba(0, 0, 0, 0.20);
+$shadow-glow:    0 8px 28px rgba(105, 108, 255, 0.35);
+$neon-glow:      0 0 24px rgba(105, 108, 255, 0.25);
+
+$transition:     all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+// ── Animations ────────────────────────────────────────────────────────
 @keyframes cardFloat {
-  0% {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-// Désactive l'animation si l'utilisateur préfère les mouvements réduits
-@media (prefers-reduced-motion: reduce) {
-  .main-glass-card {
-    animation: none;
-  }
-
-  .cube {
-    animation: none !important;
-  }
+  0%   { opacity: 0; transform: translateY(28px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes cubeFloat {
@@ -969,7 +62,859 @@ body {
   to { transform: rotate(360deg); }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 0.8; }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .55; transform: scale(.8); }
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 100%; }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// HOST
+// ══════════════════════════════════════════════════════════════════════
+:host {
+  display: block;
+  min-height: 100vh;
+
+  @media (min-width: 993px) {
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RESET BASE
+// ══════════════════════════════════════════════════════════════════════
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CONTENEUR PRINCIPAL
+// ══════════════════════════════════════════════════════════════════════
+.logistiks-premium-container {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+  font-family: $font;
+
+  // Fond gradient aligné sur le hero-banner du dashboard
+  background: linear-gradient(135deg, $login-bg-deep 0%, $login-bg-mid 45%, $login-bg-dark 100%);
+
+  // Ligne déco en haut (même style que dashboard)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, $primary, $primary-light, transparent);
+    z-index: 2;
+  }
+
+  @media (min-width: 993px) {
+    height: 100vh;
+    overflow: hidden;
+    align-items: center;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    align-items: flex-start;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+}
+
+// ── Grille de fond ────────────────────────────────────────────────────
+.background-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle at 1px 1px, rgba(105, 108, 255, 0.06) 1px, transparent 0);
+  background-size: 40px 40px;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 0;
+}
+
+// ── Glows d'arrière-plan ──────────────────────────────────────────────
+.bg-glow {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+
+  // Glow violet (repris du hero-banner dashboard)
+  background: radial-gradient(circle, rgba(105, 108, 255, 0.22) 0%, transparent 70%);
+  top: -180px;
+  right: -180px;
+  opacity: 0.6;
+
+  // Glow ambre (secondaire, comme dans le hero-banner)
+  &--secondary {
+    background: radial-gradient(circle, rgba(255, 171, 0, 0.10) 0%, transparent 70%);
+    bottom: -200px;
+    left: -100px;
+    top: auto;
+    right: auto;
+    width: 400px;
+    height: 400px;
+  }
+
+  @media (max-width: 576px) {
+    width: 280px;
+    height: 280px;
+    top: -100px;
+    right: -100px;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CARTE PRINCIPALE
+// ══════════════════════════════════════════════════════════════════════
+.main-glass-card {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  max-width: 1080px;
+  width: 100%;
+  max-height: 90vh;
+  background: rgba(14, 10, 46, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid $glass-border;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  animation: cardFloat 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+
+  // Lueur intérieure subtile (cohérente avec les kpi-cards du dashboard)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $primary, $primary-light, $accent-light, $primary);
+    background-size: 200% 100%;
+    z-index: 2;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(105, 108, 255, 0.04), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    max-height: none;
+    border-radius: $radius-lg;
+  }
+
+  @media (max-width: 576px) {
+    max-width: 100%;
+    border-radius: $radius;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION BRANDING (gauche)
+// ══════════════════════════════════════════════════════════════════════
+.brand-side {
+  padding: 32px 26px;
+  display: flex;
+  flex-direction: column;
+  // Fond aligné sur le hero-banner gauche
+  background: linear-gradient(160deg, rgba(9, 7, 32, 0.92) 0%, rgba(26, 14, 92, 0.60) 100%);
+  border-right: 1px solid $glass-border;
+  position: relative;
+  overflow: hidden;
+
+  // Deco truck (comme le hero-deco du dashboard)
+  &::after {
+    content: '\eb4c'; // bxs-truck unicode via bx
+    font-family: 'boxicons';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    font-size: 140px;
+    color: rgba(105, 108, 255, 0.04);
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  @media (max-width: 992px) {
+    border-right: none;
+    border-bottom: 1px solid $glass-border;
+    padding: 24px 20px;
+  }
+
+  @media (max-width: 576px) {
+    padding: 20px 16px;
+  }
+}
+
+// ── Logo section ──────────────────────────────────────────────────────
+.logo-section {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.logo-3d-wrapper {
+  perspective: 1000px;
+  margin: 0 auto 16px;
+  width: 76px;
+  height: 76px;
+
+  .cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: cubeFloat 20s infinite linear;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+
+    .face {
+      position: absolute;
+      width: 76px;
+      height: 76px;
+      border: 1px solid rgba(105, 108, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        background: linear-gradient(135deg, $primary, $primary-dark);
+        opacity: 0.85;
+      }
+    }
+
+    .front  { transform: translateZ(38px); }
+    .back   { transform: rotateY(180deg) translateZ(38px); }
+    .right  { transform: rotateY(90deg) translateZ(38px); }
+    .left   { transform: rotateY(-90deg) translateZ(38px); }
+    .top    { transform: rotateX(90deg) translateZ(38px); }
+    .bottom { transform: rotateX(-90deg) translateZ(38px); }
+  }
+
+  @media (max-width: 576px) {
+    width: 58px;
+    height: 58px;
+    margin-bottom: 10px;
+
+    .cube .face { width: 58px; height: 58px; }
+    .cube .front  { transform: translateZ(29px); }
+    .cube .back   { transform: rotateY(180deg) translateZ(29px); }
+    .cube .right  { transform: rotateY(90deg) translateZ(29px); }
+    .cube .left   { transform: rotateY(-90deg) translateZ(29px); }
+    .cube .top    { transform: rotateX(90deg) translateZ(29px); }
+    .cube .bottom { transform: rotateX(-90deg) translateZ(29px); }
+  }
+}
+
+.brand-title {
+  h1 {
+    font-family: $font-display;
+    font-size: 2rem;
+    font-weight: 800;
+    // Gradient texte cohérent avec les titres hero du dashboard
+    background: linear-gradient(135deg, #fff 0%, $primary-light 60%, $accent-light 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 3px;
+    margin-bottom: 4px;
+
+    @media (max-width: 768px) { font-size: 1.7rem; }
+    @media (max-width: 576px) { font-size: 1.5rem; }
+  }
+
+  .tagline {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.38);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    font-family: $font;
+  }
+}
+
+// ── Séparateur déco ───────────────────────────────────────────────────
+.brand-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, $glass-border, transparent);
+  margin: 0 0 20px;
+}
+
+// ── Feature cards ─────────────────────────────────────────────────────
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  flex: 1;
+
+  @media (max-width: 360px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.feature-card {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: $radius;
+  padding: 14px 12px;
+  text-align: center;
+  transition: $transition;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, $primary, $primary-light);
+    opacity: 0;
+    transition: $transition;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(105, 108, 255, 0.28);
+    box-shadow: $neon-glow;
+    background: rgba(105, 108, 255, 0.08);
+
+    &::before { opacity: 1; }
+
+    .feature-icon-wrap { transform: scale(1.1); }
+  }
+
+  @media (hover: none) {
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  @media (max-width: 576px) {
+    padding: 10px 8px;
+  }
+}
+
+.feature-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: $primary-glow;
+  border-radius: $radius-sm;
+  margin: 0 auto 8px;
+  transition: $transition;
+
+  i {
+    font-size: 1.3rem;
+    color: $primary-light;
+  }
+
+  @media (max-width: 576px) {
+    width: 32px;
+    height: 32px;
+    i { font-size: 1.1rem; }
+  }
+}
+
+.feature-card h3 {
+  font-family: $font-display;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #fff;
+  letter-spacing: 0.3px;
+
+  @media (max-width: 576px) {
+    font-size: 0.76rem;
+  }
+}
+
+.feature-card p {
+  font-size: 0.70rem;
+  color: rgba(255, 255, 255, 0.38);
+  line-height: 1.45;
+  font-family: $font;
+
+  @media (max-width: 576px) {
+    font-size: 0.66rem;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SECTION FORMULAIRE (droite)
+// ══════════════════════════════════════════════════════════════════════
+.form-side {
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(9, 7, 32, 0.72);
+  position: relative;
+
+  @media (min-width: 993px) {
+    overflow-y: auto;
+    max-height: 90vh;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(105, 108, 255, 0.35) transparent;
+
+    &::-webkit-scrollbar       { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: rgba(105, 108, 255, 0.35); border-radius: 4px; }
+  }
+
+  @media (max-width: 992px) {
+    padding: 24px 22px;
+    justify-content: flex-start;
+  }
+
+  @media (max-width: 576px) {
+    padding: 20px 16px;
+  }
+}
+
+// ── En-tête formulaire ────────────────────────────────────────────────
+.form-header {
+  text-align: center;
+  margin-bottom: 24px;
+
+  @media (max-width: 576px) { margin-bottom: 18px; }
+}
+
+.form-header-icon {
+  width: 52px;
+  height: 52px;
+  background: $primary-glow;
+  border: 1px solid rgba(105, 108, 255, 0.25);
+  border-radius: $radius-lg;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+
+  i {
+    font-size: 24px;
+    color: $primary-light;
+  }
+}
+
+.form-header h2 {
+  font-family: $font-display;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 5px;
+
+  @media (max-width: 576px) { font-size: 1.35rem; }
+}
+
+.form-header p {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.40);
+  font-family: $font;
+
+  @media (max-width: 576px) { font-size: 0.80rem; }
+}
+
+// ── Carte du formulaire ───────────────────────────────────────────────
+.form-card {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: $radius-lg;
+  padding: 26px;
+  position: relative;
+
+  // Ligne supérieure colorée (comme les kpi-cards)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $primary, $primary-light);
+    border-radius: $radius-lg $radius-lg 0 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    border-radius: $radius;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px 14px;
+  }
+}
+
+// ── Groupes de champs ─────────────────────────────────────────────────
+.input-group-card {
+  margin-bottom: 18px;
+
+  @media (max-width: 576px) { margin-bottom: 14px; }
+
+  label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: $font;
+  }
+
+  .input-with-icon {
+    position: relative;
+
+    // Icône gauche
+    > i:first-child {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $primary-light;
+      font-size: 1.05rem;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 14px 13px 42px;
+      background: rgba(9, 7, 32, 0.80);
+      border: 1px solid $glass-border;
+      border-radius: $radius;
+      color: #fff;
+      font-family: $font;
+      font-size: 16px; // évite zoom iOS
+      transition: $transition;
+
+      @media (min-width: 577px) { font-size: 0.92rem; }
+
+      &::placeholder { color: rgba(255, 255, 255, 0.22); }
+
+      &:focus {
+        outline: none;
+        border-color: $primary;
+        background: rgba(105, 108, 255, 0.06);
+        box-shadow: 0 0 0 3px $primary-glow;
+      }
+
+      &:hover:not(:focus) {
+        border-color: rgba(105, 108, 255, 0.28);
+      }
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.30);
+      cursor: pointer;
+      font-size: 1.15rem;
+      padding: 4px;
+      transition: $transition;
+
+      &:hover { color: $primary-light; }
+    }
+  }
+}
+
+// ── Erreurs ───────────────────────────────────────────────────────────
+.error-message {
+  margin-top: 6px;
+  color: #F04438;
+  font-size: 12px;
+  font-family: $font;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  i { font-size: 13px; }
+}
+
+.input-error {
+  border-color: $danger !important;
+  background: rgba(240, 68, 56, 0.06) !important;
+  box-shadow: 0 0 0 3px $danger-bg !important;
+}
+
+// ── Options (remember / forgot) ───────────────────────────────────────
+.form-options-card {
+  background: rgba(9, 7, 32, 0.50);
+  border: 1px solid $glass-border;
+  border-radius: $radius;
+  padding: 11px 14px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 576px) {
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 360px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      min-width: 15px;
+      accent-color: $primary;
+      cursor: pointer;
+    }
+
+    label {
+      color: rgba(255, 255, 255, 0.50);
+      font-size: 0.82rem;
+      font-family: $font;
+      cursor: pointer;
+      white-space: nowrap;
+
+      @media (max-width: 576px) { font-size: 0.76rem; }
+    }
+  }
+
+  .forgot-link {
+    color: $primary-light;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: $font;
+    transition: $transition;
+    white-space: nowrap;
+
+    @media (max-width: 576px) { font-size: 0.76rem; }
+
+    &:hover {
+      color: $accent-light;
+      text-decoration: underline;
+    }
+  }
+}
+
+// ── Bouton principal ──────────────────────────────────────────────────
+.btn-primary-card {
+  width: 100%;
+  padding: 14px 20px;
+  // Gradient cohérent avec $primary du dashboard
+  background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+  border: none;
+  border-radius: $radius;
+  color: #fff;
+  font-family: $font-display;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: $transition;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  touch-action: manipulation;
+  box-shadow: 0 4px 18px rgba(105, 108, 255, 0.40);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-glow;
+    background: linear-gradient(135deg, $primary-light 0%, $primary 100%);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (hover: none) {
+    &:hover {
+      transform: none;
+      box-shadow: 0 4px 18px rgba(105, 108, 255, 0.40);
+    }
+
+    &:active {
+      opacity: 0.85;
+      transform: scale(0.98);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-icon { font-size: 1.05rem; }
+
+  // Effet de brillance (btn-shine)
+  .btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    transform: skewX(-20deg);
+    transition: none;
+  }
+
+  &:hover:not(:disabled) .btn-shine {
+    animation: shimmer 0.7s ease forwards;
+  }
+
+  @media (max-width: 576px) {
+    padding: 13px;
+    font-size: 0.82rem;
+  }
+}
+
+// ── Overlay de chargement ─────────────────────────────────────────────
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 7, 32, 0.82);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: inherit;
+}
+
+.loading-spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid $primary-glow;
+  border-radius: 50%;
+  border-top-color: $primary;
+  animation: spin 0.85s linear infinite;
+}
+
+// ── Footer formulaire ─────────────────────────────────────────────────
+.form-footer {
+  margin-top: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 576px) { margin-top: 16px; }
+}
+
+.footer-sep-line {
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: $glass-border;
+  margin-bottom: 4px;
+}
+
+.support-text {
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 0.80rem;
+  font-family: $font;
+
+  i {
+    margin-right: 4px;
+    color: $primary-light;
+    vertical-align: middle;
+  }
+
+  a {
+    color: $primary-light;
+    text-decoration: none;
+    font-weight: 600;
+    transition: $transition;
+
+    &:hover {
+      color: $accent-light;
+      text-decoration: underline;
+    }
+  }
+
+  @media (max-width: 576px) { font-size: 0.74rem; }
+}
+
+.version-text {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.18);
+  font-family: $font;
+  letter-spacing: 0.3px;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RESPONSIVE
+// ══════════════════════════════════════════════════════════════════════
+@media (max-width: 900px) {
+  .main-glass-card { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 576px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-glass-card { animation: none; }
+  .cube            { animation: none !important; }
+  .loading-spinner { animation-duration: 1.5s; }
 }
