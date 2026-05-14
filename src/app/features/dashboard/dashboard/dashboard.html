@@ -1,451 +1,411 @@
-<div class="layout-wrapper">
-  <div class="layout-container">
-<!-- SIDEBAR OPTIMISÉE POUR LE MODULE FINANCIAL -->
-<app-sidebar-component></app-sidebar-component>
+<div class="app-wrapper">
 
-    <!-- MAIN CONTENT -->
-    <div class="layout-page">
-      <!-- NAVBAR -->
-      <nav class="layout-navbar">
-        <div class="d-flex align-items-center">
-          <button class="menu-toggle-btn" (click)="toggleSidebar()">
-            <i class='bx bx-menu'></i>
-          </button>
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- OVERLAY MOBILE -->
+  <!-- <div class="sidebar-overlay" id="sidebarOverlay" (click)="closeSidebar()"></div> -->
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+          <i class="bx bx-menu"></i>
+        </button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Tableau de Bord</span>
+        </div>
+        <div class="topbar-search">
+          <i class="bx bx-search"></i>
+          <input type="text" placeholder="Chercher un tiers, véhicule, contrat…" />
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
         </div>
 
-        <ul class="navbar-nav">
+        <button class="topbar-icon-btn">
+          <i class="bx bx-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <button class="topbar-icon-btn">
+          <i class="bx bx-refresh"></i>
+        </button>
 
-          <!-- User dropdown avec photo dynamique -->
-          <li class="nav-item dropdown" (click)="toggleUserMenu()">
-            <div class="avatar dropdown-toggle">
-              <!-- Photo dynamique de l'utilisateur -->
-              <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-                (error)="userPhotoUrl = getDefaultAvatar()" />
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
+          </div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
+          </div>
 
-              <!-- Avatar par défaut si pas de photo -->
-              <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-                {{ getUserInitials() }}
-              </div>
+          <!-- Dropdown menu -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
             </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/settings']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
 
-            <!-- Menu dropdown -->
-            <div class="dropdown-menu" [class.show]="showUserMenu" id="userMenu">
-              <div style="padding: 1rem;">
-                <div class="fw-bold">{{ userName }}</div>
-                <div class="text-muted fs-sm">
-                  {{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}
-                </div>
-                <hr style="margin: 0.5rem 0;">
-                <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                  <i class='bx bx-user mr-2'></i> Mon profil
-                </a>
-                <a [routerLink]="['/settings']" class="dropdown-item">
-                  <i class='bx bx-cog mr-2'></i> Paramètres
-                </a>
-                <hr style="margin: 0.5rem 0;">
-                <a (click)="logout()" class="dropdown-item logout-item">
-                  <i class='bx bx-log-out mr-2'></i> Déconnexion
-                </a>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </nav>
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
 
-      <!-- DASHBOARD PRINCIPAL -->
-      <div class="content-wrapper" id="main-content">
-        <!-- SECTION BIENVENUE DYNAMIQUE -->
-        <div class="welcome-section">
-          <!-- Nom d'utilisateur dynamique -->
-          <h1 class="welcome-title">Bonjour, {{ userName }} 👋</h1>
-
-          <!-- Message de bienvenue dynamique -->
-          <p class="welcome-subtitle">
-            Bienvenue sur votre tableau de bord Logistiks.
-
+      <!-- ══ HERO BANNER ══ -->
+      <div class="hero-banner">
+        <div class="hero-deco"><i class="bx bxs-truck"></i></div>
+        <div class="hero-content">
+          <div class="hero-greeting">Bienvenue sur votre tableau de bord LOGISTIK</div>
+          <div class="hero-title">Bonjour, <span>{{ userName }}</span> 👋</div>
+          <div class="hero-subtitle">
             <!-- Section Documents -->
             <ng-container *ngIf="dashboardStats.documentsPending > 0; else noPendingDocs">
-              <strong>
-                {{ dashboardStats.documentsPending }} document{{ dashboardStats.documentsPending > 1 ? 's' : '' }}
-              </strong>
-              enregistrez dans notre base de donnée,
+              <strong>{{ dashboardStats.documentsPending }} document{{ dashboardStats.documentsPending > 1 ? 's' : '' }}</strong>
+              enregistrés dans notre base de données,&nbsp;
             </ng-container>
             <ng-template #noPendingDocs>
-              <span *ngIf="dashboardStats.documentsPending === 0">
-                tous les documents sont validés,
-              </span>
+              <span *ngIf="dashboardStats.documentsPending === 0">Tous les documents sont validés,&nbsp;</span>
             </ng-template>
 
             <!-- Section Paiements -->
             <ng-container *ngIf="dashboardStats.paymentsOverdue > 0; else noOverduePayments">
-              <strong>
-                {{ dashboardStats.paymentsOverdue }} paiement{{ dashboardStats.paymentsOverdue > 1 ? 's' : '' }}
-              </strong>
-              sont en retard,
+              <strong>{{ dashboardStats.paymentsOverdue }} paiement{{ dashboardStats.paymentsOverdue > 1 ? 's' : '' }}</strong>
+              sont en retard,&nbsp;
             </ng-container>
             <ng-template #noOverduePayments>
-              <span *ngIf="dashboardStats.paymentsOverdue === 0">
-                aucun paiement n'est en retard,
-              </span>
+              <span *ngIf="dashboardStats.paymentsOverdue === 0">aucun paiement n'est en retard,&nbsp;</span>
             </ng-template>
 
             <!-- Section Véhicules -->
             <ng-container *ngIf="dashboardStats.vehiclesNeedingAttention > 0; else noVehicleAttention">
-              <strong>
-                {{ dashboardStats.vehiclesNeedingAttention }} véhicule{{ dashboardStats.vehiclesNeedingAttention > 1 ?
-                's' : '' }}
-              </strong>
+              <strong>{{ dashboardStats.vehiclesNeedingAttention }} véhicule{{ dashboardStats.vehiclesNeedingAttention > 1 ? 's' : '' }}</strong>
               nécessitent votre attention.
             </ng-container>
             <ng-template #noVehicleAttention>
-              <span *ngIf="dashboardStats.vehiclesNeedingAttention === 0">
-                tous les véhicules sont opérationnels.
-              </span>
+              <span *ngIf="dashboardStats.vehiclesNeedingAttention === 0">tous les véhicules sont opérationnels.</span>
             </ng-template>
-          </p>
+          </div>
 
-          <!-- Quick actions -->
-          <div class="quick-actions">
-            <a [routerLink]="['/dashboard/contrats']" class="quick-action-btn">
-              <i class='bx bx-plus'></i>
-              Nouveau Contrat
+          <!-- Quick Actions -->
+          <div class="hero-quick-actions">
+            <a [routerLink]="['/dashboard/contrats']" class="hero-action-btn primary">
+              <i class="bx bx-plus"></i> Nouveau Contrat
             </a>
-            <a [routerLink]="['/dashboard/contrats']" class="quick-action-btn">
-              <i class='bx bx-dollar-circle'></i>
-              Enregistrer Paiement
+            <a [routerLink]="['/dashboard/contrats']" class="hero-action-btn">
+              <i class="bx bx-dollar-circle"></i> Enregistrer Paiement
             </a>
-            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="quick-action-btn">
-              <i class='bx bx-check-circle'></i>
-              Valider Documents
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="hero-action-btn">
+              <i class="bx bx-check-circle"></i> Valider Documents
             </a>
           </div>
         </div>
 
-        <!-- KPI PRINCIPAUX -->
-        <div class="row">
-          <!-- CARD 1: TIERS ACTIFS (Dynamique) -->
-          <div class="col-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="stat-card">
-                  <div class="stat-icon primary">
-                    <i class='bx bx-group'></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ getFormattedNumber(dashboardStats.activeTiers) }}</h3>
-                    <p>Tiers Actifs</p>
-                    <div class="stat-trend" [class.trend-up]="getTiersTrend() >= 0"
-                      [class.trend-down]="getTiersTrend() < 0">
-                      <i class='bx' [class.bx-up-arrow-alt]="getTiersTrend() >= 0"
-                        [class.bx-down-arrow-alt]="getTiersTrend() < 0">
-                      </i>
-                      {{ getTiersTrend() >= 0 ? '+' : '' }}{{ getTiersTrend() }}% ce mois
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!-- Hero Stats -->
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ getFormattedNumber(dashboardStats.activeTiers) }}<span>/tot</span></div>
+            <div class="hero-stat-label">Tiers Actifs</div>
           </div>
-
-          <!-- CARD 2: VÉHICULES OPÉRATIONNELS (Dynamique) -->
-          <div class="col-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="stat-card">
-                  <div class="stat-icon success">
-                    <i class='bx bx-car'></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ getFormattedNumber(dashboardStats.availableVehicles) }}</h3>
-                    <p>Véhicules Disponibles</p>
-                    <div class="stat-trend" [class.trend-up]="getVehiclesTrend() >= 0"
-                      [class.trend-down]="getVehiclesTrend() < 0">
-                      <i class='bx' [class.bx-up-arrow-alt]="getVehiclesTrend() >= 0"
-                        [class.bx-down-arrow-alt]="getVehiclesTrend() < 0">
-                      </i>
-                      {{ getVehiclesTrend() >= 0 ? '+' : '' }}{{ getVehiclesTrend() }}% ce mois
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ getFormattedNumber(dashboardStats.availableVehicles) }}</div>
+            <div class="hero-stat-label">Véhicules Dispo.</div>
           </div>
-
-          <!-- CARD 3: CONTRATS ACTIFS (Dynamique) -->
-          <div class="col-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="stat-card">
-                  <div class="stat-icon warning">
-                    <i class='bx bx-file'></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ getFormattedNumber(dashboardStats.activeContracts) }}</h3>
-                    <p>Contrats Actifs</p>
-                    <div class="stat-trend" [class.trend-up]="getContractsTrend() >= 0"
-                      [class.trend-down]="getContractsTrend() < 0">
-                      <i class='bx' [class.bx-up-arrow-alt]="getContractsTrend() >= 0"
-                        [class.bx-down-arrow-alt]="getContractsTrend() < 0">
-                      </i>
-                      {{ getContractsTrend() >= 0 ? '+' : '' }}{{ getContractsTrend() }}% ce mois
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- CARD 4: TAUX DE RECOUVREMENT (Dynamique) -->
-          <div class="col-3">
-            <div class="card">
-              <div class="card-body">
-                <div class="stat-card">
-                  <div class="stat-icon danger">
-                    <i class='bx bx-wallet'></i>
-                  </div>
-                  <div class="stat-content">
-                    <h3>{{ dashboardStats.recoveryRate }}%</h3>
-                    <p>Taux de Recouvrement</p>
-                    <div class="stat-trend" [class.trend-up]="getRecoveryTrend() >= 0"
-                      [class.trend-down]="getRecoveryTrend() < 0">
-                      <i class='bx' [class.bx-up-arrow-alt]="getRecoveryTrend() >= 0"
-                        [class.bx-down-arrow-alt]="getRecoveryTrend() < 0">
-                      </i>
-                      {{ getRecoveryTrend() >= 0 ? '+' : '' }}{{ getRecoveryTrend() }}% ce mois
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ dashboardStats.recoveryRate }}<span>%</span></div>
+            <div class="hero-stat-label">Recouvrement</div>
           </div>
         </div>
-
-        <!-- SECTION GRAPHIQUES -->
-        <div class="row mt-4">
-          <!-- Graphique: Tiers par Statut -->
-          <div class="col-6">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title mb-0">
-                  <i class='bx bx-pie-chart-alt-2'></i>
-                  Répartition des Tiers
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="chart-container" style="position: relative; height: 300px;">
-                  <canvas baseChart [labels]="chartData.tiersByStatus.labels"
-                    [datasets]="chartData.tiersByStatus.datasets" [type]="'doughnut'" [options]="chartOptions">
-                  </canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Graphique: Véhicules par Statut -->
-          <div class="col-6">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title mb-0">
-                  <i class='bx bx-car'></i>
-                  Statut des Véhicules
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="chart-container" style="position: relative; height: 300px;">
-                  <canvas baseChart [labels]="vehicleChartData.vehiclesByStatus.labels"
-                    [datasets]="vehicleChartData.vehiclesByStatus.datasets" [type]="'doughnut'"
-                    [options]="chartOptions">
-                  </canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION GRAPHIQUES - LIGNE 2 -->
-        <div class="row mt-4">
-          <!-- Graphique: Véhicules par Type -->
-          <div class="col-6">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title mb-0">
-                  <i class='bx bx-category'></i>
-                  Véhicules par Type
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="chart-container" style="position: relative; height: 300px;">
-                  <canvas baseChart [labels]="vehicleChartData.vehiclesByType.labels"
-                    [datasets]="vehicleChartData.vehiclesByType.datasets" [type]="'pie'" [options]="chartOptions">
-                  </canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Statistiques Rapides -->
-          <div class="col-6">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title mb-0">
-                  <i class='bx bx-stats'></i>
-                  Statistiques Rapides
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="quick-stats">
-                  <div class="quick-stat-item">
-                    <div class="quick-stat-icon">
-                      <i class='bx bx-user'></i>
-                    </div>
-                    <div class="quick-stat-info">
-                      <h4>{{ dashboardStats.activeTiers }}</h4>
-                      <p>Clients</p>
-                    </div>
-                  </div>
-
-                  <div class="quick-stat-item">
-                    <div class="quick-stat-icon">
-                      <i class='bx bx-package'></i>
-                    </div>
-                    <div class="quick-stat-info">
-                      <h4>{{ dashboardStats.totalSuppliers }}</h4>
-                      <p>Fournisseurs</p>
-                    </div>
-                  </div>
-
-                  <div class="quick-stat-item">
-                    <div class="quick-stat-icon">
-                      <i class='bx bx-car'></i>
-                    </div>
-                    <div class="quick-stat-info">
-                      <h4>{{ dashboardStats.totalVehicles }}</h4>
-                      <p>Total Véhicules</p>
-                    </div>
-                  </div>
-
-                  <div class="quick-stat-item">
-                    <div class="quick-stat-icon">
-                      <i class='bx bx-wrench'></i>
-                    </div>
-                    <div class="quick-stat-info">
-                      <h4>{{ dashboardStats.vehiclesInMaintenance }}</h4>
-                      <p>En Maintenance</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION DONNÉES RÉCENTES -->
-        <div class="row mt-4">
-          <!-- Véhicules Récents -->
-          <div class="col-6">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                  <i class='bx bx-car'></i>
-                  Véhicules Récents
-                </h5>
-                <a [routerLink]="['/dashboard/tiers']" class="btn btn-sm btn-outline-primary">
-                  Voir tout
-                </a>
-              </div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Immatriculation</th>
-                        <th>Modèle</th>
-                        <th>Statut</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let vehicle of recentVehicles">
-                        <td>{{ vehicle.plateNumber }}</td>
-                        <td>{{ vehicle.brand }} {{ vehicle.model }}</td>
-                        <td>
-                          <span class="badge" [ngClass]="getVehicleStatusClass(vehicle.status)">
-                            {{ getVehicleStatusText(vehicle.status) }}
-                          </span>
-                        </td>
-                      </tr>
-                      <tr *ngIf="recentVehicles.length === 0">
-                        <td colspan="3" class="text-center text-muted">
-                          Aucun véhicule récent
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tiers Récents -->
-          <div class="col-6">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                  <i class='bx bx-group'></i>
-                  Tiers Récents
-                </h5>
-                <a [routerLink]="['/dashboard/tiers']" class="btn btn-sm btn-outline-primary">
-                  Voir tout
-                </a>
-              </div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Nom</th>
-                        <th>Type</th>
-                        <th>Statut</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let tier of recentTiers">
-                        <td>{{ tier.fullName }}</td>
-                        <td>
-                          <span class="badge bg-info">
-                            {{ tier.roles[0]?.roleType?.toString() || 'N/A' }}
-                          </span>
-                        </td>
-                        <td>
-                          <span class="badge" [class.bg-success]="tier.status === 2"
-                            [class.bg-secondary]="tier.status !== 2">
-                            {{ tier.status === 2 ? 'Actif' : 'Inactif' }}
-                          </span>
-                        </td>
-                      </tr>
-                      <tr *ngIf="recentTiers.length === 0">
-                        <td colspan="3" class="text-center text-muted">
-                          Aucun tiers récent
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- FOOTER -->
-        <footer class="content-footer mt-4">
-          <div class="footer-text">
-            © 2026 Logistik - Version 1.0.0
-            <span style="margin: 0 8px;">•</span>
-            <a [routerLink]="['/dashboard/about']" style="color: #696cff; text-decoration: none;">Aide & Support</a>
-            <span style="margin: 0 8px;">•</span>
-            <a style="color: #696cff; text-decoration: none;" [routerLink]="['/dashboard/about']">À propos</a>
-            <span style="margin: 0 8px;">•</span>
-          </div>
-        </footer>
       </div>
-    </div>
+
+      <!-- ══ KPI CARDS ══ -->
+      <div class="grid grid-4">
+
+        <!-- CARD 1: TIERS ACTIFS -->
+        <div class="kpi-card purple">
+          <div class="kpi-header">
+            <div class="kpi-icon purple"><i class="bx bx-group"></i></div>
+            <div class="kpi-trend" [class.up]="getTiersTrend() >= 0" [class.down]="getTiersTrend() < 0">
+              <i class="bx" [class.bx-trending-up]="getTiersTrend() >= 0" [class.bx-trending-down]="getTiersTrend() < 0"></i>
+              {{ getTiersTrend() >= 0 ? '+' : '' }}{{ getTiersTrend() }}%
+            </div>
+          </div>
+          <div class="kpi-value">{{ getFormattedNumber(dashboardStats.activeTiers) }}</div>
+          <div class="kpi-label">Tiers Actifs</div>
+          <div class="kpi-sublabel">Ce mois-ci</div>
+        </div>
+
+        <!-- CARD 2: VÉHICULES DISPONIBLES -->
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <div class="kpi-icon green"><i class="bx bx-car"></i></div>
+            <div class="kpi-trend" [class.up]="getVehiclesTrend() >= 0" [class.down]="getVehiclesTrend() < 0">
+              <i class="bx" [class.bx-trending-up]="getVehiclesTrend() >= 0" [class.bx-trending-down]="getVehiclesTrend() < 0"></i>
+              {{ getVehiclesTrend() >= 0 ? '+' : '' }}{{ getVehiclesTrend() }}%
+            </div>
+          </div>
+          <div class="kpi-value">{{ getFormattedNumber(dashboardStats.availableVehicles) }}</div>
+          <div class="kpi-label">Véhicules Disponibles</div>
+          <div class="kpi-sublabel">Ce mois-ci</div>
+        </div>
+
+        <!-- CARD 3: CONTRATS ACTIFS -->
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <div class="kpi-icon amber"><i class="bx bx-file"></i></div>
+            <div class="kpi-trend" [class.up]="getContractsTrend() >= 0" [class.down]="getContractsTrend() < 0">
+              <i class="bx" [class.bx-trending-up]="getContractsTrend() >= 0" [class.bx-trending-down]="getContractsTrend() < 0"></i>
+              {{ getContractsTrend() >= 0 ? '+' : '' }}{{ getContractsTrend() }}%
+            </div>
+          </div>
+          <div class="kpi-value">{{ getFormattedNumber(dashboardStats.activeContracts) }}</div>
+          <div class="kpi-label">Contrats Actifs</div>
+          <div class="kpi-sublabel">Ce mois-ci</div>
+        </div>
+
+        <!-- CARD 4: TAUX DE RECOUVREMENT -->
+        <div class="kpi-card red">
+          <div class="kpi-header">
+            <div class="kpi-icon red"><i class="bx bx-wallet"></i></div>
+            <div class="kpi-trend" [class.up]="getRecoveryTrend() >= 0" [class.down]="getRecoveryTrend() < 0">
+              <i class="bx" [class.bx-trending-up]="getRecoveryTrend() >= 0" [class.bx-trending-down]="getRecoveryTrend() < 0"></i>
+              {{ getRecoveryTrend() >= 0 ? '+' : '' }}{{ getRecoveryTrend() }}%
+            </div>
+          </div>
+          <div class="kpi-value">{{ dashboardStats.recoveryRate }}<span class="kpi-value-sm">%</span></div>
+          <div class="kpi-label">Taux de Recouvrement</div>
+          <div class="kpi-sublabel">Ce mois-ci</div>
+        </div>
+
+      </div>
+
+      <!-- ══ GRAPHIQUES ROW 1 ══ -->
+      <div class="grid grid-2" style="margin-top: 18px;">
+
+        <!-- Répartition des Tiers -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i class="bx bx-pie-chart-alt-2"></i> Répartition des Tiers</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas baseChart
+                [labels]="chartData.tiersByStatus.labels"
+                [datasets]="chartData.tiersByStatus.datasets"
+                [type]="'doughnut'"
+                [options]="chartOptions">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statut des Véhicules -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i class="bx bx-car"></i> Statut des Véhicules</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas baseChart
+                [labels]="vehicleChartData.vehiclesByStatus.labels"
+                [datasets]="vehicleChartData.vehiclesByStatus.datasets"
+                [type]="'doughnut'"
+                [options]="chartOptions">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ GRAPHIQUES ROW 2 ══ -->
+      <div class="grid grid-2" style="margin-top: 18px;">
+
+        <!-- Véhicules par Type -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i class="bx bx-category"></i> Véhicules par Type</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas baseChart
+                [labels]="vehicleChartData.vehiclesByType.labels"
+                [datasets]="vehicleChartData.vehiclesByType.datasets"
+                [type]="'pie'"
+                [options]="chartOptions">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistiques Rapides -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="bx bx-stats"></i> Statistiques Rapides</div>
+          </div>
+          <div class="card-body">
+            <div class="quick-stats-grid">
+
+              <div class="quick-stat-item">
+                <div class="quick-stat-icon purple"><i class="bx bx-user"></i></div>
+                <div class="quick-stat-info">
+                  <div class="quick-stat-value">{{ dashboardStats.activeTiers }}</div>
+                  <div class="quick-stat-label">Clients</div>
+                </div>
+              </div>
+
+              <div class="quick-stat-item">
+                <div class="quick-stat-icon amber"><i class="bx bx-package"></i></div>
+                <div class="quick-stat-info">
+                  <div class="quick-stat-value">{{ dashboardStats.totalSuppliers }}</div>
+                  <div class="quick-stat-label">Fournisseurs</div>
+                </div>
+              </div>
+
+              <div class="quick-stat-item">
+                <div class="quick-stat-icon green"><i class="bx bx-car"></i></div>
+                <div class="quick-stat-info">
+                  <div class="quick-stat-value">{{ dashboardStats.totalVehicles }}</div>
+                  <div class="quick-stat-label">Total Véhicules</div>
+                </div>
+              </div>
+
+              <div class="quick-stat-item">
+                <div class="quick-stat-icon red"><i class="bx bx-wrench"></i></div>
+                <div class="quick-stat-info">
+                  <div class="quick-stat-value">{{ dashboardStats.vehiclesInMaintenance }}</div>
+                  <div class="quick-stat-label">En Maintenance</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ DONNÉES RÉCENTES ══ -->
+      <div class="grid grid-2" style="margin-top: 18px;">
+
+        <!-- Véhicules Récents -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="bx bx-car"></i> Véhicules Récents</div>
+            <a [routerLink]="['/dashboard/vehicules']" class="btn btn-outline btn-sm">Voir tout</a>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Immatriculation</th>
+                  <th>Modèle</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let vehicle of recentVehicles">
+                  <td><span class="cell-ref">{{ vehicle.plateNumber }}</span></td>
+                  <td><span class="cell-name">{{ vehicle.brand }} {{ vehicle.model }}</span></td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getVehicleStatusClass(vehicle.status)">
+                      {{ getVehicleStatusText(vehicle.status) }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="recentVehicles.length === 0">
+                  <td colspan="3" class="empty-state">Aucun véhicule récent</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tiers Récents -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="bx bx-group"></i> Tiers Récents</div>
+            <a [routerLink]="['/dashboard/tiers']" class="btn btn-outline btn-sm">Voir tout</a>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Type</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tier of recentTiers">
+                  <td><span class="cell-name">{{ tier.fullName }}</span></td>
+                  <td>
+                    <span class="status-badge status-rented">
+                      {{ tier.roles[0]?.roleType?.toString() || 'N/A' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge"
+                      [class.status-ok]="tier.status === 2"
+                      [class.status-inactive]="tier.status !== 2">
+                      {{ tier.status === 2 ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="recentTiers.length === 0">
+                  <td colspan="3" class="empty-state">Aucun tiers récent</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
+
+    </main>
   </div>
+</div>

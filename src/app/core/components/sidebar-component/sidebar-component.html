@@ -1,382 +1,367 @@
-<!-- SIDEBAR RÉUTILISABLE AVEC GESTION DES PERMISSIONS -->
-<!-- AVEC ANNOTATIONS DES RÈGLES DE GESTION (RG) -->
-<aside class="layout-menu" id="sidebar">
-  <div class="app-brand">
-    <i class='bx bxs-truck' style="font-size: 2rem; color: white;"></i>
+<aside class="sidebar" id="sidebar">
+
+  <!-- ══ BRAND ══════════════════════════════════════════════════════ -->
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <i class='bx bxs-truck'></i>
+    </div>
     <div>
-      <span class="app-brand-text">LOGISTIK</span>
+      <div class="brand-name">LOGISTIK <span>v2</span></div>
+      <div class="brand-tagline">Gestion Automobile</div>
     </div>
   </div>
 
-  <ul class="menu-inner">
+  <!-- ══ USER MINI ══════════════════════════════════════════════════ -->
+  <!-- <div class="sidebar-user-section">
+    <div class="user-avatar-sidebar">{{ getUserInitials() }}</div>
+    <div class="user-info-sidebar">
+      <div class="uname">{{ userName }}</div>
+     <div class="urole">{{ currentUser?.roles?.[0] || 'Utilisateur' }}</div>
+    </div>
+  </div> -->
 
-    <!-- ================================================================ -->
-    <!-- DASHBOARD - Visible pour tous les utilisateurs authentifiés -->
-    <!-- ================================================================ -->
-    <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewDashboard()">
-      <a [routerLink]="['/dashboard']" class="menu-link">
-        <i class="menu-icon bx bx-home-circle"></i>
-        <div>Tableau de bord</div>
-      </a>
-    </li>
+  <!-- ══ NAV ════════════════════════════════════════════════════════ -->
+  <nav class="sidebar-nav">
+    <ul>
 
-    <!-- ================================================================ -->
-    <!-- TABLEAUX DE BORD & ANALYTICS -->
-    <!-- Visible pour: Super Admin, Manager, Finance -->
-    <!-- ================================================================ -->
-    <li class="menu-header" *ngIf="permission.canViewAnalytics()">
-      <span>TABLEAUX DE BORD</span>
-    </li>
+      <!-- ─────────────────────────────────────────────────────── -->
+      <!-- DASHBOARD — Visible pour tous les utilisateurs          -->
+      <!-- ─────────────────────────────────────────────────────── -->
+      <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDashboard()">
+        <a [routerLink]="['/dashboard']" class="nav-link">
+          <i class="nav-icon bx bxs-dashboard"></i>
+          <span class="nav-text">Tableau de bord</span>
+        </a>
+      </li>
 
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewAnalytics()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <div>Analyses et KPIs</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewDashboard()">
-          <a [routerLink]="['/dashboard/analytics/kpi-globaux']" class="menu-link">
-            <div>KPIs Globaux</div>
-          </a>
-        </li>
+      <!-- ─────────────────────────────────────────────────────── -->
+      <!-- TABLEAUX DE BORD — Super Admin, Manager, Finance        -->
+      <!-- ─────────────────────────────────────────────────────── -->
+      <div class="nav-section-label" *ngIf="permission.canViewAnalytics()">TABLEAUX DE BORD</div>
 
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
-          <a [routerLink]="['/dashboard/analytics/finance']" class="menu-link">
-            <div>Tableau de bord financier</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canViewAnalytics()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-bar-chart-alt-2"></i>
+          <span class="nav-text">Analyses & KPIs</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDashboard()">
+            <a [routerLink]="['/dashboard/analytics/kpi-globaux']" class="nav-link">
+              <span class="nav-text">KPIs Globaux</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
+            <a [routerLink]="['/dashboard/analytics/finance']" class="nav-link">
+              <span class="nav-text">Tableau de bord financier</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <!-- ================================================================ -->
-    <!-- RÉFÉRENTIELS -->
-    <!-- ================================================================ -->
-    <li class="menu-header"
-      *ngIf="permission.canViewTiers() || permission.canViewVehicles() || permission.canViewDocuments()">
-      <span>RÉFÉRENTIELS</span>
-    </li>
+      <!-- ─────────────────────────────────────────────────────── -->
+      <!-- RÉFÉRENTIELS                                            -->
+      <!-- ─────────────────────────────────────────────────────── -->
+      <div class="nav-section-label"
+        *ngIf="permission.canViewTiers() || permission.canViewVehicles() || permission.canViewDocuments()">
+        RÉFÉRENTIELS
+      </div>
 
-    <!-- TIERS - Visible si permission de lecture clients/fournisseurs -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewTiers()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-group"></i>
-        <div>Tiers</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/tiers']" class="menu-link">
-            <div>Tous les tiers</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canValidateDocuments()">
-          <a [routerLink]="['/dashboard/tiers/documents-validation']" class="menu-link">
-            <div>Documents à valider</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewDocuments()">
-          <a [routerLink]="['/dashboard/tiers/documents-management']" class="menu-link">
-            <div>Gestion des documents</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canCreateTiers()">
-          <a [routerLink]="['/dashboard/tiers/new']" class="menu-link">
-            <div>Nouveau tier</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- TIERS -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canViewTiers()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-group"></i>
+          <span class="nav-text">Tiers</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/tiers']" class="nav-link">
+              <span class="nav-text">Tous les tiers</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canValidateDocuments()">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="nav-link">
+              <span class="nav-text">Documents à valider</span>
+              <span class="nav-badge badge-amber">3</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDocuments()">
+            <a [routerLink]="['/dashboard/tiers/documents-management']" class="nav-link">
+              <span class="nav-text">Gestion documents</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canCreateTiers()">
+            <a [routerLink]="['/dashboard/tiers/new']" class="nav-link">
+              <span class="nav-text">Nouveau tiers</span>
+              <span class="nav-badge badge-purple">+</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <!-- VÉHICULES - Visible si permission de lecture véhicules -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewVehicles()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-car"></i>
-        <div>Véhicules</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/vehicules']" class="menu-link">
-            <div>Tous les véhicules</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canCreateVehicles()">
-          <a [routerLink]="['/dashboard/vehicules/ajouter']" class="menu-link">
-            <div>Ajouter véhicule</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- VÉHICULES -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canViewVehicles()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-car"></i>
+          <span class="nav-text">Véhicules</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/vehicules']" class="nav-link">
+              <span class="nav-text">Tous les véhicules</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canCreateVehicles()">
+            <a [routerLink]="['/dashboard/vehicules/ajouter']" class="nav-link">
+              <span class="nav-text">Ajouter véhicule</span>
+              <span class="nav-badge badge-purple">+</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <!-- DOCUMENTS - Visible si permission de lecture documents -->
-    <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewDocuments()">
-      <a [routerLink]="['/dashboard/documents']" class="menu-link">
-        <i class="menu-icon bx bx-folder"></i>
-        <div>Documents</div>
-      </a>
-    </li>
+      <!-- DOCUMENTS -->
+      <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDocuments()">
+        <a [routerLink]="['/dashboard/documents']" class="nav-link">
+          <i class="nav-icon bx bx-folder"></i>
+          <span class="nav-text">Documents</span>
+        </a>
+      </li>
 
-    <!-- ================================================================ -->
-    <!-- CŒUR MÉTIER -->
-    <!-- ================================================================ -->
-    <li class="menu-header" *ngIf="permission.canViewContracts() || permission.canViewPayments()">
-      <span>CŒUR MÉTIER</span>
-    </li>
+      <!-- ─────────────────────────────────────────────────────── -->
+      <!-- CŒUR MÉTIER                                             -->
+      <!-- ─────────────────────────────────────────────────────── -->
+      <div class="nav-section-label"
+        *ngIf="permission.canViewContracts() || permission.canViewPayments()">
+        CŒUR MÉTIER
+      </div>
 
-    <!-- CONTRATS - Visible si permission de lecture contrats -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewContracts()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-file"></i>
-        <div>Contrats</div>
-      </a>
-      <ul class="menu-sub">
-        <!-- 📄 TOUS LES CONTRATS -->
-        <!-- RG-015: Visualisation des statuts de contrat (Actif/Terminé) -->
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/contrats']" class="menu-link">
-            <div>Tous les contrats</div>
-          </a>
-        </li>
+      <!-- CONTRATS -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canViewContracts()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-file-blank"></i>
+          <span class="nav-text">Contrats</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <!-- RG-015 : Visualisation des statuts de contrat -->
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/contrats']" class="nav-link">
+              <span class="nav-text">Tous les contrats</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
+            <a [routerLink]="['/dashboard/contrats/stats']" class="nav-link">
+              <span class="nav-text">Statistiques des contrats</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
+            <a [routerLink]="['/dashboard/contrats/stats']" class="nav-link">
+              <span class="nav-text">Contrats expirants</span>
+              <span class="nav-badge badge-red">2</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-        <!-- 📊 STATISTIQUES CONTRATS -->
-        <!-- RG-015: Analyse des contrats actifs et terminés -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
-          <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
-            <div>Statistiques des contrats</div>
-          </a>
-        </li>
+      <!-- ─────────────────────────────────────────────────────── -->
+      <!-- FINANCE & COMPTABILITÉ — Super Admin, Manager, Finance  -->
+      <!-- Masqué pour : Livreur, Consultant, Operations          -->
+      <!-- ─────────────────────────────────────────────────────── -->
+      <div class="nav-section-label" *ngIf="permission.canViewFinances()">FINANCE & COMPTABILITÉ</div>
 
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
-          <a [routerLink]="['/dashboard/contrats/stats']" class="menu-link">
-            <div>Contrats expirants</div>
-          </a>
-        </li>
+      <!-- TRANSACTIONS -->
+      <!-- RG-008/009/013/014 : Gestion des revenus et dépenses -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canViewTransactions()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-receipt"></i>
+          <span class="nav-text">Transactions</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/finances/transactions']" class="nav-link">
+              <span class="nav-text">Toutes les transactions</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canCreateTransactions()">
+            <a [routerLink]="['/dashboard/finances/transactions/nouvelle']" class="nav-link">
+              <span class="nav-text">Nouvelle transaction</span>
+              <span class="nav-badge badge-purple">+</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-      </ul>
-    </li>
+      <!-- RENTABILITÉ & ROI -->
+      <!-- RG-007 à 012 : Calcul rentabilité, ROI, taux utilisation -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canViewROI()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-trending-up"></i>
+          <span class="nav-text">Rentabilité & ROI</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/rentabilite/vehicules']" class="nav-link">
+              <span class="nav-text">ROI par véhicule</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
+            <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="nav-link">
+              <span class="nav-text">Comparaisons périodes</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <!-- ================================================================ -->
-    <!-- FINANCE & COMPTABILITÉ -->
-    <!-- Visible uniquement pour: Super Admin, Manager, Finance -->
-    <!-- Masqué pour: Livreur, Consultant, Operations -->
-    <!-- ================================================================ -->
-    <li class="menu-header" *ngIf="permission.canViewFinances()">
-      <span>FINANCE & COMPTABILITÉ</span>
-    </li>
+      <!-- RAPPORTS -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canViewReports()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bxs-report"></i>
+          <span class="nav-text">Rapports</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <!-- RPT-01 : Activité mensuelle -->
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
+            <a [routerLink]="['/dashboard/rapports/activite-mensuelle']" class="nav-link">
+              <span class="nav-text">Activité mensuelle</span>
+            </a>
+          </li>
+          <!-- RPT-03 : Dépenses par catégorie -->
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
+            <a [routerLink]="['/dashboard/rapports/depenses-categories']" class="nav-link">
+              <span class="nav-text">Dépenses par catégorie</span>
+            </a>
+          </li>
+          <!-- RPT-06 : Impayés et retards -->
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
+            <a [routerLink]="['/dashboard/rapports/impayes']" class="nav-link">
+              <span class="nav-text">Impayés et retards</span>
+            </a>
+          </li>
+          <!-- RPT-08 : Synthèse maintenance — tous sauf Driver -->
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
+            <a [routerLink]="['/dashboard/rapports/maintenance']" class="nav-link">
+              <span class="nav-text">Synthèse maintenance</span>
+            </a>
+          </li>
+          <!-- RPT-09 : Assurances à renouveler -->
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
+            <a [routerLink]="['/dashboard/rapports/assurances']" class="nav-link">
+              <span class="nav-text">Assurances à renouveler</span>
+              <span class="nav-badge badge-amber">1</span>
+            </a>
+          </li>
+          <!-- Rapports planifiés -->
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canScheduleReport()">
+            <a [routerLink]="['/dashboard/rapports/planifies']" class="nav-link">
+              <span class="nav-text">Rapports planifiés</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    <!-- 💰 TRANSACTIONS FINANCIÈRES -->
-    <!-- RG-008: Revenus = Somme des paiements reçus (Status = Paid) -->
-    <!-- RG-009: Dépenses = Transactions de type Expense -->
-    <!-- RG-013: Seuls les paiements "Paid" comptent dans les revenus -->
-    <!-- RG-014: Paiements en retard (Late) et en attente (Pending) tracés -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewTransactions()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-receipt"></i>
-        <div>Transactions</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/finances/transactions']" class="menu-link">
-            <div>Toutes les transactions</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canCreateTransactions()">
-          <a [routerLink]="['/dashboard/finances/transactions/nouvelle']" class="menu-link">
-            <div>Nouvelle transaction</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <!-- ─────────────────────────────────────────────────────── -->
+      <!-- ADMINISTRATION — Super Admin, Manager uniquement        -->
+      <!-- Masqué pour : Finance, Operations, Livreur, Consultant  -->
+      <!-- ─────────────────────────────────────────────────────── -->
+      <div class="nav-section-label" *ngIf="permission.canViewAdministration()">ADMINISTRATION</div>
 
-    <!-- 📈 RENTABILITÉ & ROI - Uniquement Manager et au-dessus -->
-    <!-- RG-007: Rentabilité calculée par période (date début, date fin) -->
-    <!-- RG-008: Revenus = Somme paiements reçus (Status = Paid) sur période -->
-    <!-- RG-009: Dépenses = Transactions Expense liées véhicule sur période -->
-    <!-- RG-010: Dépenses ventilées par catégorie -->
-    <!-- RG-011: Taux d'utilisation = (Jours loués / Jours total période) × 100 -->
-    <!-- RG-012: ROI = (Bénéfice net / Coût d'acquisition) × 100 -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewROI()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-trending-up"></i>
-        <div>Rentabilité & ROI</div>
-      </a>
-      <ul class="menu-sub">
+      <!-- UTILISATEURS -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canManageUsers()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-user-circle"></i>
+          <span class="nav-text">Utilisateurs</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/users/list']" class="nav-link">
+              <span class="nav-text">Liste utilisateurs</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/users/create']" class="nav-link">
+              <span class="nav-text">Créer un utilisateur</span>
+              <span class="nav-badge badge-purple">+</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.isSuperAdmin()">
+            <a [routerLink]="['/dashboard/users/roles']" class="nav-link">
+              <span class="nav-text">Gestion des rôles</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-        <!-- ROI par véhicule -->
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/rentabilite/vehicules']" class="menu-link">
-            <div>ROI par véhicule</div>
-          </a>
-        </li>
+      <!-- PARAMÉTRAGE -->
+      <li class="nav-item" routerLinkActive="active open" *ngIf="permission.canManageSettings()">
+        <a class="nav-link" (click)="toggleMenu($event)">
+          <i class="nav-icon bx bx-cog"></i>
+          <span class="nav-text">Paramétrage</span>
+          <i class="nav-chevron bx bx-chevron-right"></i>
+        </a>
+        <ul class="nav-sub">
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/general']" class="nav-link">
+              <span class="nav-text">Paramètres généraux</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
+            <a [routerLink]="['/dashboard/settings/finance']" class="nav-link">
+              <span class="nav-text">Paramètres financiers</span>
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active">
+            <a [routerLink]="['/dashboard/settings/notifications']" class="nav-link">
+              <span class="nav-text">Notifications</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-        <!-- Calculer rentabilité -->
-        <!-- <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
-          <a [routerLink]="['/dashboard/rentabilite/calculer']" class="menu-link">
-            <div>Calculer rentabilité</div>
-          </a>
-        </li> -->
+      <!-- AUDIT & TRAÇABILITÉ -->
+      <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewAudit()">
+        <a [routerLink]="['/dashboard/audit']" class="nav-link">
+          <i class="nav-icon bx bx-history"></i>
+          <span class="nav-text">Audit & Traçabilité</span>
+        </a>
+      </li>
 
-        <!-- Comparaisons périodes -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
-          <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="menu-link">
-            <div>Comparaisons périodes</div>
-          </a>
-        </li>
-      </ul>
+      <!-- ─────────────────────────────────────────────────────── -->
+      <!-- À PROPOS — Visible pour tous                           -->
+      <!-- ─────────────────────────────────────────────────────── -->
+      <div class="nav-section-label">À PROPOS</div>
 
-      <!-- 📑 RAPPORTS -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canViewReports()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-file-blank"></i>
-        <div>Rapports</div>
-      </a>
-      <ul class="menu-sub">
+      <li class="nav-item" routerLinkActive="active">
+        <a [routerLink]="['/dashboard/about']" class="nav-link">
+          <i class="nav-icon bx bx-info-circle"></i>
+          <span class="nav-text">À propos de LOGISTIK</span>
+        </a>
+      </li>
 
-        <!-- ── ACTIVITÉ & PERFORMANCE ─────────────────────────── -->
+    </ul>
+  </nav>
 
-        <!-- RPT-01 : Activité mensuelle — Manager, Finance, Admin -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
-          <a [routerLink]="['/dashboard/rapports/activite-mensuelle']" class="menu-link">
-            <div>Activité mensuelle</div>
-          </a>
-        </li>
+  <!-- ══ FOOTER ═════════════════════════════════════════════════════ -->
+  <div class="sidebar-footer">
+    <!-- <div class="user-avatar-sidebar user-avatar-sidebar--sm">{{ getUserInitials() }}</div> -->
+    <div class="sidebar-footer-info">
+      <!-- <div class="sidebar-footer-name">{{ userName }}</div> -->
+      <!-- <div class="sidebar-footer-role">{{ currentUser?.roles?.[0] || 'Utilisateur' }}</div> -->
+    </div>
+    <div class="sidebar-footer-actions">
+      <button class="footer-icon-btn" [routerLink]="['/dashboard/settings/general']" title="Paramètres">
+        <i class="bx bx-cog"></i>
+      </button>
+      <button class="footer-icon-btn" (click)="logout()" title="Déconnexion">
+        <i class="bx bx-log-out"></i>
+      </button>
+    </div>
+  </div>
 
-        <!-- ── FINANCE & RECOUVREMENT ─────────────────────────── -->
-
-        <!-- RPT-03 : Dépenses par catégorie — Manager, Finance, Admin -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
-          <a [routerLink]="['/dashboard/rapports/depenses-categories']" class="menu-link">
-            <div>Dépenses par catégorie</div>
-          </a>
-        </li>
-
-        <!-- RPT-06 : Impayés et retards — Manager, Finance, Admin -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
-          <a [routerLink]="['/dashboard/rapports/impayes']" class="menu-link">
-            <div>Impayés et retards</div>
-          </a>
-        </li>
-
-        <!-- ── FLOTTE & OPÉRATIONS ────────────────────────────── -->
-
-        <!-- RPT-08 : Synthèse maintenance — tous sauf Driver -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
-          <a [routerLink]="['/dashboard/rapports/maintenance']" class="menu-link">
-            <div>Synthèse maintenance</div>
-          </a>
-        </li>
-
-        <!-- ── ALERTES & CONFORMITÉ ───────────────────────────── -->
-
-        <!-- RPT-09 : Assurances à renouveler — tous sauf Driver -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
-          <a [routerLink]="['/dashboard/rapports/assurances']" class="menu-link">
-            <div>Assurances à renouveler</div>
-          </a>
-        </li>
-
-        <!-- ── HISTORIQUE & PLANIFICATION ────────────────────── -->
-
-        <!-- Rapports planifiés — Manager, Finance, Admin -->
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canScheduleReport()">
-          <a [routerLink]="['/dashboard/rapports/planifies']" class="menu-link">
-            <div>Rapports planifiés</div>
-          </a>
-        </li>
-
-      </ul>
-    </li>
-
-    <!-- ================================================================ -->
-    <!-- ADMINISTRATION -->
-    <!-- Visible uniquement pour: Super Admin, Manager -->
-    <!-- Masqué pour: Finance, Operations, Livreur, Consultant -->
-    <!-- ================================================================ -->
-    <li class="menu-header" *ngIf="permission.canViewAdministration()">
-      <span>ADMINISTRATION</span>
-    </li>
-
-    <!-- UTILISATEURS - Super Admin et Manager uniquement -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canManageUsers()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-user"></i>
-        <div>Utilisateurs</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/users/list']" class="menu-link">
-            <div>Liste utilisateurs</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/users/create']" class="menu-link">
-            <div>Créer un utilisateur</div>
-            <span class="badge badge-primary"><i class='bx bx-plus'></i></span>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.isSuperAdmin()">
-          <a [routerLink]="['/dashboard/users/roles']" class="menu-link">
-            <div>Gestion rôles</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <!-- PARAMÉTRAGE -->
-    <li class="menu-item" routerLinkActive="active open" *ngIf="permission.canManageSettings()">
-      <a href="javascript:void(0);" class="menu-link menu-toggle" (click)="toggleMenu($event)">
-        <i class="menu-icon bx bx-cog"></i>
-        <div>Paramétrage</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/general']" class="menu-link">
-            <div>Paramètres généraux</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
-          <a [routerLink]="['/dashboard/settings/finance']" class="menu-link">
-            <div>Paramètres financiers</div>
-          </a>
-        </li>
-        <li class="menu-item" routerLinkActive="active">
-          <a [routerLink]="['/dashboard/settings/notifications']" class="menu-link">
-            <div>Notifications</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <!-- AUDIT & TRAÇABILITÉ -->
-    <li class="menu-item" routerLinkActive="active" *ngIf="permission.canViewAudit()">
-      <a [routerLink]="['/dashboard/audit']" class="menu-link">
-        <i class="menu-icon bx bx-history"></i>
-        <div>Audit & Traçabilité</div>
-      </a>
-    </li>
-
-    <!-- ================================================================ -->
-    <!-- À PROPOS - Visible pour tous -->
-    <!-- ================================================================ -->
-    <li class="menu-header">
-      <span>À PROPOS</span>
-    </li>
-
-    <li class="menu-item" routerLinkActive="active">
-      <a [routerLink]="['/dashboard/about']" class="menu-link">
-        <i class="menu-icon bx bx-info-circle"></i>
-        <div>À propos de Logistik</div>
-      </a>
-    </li>
-
-    <!-- ================================================================ -->
-    <!-- DÉCONNEXION - Visible pour tous -->
-    <!-- ================================================================ -->
-    <li class="menu-item" style="margin-top: 2rem;">
-      <a class="menu-link" style="cursor: pointer;" (click)="logout()">
-        <i class="menu-icon bx bx-log-out"></i>
-        <div>Déconnexion</div>
-      </a>
-    </li>
-  </ul>
 </aside>
