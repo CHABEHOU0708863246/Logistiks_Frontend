@@ -1,58 +1,80 @@
-<!-- about -->
-<div class="about">
-  <a class="bg_links social portfolio" href="https://auxence-chabehou-ojddn1w7r.vercel.app/" target="_blank">
-     <span class="icon"></span>
-  </a>
-  <a class="bg_links social linkedin" href="https://www.linkedin.com/in/afferyauxencedelorschabehou/" target="_blank">
-     <span class="icon"></span>
-  </a>
-  <a class="bg_links logo"></a>
+<div class="not-found-wrapper">
+  <!-- Effet de fond avec grille -->
+  <div class="background-grid"></div>
+
+  <!-- Glow d'arrière-plan -->
+  <div class="bg-glow"></div>
+
+  <div class="not-found-container">
+
+    <!-- Logo/Back button -->
+    <div class="not-found-header">
+      <a [routerLink]="['/dashboard']" class="back-home-btn">
+        <i class="bx bx-arrow-back"></i>
+        <span>Retour à l'accueil</span>
+      </a>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="not-found-content">
+
+      <!-- Animation 3D avec effet parallax -->
+      <div class="scene-wrapper">
+        <div class="scene">
+          <div class="circle-bg"></div>
+
+          <!-- Éléments flottants décoratifs -->
+          <div class="floating-element elem-1">
+            <div class="floating-piece"></div>
+            <div class="floating-piece"></div>
+            <div class="floating-piece"></div>
+          </div>
+
+          <div class="floating-element elem-2">
+            <div class="floating-piece"></div>
+            <div class="floating-piece"></div>
+            <div class="floating-piece"></div>
+          </div>
+
+          <div class="floating-element elem-3">
+            <div class="floating-piece"></div>
+            <div class="floating-piece"></div>
+            <div class="floating-piece"></div>
+          </div>
+
+          <!-- Le nombre 404 -->
+          <div class="error-number">404</div>
+          <div class="error-number blur">404</div>
+        </div>
+      </div>
+
+      <!-- Texte d'information -->
+      <div class="info-text">
+        <h2>Page introuvable</h2>
+        <p>
+          La page que vous recherchez est actuellement en construction ou n'existe pas.<br>
+          Vous pouvez retourner à l'accueil pour continuer à utiliser l'application.
+        </p>
+        <div class="action-buttons">
+          <a [routerLink]="['/dashboard']" class="btn-primary-premium">
+            <i class="bx bx-home-alt"></i>
+            Tableau de bord
+          </a>
+          <button class="btn-outline-premium" (click)="goBack()">
+            <i class="bx bx-arrow-back"></i>
+            Page précédente
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="not-found-footer">
+      <span>© 2026 Logistik</span>
+      <span class="separator">•</span>
+      <a [routerLink]="['/dashboard/about']">Aide & Support</a>
+      <span class="separator">•</span>
+      <a [routerLink]="['/dashboard/about']">À propos</a>
+    </div>
+  </div>
 </div>
-<!-- end about -->
-
-   <section class="wrapper">
-
-       <div class="container">
-
-           <div id="scene" class="scene" data-hover-only="false">
-
-
-               <div class="circle" data-depth="1.2"></div>
-
-               <div class="one" data-depth="0.9">
-                   <div class="content">
-                       <span class="piece"></span>
-                       <span class="piece"></span>
-                       <span class="piece"></span>
-                   </div>
-               </div>
-
-               <div class="two" data-depth="0.60">
-                   <div class="content">
-                       <span class="piece"></span>
-                       <span class="piece"></span>
-                       <span class="piece"></span>
-                   </div>
-               </div>
-
-               <div class="three" data-depth="0.40">
-                   <div class="content">
-                       <span class="piece"></span>
-                       <span class="piece"></span>
-                       <span class="piece"></span>
-                   </div>
-               </div>
-
-               <p class="p404" data-depth="0.50">404</p>
-               <p class="p404" data-depth="0.10">404</p>
-
-           </div>
-
-           <div class="text">
-               <article>
-                   <p>Cette page est actuellement en construction <br>Vous pouvez en attendant consulter notre page d'accueil pour plus d'informations.</p>
-               </article>
-           </div>
-
-       </div>
-   </section>
