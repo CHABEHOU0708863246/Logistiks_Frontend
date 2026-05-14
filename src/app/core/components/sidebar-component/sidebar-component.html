@@ -11,15 +11,6 @@
     </div>
   </div>
 
-  <!-- ══ USER MINI ══════════════════════════════════════════════════ -->
-  <!-- <div class="sidebar-user-section">
-    <div class="user-avatar-sidebar">{{ getUserInitials() }}</div>
-    <div class="user-info-sidebar">
-      <div class="uname">{{ userName }}</div>
-     <div class="urole">{{ currentUser?.roles?.[0] || 'Utilisateur' }}</div>
-    </div>
-  </div> -->
-
   <!-- ══ NAV ════════════════════════════════════════════════════════ -->
   <nav class="sidebar-nav">
     <ul>
@@ -27,7 +18,7 @@
       <!-- ─────────────────────────────────────────────────────── -->
       <!-- DASHBOARD — Visible pour tous les utilisateurs          -->
       <!-- ─────────────────────────────────────────────────────── -->
-      <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDashboard()">
+      <li class="nav-item"  *ngIf="permission.canViewDashboard()">
         <a [routerLink]="['/dashboard']" class="nav-link">
           <i class="nav-icon bx bxs-dashboard"></i>
           <span class="nav-text">Tableau de bord</span>
@@ -46,12 +37,12 @@
           <i class="nav-chevron bx bx-chevron-right"></i>
         </a>
         <ul class="nav-sub">
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDashboard()">
+          <li class="nav-item"  *ngIf="permission.canViewDashboard()">
             <a [routerLink]="['/dashboard/analytics/kpi-globaux']" class="nav-link">
               <span class="nav-text">KPIs Globaux</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
+          <li class="nav-item"  *ngIf="permission.canViewFinances()">
             <a [routerLink]="['/dashboard/analytics/finance']" class="nav-link">
               <span class="nav-text">Tableau de bord financier</span>
             </a>
@@ -75,23 +66,22 @@
           <i class="nav-chevron bx bx-chevron-right"></i>
         </a>
         <ul class="nav-sub">
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/tiers']" class="nav-link">
               <span class="nav-text">Tous les tiers</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canValidateDocuments()">
+          <li class="nav-item"  *ngIf="permission.canValidateDocuments()">
             <a [routerLink]="['/dashboard/tiers/documents-validation']" class="nav-link">
               <span class="nav-text">Documents à valider</span>
-              <span class="nav-badge badge-amber">3</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDocuments()">
+          <li class="nav-item"  *ngIf="permission.canViewDocuments()">
             <a [routerLink]="['/dashboard/tiers/documents-management']" class="nav-link">
               <span class="nav-text">Gestion documents</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canCreateTiers()">
+          <li class="nav-item"  *ngIf="permission.canCreateTiers()">
             <a [routerLink]="['/dashboard/tiers/new']" class="nav-link">
               <span class="nav-text">Nouveau tiers</span>
               <span class="nav-badge badge-purple">+</span>
@@ -108,12 +98,12 @@
           <i class="nav-chevron bx bx-chevron-right"></i>
         </a>
         <ul class="nav-sub">
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/vehicules']" class="nav-link">
               <span class="nav-text">Tous les véhicules</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canCreateVehicles()">
+          <li class="nav-item"  *ngIf="permission.canCreateVehicles()">
             <a [routerLink]="['/dashboard/vehicules/ajouter']" class="nav-link">
               <span class="nav-text">Ajouter véhicule</span>
               <span class="nav-badge badge-purple">+</span>
@@ -123,7 +113,7 @@
       </li>
 
       <!-- DOCUMENTS -->
-      <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewDocuments()">
+      <li class="nav-item"  *ngIf="permission.canViewDocuments()">
         <a [routerLink]="['/dashboard/documents']" class="nav-link">
           <i class="nav-icon bx bx-folder"></i>
           <span class="nav-text">Documents</span>
@@ -147,20 +137,19 @@
         </a>
         <ul class="nav-sub">
           <!-- RG-015 : Visualisation des statuts de contrat -->
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/contrats']" class="nav-link">
               <span class="nav-text">Tous les contrats</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
+          <li class="nav-item"  *ngIf="permission.canViewAnalytics()">
             <a [routerLink]="['/dashboard/contrats/stats']" class="nav-link">
               <span class="nav-text">Statistiques des contrats</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewAnalytics()">
+          <li class="nav-item"  *ngIf="permission.canViewAnalytics()">
             <a [routerLink]="['/dashboard/contrats/stats']" class="nav-link">
               <span class="nav-text">Contrats expirants</span>
-              <span class="nav-badge badge-red">2</span>
             </a>
           </li>
         </ul>
@@ -181,12 +170,12 @@
           <i class="nav-chevron bx bx-chevron-right"></i>
         </a>
         <ul class="nav-sub">
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/finances/transactions']" class="nav-link">
               <span class="nav-text">Toutes les transactions</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canCreateTransactions()">
+          <li class="nav-item"  *ngIf="permission.canCreateTransactions()">
             <a [routerLink]="['/dashboard/finances/transactions/nouvelle']" class="nav-link">
               <span class="nav-text">Nouvelle transaction</span>
               <span class="nav-badge badge-purple">+</span>
@@ -204,12 +193,12 @@
           <i class="nav-chevron bx bx-chevron-right"></i>
         </a>
         <ul class="nav-sub">
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/rentabilite/vehicules']" class="nav-link">
               <span class="nav-text">ROI par véhicule</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.isManagerOrAbove()">
+          <li class="nav-item"  *ngIf="permission.isManagerOrAbove()">
             <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="nav-link">
               <span class="nav-text">Comparaisons périodes</span>
             </a>
@@ -226,38 +215,37 @@
         </a>
         <ul class="nav-sub">
           <!-- RPT-01 : Activité mensuelle -->
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
+          <li class="nav-item"  *ngIf="permission.canGenerateReport()">
             <a [routerLink]="['/dashboard/rapports/activite-mensuelle']" class="nav-link">
               <span class="nav-text">Activité mensuelle</span>
             </a>
           </li>
           <!-- RPT-03 : Dépenses par catégorie -->
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
+          <li class="nav-item"  *ngIf="permission.canGenerateReport()">
             <a [routerLink]="['/dashboard/rapports/depenses-categories']" class="nav-link">
               <span class="nav-text">Dépenses par catégorie</span>
             </a>
           </li>
           <!-- RPT-06 : Impayés et retards -->
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canGenerateReport()">
+          <li class="nav-item"  *ngIf="permission.canGenerateReport()">
             <a [routerLink]="['/dashboard/rapports/impayes']" class="nav-link">
               <span class="nav-text">Impayés et retards</span>
             </a>
           </li>
           <!-- RPT-08 : Synthèse maintenance — tous sauf Driver -->
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
+          <li class="nav-item"  *ngIf="permission.canReadReport()">
             <a [routerLink]="['/dashboard/rapports/maintenance']" class="nav-link">
               <span class="nav-text">Synthèse maintenance</span>
             </a>
           </li>
           <!-- RPT-09 : Assurances à renouveler -->
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canReadReport()">
+          <li class="nav-item"  *ngIf="permission.canReadReport()">
             <a [routerLink]="['/dashboard/rapports/assurances']" class="nav-link">
               <span class="nav-text">Assurances à renouveler</span>
-              <span class="nav-badge badge-amber">1</span>
             </a>
           </li>
           <!-- Rapports planifiés -->
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canScheduleReport()">
+          <li class="nav-item"  *ngIf="permission.canScheduleReport()">
             <a [routerLink]="['/dashboard/rapports/planifies']" class="nav-link">
               <span class="nav-text">Rapports planifiés</span>
             </a>
@@ -279,18 +267,18 @@
           <i class="nav-chevron bx bx-chevron-right"></i>
         </a>
         <ul class="nav-sub">
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/users/list']" class="nav-link">
               <span class="nav-text">Liste utilisateurs</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/users/create']" class="nav-link">
               <span class="nav-text">Créer un utilisateur</span>
               <span class="nav-badge badge-purple">+</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.isSuperAdmin()">
+          <li class="nav-item"  *ngIf="permission.isSuperAdmin()">
             <a [routerLink]="['/dashboard/users/roles']" class="nav-link">
               <span class="nav-text">Gestion des rôles</span>
             </a>
@@ -306,17 +294,17 @@
           <i class="nav-chevron bx bx-chevron-right"></i>
         </a>
         <ul class="nav-sub">
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/settings/general']" class="nav-link">
               <span class="nav-text">Paramètres généraux</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewFinances()">
+          <li class="nav-item"  *ngIf="permission.canViewFinances()">
             <a [routerLink]="['/dashboard/settings/finance']" class="nav-link">
               <span class="nav-text">Paramètres financiers</span>
             </a>
           </li>
-          <li class="nav-item" routerLinkActive="active">
+          <li class="nav-item" >
             <a [routerLink]="['/dashboard/settings/notifications']" class="nav-link">
               <span class="nav-text">Notifications</span>
             </a>
@@ -325,7 +313,7 @@
       </li>
 
       <!-- AUDIT & TRAÇABILITÉ -->
-      <li class="nav-item" routerLinkActive="active" *ngIf="permission.canViewAudit()">
+      <li class="nav-item"  *ngIf="permission.canViewAudit()">
         <a [routerLink]="['/dashboard/audit']" class="nav-link">
           <i class="nav-icon bx bx-history"></i>
           <span class="nav-text">Audit & Traçabilité</span>
@@ -337,10 +325,19 @@
       <!-- ─────────────────────────────────────────────────────── -->
       <div class="nav-section-label">À PROPOS</div>
 
-      <li class="nav-item" routerLinkActive="active">
+      <li class="nav-item" >
         <a [routerLink]="['/dashboard/about']" class="nav-link">
           <i class="nav-icon bx bx-info-circle"></i>
           <span class="nav-text">À propos de LOGISTIK</span>
+        </a>
+      </li>
+
+      <div class="nav-section-label">MON PROFIL</div>
+
+      <li class="nav-item" >
+        <a [routerLink]="['/dashboard/profiles']" class="nav-link">
+          <i class="bx bx-user"></i>
+          <span class="nav-text">Voir mon profil</span>
         </a>
       </li>
 
@@ -354,6 +351,8 @@
       <!-- <div class="sidebar-footer-name">{{ userName }}</div> -->
       <!-- <div class="sidebar-footer-role">{{ currentUser?.roles?.[0] || 'Utilisateur' }}</div> -->
     </div>
+    <div class="sidebar-footer-name">MAJ : 15 / 05 / 2026</div>
+
     <div class="sidebar-footer-actions">
       <button class="footer-icon-btn" [routerLink]="['/dashboard/settings/general']" title="Paramètres">
         <i class="bx bx-cog"></i>
@@ -361,6 +360,7 @@
       <button class="footer-icon-btn" (click)="logout()" title="Déconnexion">
         <i class="bx bx-log-out"></i>
       </button>
+
     </div>
   </div>
 

@@ -1,465 +1,460 @@
 <!--
   COMPOSANT : Formulaire de création de Tier
   DESCRIPTION : Interface de création d'un nouveau tier (client, fournisseur, partenaire)
-  VERSION : 1.0.0
-  AUTEUR : CHABEHOU AFFERY AUXENCE DELORS
+  VERSION : 2.0.0 — Design system aligné Dashboard LOGISTIK
 -->
 
-<div class="layout-wrapper">
-  <!-- =========================================================================== -->
-  <!-- SECTION : SIDEBAR PRINCIPALE (NAVIGATION) -->
-  <!-- =========================================================================== -->
-<app-sidebar-component></app-sidebar-component>
+<div class="app-wrapper">
 
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
 
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-  <!-- =========================================================================== -->
-  <!-- SECTION : CONTENU PRINCIPAL -->
-  <!-- =========================================================================== -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
-    <!-- =========================================================== -->
-    <!-- SOUS-SECTION : NAVBAR (EN-TÊTE) -->
-    <!-- =========================================================== -->
-    <nav class="layout-navbar">
-      <!-- Contrôles de navigation -->
-      <div class="d-flex align-items-center">
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class='bx bx-menu'></i>
+          <i class="bx bx-menu"></i>
         </button>
-        <h3 class="mb-0 ms-3">Création d'un Nouveau Tier</h3>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item" routerLink="/dashboard">Tableau de Bord</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item" routerLink="/dashboard/tiers">Tiers</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Nouveau Tier</span>
+        </div>
       </div>
 
-      <!-- Menu utilisateur -->
-      <ul class="navbar-nav">
-        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
-          <div class="avatar dropdown-toggle">
-            <!-- Avatar utilisateur dynamique -->
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
-                 [src]="userPhotoUrl"
-                 [alt]="userName"
-                 (error)="userPhotoUrl = getDefaultAvatar()" />
-            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-              {{ getUserInitials() }}
-            </div>
-          </div>
-          <div class="dropdown-menu" [class.show]="showUserMenu">
-            <div style="padding: 1rem;">
-              <div class="fw-bold">{{ userName }}</div>
-              <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}
-              </div>
-              <hr style="margin: 0.5rem 0;">
-              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                <i class='bx bx-user me-2'></i> Mon profil
-              </a>
-              <a [routerLink]="['/settings']" class="dropdown-item">
-                <i class='bx bx-cog me-2'></i> Paramètres
-              </a>
-              <hr style="margin: 0.5rem 0;">
-              <a (click)="logout()" class="dropdown-item logout-item">
-                <i class='bx bx-log-out me-2'></i> Déconnexion
-              </a>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </nav>
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
 
-    <!-- =========================================================== -->
-    <!-- SOUS-SECTION : CONTENU DE LA PAGE -->
-    <!-- =========================================================== -->
-    <div class="content-wrapper">
-      <!-- =========================================================== -->
-      <!-- SECTION : INSTRUCTIONS -->
-      <!-- =========================================================== -->
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="card">
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
+          </div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
+          </div>
+
+          <!-- Dropdown menu -->
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
+            </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/settings']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+
+      <!-- ══ PAGE HEADER ══ -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-header-icon">
+            <i class="bx bx-user-plus"></i>
+          </div>
+          <div>
+            <h1 class="page-title">Création d'un Nouveau Tier</h1>
+            <p class="page-subtitle">Remplissez toutes les informations obligatoires (*) pour créer le tier</p>
+          </div>
+        </div>
+        <a routerLink="/dashboard/tiers" class="btn btn-outline">
+          <i class="bx bx-arrow-back"></i> Retour aux Tiers
+        </a>
+      </div>
+
+      <!-- ══ GRID : INSTRUCTIONS + FORMULAIRE ══ -->
+      <div class="form-layout">
+
+        <!-- ── COLONNE GAUCHE : INSTRUCTIONS ── -->
+        <aside class="form-sidebar">
+          <div class="card instructions-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="bx bx-info-circle"></i> Instructions
+              </div>
+            </div>
             <div class="card-body">
-              <h6 class="card-title mb-3">
-                <i class='bx bx-help-circle me-2'></i> Instructions
-              </h6>
-              <ul class="list-unstyled mb-0">
-                <li class="mb-2">
-                  <i class='bx bx-check-circle text-success me-2'></i>
-                  Les champs marqués d'un astérisque (*) sont obligatoires
+              <ul class="instructions-list">
+                <li>
+                  <span class="instr-icon success"><i class="bx bx-check-circle"></i></span>
+                  <span>Les champs marqués d'un astérisque (<strong>*</strong>) sont obligatoires</span>
                 </li>
-                <li class="mb-2">
-                  <i class='bx bx-info-circle text-primary me-2'></i>
-                  Les documents d'identité peuvent être ajoutés après la création
+                <li>
+                  <span class="instr-icon info"><i class="bx bx-info-circle"></i></span>
+                  <span>Les documents d'identité peuvent être ajoutés après la création</span>
                 </li>
-                <li class="mb-2">
-                  <i class='bx bx-time text-warning me-2'></i>
-                  Le tier sera créé avec le statut "En attente de validation"
+                <li>
+                  <span class="instr-icon warning"><i class="bx bx-time"></i></span>
+                  <span>Le tier sera créé avec le statut <strong>En attente de validation</strong></span>
                 </li>
-                <li class="mb-2">
-                  <i class='bx bx-shield text-danger me-2'></i>
-                  Un tiers ne peut être modifié, veuillez vérifier toutes les informations avant de soumettre le formulaire
+                <li>
+                  <span class="instr-icon danger"><i class="bx bx-shield"></i></span>
+                  <span>Un tiers ne peut être modifié, vérifiez toutes les informations avant de soumettre</span>
                 </li>
-                <li class="mb-2">
-                  <i class='bx bx-shield text-danger me-2'></i>
-                  Toutes les informations seront vérifiées avant activation
+                <li>
+                  <span class="instr-icon danger"><i class="bx bx-shield"></i></span>
+                  <span>Toutes les informations seront vérifiées avant activation</span>
                 </li>
               </ul>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- =========================================================== -->
-      <!-- SECTION : FORMULAIRE DE CRÉATION -->
-      <!-- =========================================================== -->
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <!-- En-tête du formulaire -->
-            <div class="card-header">
-              <h5 class="card-title mb-0">Informations du Tier</h5>
-              <div class="text-muted fs-sm">
-                Remplissez toutes les informations obligatoires (*)
+          <!-- Progression sticky -->
+          <div class="card progress-card">
+            <div class="card-body">
+              <div class="progress-header">
+                <span class="progress-label">Progression</span>
+                <span class="progress-value">{{ getFormProgress() }}%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" [style.width.%]="getFormProgress()"></div>
+              </div>
+              <p class="progress-hint">
+                <i class="bx bx-check-circle"></i>
+                {{ getFormProgress() < 100 ? 'Complétez tous les champs requis' : 'Formulaire complet !' }}
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ── COLONNE DROITE : FORMULAIRE ── -->
+        <div class="form-main">
+          <form [formGroup]="tierForm" (ngSubmit)="onSubmit()" novalidate>
+
+            <!-- ════ INFORMATIONS PERSONNELLES ════ -->
+            <div class="card form-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="bx bx-user-circle"></i> Informations Personnelles
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="form-grid">
+
+                  <!-- Nom -->
+                  <div class="form-field">
+                    <label class="form-label" for="lastName">Nom <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="lastName"
+                           formControlName="lastName"
+                           [class.invalid]="submitted && f['lastName'].errors"
+                           placeholder="Doe">
+                    <div *ngIf="submitted && f['lastName'].errors" class="field-error">
+                      <i class="bx bx-error-circle"></i>
+                      <span *ngIf="f['lastName'].errors['required']">Le nom est obligatoire</span>
+                      <span *ngIf="f['lastName'].errors['minlength']">Minimum 2 caractères</span>
+                    </div>
+                  </div>
+
+                  <!-- Prénom -->
+                  <div class="form-field">
+                    <label class="form-label" for="firstName">Prénom <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="firstName"
+                           formControlName="firstName"
+                           [class.invalid]="submitted && f['firstName'].errors"
+                           placeholder="John">
+                    <div *ngIf="submitted && f['firstName'].errors" class="field-error">
+                      <i class="bx bx-error-circle"></i>
+                      <span *ngIf="f['firstName'].errors['required']">Le prénom est obligatoire</span>
+                      <span *ngIf="f['firstName'].errors['minlength']">Minimum 2 caractères</span>
+                    </div>
+                  </div>
+
+                  <!-- Nom de l'entreprise -->
+                  <div class="form-field">
+                    <label class="form-label" for="companyName">Nom de l'entreprise</label>
+                    <input type="text" class="form-control" id="companyName"
+                           formControlName="companyName"
+                           placeholder="Logistik SARL">
+                  </div>
+
+                  <!-- Date de naissance -->
+                  <div class="form-field">
+                    <label class="form-label" for="birthDate">Date de naissance</label>
+                    <input type="date" class="form-control" id="birthDate"
+                           formControlName="birthDate"
+                           [max]="maxBirthDate">
+                  </div>
+
+                  <!-- Lieu de naissance -->
+                  <div class="form-field">
+                    <label class="form-label" for="placeOfBirth">Lieu de naissance</label>
+                    <input type="text" class="form-control" id="placeOfBirth"
+                           formControlName="placeOfBirth"
+                           placeholder="Paris">
+                  </div>
+
+                </div>
               </div>
             </div>
 
-            <!-- Formulaire principal -->
-            <form [formGroup]="tierForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+            <!-- ════ IDENTIFICATION ════ -->
+            <div class="card form-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="bx bx-id-card"></i> Informations d'Identification
+                </div>
+              </div>
               <div class="card-body">
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : BARRE DE PROGRESSION -->
-                <!-- ================================================= -->
-                <div class="mb-4">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted fs-sm">Progression du formulaire</span>
-                    <span class="fw-semibold">{{ getFormProgress() }}%</span>
-                  </div>
-                  <div class="progress" style="height: 8px;">
-                    <div class="progress-bar sky-blue-progress"
-                         role="progressbar"
-                         [style.width.%]="getFormProgress()"
-                         aria-valuenow="getFormProgress()"
-                         aria-valuemin="0"
-                         aria-valuemax="100">
+                <div class="form-grid">
+
+                  <!-- Type de pièce -->
+                  <div class="form-field">
+                    <label class="form-label" for="identityType">Type de pièce d'identité <span class="req">*</span></label>
+                    <select class="form-control" id="identityType"
+                            formControlName="identityType"
+                            [class.invalid]="submitted && f['identityType'].errors">
+                      <option value="">Sélectionner un type</option>
+                      <option [value]="identityTypeOptions.CNI">Carte Nationale d'Identité</option>
+                      <option [value]="identityTypeOptions.Passport">Passeport</option>
+                      <option [value]="identityTypeOptions.ResidenceCard">Permis de séjour</option>
+                      <option [value]="identityTypeOptions.Other">Autre</option>
+                    </select>
+                    <div *ngIf="submitted && f['identityType'].errors" class="field-error">
+                      <i class="bx bx-error-circle"></i> Le type de pièce d'identité est obligatoire
                     </div>
                   </div>
+
+                  <!-- Numéro de pièce -->
+                  <div class="form-field">
+                    <label class="form-label" for="identityNumber">Numéro de pièce d'identité <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="identityNumber"
+                           formControlName="identityNumber"
+                           [class.invalid]="submitted && f['identityNumber'].errors"
+                           placeholder="XXXXX000XXXX">
+                    <div *ngIf="submitted && f['identityNumber'].errors" class="field-error">
+                      <i class="bx bx-error-circle"></i>
+                      <span *ngIf="f['identityNumber'].errors['required']">Le numéro d'identité est obligatoire</span>
+                      <span *ngIf="f['identityNumber'].errors['minlength']">Minimum 5 caractères</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ════ COORDONNÉES ════ -->
+            <div class="card form-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="bx bx-phone"></i> Coordonnées
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="form-grid">
+
+                  <!-- Téléphone principal -->
+                  <div class="form-field">
+                    <label class="form-label" for="phone">Téléphone principal <span class="req">*</span></label>
+                    <div class="input-group">
+                      <span class="input-prefix">+225</span>
+                      <input type="tel" class="form-control" id="phone"
+                             formControlName="phone"
+                             [class.invalid]="submitted && f['phone'].errors"
+                             placeholder="0700000000" maxlength="10">
+                    </div>
+                    <div *ngIf="submitted && f['phone'].errors" class="field-error">
+                      <i class="bx bx-error-circle"></i>
+                      <span *ngIf="f['phone'].errors['required']">Le téléphone est obligatoire</span>
+                      <span *ngIf="f['phone'].errors['pattern']">Format invalide (ex: 0700000000)</span>
+                    </div>
+                  </div>
+
+                  <!-- Téléphone secondaire -->
+                  <div class="form-field">
+                    <label class="form-label" for="secondaryPhone">Téléphone secondaire</label>
+                    <div class="input-group">
+                      <span class="input-prefix">+225</span>
+                      <input type="tel" class="form-control" id="secondaryPhone"
+                             formControlName="secondaryPhone"
+                             placeholder="0700000001" maxlength="10">
+                    </div>
+                  </div>
+
+                  <!-- Email -->
+                  <div class="form-field">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" class="form-control" id="email"
+                           formControlName="email"
+                           [class.invalid]="submitted && f['email'].errors"
+                           placeholder="john.doe@example.com">
+                    <div *ngIf="submitted && f['email'].errors" class="field-error">
+                      <i class="bx bx-error-circle"></i> Format d'email invalide
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ════ ADRESSE ════ -->
+            <div class="card form-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="bx bx-home"></i> Adresse
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="form-grid">
+
+                  <!-- Rue -->
+                  <div class="form-field form-field--full">
+                    <label class="form-label" for="street">Rue</label>
+                    <input type="text" class="form-control" id="street"
+                           formControlName="street"
+                           placeholder="123 Avenue de la République">
+                  </div>
+
+                  <!-- Ville -->
+                  <div class="form-field">
+                    <label class="form-label" for="city">Ville</label>
+                    <input type="text" class="form-control" id="city"
+                           formControlName="city"
+                           placeholder="Abidjan">
+                  </div>
+
+                  <!-- Pays -->
+                  <div class="form-field">
+                    <label class="form-label" for="country">Pays</label>
+                    <select class="form-control" id="country" formControlName="country">
+                      <option value="">Sélectionner un pays</option>
+                      <option value="CI">Côte d'Ivoire</option>
+                      <option value="FR">France</option>
+                      <option value="SN">Sénégal</option>
+                      <option value="ML">Mali</option>
+                      <option value="BF">Burkina Faso</option>
+                      <option value="GN">Guinée</option>
+                    </select>
+                  </div>
+
+                  <!-- Code postal -->
+                  <div class="form-field">
+                    <label class="form-label" for="zipCode">Code postal</label>
+                    <input type="text" class="form-control" id="zipCode"
+                           formControlName="zipCode"
+                           placeholder="22500">
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ════ RÔLES ════ -->
+            <div class="card form-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="bx bx-briefcase"></i> Rôles <span class="req">*</span>
+                </div>
+              </div>
+              <div class="card-body">
+
+                <div class="form-notice info">
+                  <i class="bx bx-info-circle"></i>
+                  Sélectionnez au moins un rôle pour définir le type de tier.
                 </div>
 
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : INFORMATIONS PERSONNELLES -->
-                <!-- ================================================= -->
-                <div class="mb-5">
-                  <h6 class="section-title mb-3">
-                    <i class='bx bx-user-circle me-2'></i> Informations Personnelles
-                  </h6>
-                  <div class="row">
-                    <!-- Champ : Nom -->
-                    <div class="col-md-6 mb-3">
-                      <label for="lastName" class="form-label">Nom *</label>
-                      <input type="text"
-                             class="form-control"
-                             id="lastName"
-                             formControlName="lastName"
-                             [class.is-invalid]="submitted && f['lastName'].errors"
-                             placeholder="Doe">
-                      <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
-                        <span *ngIf="f['lastName'].errors['required']">Le nom est obligatoire</span>
-                        <span *ngIf="f['lastName'].errors['minlength']">Le nom doit avoir au moins 2 caractères</span>
+                <div class="roles-grid">
+                  <label class="role-card" *ngFor="let role of availableRoles"
+                         [for]="'role-' + role.value">
+                    <input class="role-checkbox" type="checkbox"
+                           [id]="'role-' + role.value"
+                           [value]="role.value"
+                           (change)="onRoleChange($event)">
+                    <div class="role-card-inner">
+                      <i [class]="role.icon + ' role-icon'"></i>
+                      <div>
+                        <div class="role-label">{{ role.label }}</div>
+                        <div class="role-desc">{{ role.description }}</div>
                       </div>
                     </div>
-
-                    <!-- Champ : Prénom -->
-                    <div class="col-md-6 mb-3">
-                      <label for="firstName" class="form-label">Prénom *</label>
-                      <input type="text"
-                             class="form-control"
-                             id="firstName"
-                             formControlName="firstName"
-                             [class.is-invalid]="submitted && f['firstName'].errors"
-                             placeholder="John">
-                      <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
-                        <span *ngIf="f['firstName'].errors['required']">Le prénom est obligatoire</span>
-                        <span *ngIf="f['firstName'].errors['minlength']">Le prénom doit avoir au moins 2 caractères</span>
-                      </div>
-                    </div>
-
-                    <!-- Champ : Nom de l'entreprise (Optionnel) -->
-                    <div class="col-md-6 mb-3">
-                      <label for="companyName" class="form-label">Nom de l'entreprise</label>
-                      <input type="text"
-                             class="form-control"
-                             id="companyName"
-                             formControlName="companyName"
-                             placeholder="Logistik SARL">
-                    </div>
-
-                    <!-- Champ : Date de naissance -->
-                    <div class="col-md-6 mb-3">
-                      <label for="birthDate" class="form-label">Date de naissance</label>
-                      <input type="date"
-                             class="form-control"
-                             id="birthDate"
-                             formControlName="birthDate"
-                             [max]="maxBirthDate">
-                    </div>
-
-                    <!-- Champ : Lieu de naissance -->
-                    <div class="col-md-6 mb-3">
-                      <label for="placeOfBirth" class="form-label">Lieu de naissance</label>
-                      <input type="text"
-                             class="form-control"
-                             id="placeOfBirth"
-                             formControlName="placeOfBirth"
-                             placeholder="Paris">
-                    </div>
-                  </div>
+                  </label>
                 </div>
 
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : INFORMATIONS D'IDENTIFICATION -->
-                <!-- ================================================= -->
-                <div class="mb-5">
-                  <h6 class="section-title mb-3">
-                    <i class='bx bx-id-card me-2'></i> Informations d'Identification
-                  </h6>
-                  <div class="row">
-                    <!-- Champ : Type de pièce d'identité -->
-                    <div class="col-md-6 mb-3">
-                      <label for="identityType" class="form-label">Type de pièce d'identité *</label>
-                      <select class="form-select"
-                              id="identityType"
-                              formControlName="identityType"
-                              [class.is-invalid]="submitted && f['identityType'].errors">
-                        <option value="">Sélectionner un type</option>
-                        <option [value]="identityTypeOptions.CNI">Carte Nationale d'Identité</option>
-                        <option [value]="identityTypeOptions.Passport">Passeport</option>
-                        <option [value]="identityTypeOptions.ResidenceCard">Permis de séjour</option>
-                        <option [value]="identityTypeOptions.Other">Autre</option>
-                      </select>
-                      <div *ngIf="submitted && f['identityType'].errors" class="invalid-feedback">
-                        Le type de pièce d'identité est obligatoire
-                      </div>
-                    </div>
-
-                    <!-- Champ : Numéro de pièce d'identité -->
-                    <div class="col-md-6 mb-3">
-                      <label for="identityNumber" class="form-label">Numéro de pièce d'identité *</label>
-                      <input type="text"
-                             class="form-control"
-                             id="identityNumber"
-                             formControlName="identityNumber"
-                             [class.is-invalid]="submitted && f['identityNumber'].errors"
-                             placeholder="XXXXX000XXXX">
-                      <div *ngIf="submitted && f['identityNumber'].errors" class="invalid-feedback">
-                        <span *ngIf="f['identityNumber'].errors['required']">Le numéro d'identité est obligatoire</span>
-                        <span *ngIf="f['identityNumber'].errors['minlength']">Le numéro doit avoir au moins 5 caractères</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : COORDONNÉES -->
-                <!-- ================================================= -->
-                <div class="mb-5">
-                  <h6 class="section-title mb-3">
-                    <i class='bx bx-phone me-2'></i> Coordonnées
-                  </h6>
-                  <div class="row">
-                    <!-- Champ : Téléphone principal -->
-                    <div class="col-md-6 mb-3">
-                      <label for="phone" class="form-label">Téléphone principal *</label>
-                      <div class="input-group">
-                        <span class="input-group-text">+225</span>
-                        <input type="tel"
-                               class="form-control"
-                               id="phone"
-                               formControlName="phone"
-                               [class.is-invalid]="submitted && f['phone'].errors"
-                               placeholder="0700000000"
-                               maxlength="10">
-                      </div>
-                      <div *ngIf="submitted && f['phone'].errors" class="invalid-feedback d-block">
-                        <span *ngIf="f['phone'].errors['required']">Le téléphone est obligatoire</span>
-                        <span *ngIf="f['phone'].errors['pattern']">Format invalide (ex: 0700000000)</span>
-                      </div>
-                    </div>
-
-                    <!-- Champ : Téléphone secondaire -->
-                    <div class="col-md-6 mb-3">
-                      <label for="secondaryPhone" class="form-label">Téléphone secondaire</label>
-                      <div class="input-group">
-                        <span class="input-group-text">+225</span>
-                        <input type="tel"
-                               class="form-control"
-                               id="secondaryPhone"
-                               formControlName="secondaryPhone"
-                               placeholder="0700000001"
-                               maxlength="10">
-                      </div>
-                    </div>
-
-                    <!-- Champ : Email -->
-                    <div class="col-md-6 mb-3">
-                      <label for="email" class="form-label">Email</label>
-                      <input type="email"
-                             class="form-control"
-                             id="email"
-                             formControlName="email"
-                             [class.is-invalid]="submitted && f['email'].errors"
-                             placeholder="john.doe@example.com">
-                      <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
-                        Format d'email invalide
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : ADRESSE -->
-                <!-- ================================================= -->
-                <div class="mb-5">
-                  <h6 class="section-title mb-3">
-                    <i class='bx bx-home me-2'></i> Adresse
-                  </h6>
-                  <div class="row">
-                    <!-- Champ : Rue -->
-                    <div class="col-md-6 mb-3">
-                      <label for="street" class="form-label">Rue</label>
-                      <input type="text"
-                             class="form-control"
-                             id="street"
-                             formControlName="street"
-                             placeholder="123 Avenue de la République">
-                    </div>
-
-                    <!-- Champ : Ville -->
-                    <div class="col-md-6 mb-3">
-                      <label for="city" class="form-label">Ville</label>
-                      <input type="text"
-                             class="form-control"
-                             id="city"
-                             formControlName="city"
-                             placeholder="Abidjan">
-                    </div>
-
-                    <!-- Champ : Pays -->
-                    <div class="col-md-6 mb-3">
-                      <label for="country" class="form-label">Pays</label>
-                      <select class="form-select" id="country" formControlName="country">
-                        <option value="">Sélectionner un pays</option>
-                        <option value="CI">Côte d'Ivoire</option>
-                        <option value="FR">France</option>
-                        <option value="SN">Sénégal</option>
-                        <option value="ML">Mali</option>
-                        <option value="BF">Burkina Faso</option>
-                        <option value="GN">Guinée</option>
-                      </select>
-                    </div>
-
-                    <!-- Champ : Code postal -->
-                    <div class="col-md-6 mb-3">
-                      <label for="zipCode" class="form-label">Code postal</label>
-                      <input type="text"
-                             class="form-control"
-                             id="zipCode"
-                             formControlName="zipCode"
-                             placeholder="22500">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : RÔLES -->
-                <!-- ================================================= -->
-                <div class="mb-5">
-                  <h6 class="section-title mb-3">
-                    <i class='bx bx-briefcase me-2'></i> Rôles *
-                  </h6>
-                  <div class="alert alert-info">
-                    <i class='bx bx-info-circle me-2'></i>
-                    Sélectionnez au moins un rôle pour définir le type de tier.
-                  </div>
-
-                  <div class="row">
-                    <!-- Cases à cocher : Rôles disponibles -->
-                    <div class="col-md-6 mb-3" *ngFor="let role of availableRoles">
-                      <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               [id]="'role-' + role.value"
-                               [value]="role.value"
-                               (change)="onRoleChange($event)">
-                        <label class="form-check-label d-flex align-items-center" [for]="'role-' + role.value">
-                          <i [class]="role.icon + ' me-2'"></i>
-                          <div>
-                            <div class="fw-semibold">{{ role.label }}</div>
-                            <small class="text-muted">{{ role.description }}</small>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Message d'erreur si aucun rôle sélectionné -->
-                  <div *ngIf="submitted && selectedRoles.length === 0" class="alert alert-danger mt-3">
-                    <i class='bx bx-error-circle me-2'></i>
-                    Au moins un rôle doit être sélectionné
-                  </div>
-                </div>
-
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : INFORMATIONS SUPPLÉMENTAIRES -->
-                <!-- ================================================= -->
-                <div class="mb-5">
-                  <h6 class="section-title mb-3">
-                    <i class='bx bx-note me-2'></i> Informations Supplémentaires
-                  </h6>
-                  <div class="mb-3">
-                    <label for="notes" class="form-label">Notes</label>
-                    <textarea class="form-control"
-                              id="notes"
-                              formControlName="notes"
-                              rows="3"
-                              placeholder="Notes additionnelles concernant le tier..."></textarea>
-                  </div>
+                <div *ngIf="submitted && selectedRoles.length === 0" class="form-notice danger mt-3">
+                  <i class="bx bx-error-circle"></i>
+                  Au moins un rôle doit être sélectionné
                 </div>
 
               </div>
+            </div>
 
-              <!-- ================================================= -->
-              <!-- SECTION : PIED DE PAGE DU FORMULAIRE -->
-              <!-- ================================================= -->
-              <div class="card-footer bg-transparent border-top-0">
-                <div class="d-flex justify-content-between">
-                  <!-- Bouton : Annuler -->
-                  <button type="button"
-                          class="btn btn-outline-secondary"
-                          (click)="onCancel()">
-                    <i class='bx bx-x me-1'></i> Annuler
-                  </button>
-
-                  <!-- Boutons d'action -->
-                  <div class="d-flex gap-2">
-                    <!-- Bouton : Soumettre le formulaire -->
-                    <button type="submit"
-                            class="btn btn-primary"
-                            [disabled]="loading">
-                      <i class='bx bx-check me-1'></i>
-                      <span *ngIf="!loading">Créer le tier</span>
-                      <span *ngIf="loading">
-                        <span class="spinner-border spinner-border-sm me-1"
-                              role="status"
-                              aria-hidden="true"></span>
-                        Création en cours...
-                      </span>
-                    </button>
-                  </div>
+            <!-- ════ INFORMATIONS SUPPLÉMENTAIRES ════ -->
+            <div class="card form-card">
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="bx bx-note"></i> Informations Supplémentaires
                 </div>
               </div>
-            </form>
-          </div>
+              <div class="card-body">
+                <div class="form-field">
+                  <label class="form-label" for="notes">Notes</label>
+                  <textarea class="form-control form-textarea" id="notes"
+                            formControlName="notes" rows="4"
+                            placeholder="Notes additionnelles concernant le tier..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════ ACTIONS ════ -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" (click)="onCancel()">
+                <i class="bx bx-x"></i> Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="loading">
+                <ng-container *ngIf="!loading">
+                  <i class="bx bx-check"></i> Créer le Tier
+                </ng-container>
+                <ng-container *ngIf="loading">
+                  <span class="btn-spinner"></span> Création en cours…
+                </ng-container>
+              </button>
+            </div>
+
+          </form>
         </div>
+
       </div>
+
       <!-- Notification Component -->
-<app-notification-component></app-notification-component>
-    </div>
+      <app-notification-component></app-notification-component>
+
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
+
+    </main>
   </div>
 </div>

@@ -1,571 +1,539 @@
-<!--
-  COMPOSANT : Liste des Tiers
-  DESCRIPTION : Interface principale de gestion des tiers (clients, fournisseurs, partenaires)
-  VERSION : 1.0.0
-  AUTEUR : CHABEHOU AFFERY AUXENCE DELORS
--->
+<div class="app-wrapper">
 
-<div class="layout-wrapper">
-  <!-- =========================================================================== -->
-  <!-- SECTION : SIDEBAR PRINCIPALE (NAVIGATION) -->
-  <!-- =========================================================================== -->
-<app-sidebar-component></app-sidebar-component>
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
 
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-
-  <!-- =========================================================================== -->
-  <!-- SECTION : CONTENU PRINCIPAL -->
-  <!-- =========================================================================== -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
-    <!-- =========================================================== -->
-    <!-- SOUS-SECTION : NAVBAR (EN-TÊTE) -->
-    <!-- =========================================================== -->
-    <nav class="layout-navbar">
-      <!-- Contrôles de navigation -->
-      <div class="d-flex align-items-center">
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class='bx bx-menu'></i>
+          <i class="bx bx-menu"></i>
         </button>
-        <h3 class="mb-0 ms-3">Gestion des Tiers</h3>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Gestion des Tiers</span>
+        </div>
       </div>
 
-      <!-- Menu utilisateur -->
-      <ul class="navbar-nav">
-        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
-          <div class="avatar dropdown-toggle">
-            <!-- Avatar utilisateur dynamique -->
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-              (error)="userPhotoUrl = getDefaultAvatar()" />
-            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-              {{ getUserInitials() }}
-            </div>
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
+
+        <button class="topbar-icon-btn">
+          <i class="bx bx-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <button class="topbar-icon-btn">
+          <i class="bx bx-refresh"></i>
+        </button>
+
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
           </div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
+          </div>
+
           <div class="dropdown-menu" [class.show]="showUserMenu">
-            <div style="padding: 1rem;">
-              <div class="fw-bold">{{ userName }}</div>
-              <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}
-              </div>
-              <hr style="margin: 0.5rem 0;">
-              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                <i class='bx bx-user me-2'></i> Mon profil
-              </a>
-              <a [routerLink]="['/settings']" class="dropdown-item">
-                <i class='bx bx-cog me-2'></i> Paramètres
-              </a>
-              <hr style="margin: 0.5rem 0;">
-              <a (click)="logout()" class="dropdown-item logout-item">
-                <i class='bx bx-log-out me-2'></i> Déconnexion
-              </a>
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
             </div>
-          </div>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- =========================================================== -->
-    <!-- SOUS-SECTION : CONTENU DE LA PAGE -->
-    <!-- =========================================================== -->
-    <div class="content-wrapper">
-      <!-- =========================================================== -->
-      <!-- SECTION : STATISTIQUES -->
-      <!-- =========================================================== -->
-      <!-- =========================================================== -->
-      <!-- SECTION : STATISTIQUES TIERS - Version améliorée -->
-      <!-- =========================================================== -->
-      <div class="row mb-4">
-        <!-- Carte : Total Tiers -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon primary">
-              <i class='bx bx-group'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.total }}</h3>
-              <p>Total Tiers</p>
-              <span class="stat-trend trend-up" *ngIf="stats.total > 0">
-                <i class='bx bx-user-check'></i>
-                {{ stats.active }} actifs
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : Tiers Actifs -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon success">
-              <i class='bx bx-check-circle'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.active }}</h3>
-              <p>Tiers Actifs</p>
-              <span class="stat-trend trend-up" *ngIf="stats.active > 0">
-                <i class='bx bx-check-shield'></i>
-                Peuvent louer
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : En attente -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon warning">
-              <i class='bx bx-time'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.pending }}</h3>
-              <p>En attente</p>
-              <span class="stat-trend trend-down" *ngIf="stats.pending > 0">
-                <i class='bx bx-hourglass'></i>
-                {{ stats.pending }} validation(s)
-              </span>
-              <span class="stat-trend" *ngIf="stats.pending === 0">
-                <i class='bx bx-check'></i>
-                Aucune en attente
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : Tiers Bloqués -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon danger">
-              <i class='bx bx-block'></i>
-            </div>
-            <div class="stat-content">
-              <h3 [class.text-danger]="stats.blocked > 0">{{ stats.blocked }}</h3>
-              <p>Tiers Bloqués</p>
-              <span class="stat-trend" [class.trend-down]="stats.blocked > 0" [class.trend-up]="stats.blocked === 0">
-                <i [class]="stats.blocked > 0 ? 'bx bx-error-circle' : 'bx bx-check-circle'"></i>
-                {{ stats.blocked > 0 ? stats.blocked + ' bloqué(s)' : 'Aucun blocage' }}
-              </span>
-            </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/settings']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
           </div>
         </div>
       </div>
+    </header>
 
-      <!-- DEUXIÈME LIGNE : Statistiques supplémentaires (optionnelle) -->
-      <div class="row mb-4" *ngIf="stats.clients > 0 || stats.suppliers > 0">
-        <!-- Carte : Clients Particuliers -->
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon info">
-              <i class='bx bx-user'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.clients }}</h3>
-              <p>Clients Particuliers</p>
-              <span class="stat-trend trend-up">
-                <i class='bx bx-purchase-tag'></i>
-                Location de véhicules
-              </span>
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+
+      <!-- ══ KPI CARDS — Ligne 1 ══ -->
+      <div class="grid grid-4">
+
+        <!-- Total Tiers -->
+        <div class="kpi-card purple">
+          <div class="kpi-header">
+            <div class="kpi-icon purple"><i class="bx bx-group"></i></div>
+            <div class="kpi-trend up" *ngIf="stats.total > 0">
+              <i class="bx bx-user-check"></i>
+              {{ stats.active }} actifs
             </div>
           </div>
+          <div class="kpi-value">{{ stats.total }}</div>
+          <div class="kpi-label">Total Tiers</div>
+          <div class="kpi-sublabel">Base complète</div>
         </div>
 
-        <!-- Carte : Fournisseurs -->
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon secondary">
-              <i class='bx bx-truck'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.suppliers }}</h3>
-              <p>Fournisseurs</p>
-              <span class="stat-trend">
-                <i class='bx bx-package'></i>
-                Approvisionnement
-              </span>
+        <!-- Tiers Actifs -->
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <div class="kpi-icon green"><i class="bx bx-check-circle"></i></div>
+            <div class="kpi-trend up" *ngIf="stats.active > 0">
+              <i class="bx bx-check-shield"></i>
+              Peuvent louer
             </div>
           </div>
+          <div class="kpi-value">{{ stats.active }}</div>
+          <div class="kpi-label">Tiers Actifs</div>
+          <div class="kpi-sublabel">Ce mois-ci</div>
         </div>
 
-        <!-- Carte : Taux d'activation -->
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon" [class.success]="activationRate >= 70"
-              [class.warning]="activationRate < 70 && activationRate >= 40" [class.danger]="activationRate < 40">
-              <i class='bx bx-line-chart'></i>
+        <!-- En attente -->
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <div class="kpi-icon amber"><i class="bx bx-time"></i></div>
+            <div class="kpi-trend down" *ngIf="stats.pending > 0">
+              <i class="bx bx-hourglass"></i>
+              {{ stats.pending }} validation(s)
             </div>
-            <div class="stat-content">
-              <h3 [class.text-success]="activationRate >= 70"
-                [class.text-warning]="activationRate < 70 && activationRate >= 40"
-                [class.text-danger]="activationRate < 40">
-                {{ activationRate.toFixed(1) }}%
-              </h3>
-              <p>Taux d'activation</p>
-              <span class="stat-trend" [class.trend-up]="activationRate >= 70" [class.trend-down]="activationRate < 40">
-                <i
-                  [class]="activationRate >= 70 ? 'bx bx-trending-up' : (activationRate < 40 ? 'bx bx-trending-down' : 'bx bx-minus')"></i>
-                {{ stats.active }} / {{ stats.total }} actifs
-              </span>
+            <div class="kpi-trend up" *ngIf="stats.pending === 0">
+              <i class="bx bx-check"></i>
+              Aucune
             </div>
           </div>
+          <div class="kpi-value">{{ stats.pending }}</div>
+          <div class="kpi-label">En attente</div>
+          <div class="kpi-sublabel">À valider</div>
         </div>
+
+        <!-- Tiers Bloqués -->
+        <div class="kpi-card red">
+          <div class="kpi-header">
+            <div class="kpi-icon red"><i class="bx bx-block"></i></div>
+            <div class="kpi-trend" [class.down]="stats.blocked > 0" [class.up]="stats.blocked === 0">
+              <i [class]="stats.blocked > 0 ? 'bx bx-error-circle' : 'bx bx-check-circle'"></i>
+              {{ stats.blocked > 0 ? stats.blocked + ' bloqué(s)' : 'Aucun blocage' }}
+            </div>
+          </div>
+          <div class="kpi-value" [class.kpi-value--danger]="stats.blocked > 0">{{ stats.blocked }}</div>
+          <div class="kpi-label">Tiers Bloqués</div>
+          <div class="kpi-sublabel">Accès restreint</div>
+        </div>
+
       </div>
-      <!-- =========================================================== -->
-      <!-- SECTION : RECHERCHE ET FILTRES -->
-      <!-- =========================================================== -->
-      <div class="card mb-4">
+
+      <!-- ══ KPI CARDS — Ligne 2 (si données) ══ -->
+      <div class="grid grid-3" style="margin-top: 18px;" *ngIf="stats.clients > 0 || stats.suppliers > 0">
+
+        <!-- Clients -->
+        <div class="kpi-card purple">
+          <div class="kpi-header">
+            <div class="kpi-icon purple"><i class="bx bx-user"></i></div>
+            <div class="kpi-trend up">
+              <i class="bx bx-purchase-tag"></i>
+              Location
+            </div>
+          </div>
+          <div class="kpi-value">{{ stats.clients }}</div>
+          <div class="kpi-label">Clients Particuliers</div>
+          <div class="kpi-sublabel">Location de véhicules</div>
+        </div>
+
+        <!-- Fournisseurs -->
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <div class="kpi-icon amber"><i class="bx bx-truck"></i></div>
+            <div class="kpi-trend">
+              <i class="bx bx-package"></i>
+              Approvisionnement
+            </div>
+          </div>
+          <div class="kpi-value">{{ stats.suppliers }}</div>
+          <div class="kpi-label">Fournisseurs</div>
+          <div class="kpi-sublabel">Partenaires actifs</div>
+        </div>
+
+        <!-- Taux d'activation -->
+        <div class="kpi-card"
+          [class.green]="activationRate >= 70"
+          [class.amber]="activationRate < 70 && activationRate >= 40"
+          [class.red]="activationRate < 40">
+          <div class="kpi-header">
+            <div class="kpi-icon"
+              [class.green]="activationRate >= 70"
+              [class.amber]="activationRate < 70 && activationRate >= 40"
+              [class.red]="activationRate < 40">
+              <i class="bx bx-line-chart"></i>
+            </div>
+            <div class="kpi-trend"
+              [class.up]="activationRate >= 70"
+              [class.down]="activationRate < 40">
+              <i [class]="activationRate >= 70 ? 'bx bx-trending-up' : (activationRate < 40 ? 'bx bx-trending-down' : 'bx bx-minus')"></i>
+              {{ stats.active }} / {{ stats.total }}
+            </div>
+          </div>
+          <div class="kpi-value"
+            [class.kpi-value--success]="activationRate >= 70"
+            [class.kpi-value--warning]="activationRate < 70 && activationRate >= 40"
+            [class.kpi-value--danger]="activationRate < 40">
+            {{ activationRate.toFixed(1) }}<span class="kpi-value-sm">%</span>
+          </div>
+          <div class="kpi-label">Taux d'activation</div>
+          <div class="kpi-sublabel">Actifs sur total</div>
+        </div>
+
+      </div>
+
+      <!-- ══ RECHERCHE & FILTRES ══ -->
+      <div class="card" style="margin-top: 18px;">
         <div class="card-body">
-          <div class="row align-items-center">
+          <div class="search-filter-row">
+
             <!-- Champ de recherche -->
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <div class="input-group">
-                <span class="input-group-text bg-transparent border-end-0">
-                  <i class='bx bx-search'></i>
-                </span>
-                <input type="text" class="form-control border-start-0" [(ngModel)]="searchTerm"
-                  (keyup.enter)="onSearch()" placeholder="Rechercher un tier...">
-                <button class="btn btn-primary" (click)="onSearch()">
-                  <i class='bx bx-search me-1'></i> Rechercher
-                </button>
-              </div>
+            <div class="search-input-wrap">
+              <i class="bx bx-search search-icon"></i>
+              <input
+                type="text"
+                class="search-input"
+                [(ngModel)]="searchTerm"
+                (keyup.enter)="onSearch()"
+                placeholder="Rechercher un tiers par nom, numéro, email…" />
+              <button class="btn btn-primary btn-sm" (click)="onSearch()">
+                Rechercher
+              </button>
             </div>
 
-            <!-- Boutons d'action -->
-            <div class="col-12 col-md-6 d-flex justify-content-md-end">
-              <div class="d-flex gap-2 flex-wrap">
-                <!-- Bouton pour afficher/masquer les filtres -->
-                <button class="btn btn-primary" (click)="toggleFiltersSidebar()">
-                  <i class='bx bx-filter-alt me-1'></i> Filtres
-                </button>
-              </div>
-            </div>
+            <!-- Bouton filtres -->
+            <button class="btn btn-outline btn-sm" (click)="toggleFiltersSidebar()">
+              <i class="bx bx-filter-alt"></i> Filtres
+            </button>
+
           </div>
         </div>
       </div>
 
-      <!-- =========================================================== -->
-      <!-- SECTION : FILTRES EN LIGNE -->
-      <!-- =========================================================== -->
-      <div class="row mb-4" *ngIf="!sidebarVisible">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <div class="d-flex flex-wrap gap-3 align-items-center">
-                <!-- Filtres par rôle -->
-                <div class="filter-group">
-                  <label class="form-label mb-1">Filtrer par rôle :</label>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <button *ngFor="let role of roles" class="btn btn-sm"
-                      [class.btn-primary]="selectedRole === role.value"
-                      [class.btn-outline-primary]="selectedRole !== role.value" (click)="onFilterByRole(role.value)">
-                      <i [class]="role.icon + ' me-1'"></i> {{ role.label }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByRole()">
-                      Tous les rôles
-                    </button>
-                  </div>
-                </div>
+      <!-- ══ FILTRES EN LIGNE ══ -->
+      <div class="card" style="margin-top: 14px;" *ngIf="!sidebarVisible">
+        <div class="card-body">
+          <div class="filters-row">
 
-                <!-- Filtres par statut -->
-                <div class="filter-group">
-                  <label class="form-label mb-1">Filtrer par statut :</label>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <button *ngFor="let status of statuses" class="btn btn-sm"
-                      [class.btn-primary]="selectedStatus === status.value"
-                      [class.btn-outline-primary]="selectedStatus !== status.value"
-                      (click)="onFilterByStatus(status.value)">
-                      <i [class]="status.icon + ' me-1'"></i> {{ status.label }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByStatus()">
-                      Tous les statuts
-                    </button>
-                  </div>
-                </div>
+            <!-- Filtres par rôle -->
+            <div class="filter-group">
+              <div class="filter-group__label">Rôle</div>
+              <div class="filter-pills">
+                <button *ngFor="let role of roles"
+                  class="filter-pill"
+                  [class.filter-pill--active]="selectedRole === role.value"
+                  (click)="onFilterByRole(role.value)">
+                  <i [class]="role.icon"></i> {{ role.label }}
+                </button>
+                <button class="filter-pill" [class.filter-pill--active]="!selectedRole" (click)="onFilterByRole()">
+                  Tous
+                </button>
               </div>
             </div>
+
+            <!-- Filtres par statut -->
+            <div class="filter-group">
+              <div class="filter-group__label">Statut</div>
+              <div class="filter-pills">
+                <button *ngFor="let status of statuses"
+                  class="filter-pill"
+                  [class.filter-pill--active]="selectedStatus === status.value"
+                  (click)="onFilterByStatus(status.value)">
+                  <i [class]="status.icon"></i> {{ status.label }}
+                </button>
+                <button class="filter-pill" [class.filter-pill--active]="!selectedStatus" (click)="onFilterByStatus()">
+                  Tous
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- =========================================================== -->
-      <!-- SECTION : LISTE DES TIERS -->
-      <!-- =========================================================== -->
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <!-- En-tête de la table -->
-            <div class="card-header">
-              <h5 class="card-title mb-0">Liste des Tiers</h5>
-              <div class="d-flex align-items-center gap-2">
-                <!-- Sélecteur de taille de page -->
-                <div class="form-group mb-0">
-                  <select class="form-select form-select-sm" (change)="onPageSizeChange($event)" style="width: auto;">
-                    <option *ngFor="let size of pageSizeOptions" [value]="size">
-                      {{ size }} par page
-                    </option>
-                  </select>
-                </div>
-                <!-- Compteur de résultats -->
-                <div class="text-muted fs-sm">
-                  {{ pagination.totalCount }} résultats
-                </div>
-              </div>
+      <!-- ══ LISTE DES TIERS ══ -->
+      <div class="card" style="margin-top: 14px;">
+
+        <!-- En-tête de la table -->
+        <div class="card-header">
+          <div class="card-title"><i class="bx bx-group"></i> Liste des Tiers</div>
+          <div class="table-controls">
+            <select class="page-size-select" (change)="onPageSizeChange($event)">
+              <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / page</option>
+            </select>
+            <span class="result-count">
+              <strong>{{ pagination.totalCount }}</strong> résultat{{ pagination.totalCount > 1 ? 's' : '' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body" style="padding: 0;">
+
+          <!-- État : Chargement -->
+          <div *ngIf="loading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Chargement des tiers…</p>
+          </div>
+
+          <!-- État : Erreur -->
+          <div *ngIf="error && !loading" class="error-banner" style="margin: 18px 22px;">
+            <i class="bx bx-error-circle error-banner__icon"></i>
+            <div class="error-banner__content">
+              <h6>Erreur de chargement</h6>
+              <p>{{ error }}</p>
             </div>
+          </div>
 
-            <!-- Corps de la table -->
-            <div class="card-body">
-              <!-- État : Chargement -->
-              <div *ngIf="loading" class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Chargement...</span>
-                </div>
-                <p class="mt-2">Chargement des tiers...</p>
-              </div>
+          <!-- Table des tiers -->
+          <div *ngIf="!loading && !error" class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 48px;">#</th>
 
-              <!-- État : Erreur -->
-              <div *ngIf="error && !loading" class="alert alert-danger">
-                <i class='bx bx-error-circle me-2'></i> {{ error }}
-              </div>
+                  <th class="sortable" (click)="onSortChange('tierNumber')">
+                    N° Tier
+                    <i class="bx bx-sort" *ngIf="selectedSort !== 'tierNumber'"></i>
+                    <i class="bx bx-sort-up" *ngIf="selectedSort === 'tierNumber' && !sortDescending"></i>
+                    <i class="bx bx-sort-down" *ngIf="selectedSort === 'tierNumber' && sortDescending"></i>
+                  </th>
 
-              <!-- Table des tiers -->
-              <div *ngIf="!loading && !error" class="table-responsive">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <!-- Colonne : Numéro d'ordre -->
-                      <th style="width: 50px;">#</th>
+                  <th class="sortable" (click)="onSortChange('lastName')">
+                    Identité
+                    <i class="bx bx-sort" *ngIf="selectedSort !== 'lastName'"></i>
+                    <i class="bx bx-sort-up" *ngIf="selectedSort === 'lastName' && !sortDescending"></i>
+                    <i class="bx bx-sort-down" *ngIf="selectedSort === 'lastName' && sortDescending"></i>
+                  </th>
 
-                      <!-- Colonne : Numéro Tier (triable) -->
-                      <th (click)="onSortChange('tierNumber')" style="cursor: pointer;">
-                        Numéro Tier
-                        <!-- Icônes de tri -->
-                        <i class='bx bx-sort' *ngIf="selectedSort !== 'tierNumber'"></i>
-                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'tierNumber' && !sortDescending"></i>
-                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'tierNumber' && sortDescending"></i>
-                      </th>
+                  <th>Téléphone</th>
+                  <th>Rôles</th>
 
-                      <!-- Colonne : Nom & Prénom (triable) -->
-                      <th (click)="onSortChange('lastName')" style="cursor: pointer;">
-                        Nom & Prénom
-                        <!-- Icônes de tri -->
-                        <i class='bx bx-sort' *ngIf="selectedSort !== 'lastName'"></i>
-                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'lastName' && !sortDescending"></i>
-                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'lastName' && sortDescending"></i>
-                      </th>
+                  <th class="sortable" (click)="onSortChange('status')">
+                    Statut
+                    <i class="bx bx-sort" *ngIf="selectedSort !== 'status'"></i>
+                    <i class="bx bx-sort-up" *ngIf="selectedSort === 'status' && !sortDescending"></i>
+                    <i class="bx bx-sort-down" *ngIf="selectedSort === 'status' && sortDescending"></i>
+                  </th>
 
-                      <!-- Colonne : Téléphone -->
-                      <th>Téléphone</th>
+                  <th>Documents</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
 
-                      <!-- Colonne : Rôles -->
-                      <th>Rôles</th>
+              <tbody>
+                <tr *ngFor="let tier of tiers; let i = index">
 
-                      <!-- Colonne : Statut (triable) -->
-                      <th (click)="onSortChange('status')" style="cursor: pointer;">
-                        Statut
-                        <!-- Icônes de tri -->
-                        <i class='bx bx-sort' *ngIf="selectedSort !== 'status'"></i>
-                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'status' && !sortDescending"></i>
-                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'status' && sortDescending"></i>
-                      </th>
+                  <!-- # -->
+                  <td class="row-num">
+                    {{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}
+                  </td>
 
-                      <!-- Colonne : Documents -->
-                      <th>État des documents</th>
+                  <!-- N° Tier -->
+                  <td>
+                    <span class="cell-ref">{{ tier.tierNumber }}</span>
+                  </td>
 
-                      <!-- Colonne : Actions -->
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Ligne : Tier (répétée pour chaque tier) -->
-                    <tr *ngFor="let tier of tiers; let i = index">
-                      <!-- Cellule : Numéro d'ordre -->
-                      <td class="text-muted">
-                        {{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}
-                      </td>
+                  <!-- Identité -->
+                  <td>
+                    <div class="tier-identity">
+                      <div class="tier-avatar">{{ getInitialsFromName(tier) }}</div>
+                      <div class="tier-info">
+                        <div class="cell-name">{{ getFullName(tier) }}</div>
+                        <div class="cell-sub">{{ tier.email }}</div>
+                      </div>
+                    </div>
+                  </td>
 
-                      <!-- Cellule : Numéro Tier -->
-                      <td>
-                        <strong>{{ tier.tierNumber }}</strong>
-                        <br>
-                        <span class="text-cyan-950">{{ tier.firstName }} {{ tier.lastName }}</span>
-                      </td>
+                  <!-- Téléphone -->
+                  <td>
+                    <span class="cell-phone">{{ formatPhoneNumber(tier.phone) }}</span>
+                  </td>
 
-                      <!-- Cellule : Informations du tier -->
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <!-- Avatar du tier -->
-                          <div class="avatar me-3">
-                            <div class="avatar-default">
-                              {{ getInitialsFromName(tier) }}
-                            </div>
-                          </div>
-                          <!-- Nom et email -->
-                          <div>
-                            <div class="fw-semibold">{{ getFullName(tier) }}</div>
-                            <small class="text-muted">{{ tier.email }}</small>
-                          </div>
+                  <!-- Rôles -->
+                  <td>
+                    <div class="role-badges">
+                      <span *ngFor="let role of getActiveRoles(tier)"
+                        class="role-badge"
+                        [ngClass]="getRoleBadgeClass(role)">
+                        {{ getRoleText(role) }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Statut -->
+                  <td>
+                    <span class="status-badge" [ngClass]="'status-' + getStatusIcon(tier.status)">
+                      <i [class]="getStatusIcon(tier.status)"></i>
+                      {{ getStatusText(tier.status) }}
+                    </span>
+                  </td>
+
+                  <!-- Documents -->
+                  <td>
+                    <div class="doc-status">
+                      <div *ngIf="!getDocumentsStatus(tier).valid" class="doc-warning">
+                        <i class="bx bx-error-circle"></i>
+                        <span>{{ getDocumentsStatus(tier).missing.length }} manquant(s)</span>
+                        <div class="doc-tooltip">
+                          <div class="doc-tooltip__title">Documents requis :</div>
+                          <ul>
+                            <li *ngFor="let doc of getDocumentsStatus(tier).missing">{{ doc }}</li>
+                          </ul>
                         </div>
-                      </td>
+                      </div>
 
-                      <!-- Cellule : Téléphone -->
-                      <td>
-                        {{ formatPhoneNumber(tier.phone) }}
-                      </td>
-
-                      <!-- Cellule : Rôles (badges) -->
-                      <td>
-                        <div class="d-flex flex-wrap gap-5">
-                          <span *ngFor="let role of getActiveRoles(tier)" class="badge"
-                            [ngClass]="getRoleBadgeClass(role)">
-                            {{ getRoleText(role) }}
-                          </span>
-                        </div>
-                      </td>
-
-                      <!-- Cellule : Statut -->
-                      <td>
-                        <span class="status-badge" [ngClass]="'status-' + getStatusIcon(tier.status)">
-                          <i [class]="getStatusIcon(tier.status)"></i>
-                          {{ getStatusText(tier.status) }}
+                      <div class="doc-badges">
+                        <span *ngIf="hasExpiredDocuments(tier)" class="status-badge status-failed badge-sm">
+                          <i class="bx bx-time"></i> Expiré
                         </span>
-                      </td>
+                        <span *ngIf="canSignContract(tier)" class="status-badge status-ok badge-sm">
+                          <i class="bx bx-check"></i> Éligible
+                        </span>
+                      </div>
+                    </div>
+                  </td>
 
-                      <!-- Cellule : Documents (icônes d'état) -->
-                      <!-- Cellule : État des documents -->
-                      <td>
-                        <div class="document-status-indicator">
-                          <!-- Indicateur principal -->
-                          <!-- <div *ngIf="getDocumentsStatus(tier).missing" class="text-success">
-                            <i class='bx bx-check-circle'></i> Complet
-                          </div> -->
+                  <!-- Actions -->
+                  <td>
+                    <div class="action-btns">
 
-                          <div *ngIf="!getDocumentsStatus(tier).valid" class="text-warning">
-                            <div class="d-flex align-items-center gap-1">
-                              <i class='bx bx-error-circle'></i>
-                              <span>{{ getDocumentsStatus(tier).missing.length }} manquant(s)</span>
-                            </div>
+                      <!-- Bloquer -->
+                      <button
+                        *ngIf="tier.status !== TierStatus.Blocked"
+                        class="action-btn action-btn--danger"
+                        (click)="blockTier(tier)"
+                        title="Bloquer">
+                        <i class="bx bx-block"></i>
+                      </button>
 
-                            <div class="missing-docs-tooltip">
-                              <small class="text-muted d-block">Documents requis :</small>
-                              <ul class="mb-0 ps-2">
-                                <li *ngFor="let doc of getDocumentsStatus(tier).missing">
-                                  <small>{{ doc }}</small>
-                                </li>
-                              </ul>
-                            </div>
-                          </div>
+                      <!-- Activer -->
+                      <button
+                        *ngIf="tier.status === TierStatus.Blocked || tier.status === TierStatus.PendingValidation"
+                        class="action-btn action-btn--success"
+                        (click)="activateTier(tier)"
+                        title="Activer">
+                        <i class="bx bx-power-off"></i>
+                      </button>
 
-                          <!-- Indicateurs secondaires -->
-                          <div class="d-flex gap-5 mt-5">
-                            <span *ngIf="hasExpiredDocuments(tier)" class="badge bg-danger badge-sm">
-                              <i class='bx bx-time'></i> Expiré
-                            </span>
-                            <span *ngIf="canSignContract(tier)" class="badge bg-success badge-sm">
-                              <i class='bx bx-check'></i> Éligible à la signature d'un contrat
-                            </span>
-                          </div>
-                        </div>
-                      </td>
+                      <!-- Vérifier -->
+                      <button
+                        *ngIf="tier.status === TierStatus.Blocked"
+                        class="action-btn action-btn--info"
+                        (click)="checkActivationEligibility(tier)"
+                        title="Vérifier l'éligibilité">
+                        <i class="bx bx-check-double"></i>
+                      </button>
 
-                      <!-- Cellule : Actions -->
-                      <!-- Cellule : Actions -->
-                      <td>
-                        <div class="btn-group" role="group">
-                          <!-- Bouton : Bloquer (toujours visible si tier n'est pas bloqué) -->
-                          <button *ngIf="tier.status !== TierStatus.Blocked" class="btn btn-sm btn-outline-danger"
-                            (click)="blockTier(tier)" title="Bloquer">
-                            <i class='bx bx-block'></i>
-                          </button>
+                    </div>
 
-                          <!-- Bouton : Activer directement (si bloqué OU en attente) -->
-                          <button
-                            *ngIf="tier.status === TierStatus.Blocked || tier.status === TierStatus.PendingValidation"
-                            class="btn btn-sm btn-outline-success" (click)="activateTier(tier)" title="Activer le tier">
-                            <i class='bx bx-power-off'></i> Activer
-                          </button>
+                    <!-- Indicateur docs manquants sous les actions -->
+                    <div *ngIf="tier.status === TierStatus.PendingValidation || tier.status === TierStatus.Blocked"
+                      style="margin-top: 4px;">
+                      <span *ngIf="!getDocumentsStatus(tier).valid && getDocumentsStatus(tier).missing.length > 0"
+                        class="doc-warning-inline">
+                        <i class="bx bx-error-circle"></i>
+                        {{ getDocumentsStatus(tier).missing.length }} doc. manquant(s)
+                      </span>
+                    </div>
+                  </td>
 
-                          <!-- Bouton : Vérifier avant activation (optionnel, si bloqué) -->
-                          <button *ngIf="tier.status === TierStatus.Blocked" class="btn btn-sm btn-outline-info"
-                            (click)="checkActivationEligibility(tier)" title="Vérifier l'éligibilité">
-                            <i class='bx bx-check-double'></i> Vérifier
-                          </button>
-                        </div>
+                </tr>
 
-                        <!-- Indicateur d'état des documents -->
-                        <div *ngIf="tier.status === TierStatus.PendingValidation || tier.status === TierStatus.Blocked"
-                          class="mt-1">
-                          <small class="document-status">
-                            <!-- <span *ngIf="getDocumentsStatus(tier).valid" class="text-success">
-                              <i class='bx bx-check-circle'></i> Documents OK
-                            </span> -->
-                            <span *ngIf="!getDocumentsStatus(tier).valid && getDocumentsStatus(tier).missing.length > 0"
-                              class="text-warning">
-                              <i class='bx bx-error-circle'></i> {{ getDocumentsStatus(tier).missing.length }} doc.
-                              manquant(s)
-                            </span>
-                          </small>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- =========================================================== -->
-              <!-- SECTION : PAGINATION -->
-              <!-- =========================================================== -->
-              <div *ngIf="!loading && !error && pagination.totalPages > 1"
-                class="d-flex justify-content-between align-items-center mt-4">
-                <!-- Informations de pagination -->
-                <div class="text-muted fs-sm">
-                  Page {{ pagination.currentPage }} sur {{ pagination.totalPages }}
-                  ({{ pagination.totalCount }} tiers)
-                </div>
-
-                <!-- Contrôles de pagination -->
-                <nav>
-                  <ul class="pagination mb-0">
-                    <!-- Bouton : Page précédente -->
-                    <li class="page-item" [class.disabled]="!pagination.hasPreviousPage">
-                      <a class="page-link" (click)="onPageChange(pagination.currentPage - 1)">
-                        <i class='bx bx-chevron-left'></i>
-                      </a>
-                    </li>
-
-                    <!-- Numéros de page -->
-                    <li *ngFor="let page of visiblePages" class="page-item"
-                      [class.active]="page === pagination.currentPage">
-                      <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
-                    </li>
-
-                    <!-- Bouton : Page suivante -->
-                    <li class="page-item" [class.disabled]="!pagination.hasNextPage">
-                      <a class="page-link" (click)="onPageChange(pagination.currentPage + 1)">
-                        <i class='bx bx-chevron-right'></i>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
+                <!-- Aucun résultat -->
+                <tr *ngIf="tiers.length === 0">
+                  <td colspan="8" class="empty-state">
+                    <i class="bx bx-group"></i>
+                    <span>Aucun tiers trouvé</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+
+          <!-- ══ PAGINATION ══ -->
+          <div *ngIf="!loading && !error && pagination.totalPages > 1"
+            class="pagination-bar">
+            <div class="pagination-info">
+              Page <strong>{{ pagination.currentPage }}</strong> sur <strong>{{ pagination.totalPages }}</strong>
+              <span class="pagination-info__sep">·</span>
+              {{ pagination.totalCount }} tiers
+            </div>
+
+            <nav class="pagination">
+              <button class="page-btn" [disabled]="!pagination.hasPreviousPage"
+                (click)="onPageChange(pagination.currentPage - 1)">
+                <i class="bx bx-chevron-left"></i>
+              </button>
+
+              <button *ngFor="let page of visiblePages"
+                class="page-btn"
+                [class.page-btn--active]="page === pagination.currentPage"
+                (click)="onPageChange(page)">
+                {{ page }}
+              </button>
+
+              <button class="page-btn" [disabled]="!pagination.hasNextPage"
+                (click)="onPageChange(pagination.currentPage + 1)">
+                <i class="bx bx-chevron-right"></i>
+              </button>
+            </nav>
+          </div>
+
         </div>
       </div>
-    </div>
 
-    <!-- =========================================================================== -->
-    <!-- SECTION : COMPOSANTS DE DIALOGUE -->
-    <!-- =========================================================================== -->
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
 
-    <!-- Dialogue de confirmation standard -->
-    <app-confirm-dialog [title]="confirmDialogTitle" [message]="confirmDialogMessage" [details]="confirmDialogDetails"
-      [visible]="confirmDialogVisible" (confirm)="onConfirmDialogConfirm()" (cancel)="onConfirmDialogCancel()">
-    </app-confirm-dialog>
-
-    <app-notification-component></app-notification-component>
-
-    <!-- Dialogue de confirmation avec saisie (pour le blocage) -->
-    <app-confirm-dialog-with-input [visible]="showBlockConfirmDialog" [title]="'Blocage du tier'"
-      [message]="'Veuillez indiquer la raison du blocage'" [confirmText]="'Bloquer'" [cancelText]="'Annuler'"
-      [showInput]="true" [inputPlaceholder]="'Raison du blocage...'" [inputRequired]="true"
-      [inputErrorMessage]="'La raison du blocage est obligatoire'" (confirm)="confirmBlockTier($event)"
-      (cancel)="cancelBlockTier()">
-    </app-confirm-dialog-with-input>
+    </main>
   </div>
 </div>
+
+<!-- ══ DIALOGUES ══ -->
+<app-confirm-dialog
+  [title]="confirmDialogTitle"
+  [message]="confirmDialogMessage"
+  [details]="confirmDialogDetails"
+  [visible]="confirmDialogVisible"
+  (confirm)="onConfirmDialogConfirm()"
+  (cancel)="onConfirmDialogCancel()">
+</app-confirm-dialog>
+
+<app-confirm-dialog-with-input
+  [visible]="showBlockConfirmDialog"
+  [title]="'Blocage du tier'"
+  [message]="'Veuillez indiquer la raison du blocage'"
+  [confirmText]="'Bloquer'"
+  [cancelText]="'Annuler'"
+  [showInput]="true"
+  [inputPlaceholder]="'Raison du blocage…'"
+  [inputRequired]="true"
+  [inputErrorMessage]="'La raison du blocage est obligatoire'"
+  (confirm)="confirmBlockTier($event)"
+  (cancel)="cancelBlockTier()">
+</app-confirm-dialog-with-input>
+
+<app-notification-component></app-notification-component>

@@ -1,136 +1,148 @@
 <!--
   COMPOSANT : Validation des Documents
   DESCRIPTION : Interface de gestion et validation des documents en attente
-  VERSION : 1.0.0
-  AUTEUR : Logistik Team
+  VERSION : 2.0.0 — Design aligné sur le thème LOGISTIK v2
 -->
 
-<div class="layout-wrapper">
-  <!-- =========================================================================== -->
-  <!-- SECTION : SIDEBAR PRINCIPALE (NAVIGATION) -->
-  <!-- =========================================================================== -->
-<app-sidebar-component></app-sidebar-component>
+<div class="app-wrapper">
 
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
 
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-  <!-- =========================================================================== -->
-  <!-- SECTION : CONTENU PRINCIPAL -->
-  <!-- =========================================================================== -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
-    <!-- =========================================================== -->
-    <!-- SOUS-SECTION : NAVBAR (EN-TÊTE) -->
-    <!-- =========================================================== -->
-    <nav class="layout-navbar">
-      <!-- Contrôles de navigation -->
-      <div class="d-flex align-items-center">
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class='bx bx-menu'></i>
+          <i class="bx bx-menu"></i>
         </button>
-        <h3 class="mb-0 ms-3">Validation des Documents</h3>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item">Tiers</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Validation des Documents</span>
+        </div>
+        <div class="topbar-search">
+          <i class="bx bx-search"></i>
+          <input type="text" placeholder="Chercher un tiers, document, contrat…" />
+        </div>
       </div>
 
-      <!-- Menu utilisateur -->
-      <ul class="navbar-nav">
-        <li class="nav-item dropdown" (click)="$event.stopPropagation(); showUserMenu = !showUserMenu">
-          <div class="avatar dropdown-toggle">
-            <!-- Avatar utilisateur dynamique -->
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
-                 [src]="userPhotoUrl"
-                 [alt]="userName"
-                 (error)="userPhotoUrl = getDefaultAvatar()" />
-            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-              {{ getUserInitials() }}
-            </div>
-          </div>
-          <div class="dropdown-menu" [class.show]="showUserMenu">
-            <div style="padding: 1rem;">
-              <div class="fw-bold">{{ userName }}</div>
-              <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}
-              </div>
-              <hr style="margin: 0.5rem 0;">
-              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                <i class='bx bx-user me-2'></i> Mon profil
-              </a>
-              <a [routerLink]="['/settings']" class="dropdown-item">
-                <i class='bx bx-cog me-2'></i> Paramètres
-              </a>
-              <hr style="margin: 0.5rem 0;">
-              <a (click)="logout()" class="dropdown-item logout-item">
-                <i class='bx bx-log-out me-2'></i> Déconnexion
-              </a>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </nav>
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
 
-    <!-- =========================================================== -->
-    <!-- SOUS-SECTION : CONTENU DE LA PAGE -->
-    <!-- =========================================================== -->
-    <div class="content-wrapper">
-      <!-- =========================================================== -->
-      <!-- SECTION : EN-TÊTE ET DESCRIPTION -->
-      <!-- =========================================================== -->
-      <div class="dashboard-header mb-4">
-        <div class="welcome-section">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h1 class="welcome-title">Validation des Documents</h1>
-              <p class="welcome-subtitle mb-0">
-                Gestion centralisée des documents en attente de validation. Validez, rejetez ou prévisualisez
-                les pièces jointes.
-              </p>
+        <button class="topbar-icon-btn">
+          <i class="bx bx-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <button class="topbar-icon-btn">
+          <i class="bx bx-refresh"></i>
+        </button>
+
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
+          </div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
+          </div>
+
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
             </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/settings']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+
+      <!-- ══ PAGE HEADER ══ -->
+      <div class="page-header">
+        <div class="page-header-content">
+          <div class="page-header-icon">
+            <i class="bx bx-check-shield"></i>
+          </div>
+          <div>
+            <h1 class="page-title">Validation des Documents</h1>
+            <p class="page-subtitle">
+              Gestion centralisée des documents en attente de validation. Validez, rejetez ou prévisualisez les pièces jointes.
+            </p>
+          </div>
+        </div>
+        <div class="page-header-stats">
+          <div class="header-stat">
+            <span class="header-stat-value">{{ documentsToValidate.length }}</span>
+            <span class="header-stat-label">En attente</span>
           </div>
         </div>
       </div>
 
-      <!-- =========================================================== -->
-      <!-- SECTION : CONTENU PRINCIPAL (DEUX COLONNES) -->
-      <!-- =========================================================== -->
-      <div class="row">
-        <!-- ========================================================= -->
-        <!-- COLONNE GAUCHE : FILTRES ET ACTIONS -->
-        <!-- ========================================================= -->
-        <div class="col-12 col-lg-4 mb-4">
-          <!-- Carte : Filtres avancés -->
-          <div class="card filters-card">
+      <!-- ══ MAIN GRID ══ -->
+      <div class="docs-grid">
+
+        <!-- ══ COLONNE GAUCHE : FILTRES ══ -->
+        <div class="filters-col">
+
+          <!-- Carte Filtres -->
+          <div class="card">
             <div class="card-header">
-              <h5 class="card-title mb-0">
-                <i class='bx bx-filter-alt me-2'></i>Filtres avancés
-              </h5>
-              <button class="btn btn-sm btn-link text-muted" (click)="resetFilters()">
-                <i class='bx bx-reset'></i> Réinitialiser
+              <div class="card-title"><i class="bx bx-filter-alt"></i> Filtres avancés</div>
+              <button class="btn btn-ghost btn-sm" (click)="resetFilters()">
+                <i class="bx bx-reset"></i> Réinitialiser
               </button>
             </div>
             <div class="card-body">
-              <!-- Sous-section : Recherche rapide -->
-              <div class="search-container mb-4">
+
+              <!-- Recherche rapide -->
+              <div class="filter-section">
                 <form [formGroup]="searchForm">
-                  <div class="input-group">
-                    <span class="input-group-text">
-                      <i class='bx bx-search'></i>
-                    </span>
+                  <div class="search-field">
+                    <i class="bx bx-search search-icon"></i>
                     <input type="text"
-                           class="form-control"
+                           class="search-input"
                            formControlName="searchTerm"
-                           placeholder="Rechercher par nom, téléphone, numéro tier...">
-                    <button class="btn btn-primary"
+                           placeholder="Nom, téléphone, numéro tier…">
+                    <button class="search-btn"
                             (click)="applySearch()"
                             [disabled]="isLoading">
-                      <i class='bx bx-search'></i>
+                      <i class="bx bx-search"></i>
                     </button>
                   </div>
                 </form>
               </div>
 
-              <!-- Sous-section : Filtres détaillés -->
-              <form [formGroup]="filterForm">
-                <!-- Filtre : Type de document -->
-                <div class="mb-3">
-                  <label class="form-label">Type de document</label>
-                  <select class="form-select" formControlName="documentType">
+              <!-- Filtres détaillés -->
+              <form [formGroup]="filterForm" class="filter-form">
+
+                <div class="filter-group">
+                  <label class="filter-label">Type de document</label>
+                  <select class="filter-select" formControlName="documentType">
                     <option [ngValue]="null">Tous les types</option>
                     <option *ngFor="let type of documentTypes" [ngValue]="type">
                       <!-- {{ getDocumentTypeLabel(type) }} -->
@@ -138,105 +150,64 @@
                   </select>
                 </div>
 
-                <!-- Filtre : Statut du document -->
-                <div class="mb-3">
-                  <label class="form-label">Statut du document</label>
-                  <select class="form-select" formControlName="documentStatus">
+                <div class="filter-group">
+                  <label class="filter-label">Statut du document</label>
+                  <select class="filter-select" formControlName="documentStatus">
                     <option *ngFor="let status of documentStatuses" [ngValue]="status">
                       {{ getDocumentStatusLabel(status) }}
                     </option>
                   </select>
                 </div>
 
-                <!-- Filtre : Rôle du tier -->
-                <div class="mb-3">
-                  <label class="form-label">Rôle du tier</label>
-                  <select class="form-select" formControlName="tierRole">
+                <div class="filter-group">
+                  <label class="filter-label">Rôle du tier</label>
+                  <select class="filter-select" formControlName="tierRole">
                     <option [ngValue]="null">Tous les rôles</option>
-                    <option *ngFor="let role of tierRoles" [ngValue]="role">
-                      {{ role }}
-                    </option>
+                    <option *ngFor="let role of tierRoles" [ngValue]="role">{{ role }}</option>
                   </select>
                 </div>
 
-                <!-- Filtre : Statut du tier -->
-                <div class="mb-3">
-                  <label class="form-label">Statut du tier</label>
-                  <select class="form-select" formControlName="tierStatus">
+                <div class="filter-group">
+                  <label class="filter-label">Statut du tier</label>
+                  <select class="filter-select" formControlName="tierStatus">
                     <option [ngValue]="null">Tous les statuts</option>
-                    <option *ngFor="let status of tierStatuses" [ngValue]="status">
-                      {{ status }}
-                    </option>
+                    <option *ngFor="let status of tierStatuses" [ngValue]="status">{{ status }}</option>
                   </select>
                 </div>
 
-                <!-- Option : Documents expirés uniquement -->
-                <div class="form-check mb-3">
-                  <input class="form-check-input"
-                         type="checkbox"
+                <div class="filter-checkbox">
+                  <input type="checkbox"
+                         class="checkbox-input"
                          formControlName="hasExpiredOnly"
                          id="expiredOnly">
-                  <label class="form-check-label" for="expiredOnly">
-                    Afficher uniquement les documents expirés
+                  <label class="checkbox-label" for="expiredOnly">
+                    Documents expirés uniquement
                   </label>
                 </div>
 
-                <!-- Bouton : Appliquer les filtres -->
-                <div class="d-grid gap-2">
-                  <button type="button"
-                          class="btn btn-primary"
-                          (click)="applySearch()"
-                          [disabled]="isLoading">
-                    <i class='bx bx-filter me-1'></i> Appliquer les filtres
-                  </button>
-                </div>
+                <button type="button"
+                        class="btn btn-primary btn-block"
+                        (click)="applySearch()"
+                        [disabled]="isLoading">
+                  <i class="bx bx-filter"></i> Appliquer les filtres
+                </button>
+
               </form>
             </div>
           </div>
 
-          <!-- Carte : Actions rapides (commentée) -->
-          <!--
-          <div class="card quick-actions-card mt-4">
-            <div class="card-header">
-              <h5 class="card-title mb-0">
-                <i class='bx bx-bolt me-2'></i>Actions rapides
-              </h5>
-            </div>
-            <div class="card-body">
-              <div class="d-grid gap-2">
-                <button class="btn btn-outline-primary" (click)="goToTierPage(selectedTier?.id || '')"
-                  [disabled]="!selectedTier">
-                  <i class='bx bx-user me-1'></i> Voir le tier
-                </button>
-                <button class="btn btn-outline-success" (click)="validateAllDocumentsForTier(selectedTier!)"
-                  [disabled]="!selectedTier || !hasDocumentsToValidate(selectedTier)">
-                  <i class='bx bx-check-double me-1'></i> Tout valider
-                </button>
-                <button class="btn btn-outline-danger" (click)="exportDocuments('csv')" [disabled]="isExporting">
-                  <i class='bx bx-download me-1'></i> Exporter CSV
-                </button>
-              </div>
-            </div>
-          </div>
-          -->
         </div>
 
-        <!-- ========================================================= -->
-        <!-- COLONNE DROITE : LISTE DES DOCUMENTS -->
-        <!-- ========================================================= -->
-        <div class="col-12 col-lg-8 mb-4">
-          <!-- Carte : Liste des documents -->
-          <div class="card documents-list-card">
-            <!-- En-tête de la carte -->
+        <!-- ══ COLONNE DROITE : LISTE DES DOCUMENTS ══ -->
+        <div class="list-col">
+          <div class="card">
             <div class="card-header">
-              <h5 class="card-title mb-0">
-                <i class='bx bx-file me-2'></i>Documents à valider
-                <span class="badge bg-primary ms-2">{{ documentsToValidate.length }}</span>
-              </h5>
-              <!-- Options de tri -->
-              <div class="sort-options">
-                <select class="form-select form-select-sm"
-                        style="width: auto;"
+              <div class="card-title">
+                <i class="bx bx-file"></i> Documents à valider
+                <span class="count-badge">{{ documentsToValidate.length }}</span>
+              </div>
+              <div class="sort-wrapper">
+                <select class="filter-select filter-select--sm"
                         (change)="sortDocuments($any($event.target).value)">
                   <option value="uploadedAt">Date d'upload</option>
                   <option value="expiryDate">Date d'expiration</option>
@@ -246,319 +217,242 @@
               </div>
             </div>
 
-            <!-- Contenu de la carte -->
-            <div class="card-body p-0">
-              <!-- État : Chargement -->
-              <div *ngIf="isLoading" class="text-center py-5">
-                <div class="spinner-border text-primary mb-3" role="status">
-                  <span class="visually-hidden">Chargement...</span>
-                </div>
-                <p class="text-muted">Chargement des documents...</p>
+            <div class="card-body" style="padding: 0;">
+
+              <!-- État chargement -->
+              <div *ngIf="isLoading" class="state-block">
+                <div class="spinner"></div>
+                <p class="state-text">Chargement des documents…</p>
               </div>
 
-              <!-- Liste des documents (si chargée) -->
+              <!-- Tableau documents -->
               <div *ngIf="!isLoading">
-                <!-- Tableau des documents -->
-                <div class="table-responsive">
-                  <table class="table table-hover">
+                <div class="table-wrap">
+                  <table class="data-table">
                     <thead>
                       <tr>
-                        <!-- Colonne : Sélection -->
                         <th width="40">
-                          <input type="checkbox" class="form-check-input">
+                          <input type="checkbox" class="checkbox-input">
                         </th>
-                        <!-- Colonne : Tier -->
                         <th>Tier</th>
-                        <!-- Colonne : Type -->
                         <th>Type</th>
-                        <!-- Colonne : Statut -->
                         <th>Statut</th>
-                        <!-- Colonne : Expiration -->
                         <th>Expiration</th>
-                        <!-- Colonne : Actions -->
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <!-- Ligne : Document (répétée pour chaque document) -->
                       <tr *ngFor="let doc of documentsToValidate"
-                          [class.table-active]="selectedDocument?.id === doc.id"
+                          [class.row-active]="selectedDocument?.id === doc.id"
                           (click)="selectDocumentForValidation(doc, doc.tier!)">
-                        <!-- Cellule : Case à cocher -->
+
                         <td>
-                          <input type="checkbox" class="form-check-input">
+                          <input type="checkbox" class="checkbox-input">
                         </td>
 
-                        <!-- Cellule : Informations du tier -->
                         <td>
                           <div class="tier-info">
-                            <strong>{{ doc.tier?.firstName }} {{ doc.tier?.lastName }}</strong>
-                            <div class="text-muted fs-sm">{{ doc.tier?.tierNumber }}</div>
+                            <span class="cell-name">{{ doc.tier?.firstName }} {{ doc.tier?.lastName }}</span>
+                            <span class="cell-sub">{{ doc.tier?.tierNumber }}</span>
                           </div>
                         </td>
 
-                        <!-- Cellule : Type de document -->
                         <td>
-                          <span class="document-type-badge" [class]="'type-' + doc.type">
-                            <i class='bx bx-file'></i>
+                          <span class="doc-type-badge" [class]="'doc-type-' + doc.type">
+                            <i class="bx bx-file"></i>
                             {{ getDocumentTypeLabel(doc.type) }}
                           </span>
                         </td>
 
-                        <!-- Cellule : Statut du document -->
                         <td>
                           <span class="status-badge" [class]="getDocumentStatusClass(doc.status)">
-                            <i class='bx bx-circle fs-xs me-1'></i>
                             {{ getDocumentStatusLabel(doc.status) }}
                           </span>
                         </td>
 
-                        <!-- Cellule : Date d'expiration -->
                         <td>
                           <div [class]="getExpirationClass(doc)">
                             <span *ngIf="doc.expiryDate">
                               {{ doc.expiryDate | date:'dd/MM/yyyy' }}
-                              <span class="badge bg-warning ms-1" *ngIf="getDaysUntilExpiry(doc) !== null">
+                              <span class="expiry-days" *ngIf="getDaysUntilExpiry(doc) !== null">
                                 {{ getDaysUntilExpiry(doc) }}j
                               </span>
                             </span>
-                            <span *ngIf="!doc.expiryDate" class="text-muted">-</span>
+                            <span *ngIf="!doc.expiryDate" class="text-muted">—</span>
                           </div>
                         </td>
 
-                        <!-- Cellule : Actions -->
                         <td>
-                          <div class="btn-group btn-group-sm">
-                            <!-- Bouton : Prévisualiser -->
-                            <button class="btn btn-outline-primary"
-                                    (click)="previewDocument(doc); $event.stopPropagation()">
-                              <i class='bx bx-show'></i>
-                            </button>
-                          </div>
+                          <button class="btn btn-outline btn-sm"
+                                  (click)="previewDocument(doc); $event.stopPropagation()">
+                            <i class="bx bx-show"></i>
+                          </button>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
 
-                <!-- ================================================= -->
-                <!-- SOUS-SECTION : PAGINATION -->
-                <!-- ================================================= -->
-                <div *ngIf="documentsToValidate.length > 0" class="card-footer">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <!-- Informations de pagination -->
-                    <div class="text-muted">
-                      Affichage de {{ documentsToValidate.length }} documents
-                    </div>
-
-                    <!-- Contrôles de pagination -->
-                    <nav aria-label="Pagination">
-                      <ul class="pagination pagination-sm mb-0">
-                        <!-- Bouton : Page précédente -->
-                        <li class="page-item" [class.disabled]="currentPage === 1">
-                          <a class="page-link" (click)="goToPage(currentPage - 1)">
-                            <i class='bx bx-chevron-left'></i>
-                          </a>
-                        </li>
-
-                        <!-- Numéros de page -->
-                        <li *ngFor="let page of getPageNumbers()"
-                            class="page-item"
-                            [class.active]="page === currentPage">
-                          <a class="page-link" (click)="goToPage(page)">{{ page }}</a>
-                        </li>
-
-                        <!-- Bouton : Page suivante -->
-                        <li class="page-item" [class.disabled]="currentPage === totalPages">
-                          <a class="page-link" (click)="goToPage(currentPage + 1)">
-                            <i class='bx bx-chevron-right'></i>
-                          </a>
-                        </li>
-                      </ul>
-                    </nav>
-                  </div>
+                <!-- Pagination -->
+                <div *ngIf="documentsToValidate.length > 0" class="table-footer">
+                  <span class="pagination-info">
+                    Affichage de {{ documentsToValidate.length }} documents
+                  </span>
+                  <nav class="pagination">
+                    <button class="page-btn" [class.disabled]="currentPage === 1"
+                            (click)="goToPage(currentPage - 1)">
+                      <i class="bx bx-chevron-left"></i>
+                    </button>
+                    <button *ngFor="let page of getPageNumbers()"
+                            class="page-btn"
+                            [class.active]="page === currentPage"
+                            (click)="goToPage(page)">{{ page }}</button>
+                    <button class="page-btn" [class.disabled]="currentPage === totalPages"
+                            (click)="goToPage(currentPage + 1)">
+                      <i class="bx bx-chevron-right"></i>
+                    </button>
+                  </nav>
                 </div>
 
-                <!-- État : Aucun document -->
-                <div *ngIf="documentsToValidate.length === 0 && !isLoading" class="text-center py-5">
-                  <i class='bx bx-file-find display-1 text-muted mb-3'></i>
-                  <h5 class="text-muted">Aucun document trouvé</h5>
-                  <p class="text-muted mb-0">Aucun document ne correspond aux critères de recherche.</p>
+                <!-- État vide -->
+                <div *ngIf="documentsToValidate.length === 0 && !isLoading" class="state-block">
+                  <i class="bx bx-file-find state-icon"></i>
+                  <p class="state-title">Aucun document trouvé</p>
+                  <p class="state-text">Aucun document ne correspond aux critères de recherche.</p>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
+
       </div>
 
-      <!-- =========================================================== -->
-      <!-- SECTION : MODAL DE PRÉVISUALISATION (OVERLAY) -->
-      <!-- =========================================================== -->
-      <!-- Overlay de fond -->
-      <div class="modal-backdrop" *ngIf="isPreviewModalOpen" (click)="closePreview()"></div>
-
-      <!-- Modal de prévisualisation -->
-      <div class="modal-preview" *ngIf="isPreviewModalOpen">
-        <!-- En-tête du modal -->
-        <div class="modal-preview-header">
-          <h5>Prévisualisation du document</h5>
-          <button class="btn-close" (click)="closePreview()">
-            <i class='bx bx-x'></i>
-          </button>
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+          <span class="footer-sep">•</span>
+          <span>{{ currentUser ? 'Connecté' : 'Déconnecté' }}</span>
         </div>
+      </footer>
 
-        <!-- Corps du modal -->
-        <div class="modal-preview-body">
-          <div class="preview-container" *ngIf="documentPreviewUrl">
-            <!-- Iframe pour l'affichage du document -->
-            <iframe [src]="documentPreviewUrl" class="preview-iframe" *ngIf="documentPreviewUrl"></iframe>
+    </main>
+  </div>
 
-            <!-- Message si prévisualisation indisponible -->
-            <div class="preview-unavailable" *ngIf="!documentPreviewUrl">
-              <i class='bx bx-file display-1 text-muted mb-3'></i>
-              <p class="text-muted">Prévisualisation non disponible</p>
-            </div>
-          </div>
-        </div>
+  <!-- ══ MODAL PRÉVISUALISATION ══ -->
+  <div class="modal-backdrop" *ngIf="isPreviewModalOpen" (click)="closePreview()"></div>
 
-        <!-- Pied du modal -->
-        <div class="modal-preview-footer">
-          <button class="btn btn-secondary" (click)="closePreview()">
-            <i class='bx bx-x me-1'></i> Fermer
-          </button>
-        </div>
+  <div class="modal-preview" *ngIf="isPreviewModalOpen">
+    <div class="modal-header">
+      <div class="modal-title"><i class="bx bx-file-find"></i> Prévisualisation du document</div>
+      <button class="modal-close" (click)="closePreview()">
+        <i class="bx bx-x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-container" *ngIf="documentPreviewUrl">
+        <iframe [src]="documentPreviewUrl" class="preview-iframe"></iframe>
       </div>
-
-      <!-- =========================================================== -->
-      <!-- SECTION : PANEL LATERAL DE VALIDATION -->
-      <!-- =========================================================== -->
-      <div class="validation-sidebar" [class.active]="selectedDocument">
-        <!-- En-tête du panel -->
-        <div class="validation-header">
-          <h5>Validation du document</h5>
-          <button class="btn-close" (click)="selectedDocument = null; selectedTier = null">
-            <i class='bx bx-x'></i>
-          </button>
-        </div>
-
-        <!-- Corps du panel (si document sélectionné) -->
-        <div class="validation-body" *ngIf="selectedDocument && selectedTier">
-          <!-- Informations du document -->
-          <div class="document-info-card mb-4">
-            <div class="document-icon">
-              <i class='bx bx-file'></i>
-            </div>
-            <div>
-              <h6>{{ getDocumentTypeLabel(selectedDocument.type) }}</h6>
-              <p class="text-muted mb-1">{{ selectedDocument.fileName }}</p>
-              <small class="text-muted">{{ formatFileSize(selectedDocument.fileSize) }}</small>
-            </div>
-          </div>
-
-          <!-- Informations du tier -->
-          <div class="tier-info-card mb-4">
-            <div class="d-flex align-items-center">
-              <!-- Avatar du tier -->
-              <div class="tier-avatar me-3">
-                {{ selectedTier.firstName.charAt(0) }}{{ selectedTier.lastName.charAt(0) }}
-              </div>
-              <!-- Détails du tier -->
-              <div>
-                <h6>{{ selectedTier.firstName }} {{ selectedTier.lastName }}</h6>
-                <p class="text-muted mb-0">{{ selectedTier.phone }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- ================================================= -->
-          <!-- SOUS-SECTION : FORMULAIRE DE VALIDATION -->
-          <!-- ================================================= -->
-          <form [formGroup]="validationForm" class="mb-4">
-            <!-- Champ : Commentaires -->
-            <div class="mb-3">
-              <label class="form-label">Commentaires (optionnel)</label>
-              <textarea class="form-control"
-                        formControlName="comments"
-                        rows="3"
-                        placeholder="Ajoutez un commentaire pour la validation..."></textarea>
-            </div>
-
-            <!-- Bouton : Valider -->
-            <button type="button"
-                    class="btn btn-success w-100 mb-2"
-                    (click)="validateDocument()"
-                    [disabled]="selectedDocument.status !== 1">
-              <i class='bx bx-check me-1'></i> Valider le document
-            </button>
-          </form>
-
-          <!-- ================================================= -->
-          <!-- SOUS-SECTION : FORMULAIRE DE REJET -->
-          <!-- ================================================= -->
-          <form [formGroup]="rejectionForm" class="rejection-form">
-            <h6 class="text-danger mb-3">
-              <i class='bx bx-error-circle me-1'></i>Rejeter le document
-            </h6>
-
-            <!-- Champ : Motif du rejet -->
-            <div class="mb-3">
-              <label class="form-label">Motif du rejet *</label>
-              <input type="text"
-                     class="form-control"
-                     formControlName="reason"
-                     placeholder="Ex: Document illisible, informations manquantes...">
-            </div>
-
-            <!-- Champ : Commentaires -->
-            <div class="mb-3">
-              <label class="form-label">Commentaires</label>
-              <textarea class="form-control"
-                        formControlName="comments"
-                        rows="2"
-                        placeholder="Détails supplémentaires..."></textarea>
-            </div>
-
-            <!-- Bouton : Rejeter -->
-            <button type="button"
-                    class="btn btn-outline-danger w-100"
-                    (click)="rejectDocument()"
-                    [disabled]="!rejectionForm.valid || selectedDocument.status !== 1">
-              <i class='bx bx-x me-1'></i> Rejeter le document
-            </button>
-          </form>
-        </div>
+      <div class="state-block" *ngIf="!documentPreviewUrl">
+        <i class="bx bx-file state-icon"></i>
+        <p class="state-text">Prévisualisation non disponible</p>
       </div>
     </div>
-
-    <!-- =========================================================== -->
-    <!-- SECTION : FOOTER -->
-    <!-- =========================================================== -->
-    <div class="content-footer">
-      <div class="d-flex justify-content-between align-items-center">
-        <!-- Copyright -->
-        <div>
-          © 2026 Logistik. Tous droits réservés.
-        </div>
-
-        <!-- État de connexion -->
-        <div class="text-muted">
-          <span class="badge bg-light text-dark">
-            <i class='bx bx-time me-1'></i> {{ currentUser ? 'Connecté' : 'Déconnecté' }}
-          </span>
-        </div>
-      </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closePreview()">
+        <i class="bx bx-x"></i> Fermer
+      </button>
     </div>
   </div>
 
-        <!-- COMPOSANT DE NOTIFICATION -->
-      <app-notification-component></app-notification-component>
+  <!-- ══ PANEL LATERAL VALIDATION ══ -->
+  <div class="validation-panel" [class.active]="selectedDocument">
+    <div class="panel-header">
+      <div class="card-title"><i class="bx bx-check-shield"></i> Validation du document</div>
+      <button class="modal-close" (click)="selectedDocument = null; selectedTier = null">
+        <i class="bx bx-x"></i>
+      </button>
+    </div>
 
-  <!-- Dialogue de confirmation (commenté) -->
-  <!--
-  <app-confirm-dialog [title]="confirmDialogConfig.title" [message]="confirmDialogConfig.message"
-    [details]="confirmDialogConfig.details" [confirmText]="confirmDialogConfig.confirmText"
-    [cancelText]="confirmDialogConfig.cancelText" [visible]="showConfirmDialog" (confirm)="onDialogConfirm()"
-    (cancel)="onDialogCancel()">
-  </app-confirm-dialog>
-  -->
+    <div class="panel-body" *ngIf="selectedDocument && selectedTier">
+
+      <!-- Infos document -->
+      <div class="info-card info-card--primary">
+        <div class="info-card-icon"><i class="bx bx-file"></i></div>
+        <div>
+          <div class="info-card-title">{{ getDocumentTypeLabel(selectedDocument.type) }}</div>
+          <div class="info-card-sub">{{ selectedDocument.fileName }}</div>
+          <div class="info-card-meta">{{ formatFileSize(selectedDocument.fileSize) }}</div>
+        </div>
+      </div>
+
+      <!-- Infos tier -->
+      <div class="info-card info-card--green">
+        <div class="info-card-avatar">
+          {{ selectedTier.firstName.charAt(0) }}{{ selectedTier.lastName.charAt(0) }}
+        </div>
+        <div>
+          <div class="info-card-title">{{ selectedTier.firstName }} {{ selectedTier.lastName }}</div>
+          <div class="info-card-sub">{{ selectedTier.phone }}</div>
+        </div>
+      </div>
+
+      <!-- Formulaire validation -->
+      <form [formGroup]="validationForm" class="validation-form">
+        <div class="filter-group">
+          <label class="filter-label">Commentaires (optionnel)</label>
+          <textarea class="filter-textarea"
+                    formControlName="comments"
+                    rows="3"
+                    placeholder="Ajoutez un commentaire…"></textarea>
+        </div>
+        <button type="button"
+                class="btn btn-success btn-block"
+                (click)="validateDocument()"
+                [disabled]="selectedDocument.status !== 1">
+          <i class="bx bx-check"></i> Valider le document
+        </button>
+      </form>
+
+      <!-- Formulaire rejet -->
+      <form [formGroup]="rejectionForm" class="rejection-form">
+        <div class="rejection-title">
+          <i class="bx bx-error-circle"></i> Rejeter le document
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Motif du rejet <span class="required-star">*</span></label>
+          <input type="text"
+                 class="filter-input"
+                 formControlName="reason"
+                 placeholder="Ex: Document illisible…">
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Commentaires</label>
+          <textarea class="filter-textarea"
+                    formControlName="comments"
+                    rows="2"
+                    placeholder="Détails supplémentaires…"></textarea>
+        </div>
+
+        <button type="button"
+                class="btn btn-danger btn-block"
+                (click)="rejectDocument()"
+                [disabled]="!rejectionForm.valid || selectedDocument.status !== 1">
+          <i class="bx bx-x"></i> Rejeter le document
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- NOTIFICATION -->
+  <app-notification-component></app-notification-component>
+
 </div>
