@@ -71,14 +71,14 @@
               <span class="nav-text">Tous les tiers</span>
             </a>
           </li>
-          <li class="nav-item"  *ngIf="permission.canValidateDocuments()">
-            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="nav-link">
-              <span class="nav-text">Documents à valider</span>
-            </a>
-          </li>
           <li class="nav-item"  *ngIf="permission.canViewDocuments()">
             <a [routerLink]="['/dashboard/tiers/documents-management']" class="nav-link">
-              <span class="nav-text">Gestion documents</span>
+              <span class="nav-text">Gestion documents des tiers</span>
+            </a>
+          </li>
+          <li class="nav-item"  *ngIf="permission.canValidateDocuments()">
+            <a [routerLink]="['/dashboard/tiers/documents-validation']" class="nav-link">
+              <span class="nav-text">Documents à valider pour les tiers</span>
             </a>
           </li>
           <li class="nav-item"  *ngIf="permission.canCreateTiers()">
