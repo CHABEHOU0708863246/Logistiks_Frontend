@@ -1,2155 +1,1158 @@
-<div class="layout-wrapper">
-  <!-- SIDEBAR COMPLÈTE -->
+<div class="app-wrapper">
+
+  <!-- SIDEBAR -->
   <app-sidebar-component></app-sidebar-component>
 
-
-
   <!-- MAIN CONTENT -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
-    <!-- NAVBAR -->
-    <nav class="layout-navbar">
-      <div class="d-flex align-items-center">
-        <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class='bx bx-menu'></i>
-        </button>
-        <h3 class="mb-0 ms-3">Gestion du Parc Véhicules</h3>
+  <div class="main-content" [style.marginLeft]="isSidebarCollapsed ? '0' : '268px'">
+
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Parc Véhicules</span>
+        </div>
       </div>
 
-      <ul class="navbar-nav">
-        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
-          <div class="avatar dropdown-toggle">
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-              (error)="userPhotoUrl = getDefaultAvatar()" />
-            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-              {{ getUserInitials() }}
-            </div>
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
+
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
           </div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
+          </div>
+
           <div class="dropdown-menu" [class.show]="showUserMenu">
-            <div style="padding: 1rem;">
-              <div class="fw-bold">{{ userName }}</div>
-              <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
-              </div>
-              <hr style="margin: 0.5rem 0;">
-              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                <i class='bx bx-user me-2'></i> Mon profil
-              </a>
-              <a [routerLink]="['/settings']" class="dropdown-item">
-                <i class='bx bx-cog me-2'></i> Paramètres
-              </a>
-              <hr style="margin: 0.5rem 0;">
-              <a (click)="logout()" class="dropdown-item logout-item">
-                <i class='bx bx-log-out me-2'></i> Déconnexion
-              </a>
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
             </div>
-          </div>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- CONTENT WRAPPER -->
-    <div class="content-wrapper">
-      <!-- =========================================================== -->
-      <!-- SECTION : STATISTIQUES VÉHICULES - Version améliorée -->
-      <!-- =========================================================== -->
-      <div class="row mb-4">
-        <!-- Carte : Total Véhicules -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon primary">
-              <i class='bx bx-car'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.totalVehicles }}</h3>
-              <p>Total Véhicules</p>
-              <span class="stat-trend trend-up" *ngIf="stats.totalVehicles > 0">
-                <i class='bx bx-package'></i>
-                {{ stats.availableVehicles + stats.rentedVehicles }} en service
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : Disponibles -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon success">
-              <i class='bx bx-check-circle'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.availableVehicles }}</h3>
-              <p>Disponibles</p>
-              <span class="stat-trend trend-up" *ngIf="stats.availableVehicles > 0">
-                <i class='bx bx-car'></i>
-                Prêts à louer
-              </span>
-              <span class="stat-trend" *ngIf="stats.availableVehicles === 0">
-                <i class='bx bx-hourglass'></i>
-                Aucun disponible
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : En Location -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon warning">
-              <i class='bx bx-key'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.rentedVehicles }}</h3>
-              <p>En Location</p>
-              <span class="stat-trend" [class.trend-up]="stats.rentedVehicles > 0"
-                [class.trend-down]="stats.rentedVehicles === 0">
-                <i [class]="stats.rentedVehicles > 0 ? 'bx bx-trending-up' : 'bx bx-minus-circle'"></i>
-                {{ ((stats.rentedVehicles / stats.totalVehicles) * 100).toFixed(1) || 0 }}% du parc
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : Assurance Expirée -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon" [class.danger]="stats.vehiclesWithExpiredInsurance > 0"
-              [class.success]="stats.vehiclesWithExpiredInsurance === 0">
-              <i class='bx bx-error-circle'></i>
-            </div>
-            <div class="stat-content">
-              <h3 [class.text-danger]="stats.vehiclesWithExpiredInsurance > 0">{{ stats.vehiclesWithExpiredInsurance }}
-              </h3>
-              <p>Assurance Expirée</p>
-              <span class="stat-trend" [class.trend-down]="stats.vehiclesWithExpiredInsurance > 0"
-                [class.trend-up]="stats.vehiclesWithExpiredInsurance === 0">
-                <i [class]="stats.vehiclesWithExpiredInsurance > 0 ? 'bx bx-error' : 'bx bx-check-shield'"></i>
-                {{ stats.vehiclesWithExpiredInsurance > 0 ? 'Attention requise' : 'Tout est valide' }}
-              </span>
-            </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/settings']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
           </div>
         </div>
       </div>
+    </header>
 
-      <!-- =========================================================== -->
-      <!-- DEUXIÈME LIGNE : Statistiques avancées (optionnelle) -->
-      <!-- =========================================================== -->
-      <div class="row mb-4" *ngIf="stats.inMaintenanceVehicles > 0 || stats.vehiclesWithExpiringInsurance > 0">
-        <!-- Carte : En Maintenance -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3">
-          <div class="card stat-card">
-            <div class="stat-icon info">
-              <i class='bx bx-wrench'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.inMaintenanceVehicles }}</h3>
-              <p>En Maintenance</p>
-              <span class="stat-trend">
-                <i class='bx bx-time'></i>
-                Indisponible temporairement
-              </span>
-            </div>
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+
+      <!-- ══ PAGE HEADER ══ -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-header-icon">
+            <i class="bx bxs-truck"></i>
+          </div>
+          <div>
+            <div class="page-header-title">Gestion du Parc Véhicules</div>
+            <div class="page-header-sub">Suivi, filtrage et gestion de l'ensemble du parc</div>
           </div>
         </div>
-
-        <!-- Carte : Réservés -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3" *ngIf="stats.reservedVehicles !== undefined">
-          <div class="card stat-card">
-            <div class="stat-icon primary">
-              <i class='bx bx-calendar-check'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ stats.reservedVehicles }}</h3>
-              <p>Réservés</p>
-              <span class="stat-trend">
-                <i class='bx bx-time-five'></i>
-                Prochainement loués
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : Assurance bientôt expirée -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3" *ngIf="stats.vehiclesWithExpiringInsurance > 0">
-          <div class="card stat-card">
-            <div class="stat-icon warning">
-              <i class='bx bx-time'></i>
-            </div>
-            <div class="stat-content">
-              <h3 class="text-warning">{{ stats.vehiclesWithExpiringInsurance }}</h3>
-              <p>Assurance bientôt expirée</p>
-              <span class="stat-trend trend-down">
-                <i class='bx bx-calendar-exclamation'></i>
-                Renouveler rapidement
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Carte : Valeur totale du parc -->
-        <div class="col-12 col-md-6 col-lg-3 mb-3" *ngIf="stats.totalFleetValue > 0">
-          <div class="card stat-card">
-            <div class="stat-icon secondary">
-              <i class='bx bx-coin-stack'></i>
-            </div>
-            <div class="stat-content">
-              <h3>{{ formatAmount(stats.totalFleetValue) }}</h3>
-              <p>Valeur du parc</p>
-              <span class="stat-trend">
-                <i class='bx bx-trending-up'></i>
-                Investissement total
-              </span>
-            </div>
-          </div>
-        </div>
+        <a [routerLink]="['/dashboard/vehicules/ajouter']" class="btn btn-primary">
+          <i class="bx bx-plus"></i> Ajouter un véhicule
+        </a>
       </div>
 
-      <!-- SECTION RÉSERVATIONS ACTIVES -->
-      <div class="row mb-4" *ngIf="activeReservations.length > 0">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0">
-                <i class='bx bx-time me-2'></i>Locations actives
-                <span class="badge bg-primary ms-2">{{ activeReservations.length }}</span>
-              </h5>
-              <button class="btn btn-sm btn-outline-primary" (click)="loadActiveReservations()">
-                <i class='bx bx-refresh'></i>
-              </button>
-            </div>
-            <div class="card-body">
-              <div *ngIf="reservationsLoading" class="text-center py-3">
-                <div class="spinner-border spinner-border-sm text-primary"></div>
-                <p class="mt-2 mb-0">Chargement des locations...</p>
-              </div>
+      <!-- ══ KPI CARDS ROW 1 ══ -->
+      <div class="grid grid-4">
 
-              <div *ngIf="!reservationsLoading" class="table-responsive">
-                <table class="table table-sm table-hover">
-                  <thead>
-                    <tr>
-                      <th>Véhicule</th>
-                      <th>Client</th>
-                      <th>Contact</th>
-                      <th>Date début</th>
-                      <th>Date fin</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let reservation of activeReservations">
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <i [class]="getVehicleTypeIcon(reservation.vehicleType)" class="text-primary"></i>
-                          <div>
-                            <strong class="d-block">{{ reservation.vehicleCode || 'N/A' }}</strong>
-                            <small class="text-muted">
-                              {{ reservation.vehicleName || 'Véhicule ' + (reservation.vehicleId ?
-                              reservation.vehicleId.substring(0, 8) : 'N/A') }}
-                            </small>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div>
-                          <strong class="d-block">
-                            {{ reservation.customerName || 'Client non chargé' }}
-                          </strong>
-                          <small class="text-muted" *ngIf="reservation.customerTierNumber">
-                            {{ reservation.customerTierNumber }}
-                          </small>
-                        </div>
-                      </td>
-                      <td>
-                        <small *ngIf="reservation.customerPhone" class="text-primary">
-                          <i class='bx bx-phone'></i> {{ reservation.customerPhone }}
-                        </small>
-                        <small *ngIf="!reservation.customerPhone" class="text-muted">
-                          Téléphone non disponible
-                        </small>
-                      </td>
-                      <td>
-                        {{ formatReservationDate(reservation.expectedStartDate) }}
-                      </td>
-                      <td>
-                        {{ formatReservationDate(reservation.expiryDate) }}
-                        <small class="text-muted d-block">
-                          {{ getDaysRemaining(reservation.expiryDate) }} jours restants
-                        </small>
-                      </td>
-                      <td>
-                        <span class="badge" [ngClass]="getReservationStatusBadge(reservation.status)">
-                          {{ getReservationStatusText(reservation.status) }}
-                        </span>
-                      </td>
-                      <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                          <button class="btn btn-outline-success" *ngIf="reservation.status === 'Active'"
-                            (click)="openConfirmReservationModal(reservation)"
-                            title="Confirmer la Location (Brouillon)">
-                            <i class='bx bx-check'></i>
-                          </button>
-                          <button class="btn btn-outline-danger" *ngIf="reservation.status === 'Active'"
-                            (click)="openCancelReservationModal(reservation)" title="Annuler la Location">
-                            <i class='bx bx-x'></i>
-                          </button>
-                          <button class="btn btn-outline-info" (click)="showReservationDetails(reservation)"
-                            title="Voir les détails">
-                            <i class='bx bx-show'></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+        <div class="kpi-card blue">
+          <div class="kpi-header">
+            <div class="kpi-icon blue"><i class="bx bx-car"></i></div>
+          </div>
+          <div class="kpi-value">{{ stats.totalVehicles }}</div>
+          <div class="kpi-label">Total Véhicules</div>
+          <div class="kpi-sublabel">{{ stats.availableVehicles + stats.rentedVehicles }} en service</div>
+        </div>
+
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <div class="kpi-icon green"><i class="bx bx-check-circle"></i></div>
+          </div>
+          <div class="kpi-value">{{ stats.availableVehicles }}</div>
+          <div class="kpi-label">Disponibles</div>
+          <div class="kpi-sublabel">{{ stats.availableVehicles > 0 ? 'Prêts à louer' : 'Aucun disponible' }}</div>
+        </div>
+
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <div class="kpi-icon amber"><i class="bx bx-key"></i></div>
+          </div>
+          <div class="kpi-value">{{ stats.rentedVehicles }}</div>
+          <div class="kpi-label">En Location</div>
+          <div class="kpi-sublabel">{{ ((stats.rentedVehicles / stats.totalVehicles) * 100 || 0).toFixed(1) }}% du parc</div>
+        </div>
+
+        <div class="kpi-card" [class.red]="stats.vehiclesWithExpiredInsurance > 0" [class.green]="stats.vehiclesWithExpiredInsurance === 0">
+          <div class="kpi-header">
+            <div class="kpi-icon" [class.red]="stats.vehiclesWithExpiredInsurance > 0" [class.green]="stats.vehiclesWithExpiredInsurance === 0">
+              <i class="bx bx-error-circle"></i>
             </div>
           </div>
+          <div class="kpi-value" [class.danger-text]="stats.vehiclesWithExpiredInsurance > 0">{{ stats.vehiclesWithExpiredInsurance }}</div>
+          <div class="kpi-label">Assurance Expirée</div>
+          <div class="kpi-sublabel">{{ stats.vehiclesWithExpiredInsurance > 0 ? 'Attention requise' : 'Tout est valide' }}</div>
         </div>
+
       </div>
 
-      <!-- SECTION RECHERCHE ET FILTRES -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <div class="input-group">
-                <span class="input-group-text bg-transparent border-end-0">
-                  <i class='bx bx-search'></i>
-                </span>
-                <input type="text" class="form-control border-start-0" [(ngModel)]="searchTerm"
-                  (keyup.enter)="onSearch()" placeholder="Rechercher par code, plaque, marque...">
-                <button class="btn btn-primary" (click)="onSearch()">
-                  <i class='bx bx-search me-1'></i> Rechercher
-                </button>
-              </div>
-            </div>
-            <div class="col-12 col-md-6 d-flex justify-content-md-end">
-              <div class="d-flex gap-2 flex-wrap">
-                <button class="btn btn-outline-primary" (click)="exportToExcel()">
-                  <i class='bx bx-export me-1'></i> Exporter
-                </button>
-                <button class="btn btn-primary" (click)="toggleFiltersSidebar()">
-                  <i class='bx bx-filter-alt me-1'></i> Filtres
-                </button>
-              </div>
-            </div>
+      <!-- ══ KPI CARDS ROW 2 (conditionnelle) ══ -->
+      <div class="grid grid-4" style="margin-top:18px;" *ngIf="stats.inMaintenanceVehicles > 0 || stats.vehiclesWithExpiringInsurance > 0">
+
+        <div class="kpi-card purple" *ngIf="stats.inMaintenanceVehicles > 0">
+          <div class="kpi-header">
+            <div class="kpi-icon purple"><i class="bx bx-wrench"></i></div>
           </div>
+          <div class="kpi-value">{{ stats.inMaintenanceVehicles }}</div>
+          <div class="kpi-label">En Maintenance</div>
+          <div class="kpi-sublabel">Indisponible temporairement</div>
         </div>
-      </div>
 
-      <!-- FILTRES EN LIGNE -->
-      <div class="row mb-4" *ngIf="!sidebarVisible">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <div class="d-flex flex-column gap-3">
-                <!-- Filtres par type -->
-                <div class="filter-group">
-                  <label class="form-label mb-1">Filtrer par type :</label>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <button *ngFor="let type of vehicleTypes" class="btn btn-sm"
-                      [class.btn-primary]="selectedType === type.value"
-                      [class.btn-outline-primary]="selectedType !== type.value" (click)="onFilterByType(type.value)">
-                      <i [class]="type.icon + ' me-1'"></i> {{ type.label }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByType()">
-                      Tous les types
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Filtres par statut -->
-                <div class="filter-group">
-                  <label class="form-label mb-1">Filtrer par statut :</label>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <button *ngFor="let status of statuses" class="btn btn-sm"
-                      [class.btn-primary]="selectedStatus === status.value"
-                      [class.btn-outline-primary]="selectedStatus !== status.value"
-                      (click)="onFilterByStatus(status.value)">
-                      <i [class]="status.icon + ' me-1'"></i> {{ status.label }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByStatus()">
-                      Tous les statuts
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Filtres par carburant -->
-                <div class="filter-group">
-                  <label class="form-label mb-1">Filtrer par carburant :</label>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <button *ngFor="let fuel of fuelTypes" class="btn btn-sm"
-                      [class.btn-primary]="selectedFuelType === fuel.value"
-                      [class.btn-outline-primary]="selectedFuelType !== fuel.value"
-                      (click)="onFilterByFuelType(fuel.value)">
-                      <i [class]="fuel.icon + ' me-1'"></i> {{ fuel.label }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" (click)="onFilterByFuelType()">
-                      Tous les carburants
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="kpi-card purple" *ngIf="stats.reservedVehicles !== undefined">
+          <div class="kpi-header">
+            <div class="kpi-icon purple"><i class="bx bx-calendar-check"></i></div>
           </div>
+          <div class="kpi-value">{{ stats.reservedVehicles }}</div>
+          <div class="kpi-label">Réservés</div>
+          <div class="kpi-sublabel">Prochainement loués</div>
         </div>
-      </div>
 
-      <!-- SECTION PRINCIPALE -->
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="card-title mb-0">Liste des Véhicules</h5>
-              <div class="d-flex align-items-center gap-2">
-                <div class="form-group mb-0">
-                  <select class="form-select form-select-sm" (change)="onPageSizeChange($event)" style="width: auto;">
-                    <option *ngFor="let size of pageSizeOptions" [value]="size">
-                      {{ size }} par page
-                    </option>
-                  </select>
-                </div>
-                <div class="text-muted fs-sm">
-                  {{ pagination.totalCount }} résultats
-                </div>
-              </div>
-            </div>
-
-            <div class="card-body">
-              <!-- LOADING -->
-              <div *ngIf="loading" class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Chargement...</span>
-                </div>
-                <p class="mt-2">Chargement des véhicules...</p>
-              </div>
-
-              <!-- ERROR -->
-              <div *ngIf="error && !loading" class="alert alert-danger">
-                <i class='bx bx-error-circle me-2'></i> {{ error }}
-              </div>
-
-              <!-- TABLE DES VÉHICULES -->
-              <div *ngIf="!loading && !error" class="table-responsive">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th style="width: 50px;">#</th>
-                      <th (click)="onSortChange('code')" style="cursor: pointer;">
-                        Code <i class='bx bx-sort' *ngIf="selectedSort !== 'code'"></i>
-                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'code' && !sortDescending"></i>
-                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'code' && sortDescending"></i>
-                      </th>
-                      <th>Véhicule</th>
-                      <th>Type</th>
-                      <th (click)="onSortChange('year')" style="cursor: pointer;">
-                        Année <i class='bx bx-sort' *ngIf="selectedSort !== 'year'"></i>
-                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'year' && !sortDescending"></i>
-                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'year' && sortDescending"></i>
-                      </th>
-                      <th>Plaque</th>
-                      <th (click)="onSortChange('currentMileage')" style="cursor: pointer;">
-                        Kilométrage <i class='bx bx-sort' *ngIf="selectedSort !== 'currentMileage'"></i>
-                        <i class='bx bx-sort-up' *ngIf="selectedSort === 'currentMileage' && !sortDescending"></i>
-                        <i class='bx bx-sort-down' *ngIf="selectedSort === 'currentMileage' && sortDescending"></i>
-                      </th>
-                      <th>Statut</th>
-                      <th>Assurance</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let vehicle of vehicles; let i = index">
-                      <td class="text-muted">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
-                      <td>
-                        <strong>{{ vehicle.code }}</strong>
-                      </td>
-                      <td>
-                        <div>
-                          <div class="fw-semibold">{{ vehicle.brand }} {{ vehicle.model }}</div>
-                          <small class="text-muted">{{ getFuelTypeText(vehicle.fuelType) }}</small>
-                        </div>
-                      </td>
-                      <td>
-                        <span class="badge" [ngClass]="getTypeBadgeClass(vehicle.type)">
-                          {{ getTypeText(vehicle.type) }}
-                        </span>
-                      </td>
-                      <td>
-                        {{ vehicle.year }}
-                        <small class="text-muted d-block">{{ vehicle.ageInYears }} ans</small>
-                      </td>
-                      <td>
-                        <strong>{{ vehicle.plateNumber }}</strong>
-                      </td>
-                      <td>
-                        {{ vehicle.currentMileage | number:'1.0-0' }} km
-                      </td>
-                      <td>
-                        <span class="status-badge" [ngClass]="'status-' + getStatusIcon(vehicle.status)">
-                          <i [class]="getStatusIcon(vehicle.status)"></i>
-                          {{ getStatusText(vehicle.status) }}
-                        </span>
-                      </td>
-                      <td>
-                        <div [ngClass]="getInsuranceStatus(vehicle).class">
-                          <i class='bx bx-shield' *ngIf="!vehicle.isInsuranceExpired"></i>
-                          <i class='bx bx-error-circle' *ngIf="vehicle.isInsuranceExpired"></i>
-                          {{ getInsuranceStatus(vehicle).text }}
-                        </div>
-                      </td>
-                      <td>
-                        <div class="btn-group" role="group">
-                          <!-- Bouton principal avec dropdown -->
-                          <div class="dropdown" [class.show]="vehicle.showActionsMenu">
-                            <button class="btn-actions-trigger" (click)="toggleActionsMenu(vehicle, $event)"
-                              [class.active]="activeMenuVehicleId === vehicle.id">
-                              <i class='bx bx-dots-vertical-rounded'></i>
-                            </button>
-
-                            <ul class="dropdown-menu" [class.show]="vehicle.showActionsMenu">
-                              <!-- MODIFIER - Toujours disponible -->
-                              <li>
-                                <a class="dropdown-item item-info" (click)="openEditModal(vehicle)">
-                                  <i class='bx bx-edit'></i>
-                                  Modifier
-                                </a>
-                              </li>
-
-                              <!-- VÉHICULE DISPONIBLE -->
-                              <ng-container *ngIf="vehicle.status === VehicleStatus.Available">
-                                <!-- <li>
-                                  <a class="dropdown-item item-success" (click)="assignToRental(vehicle)">
-                                    <i class='bx bx-key'></i>
-                                    Louer
-                                  </a>
-                                </li> -->
-                                <li>
-                                  <a class="dropdown-item item-info" (click)="openReservationModal(vehicle)">
-                                    <i class='bx bx-time'></i>
-                                    Louer / Réserver
-                                  </a>
-                                </li>
-                                <li>
-                                  <a class="dropdown-item item-warning"
-                                    (click)="openConfirmDialog(vehicle, VehicleStatus.Maintenance)">
-                                    <i class='bx bx-wrench'></i>
-                                    Mettre en maintenance
-                                  </a>
-                                </li>
-                              </ng-container>
-
-                              <!-- VÉHICULE LOUÉ -->
-                              <ng-container *ngIf="vehicle.status === VehicleStatus.Rented">
-                                <li>
-                                  <a class="dropdown-item item-warning" (click)="releaseVehicle(vehicle)">
-                                    <i class='bx bx-check-circle'></i>
-                                    Libérer
-                                  </a>
-                                </li>
-                                <li>
-                                  <a class="dropdown-item item-warning"
-                                    (click)="openConfirmDialog(vehicle, VehicleStatus.Maintenance)">
-                                    <i class='bx bx-wrench'></i>
-                                    Mettre en maintenance
-                                  </a>
-                                </li>
-                              </ng-container>
-
-                              <!-- VÉHICULE RÉSERVÉ -->
-                              <ng-container *ngIf="vehicle.status === VehicleStatus.Reserved">
-                                <li>
-                                  <a class="dropdown-item item-success" (click)="assignToRental(vehicle)">
-                                    <i class='bx bx-key'></i>
-                                    Confirmer la location
-                                  </a>
-                                </li>
-                                <li>
-                                  <a class="dropdown-item item-secondary"
-                                    (click)="changeStatus(vehicle, VehicleStatus.Available)">
-                                    <i class='bx bx-x'></i>
-                                    Annuler la réservation
-                                  </a>
-                                </li>
-                              </ng-container>
-
-                              <!-- VÉHICULE EN MAINTENANCE -->
-                              <ng-container *ngIf="vehicle.status === VehicleStatus.Maintenance">
-                                <li>
-                                  <a class="dropdown-item item-success"
-                                    (click)="openConfirmDialog(vehicle, VehicleStatus.Available)">
-                                    <i class='bx bx-check'></i>
-                                    Marquer comme disponible
-                                  </a>
-                                </li>
-                              </ng-container>
-
-                              <!-- VÉHICULE HORS SERVICE -->
-                              <ng-container *ngIf="vehicle.status === VehicleStatus.OutOfService">
-                                <li>
-                                  <a class="dropdown-item item-success"
-                                    (click)="changeStatus(vehicle, VehicleStatus.Available)">
-                                    <i class='bx bx-refresh'></i>
-                                    Réactiver
-                                  </a>
-                                </li>
-                              </ng-container>
-
-                              <!-- METTRE HORS SERVICE (sauf si déjà hors service) -->
-                              <ng-container *ngIf="vehicle.status !== VehicleStatus.OutOfService &&
-                     vehicle.status !== VehicleStatus.Rented &&
-                     vehicle.status !== VehicleStatus.Reserved">
-                                <li>
-                                  <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                  <a class="dropdown-item item-danger"
-                                    (click)="openConfirmDialog(vehicle, VehicleStatus.OutOfService)">
-                                    <i class='bx bx-block'></i>
-                                    Mettre hors service
-                                  </a>
-                                </li>
-                              </ng-container>
-
-                              <!-- VOIR LES DÉTAILS -->
-                              <li>
-                                <hr class="dropdown-divider">
-                              </li>
-                              <li>
-                                <a class="dropdown-item item-info" (click)="showVehicleDetails(vehicle)">
-                                  <i class='bx bx-show'></i>
-                                  Voir les détails
-                                </a>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- PAGINATION -->
-              <div *ngIf="!loading && !error && pagination.totalPages > 1"
-                class="d-flex justify-content-between align-items-center mt-4">
-                <div class="text-muted fs-sm">
-                  Page {{ pagination.currentPage }} sur {{ pagination.totalPages }}
-                  ({{ pagination.totalCount }} véhicules)
-                </div>
-                <nav>
-                  <ul class="pagination mb-0">
-                    <li class="page-item" [class.disabled]="!pagination.hasPreviousPage">
-                      <a class="page-link" (click)="onPageChange(pagination.currentPage - 1)">
-                        <i class='bx bx-chevron-left'></i>
-                      </a>
-                    </li>
-                    <li *ngFor="let page of visiblePages" class="page-item"
-                      [class.active]="page === pagination.currentPage">
-                      <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
-                    </li>
-                    <li class="page-item" [class.disabled]="!pagination.hasNextPage">
-                      <a class="page-link" (click)="onPageChange(pagination.currentPage + 1)">
-                        <i class='bx bx-chevron-right'></i>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
+        <div class="kpi-card amber" *ngIf="stats.vehiclesWithExpiringInsurance > 0">
+          <div class="kpi-header">
+            <div class="kpi-icon amber"><i class="bx bx-time"></i></div>
           </div>
+          <div class="kpi-value">{{ stats.vehiclesWithExpiringInsurance }}</div>
+          <div class="kpi-label">Assurance Bientôt Expirée</div>
+          <div class="kpi-sublabel">Renouveler rapidement</div>
         </div>
+
+        <div class="kpi-card green" *ngIf="stats.totalFleetValue > 0">
+          <div class="kpi-header">
+            <div class="kpi-icon green"><i class="bx bx-coin-stack"></i></div>
+          </div>
+          <div class="kpi-value kpi-value--sm">{{ formatAmount(stats.totalFleetValue) }}</div>
+          <div class="kpi-label">Valeur du Parc</div>
+          <div class="kpi-sublabel">Investissement total</div>
+        </div>
+
       </div>
 
-
-      <!-- MENU ACTIONS FLOTTANT - en dehors de la table -->
-      <div class="floating-actions-menu" *ngIf="activeMenuVehicleId" [style.top.px]="menuPosition.top"
-        [style.left.px]="menuPosition.left" (clickOutside)="closeActionsMenu()">
-
-        <div class="fam-header">
-          <span>{{ getActiveVehicle()?.code }}</span>
-          <button class="fam-close" (click)="closeActionsMenu()">
-            <i class='bx bx-x'></i>
+      <!-- ══ LOCATIONS ACTIVES ══ -->
+      <div class="card" style="margin-top:18px;" *ngIf="activeReservations.length > 0">
+        <div class="card-header">
+          <div class="card-title"><i class="bx bx-time"></i> Locations actives <span class="count-badge">{{ activeReservations.length }}</span></div>
+          <button class="btn-icon-sm" (click)="loadActiveReservations()" title="Actualiser">
+            <i class="bx bx-refresh"></i>
           </button>
         </div>
+        <div class="card-body" style="padding:0;">
 
-        <ul class="fam-list">
-          <!-- MODIFIER - Toujours disponible -->
-          <li>
-            <a class="fam-item item-info" (click)="openEditModal(getActiveVehicle()); closeActionsMenu()">
-              <i class='bx bx-edit'></i> Modifier
-            </a>
-          </li>
-
-          <!-- DISPONIBLE -->
-          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Available">
-            <li>
-              <a class="fam-item item-info" (click)="openReservationModal(getActiveVehicle()); closeActionsMenu()">
-                <i class='bx bx-time'></i> Louer / Réserver
-              </a>
-            </li>
-            <li>
-              <a class="fam-item item-warning"
-                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Maintenance); closeActionsMenu()">
-                <i class='bx bx-wrench'></i> Mettre en maintenance
-              </a>
-            </li>
-          </ng-container>
-
-          <!-- LOUÉ -->
-          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Rented">
-            <li>
-              <a class="fam-item item-warning" (click)="releaseVehicle(getActiveVehicle()); closeActionsMenu()">
-                <i class='bx bx-check-circle'></i> Libérer
-              </a>
-            </li>
-            <li>
-              <a class="fam-item item-warning"
-                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Maintenance); closeActionsMenu()">
-                <i class='bx bx-wrench'></i> Mettre en maintenance
-              </a>
-            </li>
-          </ng-container>
-
-          <!-- RÉSERVÉ -->
-          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Reserved">
-            <li>
-              <a class="fam-item item-success" (click)="assignToRental(getActiveVehicle()); closeActionsMenu()">
-                <i class='bx bx-key'></i> Confirmer la location
-              </a>
-            </li>
-            <li>
-              <a class="fam-item item-secondary"
-                (click)="changeStatus(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
-                <i class='bx bx-x'></i> Annuler la réservation
-              </a>
-            </li>
-          </ng-container>
-
-          <!-- MAINTENANCE -->
-          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Maintenance">
-            <li>
-              <a class="fam-item item-success"
-                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
-                <i class='bx bx-check'></i> Marquer comme disponible
-              </a>
-            </li>
-          </ng-container>
-
-          <!-- HORS SERVICE -->
-          <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.OutOfService">
-            <li>
-              <a class="fam-item item-success"
-                (click)="changeStatus(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
-                <i class='bx bx-refresh'></i> Réactiver
-              </a>
-            </li>
-          </ng-container>
-
-          <!-- METTRE HORS SERVICE -->
-          <ng-container *ngIf="getActiveVehicle()?.status !== VehicleStatus.OutOfService &&
-                         getActiveVehicle()?.status !== VehicleStatus.Rented &&
-                         getActiveVehicle()?.status !== VehicleStatus.Reserved">
-            <li class="fam-divider"></li>
-            <li>
-              <a class="fam-item item-danger"
-                (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.OutOfService); closeActionsMenu()">
-                <i class='bx bx-block'></i> Mettre hors service
-              </a>
-            </li>
-          </ng-container>
-
-          <li class="fam-divider"></li>
-          <li>
-            <a class="fam-item item-info" (click)="showVehicleDetails(getActiveVehicle()); closeActionsMenu()">
-              <i class='bx bx-show'></i> Voir les détails
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Overlay transparent pour fermer au clic extérieur -->
-      <div class="fam-overlay" *ngIf="activeMenuVehicleId" (click)="closeActionsMenu()"></div>
-
-      <!-- MODAL DE DÉTAILS DU VÉHICULE -->
-      <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
-
-      <div class="vehicle-details-modal" *ngIf="showDetailsModal" [class.show]="showDetailsModal">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-
-          <!-- HEADER -->
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class='bx bx-car me-2'></i>
-              Détails du Véhicule
-            </h5>
-            <button type="button" class="btn-close" (click)="closeDetailsModal()" aria-label="Close">
-              <i class='bx bx-x'></i>
-            </button>
+          <div *ngIf="reservationsLoading" class="loading-state">
+            <div class="spinner"></div>
+            <span>Chargement des locations…</span>
           </div>
 
-          <!-- BODY -->
-          <div class="modal-body">
-            <div *ngIf="vehicleDetailsLoading" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Chargement...</span>
-              </div>
-              <p class="mt-3">Chargement des détails...</p>
-            </div>
-
-            <div *ngIf="!vehicleDetailsLoading && selectedVehicle" class="vehicle-details">
-
-              <!-- EN-TÊTE AVEC INFO PRINCIPALE -->
-              <div class="vehicle-header mb-4">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="vehicle-icon">
-                    <i [class]="getVehicleIcon(selectedVehicle.type)"></i>
-                  </div>
-                  <div>
-                    <h4 class="mb-1">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h4>
-                    <div class="d-flex align-items-center gap-3">
-                      <span class="badge" [ngClass]="getTypeBadgeClass(selectedVehicle.type)">
-                        {{ getTypeText(selectedVehicle.type) }}
-                      </span>
-                      <span class="badge bg-secondary">{{ selectedVehicle.year }}</span>
-                      <span class="badge bg-info">{{ selectedVehicle.code }}</span>
+          <table *ngIf="!reservationsLoading" class="data-table">
+            <thead>
+              <tr>
+                <th>Véhicule</th>
+                <th>Client</th>
+                <th>Contact</th>
+                <th>Date début</th>
+                <th>Date fin</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let reservation of activeReservations">
+                <td>
+                  <div class="cell-vehicle">
+                    <i [class]="getVehicleTypeIcon(reservation.vehicleType)" class="cell-vehicle-icon"></i>
+                    <div>
+                      <span class="cell-ref">{{ reservation.vehicleCode || 'N/A' }}</span>
+                      <span class="cell-sub">{{ reservation.vehicleName || 'Véhicule ' + (reservation.vehicleId ? reservation.vehicleId.substring(0,8) : 'N/A') }}</span>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              <!-- STATUT ET ACTIONS -->
-              <div class="status-section mb-4 p-3 rounded" [ngClass]="getStatusSectionClass(selectedVehicle.status)">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-1">Statut actuel</h6>
-                    <span class="status-badge" [ngClass]="'status-' + getStatusIcon(selectedVehicle.status)">
-                      <i [class]="getStatusIcon(selectedVehicle.status)"></i>
-                      {{ getStatusText(selectedVehicle.status) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- INFORMATIONS EN 2 COLONNES -->
-              <div class="row">
-                <!-- COLONNE GAUCHE -->
-                <div class="col-md-6">
-
-                  <!-- IDENTIFICATION -->
-                  <div class="card mb-3">
-                    <div class="card-header">
-                      <h6 class="mb-0"><i class='bx bx-id-card me-2'></i> Identification</h6>
-                    </div>
-                    <div class="card-body">
-                      <table class="table table-sm table-borderless">
-                        <tr>
-                          <td class="text-muted" style="width: 140px;">Plaque :</td>
-                          <td><strong>{{ selectedVehicle.plateNumber }}</strong></td>
-                        </tr>
-                        <tr *ngIf="selectedVehicle.chassisNumber">
-                          <td class="text-muted">Châssis :</td>
-                          <td><code>{{ selectedVehicle.chassisNumber }}</code></td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">Couleur :</td>
-                          <td>
-                            <span *ngIf="selectedVehicle.color; else noColor">
-                              <span class="color-dot" [style.backgroundColor]="selectedVehicle.color"></span>
-                              {{ selectedVehicle.color }}
-                            </span>
-                            <ng-template #noColor>-</ng-template>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                  </div>
-
-                  <!-- CARACTÉRISTIQUES -->
-                  <div class="card mb-3">
-                    <div class="card-header">
-                      <h6 class="mb-0"><i class='bx bx-cog me-2'></i> Caractéristiques</h6>
-                    </div>
-                    <div class="card-body">
-                      <table class="table table-sm table-borderless">
-                        <tr>
-                          <td class="text-muted">Carburant :</td>
-                          <td>{{ getFuelTypeText(selectedVehicle.fuelType) }}</td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">Kilométrage :</td>
-                          <td>
-                            <strong>{{ selectedVehicle.currentMileage | number:'1.0-0' }} km</strong>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">Âge :</td>
-                          <td>{{ selectedVehicle.ageInYears }} ans</td>
-                        </tr>
-                        <tr *ngIf="selectedVehicle.features.engineCapacity">
-                          <td class="text-muted">Cylindrée :</td>
-                          <td>{{ selectedVehicle.features.engineCapacity }} cm³</td>
-                        </tr>
-                        <tr *ngIf="selectedVehicle.features.fuelCapacity">
-                          <td class="text-muted">Réservoir :</td>
-                          <td>{{ selectedVehicle.features.fuelCapacity }} L</td>
-                        </tr>
-                        <tr *ngIf="selectedVehicle.features.transmission">
-                          <td class="text-muted">Transmission :</td>
-                          <td>{{ selectedVehicle.features.transmission }}</td>
-                        </tr>
-                      </table>
-
-                      <!-- ÉQUIPEMENTS -->
-                      <div *ngIf="selectedVehicle.features" class="mt-3">
-                        <h6 class="fs-sm text-muted mb-2">Équipements :</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                          <span *ngIf="selectedVehicle.features.hasGps" class="badge bg-info">
-                            <i class='bx bx-navigation me-1'></i> GPS
-                          </span>
-                          <span *ngIf="selectedVehicle.features.hasAirConditioning" class="badge bg-info">
-                            <i class='bx bx-wind me-1'></i> Climatisation
-                          </span>
-                          <span *ngFor="let feature of selectedVehicle.features.additionalFeatures"
-                            class="badge bg-light text-dark">
-                            {{ feature }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- COLONNE DROITE -->
-                <div class="col-md-6">
-
-                  <!-- ASSURANCE -->
-                  <div class="card mb-3">
-                    <div class="card-header" [ngClass]="getInsuranceCardClass(selectedVehicle)">
-                      <h6 class="mb-0"><i class='bx bx-shield-alt me-2'></i> Assurance</h6>
-                    </div>
-                    <div class="card-body">
-                      <div *ngIf="!selectedVehicle.insurance" class="text-center text-muted py-3">
-                        <i class='bx bx-error-circle fs-1 mb-2'></i>
-                        <p>Aucune assurance enregistrée</p>
-                      </div>
-
-                      <div *ngIf="selectedVehicle.insurance">
-                        <table class="table table-sm table-borderless">
-                          <tr>
-                            <td class="text-muted" style="width: 140px;">Compagnie :</td>
-                            <td><strong>{{ selectedVehicle.insurance.company }}</strong></td>
-                          </tr>
-                          <tr>
-                            <td class="text-muted">Police n° :</td>
-                            <td><code>{{ selectedVehicle.insurance.policyNumber }}</code></td>
-                          </tr>
-                          <tr>
-                            <td class="text-muted">Couverture :</td>
-                            <td>{{ selectedVehicle.insurance.coverageType }}</td>
-                          </tr>
-                          <tr>
-                            <td class="text-muted">Période :</td>
-                            <td>
-                              {{ formatDate(selectedVehicle.insurance.startDate) }}
-                              <i class='bx bx-right-arrow-alt mx-1'></i>
-                              {{ formatDate(selectedVehicle.insurance.endDate) }}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td class="text-muted">Prime annuelle :</td>
-                            <td>{{ formatCurrency(selectedVehicle.insurance.annualPremium) }}</td>
-                          </tr>
-                          <tr>
-                            <td class="text-muted">État :</td>
-                            <td>
-                              <span [ngClass]="getInsuranceStatus(selectedVehicle).class">
-                                <i class='bx' [class.bx-check-circle]="!selectedVehicle.isInsuranceExpired"
-                                  [class.bx-error-circle]="selectedVehicle.isInsuranceExpired"></i>
-                                {{ getInsuranceStatus(selectedVehicle).text }}
-                              </span>
-                              <span *ngIf="selectedVehicle.daysUntilInsuranceExpiry !== undefined"
-                                class="ms-2 text-muted fs-sm">
-                                ({{ selectedVehicle.daysUntilInsuranceExpiry }} jours)
-                              </span>
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- FINANCES -->
-                  <div class="card mb-3">
-                    <div class="card-header">
-                      <h6 class="mb-0"><i class='bx bx-dollar-circle me-2'></i> Informations financières</h6>
-                    </div>
-                    <div class="card-body">
-                      <table class="table table-sm table-borderless">
-                        <tr>
-                          <td class="text-muted">Date d'acquisition :</td>
-                          <td>{{ formatDate(selectedVehicle.acquisitionDate) }}</td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">Coût d'acquisition :</td>
-                          <td>{{ formatCurrency(selectedVehicle.acquisitionCost) }}</td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">Prix d'achat :</td>
-                          <td>{{ formatCurrency(selectedVehicle.purchasePrice) }}</td>
-                        </tr>
-                        <tr>
-                          <td class="text-muted">Valeur actuelle :</td>
-                          <td>
-                            <strong>{{ formatCurrency(calculateCurrentValue(selectedVehicle)) }}</strong>
-                            <small class="text-muted d-block fs-sm">(Estimation)</small>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                  </div>
-
-                  <!-- LOCALISATION -->
-                  <div class="card mb-3" *ngIf="selectedVehicle.currentLocation?.address">
-                    <div class="card-header">
-                      <h6 class="mb-0"><i class='bx bx-map me-2'></i> Localisation</h6>
-                    </div>
-                    <div class="card-body">
-                      <p class="mb-2">
-                        <i class='bx bx-map-pin me-1'></i>
-                        {{ selectedVehicle.currentLocation?.latitude }}, {{ selectedVehicle.currentLocation?.longitude
-                        }}
-                      </p>
-                      <small class="text-muted">
-                        <i class='bx bx-time me-1'></i>
-                        Dernière mise à jour : {{ formatDate(selectedVehicle.updatedAt || selectedVehicle.createdAt) }}
-                      </small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- NOTES -->
-              <div class="card" *ngIf="selectedVehicle.notes">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-note me-2'></i> Notes</h6>
-                </div>
-                <div class="card-body">
-                  <p class="mb-0">{{ selectedVehicle.notes }}</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- FOOTER -->
-          <div class="modal-footer">
-            <div class="d-flex justify-content-between w-100">
-              <div>
-                <small class="text-muted">
-                  Créé le {{ formatDate(selectedVehicle?.createdAt) }}
-                  <span *ngIf="selectedVehicle?.updatedAt">
-                    • Modifié le {{ formatDate(selectedVehicle?.updatedAt) }}
+                </td>
+                <td>
+                  <span class="cell-name">{{ reservation.customerName || 'Client non chargé' }}</span>
+                  <span class="cell-sub" *ngIf="reservation.customerTierNumber">{{ reservation.customerTierNumber }}</span>
+                </td>
+                <td>
+                  <span class="cell-phone" *ngIf="reservation.customerPhone"><i class="bx bx-phone"></i> {{ reservation.customerPhone }}</span>
+                  <span class="cell-sub" *ngIf="!reservation.customerPhone">—</span>
+                </td>
+                <td><span class="cell-date">{{ formatReservationDate(reservation.expectedStartDate) }}</span></td>
+                <td>
+                  <span class="cell-date">{{ formatReservationDate(reservation.expiryDate) }}</span>
+                  <span class="cell-sub">{{ getDaysRemaining(reservation.expiryDate) }} jours restants</span>
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="getReservationStatusBadge(reservation.status)">
+                    {{ getReservationStatusText(reservation.status) }}
                   </span>
-                </small>
-              </div>
-              <div>
-                <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">
-                  Fermer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal pour la saisie de la raison du changement de statut -->
-      <div class="modal-backdrop" *ngIf="showReasonModal" (click)="closeReasonModal()"></div>
-
-      <div class="modal" *ngIf="showReasonModal" [class.show]="showReasonModal">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content" (click)="$event.stopPropagation()">
-
-            <!-- HEADER DU MODAL - Adapté au type de changement -->
-            <div class="modal-header" [ngClass]="{
-        'bg-warning': pendingStatus === VehicleStatus.Maintenance,
-        'bg-danger': pendingStatus === VehicleStatus.OutOfService,
-        'bg-success': pendingStatus === VehicleStatus.Available
-      }">
-              <div class="d-flex align-items-center w-100">
-                <div class="modal-icon">
-                  <i [class]="getStatusIcon(pendingStatus) + ' me-3'"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h5 class="modal-title mb-1">
-                    {{ getModalTitle() }}
-                  </h5>
-                  <p class="mb-0 fs-sm text-white opacity-75">
-                    {{ getModalSubtitle() }}
-                  </p>
-                </div>
-                <button type="button" class="btn-close btn-close-white" (click)="closeReasonModal()"></button>
-              </div>
-            </div>
-
-            <!-- BODY DU MODAL -->
-            <div class="modal-body">
-
-              <!-- CARTE INFORMATIVE DU VÉHICULE -->
-              <div class="vehicle-card-reason mb-4">
-                <div class="card border-0 shadow-sm">
-                  <div class="card-body">
-                    <div class="d-flex align-items-center">
-                      <div class="vehicle-avatar me-3">
-                        <i [class]="getVehicleIcon(pendingVehicle?.type)" class="fs-2"></i>
-                      </div>
-                      <div class="flex-grow-1">
-                        <h6 class="mb-1">{{ pendingVehicle?.brand }} {{ pendingVehicle?.model }}</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                          <span class="badge bg-secondary">{{ pendingVehicle?.code }}</span>
-                          <span class="badge" [ngClass]="getTypeBadgeClass(pendingVehicle?.type)">
-                            {{ getTypeText(pendingVehicle?.type) }}
-                          </span>
-                          <span class="badge bg-dark">{{ pendingVehicle?.plateNumber }}</span>
-                        </div>
-                      </div>
-                      <div class="text-end">
-                        <div class="status-indicator" [ngClass]="'status-' + pendingVehicle?.status">
-                          <i [class]="getStatusIcon(pendingVehicle?.status)"></i>
-                          <span>{{ getStatusText(pendingVehicle?.status) }}</span>
-                        </div>
-                        <small class="text-muted d-block mt-1">Vers {{ getStatusText(pendingStatus) }}</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- ALERTES ET AVERTISSEMENTS -->
-              <div *ngIf="showWarnings()" class="alert-section mb-4">
-                <div class="alert alert-warning border-0 shadow-sm">
-                  <div class="d-flex align-items-start">
-                    <i class='bx bx-error-circle fs-4 me-3'></i>
-                    <div>
-                      <h6 class="alert-heading mb-2">⚠️ Avertissements importants</h6>
-                      <ul class="mb-0 ps-3">
-                        <li *ngIf="pendingVehicle?.status === VehicleStatus.Rented">
-                          Ce véhicule est actuellement <strong>loué</strong>. Terminez d'abord la location.
-                        </li>
-                        <li *ngIf="pendingVehicle?.status === VehicleStatus.Reserved">
-                          Ce véhicule est <strong>réservé</strong>. Annulez d'abord la réservation.
-                        </li>
-                        <li *ngIf="pendingVehicle?.isInsuranceExpired">
-                          L'<strong>assurance est expirée</strong>. Le véhicule ne pourra pas être loué.
-                        </li>
-                        <li *ngIf="pendingStatus === VehicleStatus.OutOfService">
-                          Cette action est <strong>définitive</strong> et nécessite une justification détaillée.
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- FORMULAIRE DE SAISIE -->
-              <form [formGroup]="reasonForm" (ngSubmit)="submitReason()">
-
-                <!-- SECTION RAISON PRINCIPALE -->
-                <div class="reason-section mb-4">
-                  <label class="form-label fw-semibold mb-3">
-                    <i class='bx bx-edit me-2'></i>
-                    {{ getReasonLabel() }}
-                    <span class="text-danger">*</span>
-                  </label>
-
-                  <!-- Saisie avec placeholder contextuel -->
-                  <textarea class="form-control form-control-lg" formControlName="reason" rows="4"
-                    [placeholder]="getPlaceholderText()"
-                    [class.is-invalid]="reasonSubmitted && reasonForm.get('reason')?.invalid"
-                    [attr.maxlength]="500"></textarea>
-
-                  <!-- Compteur de caractères -->
-                  <div class="d-flex justify-content-between mt-2">
-                    <small class="text-muted">
-                      <i class='bx bx-info-circle me-1'></i>
-                      {{ getCharacterHint() }}
-                    </small>
-                    <small [ngClass]="{
-                'text-success': reasonForm.get('reason')?.value?.length >= 20,
-                'text-warning': reasonForm.get('reason')?.value?.length < 20 && reasonForm.get('reason')?.value?.length > 0,
-                'text-danger': reasonForm.get('reason')?.invalid && reasonSubmitted
-              }">
-                      {{ reasonForm.get('reason')?.value?.length || 0 }} / 500 caractères
-                    </small>
-                  </div>
-
-                  <!-- Messages d'erreur -->
-                  <div *ngIf="reasonSubmitted && reasonForm.get('reason')?.invalid" class="invalid-feedback d-block">
-                    <i class='bx bx-error-circle me-1'></i>
-                    <span *ngIf="reasonForm.get('reason')?.errors?.['required']">
-                      Veuillez saisir la raison du changement.
-                    </span>
-                    <span *ngIf="reasonForm.get('reason')?.errors?.['minlength']">
-                      Minimum {{ reasonForm.get('reason')?.errors?.['minlength']?.requiredLength }} caractères requis.
-                    </span>
-                    <span *ngIf="reasonForm.get('reason')?.errors?.['maxlength']">
-                      Maximum 500 caractères autorisés.
-                    </span>
-                  </div>
-                </div>
-
-                <!-- SECTION CATÉGORIES (Optionnel pour maintenance) -->
-                <div *ngIf="pendingStatus === VehicleStatus.Maintenance" class="categories-section mb-4">
-                  <label class="form-label fw-semibold mb-3">
-                    <i class='bx bx-category me-2'></i>
-                    Catégorie de maintenance
-                    <span class="text-muted">(Optionnel)</span>
-                  </label>
-
-                  <div class="row g-3">
-                    <div class="col-md-6" *ngFor="let category of maintenanceCategories">
-                      <div class="form-check card-category">
-                        <input class="form-check-input" type="radio" name="maintenanceCategory" [value]="category.value"
-                          [id]="'category-' + category.value" formControlName="category">
-                        <label class="form-check-label w-100" [for]="'category-' + category.value">
-                          <div class="category-card p-3 rounded border">
-                            <i [class]="category.icon + ' fs-4 mb-2'"></i>
-                            <h6 class="mb-1">{{ category.label }}</h6>
-                            <small class="text-muted">{{ category.description }}</small>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- SECTION DATE ESTIMÉE (Pour maintenance) -->
-                <div *ngIf="pendingStatus === VehicleStatus.Maintenance" class="date-section mb-4">
-                  <label class="form-label fw-semibold mb-3">
-                    <i class='bx bx-calendar me-2'></i>
-                    Date de retour estimée
-                    <span class="text-muted">(Optionnel)</span>
-                  </label>
-
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <input type="date" class="form-control" formControlName="estimatedReturnDate"
-                        [min]="today | date:'yyyy-MM-dd'">
-                      <small class="text-muted mt-1 d-block">
-                        Permet de planifier le retour en service
-                      </small>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- SECTION DOCUMENTATION (Pour hors service) -->
-                <div *ngIf="pendingStatus === VehicleStatus.OutOfService" class="documentation-section mb-4">
-                  <label class="form-label fw-semibold mb-3">
-                    <i class='bx bx-paperclip me-2'></i>
-                    Documentation complémentaire
-                    <span class="text-muted">(Recommandé)</span>
-                  </label>
-
-                  <div class="card border-dashed">
-                    <div class="card-body text-center p-4">
-                      <i class='bx bx-cloud-upload fs-1 text-muted mb-3'></i>
-                      <h6 class="mb-2">Joindre des documents justificatifs</h6>
-                      <p class="text-muted fs-sm mb-3">
-                        Photos, rapports techniques, devis de réparation, etc.
-                      </p>
-                      <button type="button" class="btn btn-outline-primary btn-sm">
-                        <i class='bx bx-plus me-1'></i> Ajouter des fichiers
-                      </button>
-                      <small class="d-block text-muted mt-2">
-                        Formats acceptés : PDF, JPG, PNG (max 10MB)
-                      </small>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- RÉSUMÉ ET CONFIRMATION -->
-                <div class="summary-section mb-4">
-                  <div class="card border-0 bg-light">
-                    <div class="card-body">
-                      <h6 class="card-title mb-3">
-                        <i class='bx bx-check-circle me-2 text-success'></i>
-                        Récapitulatif
-                      </h6>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Véhicule</small>
-                          <strong>{{ pendingVehicle?.code }}</strong>
-                        </div>
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Changement de statut</small>
-                          <div class="d-flex align-items-center">
-                            <span class="badge me-2"
-                              [ngClass]="getStatusBadgeClass(pendingVehicle?.status ?? VehicleStatus.Available)">
-                              {{ getStatusText(pendingVehicle?.status ?? VehicleStatus.Available) }}
-                            </span>
-                            <i class='bx bx-right-arrow-alt text-muted mx-1'></i>
-                            <span class="badge"
-                              [ngClass]="getStatusBadgeClass(pendingStatus ?? VehicleStatus.Available)">
-                              {{ getStatusText(pendingStatus ?? VehicleStatus.Available) }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- FOOTER DU MODAL -->
-                <div class="modal-footer">
-                  <div class="d-flex justify-content-between w-100 align-items-center">
-                    <div>
-                      <small class="text-muted">
-                        <i class='bx bx-time me-1'></i>
-                        Action enregistrée par {{ userName }} le {{ today | date:'dd/MM/yyyy à HH:mm' }}
-                      </small>
-                    </div>
-                    <div class="d-flex gap-2">
-                      <button type="button" class="btn btn-outline-secondary" (click)="closeReasonModal()">
-                        <i class='bx bx-x me-1'></i> Annuler
-                      </button>
-                      <button type="submit" class="btn" [ngClass]="{
-                  'btn-warning': pendingStatus === VehicleStatus.Maintenance,
-                  'btn-danger': pendingStatus === VehicleStatus.OutOfService,
-                  'btn-success': pendingStatus === VehicleStatus.Available
-                }" [disabled]="reasonLoading">
-                        <span *ngIf="reasonLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        <i [class]="getSubmitIcon() + ' me-1'" *ngIf="!reasonLoading"></i>
-                        {{ getSubmitButtonText() }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODAL DE RÉSERVATION -->
-      <div class="modal-backdrop" *ngIf="showReservationModal" (click)="closeReservationModal()"></div>
-
-      <div class="vehicle-reservation-modal" *ngIf="showReservationModal" [class.show]="showReservationModal">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-
-          <!-- HEADER -->
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class='bx bx-time me-2'></i>
-              Louer / Réserver un véhicule
-            </h5>
-            <button type="button" class="btn-close" (click)="closeReservationModal()" aria-label="Close">
-              <i class='bx bx-x'></i>
-            </button>
-          </div>
-
-          <!-- BODY -->
-          <div class="modal-body">
-            <!-- VÉHICULE SÉLECTIONNÉ -->
-            <div *ngIf="reservationVehicle" class="vehicle-header mb-4">
-              <div class="d-flex align-items-center gap-3">
-                <div class="vehicle-icon">
-                  <i [class]="getVehicleIcon(reservationVehicle.type)"></i>
-                </div>
-                <div>
-                  <h4 class="mb-1">{{ reservationVehicle.brand }} {{ reservationVehicle.model }}</h4>
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-secondary">{{ reservationVehicle.code }}</span>
-                    <span class="badge" [ngClass]="getTypeBadgeClass(reservationVehicle.type)">
-                      {{ getTypeText(reservationVehicle.type) }}
-                    </span>
-                    <span class="text-muted">{{ reservationVehicle.plateNumber }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- NOTIFICATION D'ERREUR -->
-            <div *ngIf="reservationSubmitted && reservationForm.invalid" class="alert alert-danger">
-              <i class='bx bx-error-circle me-2'></i>
-              Veuillez corriger les erreurs dans le formulaire
-            </div>
-
-            <form [formGroup]="reservationForm" (ngSubmit)="onReservationSubmit()">
-              <!-- Véhicule (caché) -->
-              <input type="hidden" formControlName="vehicleId">
-
-              <!-- INFORMATIONS DE RÉSERVATION -->
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-user me-2'></i> Informations client</h6>
-                </div>
-                <div class="card-body">
-                  <!-- Client -->
-                  <div class="mb-3">
-                    <label class="form-label">Client / Tiers *</label>
-
-                    <div class="position-relative">
-                      <input type="text" class="form-control"
-                        placeholder="Rechercher un client par nom, téléphone ou numéro..."
-                        (input)="filterTiers($event.target.value)" [disabled]="tiersLoading"
-                        [class.is-invalid]="reservationSubmitted && rf['customerId'].invalid">
-
-                      <div *ngIf="tiersLoading" class="position-absolute top-50 end-0 translate-middle-y me-3">
-                        <span class="spinner-border spinner-border-sm text-primary"></span>
-                      </div>
-                    </div>
-
-                    <select class="form-select mt-2" formControlName="customerId" size="5" [disabled]="tiersLoading">
-                      <option value="" disabled>-- Sélectionnez un client --</option>
-                      <option *ngFor="let tier of filteredTiers" [value]="tier.id">
-                        {{ tiersService.getFullName(tier) }} - {{ tier.phone }}
-                        <span *ngIf="tier.tierNumber">({{ tier.tierNumber }})</span>
-                      </option>
-                    </select>
-
-                    <div class="form-text text-muted">
-                      <i class='bx bx-info-circle me-1'></i>
-                      Sélectionnez le client dans la liste ci-dessus
-                    </div>
-
-                    <div *ngIf="reservationSubmitted && rf['customerId'].invalid" class="invalid-feedback d-block">
-                      <i class='bx bx-error-circle me-1'></i>
-                      Veuillez sélectionner un client
-                    </div>
-
-                    <!-- Affichage du client sélectionné -->
-                    <div *ngIf="rf['customerId'].value && getSelectedTier()" class="alert alert-success mt-2 py-2">
-                      <i class='bx bx-check-circle me-2'></i>
-                      <strong>Client sélectionné :</strong>
-                      {{ getSelectedTierName() }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- DATES ET DURÉE -->
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-calendar me-2'></i> Période de réservation</h6>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <!-- Date de début -->
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Date de début *</label>
-                      <input type="date" class="form-control" formControlName="expectedStartDate"
-                        [min]="today | date:'yyyy-MM-dd'"
-                        [class.is-invalid]="reservationSubmitted && rf['expectedStartDate'].invalid">
-                      <div *ngIf="reservationSubmitted && rf['expectedStartDate'].invalid" class="invalid-feedback">
-                        Date invalide
-                      </div>
-                    </div>
-
-                    <!-- Durée -->
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Durée (jours) *</label>
-                      <input type="number" class="form-control" formControlName="reservationDurationDays" min="1"
-                        max="30" step="1"
-                        [class.is-invalid]="reservationSubmitted && rf['reservationDurationDays'].invalid">
-                      <div class="form-text text-muted">
-                        Entre 1 et 30 jours. Défaut: 7 jours
-                      </div>
-                      <div *ngIf="reservationSubmitted && rf['reservationDurationDays'].invalid"
-                        class="invalid-feedback">
-                        Durée invalide (1-30 jours)
-                      </div>
-                    </div>
-
-                    <!-- Date de fin (calculée, lecture seule) -->
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Date de fin estimée</label>
-                      <input type="date" class="form-control" [value]="calculateEndDate()" readonly>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- NOTES -->
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-note me-2'></i> Notes et informations complémentaires</h6>
-                </div>
-                <div class="card-body">
-                  <textarea class="form-control" formControlName="notes" rows="3"
-                    placeholder="Ex: Client Bamba Keita - Téléphone: 07000007 - Informations spéciales..."></textarea>
-                  <div class="form-text text-muted mt-2">
-                    <i class='bx bx-info-circle me-1'></i>
-                    Ces notes seront visibles dans les détails de la réservation
-                  </div>
-                </div>
-              </div>
-
-              <!-- FOOTER -->
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="closeReservationModal()">
-                  <i class='bx bx-x me-1'></i> Annuler
-                </button>
-                <button type="submit" class="btn btn-primary" [disabled]="reservationLoading">
-                  <span *ngIf="reservationLoading" class="spinner-border spinner-border-sm me-2"></span>
-                  <i class='bx bx-check me-1'></i> Confirmer la location
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODAL D'ANNULATION DE RÉSERVATION -->
-      <div class="modal-backdrop" *ngIf="showCancelReservationModal" (click)="showCancelReservationModal = false"></div>
-
-      <div class="modal" *ngIf="showCancelReservationModal" [class.show]="showCancelReservationModal">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content" (click)="$event.stopPropagation()">
-            <div class="modal-header bg-warning text-dark">
-              <h5 class="modal-title">
-                <i class='bx bx-x-circle me-2'></i>Annuler une location
-              </h5>
-              <button type="button" class="btn-close" (click)="showCancelReservationModal = false"></button>
-            </div>
-
-            <div class="modal-body">
-              <p class="mb-3">Veuillez indiquer le motif de l'annulation :</p>
-              <form [formGroup]="cancelReservationForm" (ngSubmit)="onCancelReservationSubmit()">
-                <div class="mb-3">
-                  <textarea class="form-control" formControlName="reason" rows="4"
-                    placeholder="Ex: Client a changé d'avis, véhicule en panne, etc. (minimum 5 caractères)"></textarea>
-                  <div class="form-text">
-                    Le motif sera enregistré dans l'historique
-                  </div>
-                  <div *ngIf="cf['reason'].invalid && cancelReservationSubmitted" class="text-danger small">
-                    Minimum 5 caractères requis
-                  </div>
-                </div>
-
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" (click)="showCancelReservationModal = false">
-                    Retour
-                  </button>
-                  <button type="submit" class="btn btn-danger" [disabled]="cancelReservationLoading">
-                    <span *ngIf="cancelReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-trash me-1'></i> Annuler la Location
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODAL DE CONFIRMATION DE RÉSERVATION -->
-      <div class="modal-backdrop" *ngIf="showConfirmReservationModal" (click)="showConfirmReservationModal = false">
-      </div>
-
-      <div class="modal" *ngIf="showConfirmReservationModal" [class.show]="showConfirmReservationModal">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content" (click)="$event.stopPropagation()">
-            <div class="modal-header bg-success text-white">
-              <h5 class="modal-title">
-                <i class='bx bx-check-circle me-2'></i>Confirmer une location
-              </h5>
-              <button type="button" class="btn-close btn-close-white"
-                (click)="showConfirmReservationModal = false"></button>
-            </div>
-
-            <div class="modal-body">
-              <!-- Résumé de la réservation -->
-              <div class="alert alert-info mb-4">
-                <div class="d-flex align-items-center">
-                  <i class='bx bx-info-circle fs-4 me-3'></i>
-                  <div>
-                    <h6 class="mb-1">Réservation à confirmer</h6>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <small class="d-block"><strong>Véhicule:</strong> {{ selectedReservation?.vehicleName || 'N/A'
-                          }}</small>
-                        <small class="d-block"><strong>Code:</strong> {{ selectedReservation?.vehicleCode || 'N/A'
-                          }}</small>
-                      </div>
-                      <div class="col-md-6">
-                        <small class="d-block"><strong>Client:</strong> {{ selectedReservation?.customerName || 'N/A'
-                          }}</small>
-                        <small class="d-block"><strong>Date début:</strong> {{
-                          formatReservationDate(selectedReservation?.expectedStartDate) }}</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <form [formGroup]="confirmReservationForm" (ngSubmit)="onConfirmReservationSubmit()">
-                <!-- Sélection du contrat -->
-                <div class="mb-4">
-                  <label class="form-label fw-semibold">Sélectionnez un contrat *</label>
-
-                  <!-- Barre de recherche -->
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">
-                      <i class='bx bx-search'></i>
-                    </span>
-                    <input type="text" class="form-control" placeholder="Rechercher un contrat par numéro..."
-                      (input)="filterContracts($event.target.value)">
-                  </div>
-
-                  <!-- Liste des contrats disponibles -->
-                  <div class="contracts-list border rounded" style="max-height: 250px; overflow-y: auto;">
-                    <div *ngIf="filteredContracts.length === 0" class="text-center py-4">
-                      <i class='bx bx-folder-open fs-1 text-muted mb-2'></i>
-                      <p class="text-muted mb-0">Aucun contrat disponible</p>
-                    </div>
-
-                    <div *ngFor="let contract of filteredContracts" class="contract-item p-3 border-bottom"
-                      [class.bg-light]="confirmReservationForm.get('contractId')?.value === contract.id"
-                      (click)="selectContract(contract)">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                          <h6 class="mb-1 text-primary">
-                            <i class='bx bx-file me-2'></i>
-                            {{ contract.contractNumber }}
-                          </h6>
-                          <small class="text-muted d-block">
-                            <i class='bx bx-calendar me-1'></i>
-                            {{ contract.durationInWeeks }} semaines •
-                            {{ formatCurrency(contract.totalAmount) }}
-                          </small>
-                          <small class="text-muted">
-                            <i class='bx bx-time me-1'></i>
-                            Créé le {{ formatDate(contract.createdAt) }}
-                          </small>
-                        </div>
-                        <div class="text-end">
-                          <span class="badge" [ngClass]="getContractStatusBadge(contract.status)">
-                            {{ getContractStatusText(contract.status) }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Champ caché pour l'ID du contrat sélectionné -->
-                  <input type="hidden" formControlName="contractId">
-
-                  <!-- Contrat sélectionné -->
-                  <div *ngIf="confirmReservationForm.get('contractId')?.value" class="alert alert-success mt-3">
-                    <div class="d-flex align-items-center">
-                      <i class='bx bx-check-circle fs-4 me-3 text-success'></i>
-                      <div>
-                        <h6 class="mb-1">Contrat sélectionné</h6>
-                        <small class="d-block">
-                          <strong>Numéro:</strong> {{ getSelectedContract()?.contractNumber }}
-                        </small>
-                        <small class="d-block">
-                          <strong>Montant total:</strong> {{ formatCurrency(getSelectedContract()?.totalAmount || 0) }}
-                        </small>
-                        <small class="d-block">
-                          <strong>Durée:</strong> {{ getSelectedContract()?.durationInWeeks }} semaines
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div *ngIf="conf['contractId'].invalid && confirmReservationSubmitted" class="text-danger small mt-2">
-                    <i class='bx bx-error-circle me-1'></i>
-                    Veuillez sélectionner un contrat
-                  </div>
-                </div>
-
-                <!-- Informations additionnelles -->
-                <div class="mb-4">
-                  <label class="form-label fw-semibold">Notes additionnelles (optionnel)</label>
-                  <textarea class="form-control" rows="3" placeholder="Ajoutez des notes pour cette confirmation..."
-                    formControlName="additionalNotes"></textarea>
-                </div>
-
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" (click)="showConfirmReservationModal = false">
-                    Annuler
-                  </button>
-                  <button type="submit" class="btn btn-success" [disabled]="confirmReservationLoading">
-                    <span *ngIf="confirmReservationLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-link me-1'></i> Confirmer et lier la location
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODAL DE CONFIRMATION D'AFFECTATION/LOCATION - VERSION CORRIGÉE -->
-      <div class="modal-backdrop" *ngIf="showAssignRentalModal" (click)="showAssignRentalModal = false"></div>
-
-      <div class="modal" *ngIf="showAssignRentalModal" [class.show]="showAssignRentalModal">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content" (click)="$event.stopPropagation()">
-            <div class="modal-header bg-primary text-white">
-              <h5 class="modal-title">
-                <i class='bx bx-key me-2'></i>Affecter un véhicule à une location
-              </h5>
-              <button type="button" class="btn-close btn-close-white" (click)="showAssignRentalModal = false"></button>
-            </div>
-
-            <div class="modal-body">
-              <!-- Véhicule sélectionné -->
-              <div class="alert alert-info mb-4">
-                <div class="d-flex align-items-center">
-                  <i class='bx bx-car fs-4 me-3'></i>
-                  <div>
-                    <h6 class="mb-1">Véhicule à affecter</h6>
-                    <div class="row">
-                      <div class="col-md-12">
-                        <small class="d-block"><strong>Code:</strong> {{ assignRentalVehicle?.code || 'N/A' }}</small>
-                        <small class="d-block"><strong>Marque/Modèle:</strong> {{ assignRentalVehicle?.brand }} {{
-                          assignRentalVehicle?.model }}</small>
-                        <small class="d-block"><strong>Immatriculation:</strong> {{ assignRentalVehicle?.plateNumber ||
-                          'N/A' }}</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <form [formGroup]="assignRentalForm" (ngSubmit)="onAssignRentalSubmit()">
-                <!-- Recherche du client -->
-                <div class="mb-4">
-                  <label class="form-label fw-semibold">Sélectionnez un client *</label>
-
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">
-                      <i class='bx bx-search'></i>
-                    </span>
-                    <input type="text" class="form-control"
-                      placeholder="Rechercher un client par nom, téléphone ou numéro de tier..."
-                      (input)="filterTiersForAssignment($any($event.target).value)">
-                  </div>
-
-                  <!-- Liste des clients disponibles - VERSION CORRIGÉE SANS DUPLICATION -->
-                  <div class="tiers-list border rounded" style="max-height: 250px; overflow-y: auto;">
-                    <div *ngIf="isLoadingTiersForAssignment" class="text-center py-4">
-                      <div class="spinner-border spinner-border-sm text-primary" role="status">
-                        <span class="visually-hidden">Chargement...</span>
-                      </div>
-                      <p class="text-muted mb-0 mt-2">Chargement des clients...</p>
-                    </div>
-
-                    <div *ngIf="!isLoadingTiersForAssignment && filteredTiersForAssignment.length === 0"
-                      class="text-center py-4">
-                      <i class='bx bx-user fs-1 text-muted mb-2'></i>
-                      <p class="text-muted mb-0">Aucun client disponible</p>
-                    </div>
-
-                    <!-- ✅ UN SEUL *ngFor ICI - PAS DE DUPLICATION -->
-                    <div *ngFor="let tier of filteredTiersForAssignment"
-                      class="tier-item p-3 border-bottom cursor-pointer"
-                      [class.bg-light]="assignRentalForm.get('customerId')?.value === tier.id"
-                      [class.selected]="assignRentalForm.get('customerId')?.value === tier.id"
-                      (click)="selectTierForAssignment(tier)">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div class="flex-grow-1">
-                          <h6 class="mb-1 text-primary">
-                            <i class='bx bx-user me-2'></i>
-                            {{ tiersService.getFullName(tier) }}
-                          </h6>
-                          <small class="text-muted d-block">
-                            <i class='bx bx-phone me-1'></i>
-                            {{ tier.phone || 'Non renseigné' }} •
-                            <i class='bx bx-id-card me-1 ms-2'></i>
-                            {{ tier.tierNumber || 'N/A' }}
-                          </small>
-                          <small class="text-muted d-block">
-                            <i class='bx bx-envelope me-1'></i>
-                            {{ tier.email || 'Non renseigné' }}
-                          </small>
-                        </div>
-                        <div>
-                          <span class="badge" [ngClass]="getTierStatusBadge(tier.status)">
-                            {{ getTierStatusText(tier.status) }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Client sélectionné -->
-                  <div *ngIf="assignRentalForm.get('customerId')?.value" class="alert alert-success mt-3">
-                    <div class="d-flex align-items-center">
-                      <i class='bx bx-check-circle fs-4 me-3 text-success'></i>
-                      <div>
-                        <h6 class="mb-1">Client sélectionné</h6>
-                        <small class="d-block">
-                          <strong>Nom:</strong> {{ getSelectedTierForAssignment()?.firstName }} {{
-                          getSelectedTierForAssignment()?.lastName }}
-                        </small>
-                        <small class="d-block">
-                          <strong>Téléphone:</strong> {{ getSelectedTierForAssignment()?.phone || 'Non renseigné' }}
-                        </small>
-                        <small class="d-block">
-                          <strong>Numéro Tier:</strong> {{ getSelectedTierForAssignment()?.tierNumber || 'N/A' }}
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div *ngIf="arf['customerId'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
-                    <i class='bx bx-error-circle me-1'></i>
-                    Veuillez sélectionner un client
-                  </div>
-                </div>
-
-                <!-- Contrat de location - VERSION CORRIGÉE -->
-                <div class="mb-4">
-                  <label class="form-label fw-semibold">
-                    Sélectionnez un contrat de location *
-                    <button type="button" class="btn btn-sm btn-link p-0 ms-2" (click)="refreshContracts()"
-                      [disabled]="isLoadingContractsForAssignment">
-                      <i class='bx bx-refresh' [class.bx-spin]="isLoadingContractsForAssignment"></i>
-                      Actualiser
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn success" *ngIf="reservation.status === 'Active'" (click)="openConfirmReservationModal(reservation)" title="Confirmer">
+                      <i class="bx bx-check"></i>
                     </button>
-                  </label>
-
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">
-                      <i class='bx bx-search'></i>
-                    </span>
-                    <input type="text" class="form-control" placeholder="Rechercher un contrat par numéro..."
-                      (input)="filterContractsForAssignment($any($event.target).value)">
+                    <button class="action-btn danger" *ngIf="reservation.status === 'Active'" (click)="openCancelReservationModal(reservation)" title="Annuler">
+                      <i class="bx bx-x"></i>
+                    </button>
+                    <button class="action-btn info" (click)="showReservationDetails(reservation)" title="Détails">
+                      <i class="bx bx-show"></i>
+                    </button>
                   </div>
-
-                  <!-- Liste des contrats disponibles -->
-                  <div class="contracts-list border rounded" style="max-height: 250px; overflow-y: auto;">
-                    <div *ngIf="isLoadingContractsForAssignment" class="text-center py-4">
-                      <div class="spinner-border spinner-border-sm text-primary" role="status">
-                        <span class="visually-hidden">Chargement...</span>
-                      </div>
-                      <p class="text-muted mb-0 mt-2">Chargement des contrats...</p>
-                    </div>
-
-                    <div *ngIf="!isLoadingContractsForAssignment && filteredContractsForAssignment.length === 0"
-                      class="text-center py-4">
-                      <i class='bx bx-file fs-1 text-muted mb-2'></i>
-                      <p class="text-muted mb-0">Aucun contrat disponible</p>
-                      <small class="text-muted">
-                        Seuls les contrats actifs sans véhicule affecté sont affichés
-                      </small>
-                    </div>
-
-                    <div *ngFor="let contract of filteredContractsForAssignment"
-                      class="contract-item p-3 border-bottom cursor-pointer"
-                      [class.bg-light]="assignRentalForm.get('contractId')?.value === contract.id"
-                      [class.selected]="assignRentalForm.get('contractId')?.value === contract.id"
-                      (click)="selectContractForAssignment(contract)">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div class="flex-grow-1">
-                          <h6 class="mb-1 text-primary">
-                            <i class='bx bx-file me-2'></i>
-                            {{ contract.contractNumber }}
-                          </h6>
-                          <small class="text-muted d-block">
-                            <i class='bx bx-calendar me-1'></i>
-                            {{ contract.durationInWeeks }} semaines •
-                            {{ formatCurrency(contract.totalAmount) }}
-                          </small>
-                          <small class="text-muted d-block">
-                            <i class='bx bx-time me-1'></i>
-                            Début: {{ formatDate(contract.startDate) }} •
-                            Fin: {{ formatDate(contract.endDate) }}
-                          </small>
-                          <small class="text-muted d-block" *ngIf="contract.notes">
-                            <i class='bx bx-note me-1'></i>
-                            {{ contract.notes }}
-                          </small>
-                        </div>
-                        <div class="text-end">
-                          <span class="badge" [ngClass]="getContractStatusBadge(contract.status)">
-                            {{ getContractStatusText(contract.status) }}
-                          </span>
-                          <div class="mt-2">
-                            <small class="text-muted">
-                              ID: {{ contract.id.substring(0, 8) }}...
-                            </small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Contrat sélectionné -->
-                  <div *ngIf="assignRentalForm.get('contractId')?.value" class="alert alert-success mt-3">
-                    <div class="d-flex align-items-center">
-                      <i class='bx bx-check-circle fs-4 me-3 text-success'></i>
-                      <div>
-                        <h6 class="mb-1">Contrat sélectionné</h6>
-                        <small class="d-block">
-                          <strong>Numéro:</strong> {{ getSelectedContractForAssignment()?.contractNumber }}
-                        </small>
-                        <small class="d-block">
-                          <strong>Durée:</strong> {{ getSelectedContractForAssignment()?.durationInWeeks }} semaines
-                        </small>
-                        <small class="d-block">
-                          <strong>Montant total:</strong> {{
-                          formatCurrency(getSelectedContractForAssignment()?.totalAmount || 0) }}
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div *ngIf="arf['contractId'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
-                    <i class='bx bx-error-circle me-1'></i>
-                    Veuillez sélectionner un contrat
-                  </div>
-                </div>
-
-                <!-- Date de début et kilométrage -->
-                <div class="row mb-4">
-                  <div class="col-md-6">
-                    <label class="form-label fw-semibold">Date de début *</label>
-                    <input type="datetime-local" class="form-control" formControlName="startDate"
-                      [min]="today.toISOString().slice(0,16)">
-                    <div *ngIf="arf['startDate'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
-                      <i class='bx bx-error-circle me-1'></i>
-                      Veuillez sélectionner une date de début
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label fw-semibold">Kilométrage de départ *</label>
-                    <input type="number" class="form-control" formControlName="startMileage" min="0"
-                      [max]="assignRentalVehicle?.currentMileage ?? null" step="1">
-                    <small class="text-muted">
-                      Kilométrage actuel: {{ assignRentalVehicle?.currentMileage || 0 }} km
-                    </small>
-                    <div *ngIf="arf['startMileage'].invalid && assignRentalSubmitted" class="text-danger small mt-2">
-                      <i class='bx bx-error-circle me-1'></i>
-                      Veuillez entrer un kilométrage valide
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Notes additionnelles -->
-                <div class="mb-4">
-                  <label class="form-label fw-semibold">Remarques (optionnel)</label>
-                  <textarea class="form-control" rows="3" placeholder="Ajoutez des remarques pour cette location..."
-                    formControlName="notes"></textarea>
-                </div>
-
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" (click)="showAssignRentalModal = false">
-                    Annuler
-                  </button>
-                  <button type="submit" class="btn btn-primary"
-                    [disabled]="assignRentalLoading || assignRentalForm.invalid">
-                    <span *ngIf="assignRentalLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i class='bx bx-check me-1' *ngIf="!assignRentalLoading"></i>
-                    {{ assignRentalLoading ? 'Affectation en cours...' : 'Affecter le véhicule' }}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-
-
-      <!-- MODAL D'ÉDITION DE VÉHICULE -->
-      <div class="modal-backdrop" *ngIf="showEditModal" (click)="closeEditModal()"></div>
-
-      <div class="vehicle-edit-modal" *ngIf="showEditModal" [class.show]="showEditModal">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-
-          <!-- HEADER -->
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class='bx bx-edit me-2'></i>
-              Modifier le véhicule
-            </h5>
-            <button type="button" class="btn-close" (click)="closeEditModal()" aria-label="Close">
-              <i class='bx bx-x'></i>
+      <!-- ══ BARRE RECHERCHE ══ -->
+      <div class="card search-bar-card" style="margin-top:18px;">
+        <div class="card-body search-bar-body">
+          <div class="search-input-wrap">
+            <i class="bx bx-search"></i>
+            <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Rechercher par code, plaque, marque…" />
+            <button class="btn btn-primary btn-sm" (click)="onSearch()">Rechercher</button>
+          </div>
+          <div class="search-actions">
+            <button class="btn btn-outline" (click)="exportToExcel()">
+              <i class="bx bx-export"></i> Exporter
+            </button>
+            <button class="btn btn-primary" (click)="toggleFiltersSidebar()">
+              <i class="bx bx-filter-alt"></i> Filtres
             </button>
           </div>
-
-          <!-- BODY -->
-          <div class="modal-body">
-            <div *ngIf="!selectedVehicle" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Chargement...</span>
-              </div>
-              <p class="mt-3">Chargement des données...</p>
-            </div>
-
-            <form *ngIf="selectedVehicle" [formGroup]="editVehicleForm" (ngSubmit)="onEditSubmit()">
-
-              <!-- EN-TÊTE -->
-              <div class="vehicle-header mb-4">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="vehicle-icon">
-                    <i [class]="getVehicleIcon(selectedVehicle.type)"></i>
-                  </div>
-                  <div>
-                    <h4 class="mb-1">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h4>
-                    <div class="d-flex align-items-center gap-2">
-                      <span class="badge bg-secondary">{{ selectedVehicle.code }}</span>
-                      <span class="badge" [ngClass]="getTypeBadgeClass(selectedVehicle.type)">
-                        {{ getTypeText(selectedVehicle.type) }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- NOTIFICATION D'ERREUR -->
-              <div *ngIf="editSubmitted && editVehicleForm.invalid" class="alert alert-danger">
-                <i class='bx bx-error-circle me-2'></i>
-                Veuillez corriger les erreurs dans le formulaire
-              </div>
-
-              <!-- INFORMATIONS DE BASE -->
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-info-circle me-2'></i> Informations de base</h6>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <!-- Plaque d'immatriculation -->
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Plaque d'immatriculation *</label>
-                      <input type="text" class="form-control" formControlName="plateNumber"
-                        [class.is-invalid]="editSubmitted && ef['plateNumber'].invalid">
-                      <div *ngIf="editSubmitted && ef['plateNumber'].invalid" class="invalid-feedback">
-                        <span *ngIf="ef['plateNumber'].errors?.['required']">La plaque est requise</span>
-                        <span *ngIf="ef['plateNumber'].errors?.['minlength']">Minimum 5 caractères</span>
-                      </div>
-                    </div>
-
-                    <!-- Couleur -->
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Couleur</label>
-                      <input type="text" class="form-control" formControlName="color">
-                    </div>
-
-                    <!-- Kilométrage -->
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Kilométrage actuel *</label>
-                      <input type="number" class="form-control" formControlName="currentMileage"
-                        [class.is-invalid]="editSubmitted && ef['currentMileage'].invalid">
-                      <div *ngIf="editSubmitted && ef['currentMileage'].invalid" class="invalid-feedback">
-                        <span *ngIf="ef['currentMileage'].errors?.['required']">Le kilométrage est requis</span>
-                        <span *ngIf="ef['currentMileage'].errors?.['min']">Doit être positif</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- ASSURANCE -->
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-shield-alt me-2'></i> Assurance</h6>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Compagnie d'assurance</label>
-                      <input type="text" class="form-control" formControlName="insuranceCompany">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Numéro de police</label>
-                      <input type="text" class="form-control" formControlName="insurancePolicyNumber">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Date de début</label>
-                      <input type="date" class="form-control" formControlName="insuranceStartDate">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Date de fin</label>
-                      <input type="date" class="form-control" formControlName="insuranceEndDate">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Type de couverture</label>
-                      <input type="text" class="form-control" formControlName="insuranceCoverageType">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Prime annuelle</label>
-                      <input type="number" class="form-control" formControlName="insuranceAnnualPremium">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CARACTÉRISTIQUES -->
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-cog me-2'></i> Caractéristiques</h6>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" formControlName="hasGps">
-                        <label class="form-check-label">Équipé GPS</label>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" formControlName="hasAirConditioning">
-                        <label class="form-check-label">Climatisation</label>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Transmission</label>
-                      <input type="text" class="form-control" formControlName="transmission">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Cylindrée (cm³)</label>
-                      <input type="number" class="form-control" formControlName="engineCapacity">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Capacité réservoir (L)</label>
-                      <input type="number" class="form-control" formControlName="fuelCapacity">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- NOTES -->
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6 class="mb-0"><i class='bx bx-note me-2'></i> Notes</h6>
-                </div>
-                <div class="card-body">
-                  <textarea class="form-control" formControlName="notes" rows="3"
-                    placeholder="Notes internes sur le véhicule..."></textarea>
-                </div>
-              </div>
-
-              <!-- FOOTER -->
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
-                  Annuler
-                </button>
-                <button type="submit" class="btn btn-primary" [disabled]="editLoading">
-                  <span *ngIf="editLoading" class="spinner-border spinner-border-sm me-2"></span>
-                  <i class='bx bx-save me-1'></i> Enregistrer
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       </div>
 
-      <!-- COMPOSANT DE NOTIFICATION -->
-      <app-notification-component></app-notification-component>
-      <!-- DIALOG DE CONFIRMATION POUR CHANGEMENT DE STATUT -->
-      <app-confirm-dialog [title]="confirmDialogTitle" [message]="confirmDialogMessage" [details]="confirmDialogDetails"
-        [confirmText]="confirmDialogConfirmText" [cancelText]="confirmDialogCancelText" [visible]="showConfirmDialog"
-        (confirm)="onDialogConfirm()" (cancel)="onDialogCancel()">
-      </app-confirm-dialog>
+      <!-- ══ FILTRES ══ -->
+      <div class="card filters-card" style="margin-top:12px;" *ngIf="!sidebarVisible">
+        <div class="card-body">
 
+          <div class="filter-row">
+            <span class="filter-label">Type :</span>
+            <div class="filter-chips">
+              <button *ngFor="let type of vehicleTypes" class="filter-chip"
+                [class.active]="selectedType === type.value" (click)="onFilterByType(type.value)">
+                <i [class]="type.icon"></i> {{ type.label }}
+              </button>
+              <button class="filter-chip" [class.active]="!selectedType" (click)="onFilterByType()">Tous</button>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <span class="filter-label">Statut :</span>
+            <div class="filter-chips">
+              <button *ngFor="let status of statuses" class="filter-chip"
+                [class.active]="selectedStatus === status.value" (click)="onFilterByStatus(status.value)">
+                <i [class]="status.icon"></i> {{ status.label }}
+              </button>
+              <button class="filter-chip" [class.active]="!selectedStatus" (click)="onFilterByStatus()">Tous</button>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <span class="filter-label">Carburant :</span>
+            <div class="filter-chips">
+              <button *ngFor="let fuel of fuelTypes" class="filter-chip"
+                [class.active]="selectedFuelType === fuel.value" (click)="onFilterByFuelType(fuel.value)">
+                <i [class]="fuel.icon"></i> {{ fuel.label }}
+              </button>
+              <button class="filter-chip" [class.active]="!selectedFuelType" (click)="onFilterByFuelType()">Tous</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ TABLEAU PRINCIPAL ══ -->
+      <div class="card" style="margin-top:18px;">
+        <div class="card-header">
+          <div class="card-title"><i class="bx bx-list-ul"></i> Liste des Véhicules</div>
+          <div class="card-header-right">
+            <select class="select-sm" (change)="onPageSizeChange($event)">
+              <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / page</option>
+            </select>
+            <span class="result-count">{{ pagination.totalCount }} résultats</span>
+          </div>
+        </div>
+
+        <div class="card-body" style="padding:0;">
+
+          <!-- LOADING -->
+          <div *ngIf="loading" class="loading-state">
+            <div class="spinner"></div>
+            <span>Chargement des véhicules…</span>
+          </div>
+
+          <!-- ERROR -->
+          <div *ngIf="error && !loading" class="error-state">
+            <i class="bx bx-error-circle"></i> {{ error }}
+          </div>
+
+          <!-- TABLE -->
+          <div *ngIf="!loading && !error" class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:46px;">#</th>
+                  <th class="sortable" (click)="onSortChange('code')">
+                    Code
+                    <i class="bx bx-sort" *ngIf="selectedSort !== 'code'"></i>
+                    <i class="bx bx-sort-up" *ngIf="selectedSort === 'code' && !sortDescending"></i>
+                    <i class="bx bx-sort-down" *ngIf="selectedSort === 'code' && sortDescending"></i>
+                  </th>
+                  <th>Véhicule</th>
+                  <th>Type</th>
+                  <th class="sortable" (click)="onSortChange('year')">
+                    Année
+                    <i class="bx bx-sort" *ngIf="selectedSort !== 'year'"></i>
+                    <i class="bx bx-sort-up" *ngIf="selectedSort === 'year' && !sortDescending"></i>
+                    <i class="bx bx-sort-down" *ngIf="selectedSort === 'year' && sortDescending"></i>
+                  </th>
+                  <th>Plaque</th>
+                  <th class="sortable" (click)="onSortChange('currentMileage')">
+                    Kilométrage
+                    <i class="bx bx-sort" *ngIf="selectedSort !== 'currentMileage'"></i>
+                    <i class="bx bx-sort-up" *ngIf="selectedSort === 'currentMileage' && !sortDescending"></i>
+                    <i class="bx bx-sort-down" *ngIf="selectedSort === 'currentMileage' && sortDescending"></i>
+                  </th>
+                  <th>Statut</th>
+                  <th>Assurance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let vehicle of vehicles; let i = index">
+                  <td class="row-num">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
+                  <td><span class="cell-ref">{{ vehicle.code }}</span></td>
+                  <td>
+                    <span class="cell-name">{{ vehicle.brand }} {{ vehicle.model }}</span>
+                    <span class="cell-sub">{{ getFuelTypeText(vehicle.fuelType) }}</span>
+                  </td>
+                  <td>
+                    <span class="type-badge" [ngClass]="getTypeBadgeClass(vehicle.type)">
+                      {{ getTypeText(vehicle.type) }}
+                    </span>
+                  </td>
+                  <td>
+                    {{ vehicle.year }}
+                    <span class="cell-sub">{{ vehicle.ageInYears }} ans</span>
+                  </td>
+                  <td><span class="cell-ref">{{ vehicle.plateNumber }}</span></td>
+                  <td>{{ vehicle.currentMileage | number:'1.0-0' }} km</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getVehicleStatusClass(vehicle.status)">
+                      {{ getStatusText(vehicle.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span [ngClass]="getInsuranceStatus(vehicle).class">
+                      <i class="bx" [class.bx-shield]="!vehicle.isInsuranceExpired" [class.bx-error-circle]="vehicle.isInsuranceExpired"></i>
+                      {{ getInsuranceStatus(vehicle).text }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn-dots" (click)="toggleActionsMenu(vehicle, $event)"
+                      [class.active]="activeMenuVehicleId === vehicle.id">
+                      <i class="bx bx-dots-vertical-rounded"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="vehicles.length === 0">
+                  <td colspan="10" class="empty-state">Aucun véhicule trouvé</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- PAGINATION -->
+          <div *ngIf="!loading && !error && pagination.totalPages > 1" class="pagination-bar">
+            <span class="pagination-info">
+              Page {{ pagination.currentPage }} / {{ pagination.totalPages }} ({{ pagination.totalCount }} véhicules)
+            </span>
+            <div class="pagination-btns">
+              <button class="page-btn" [disabled]="!pagination.hasPreviousPage" (click)="onPageChange(pagination.currentPage - 1)">
+                <i class="bx bx-chevron-left"></i>
+              </button>
+              <button *ngFor="let page of visiblePages" class="page-btn" [class.active]="page === pagination.currentPage" (click)="onPageChange(page)">
+                {{ page }}
+              </button>
+              <button class="page-btn" [disabled]="!pagination.hasNextPage" (click)="onPageChange(pagination.currentPage + 1)">
+                <i class="bx bx-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- ══ MENU ACTIONS FLOTTANT ══ -->
+  <div class="fam-overlay" *ngIf="activeMenuVehicleId" (click)="closeActionsMenu()"></div>
+
+  <div class="floating-actions-menu" *ngIf="activeMenuVehicleId"
+    [style.top.px]="menuPosition.top" [style.left.px]="menuPosition.left">
+
+    <div class="fam-header">
+      <span class="fam-title">{{ getActiveVehicle()?.code }}</span>
+      <button class="fam-close" (click)="closeActionsMenu()"><i class="bx bx-x"></i></button>
+    </div>
+
+    <ul class="fam-list">
+      <li>
+        <a class="fam-item fam-info" (click)="openEditModal(getActiveVehicle()); closeActionsMenu()">
+          <i class="bx bx-edit"></i> Modifier
+        </a>
+      </li>
+
+      <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Available">
+        <li>
+          <a class="fam-item fam-info" (click)="openReservationModal(getActiveVehicle()); closeActionsMenu()">
+            <i class="bx bx-time"></i> Louer / Réserver
+          </a>
+        </li>
+        <li>
+          <a class="fam-item fam-warning" (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Maintenance); closeActionsMenu()">
+            <i class="bx bx-wrench"></i> Mettre en maintenance
+          </a>
+        </li>
+      </ng-container>
+
+      <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Rented">
+        <li>
+          <a class="fam-item fam-warning" (click)="releaseVehicle(getActiveVehicle()); closeActionsMenu()">
+            <i class="bx bx-check-circle"></i> Libérer
+          </a>
+        </li>
+        <li>
+          <a class="fam-item fam-warning" (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Maintenance); closeActionsMenu()">
+            <i class="bx bx-wrench"></i> Mettre en maintenance
+          </a>
+        </li>
+      </ng-container>
+
+      <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Reserved">
+        <li>
+          <a class="fam-item fam-success" (click)="assignToRental(getActiveVehicle()); closeActionsMenu()">
+            <i class="bx bx-key"></i> Confirmer la location
+          </a>
+        </li>
+        <li>
+          <a class="fam-item fam-muted" (click)="changeStatus(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
+            <i class="bx bx-x"></i> Annuler la réservation
+          </a>
+        </li>
+      </ng-container>
+
+      <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.Maintenance">
+        <li>
+          <a class="fam-item fam-success" (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
+            <i class="bx bx-check"></i> Marquer comme disponible
+          </a>
+        </li>
+      </ng-container>
+
+      <ng-container *ngIf="getActiveVehicle()?.status === VehicleStatus.OutOfService">
+        <li>
+          <a class="fam-item fam-success" (click)="changeStatus(getActiveVehicle(), VehicleStatus.Available); closeActionsMenu()">
+            <i class="bx bx-refresh"></i> Réactiver
+          </a>
+        </li>
+      </ng-container>
+
+      <ng-container *ngIf="getActiveVehicle()?.status !== VehicleStatus.OutOfService &&
+                     getActiveVehicle()?.status !== VehicleStatus.Rented &&
+                     getActiveVehicle()?.status !== VehicleStatus.Reserved">
+        <li class="fam-divider"></li>
+        <li>
+          <a class="fam-item fam-danger" (click)="openConfirmDialog(getActiveVehicle(), VehicleStatus.OutOfService); closeActionsMenu()">
+            <i class="bx bx-block"></i> Mettre hors service
+          </a>
+        </li>
+      </ng-container>
+
+      <li class="fam-divider"></li>
+      <li>
+        <a class="fam-item fam-info" (click)="showVehicleDetails(getActiveVehicle()); closeActionsMenu()">
+          <i class="bx bx-show"></i> Voir les détails
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ══ MODAL DÉTAILS VÉHICULE ══ -->
+  <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
+
+  <div class="side-modal" *ngIf="showDetailsModal" [class.show]="showDetailsModal" (click)="$event.stopPropagation()">
+    <div class="side-modal-header">
+      <div class="side-modal-title"><i class="bx bx-car"></i> Détails du Véhicule</div>
+      <button class="side-modal-close" (click)="closeDetailsModal()"><i class="bx bx-x"></i></button>
+    </div>
+
+    <div class="side-modal-body">
+      <div *ngIf="vehicleDetailsLoading" class="loading-state">
+        <div class="spinner"></div><span>Chargement…</span>
+      </div>
+
+      <div *ngIf="!vehicleDetailsLoading && selectedVehicle">
+
+        <!-- En-tête véhicule -->
+        <div class="detail-hero">
+          <div class="detail-hero-icon"><i [class]="getVehicleIcon(selectedVehicle.type)"></i></div>
+          <div>
+            <div class="detail-hero-name">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</div>
+            <div class="detail-hero-badges">
+              <span class="type-badge" [ngClass]="getTypeBadgeClass(selectedVehicle.type)">{{ getTypeText(selectedVehicle.type) }}</span>
+              <span class="meta-badge">{{ selectedVehicle.year }}</span>
+              <span class="meta-badge primary">{{ selectedVehicle.code }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statut -->
+        <div class="detail-status-bar" [ngClass]="getStatusSectionClass(selectedVehicle.status)">
+          <span class="detail-status-label">Statut actuel</span>
+          <span class="status-badge" [ngClass]="getVehicleStatusClass(selectedVehicle.status)">
+            {{ getStatusText(selectedVehicle.status) }}
+          </span>
+        </div>
+
+        <!-- Sections en colonnes -->
+        <div class="detail-grid">
+
+          <!-- Identification -->
+          <div class="detail-section">
+            <div class="detail-section-title"><i class="bx bx-id-card"></i> Identification</div>
+            <div class="detail-rows">
+              <div class="detail-row"><span>Plaque</span><strong>{{ selectedVehicle.plateNumber }}</strong></div>
+              <div class="detail-row" *ngIf="selectedVehicle.chassisNumber"><span>Châssis</span><code>{{ selectedVehicle.chassisNumber }}</code></div>
+              <div class="detail-row"><span>Couleur</span><span>{{ selectedVehicle.color || '—' }}</span></div>
+            </div>
+          </div>
+
+          <!-- Caractéristiques -->
+          <div class="detail-section">
+            <div class="detail-section-title"><i class="bx bx-cog"></i> Caractéristiques</div>
+            <div class="detail-rows">
+              <div class="detail-row"><span>Carburant</span><span>{{ getFuelTypeText(selectedVehicle.fuelType) }}</span></div>
+              <div class="detail-row"><span>Kilométrage</span><strong>{{ selectedVehicle.currentMileage | number:'1.0-0' }} km</strong></div>
+              <div class="detail-row"><span>Âge</span><span>{{ selectedVehicle.ageInYears }} ans</span></div>
+             <div class="detail-row" *ngIf="selectedVehicle.features.transmission">
+                <span>Transmission</span>
+                <span>{{ selectedVehicle.features.transmission }}</span>
+              </div>
+            </div>
+            <div class="equip-badges" *ngIf="selectedVehicle.features">
+              <span class="equip-badge" *ngIf="selectedVehicle.features.hasGps"><i class="bx bx-navigation"></i> GPS</span>
+              <span class="equip-badge" *ngIf="selectedVehicle.features.hasAirConditioning"><i class="bx bx-wind"></i> Clim</span>
+              <span class="equip-badge muted" *ngFor="let f of selectedVehicle.features.additionalFeatures">{{ f }}</span>
+            </div>
+          </div>
+
+          <!-- Assurance -->
+          <div class="detail-section">
+            <div class="detail-section-title"><i class="bx bx-shield-alt"></i> Assurance</div>
+            <div *ngIf="!selectedVehicle.insurance" class="detail-empty">Aucune assurance enregistrée</div>
+            <div *ngIf="selectedVehicle.insurance" class="detail-rows">
+              <div class="detail-row"><span>Compagnie</span><strong>{{ selectedVehicle.insurance.company }}</strong></div>
+              <div class="detail-row"><span>Police</span><code>{{ selectedVehicle.insurance.policyNumber }}</code></div>
+              <div class="detail-row"><span>Couverture</span><span>{{ selectedVehicle.insurance.coverageType }}</span></div>
+              <div class="detail-row"><span>Expiration</span><span>{{ formatDate(selectedVehicle.insurance.endDate) }}</span></div>
+              <div class="detail-row"><span>Prime</span><span>{{ formatCurrency(selectedVehicle.insurance.annualPremium) }}</span></div>
+              <div class="detail-row">
+                <span>État</span>
+                <span [ngClass]="getInsuranceStatus(selectedVehicle).class">{{ getInsuranceStatus(selectedVehicle).text }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Finances -->
+          <div class="detail-section">
+            <div class="detail-section-title"><i class="bx bx-dollar-circle"></i> Finances</div>
+            <div class="detail-rows">
+              <div class="detail-row"><span>Acquisition</span><span>{{ formatDate(selectedVehicle.acquisitionDate) }}</span></div>
+              <div class="detail-row"><span>Coût achat</span><span>{{ formatCurrency(selectedVehicle.acquisitionCost) }}</span></div>
+              <div class="detail-row"><span>Prix achat</span><span>{{ formatCurrency(selectedVehicle.purchasePrice) }}</span></div>
+              <div class="detail-row"><span>Valeur actuelle</span><strong>{{ formatCurrency(calculateCurrentValue(selectedVehicle)) }}</strong></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Notes -->
+        <div class="detail-notes" *ngIf="selectedVehicle.notes">
+          <div class="detail-section-title"><i class="bx bx-note"></i> Notes</div>
+          <p>{{ selectedVehicle.notes }}</p>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="side-modal-footer">
+      <small class="footer-meta">
+        Créé le {{ formatDate(selectedVehicle?.createdAt) }}
+        <span *ngIf="selectedVehicle?.updatedAt"> · Modifié le {{ formatDate(selectedVehicle?.updatedAt) }}</span>
+      </small>
+      <button class="btn btn-outline" (click)="closeDetailsModal()">Fermer</button>
     </div>
   </div>
 
+  <!-- ══ MODAL CHANGEMENT STATUT ══ -->
+  <div class="modal-backdrop" *ngIf="showReasonModal" (click)="closeReasonModal()"></div>
+
+  <div class="center-modal" *ngIf="showReasonModal" [class.show]="showReasonModal" (click)="$event.stopPropagation()">
+
+    <div class="center-modal-header" [ngClass]="{
+      'header-warning': pendingStatus === VehicleStatus.Maintenance,
+      'header-danger':  pendingStatus === VehicleStatus.OutOfService,
+      'header-success': pendingStatus === VehicleStatus.Available
+    }">
+      <div class="center-modal-icon"><i [class]="getStatusIcon(pendingStatus)"></i></div>
+      <div>
+        <div class="center-modal-title">{{ getModalTitle() }}</div>
+        <div class="center-modal-sub">{{ getModalSubtitle() }}</div>
+      </div>
+      <button class="center-modal-close" (click)="closeReasonModal()"><i class="bx bx-x"></i></button>
+    </div>
+
+    <div class="center-modal-body">
+
+      <!-- Carte véhicule -->
+      <div class="vehicle-summary-card">
+        <div class="vehicle-summary-icon"><i [class]="getVehicleIcon(pendingVehicle?.type)"></i></div>
+        <div class="vehicle-summary-info">
+          <div class="vehicle-summary-name">{{ pendingVehicle?.brand }} {{ pendingVehicle?.model }}</div>
+          <div class="vehicle-summary-badges">
+            <span class="meta-badge">{{ pendingVehicle?.code }}</span>
+            <span class="meta-badge dark">{{ pendingVehicle?.plateNumber }}</span>
+          </div>
+        </div>
+        <div class="vehicle-summary-status">
+          <span class="status-badge" [ngClass]="getVehicleStatusClass(pendingVehicle?.status)">{{ getStatusText(pendingVehicle?.status) }}</span>
+          <span class="status-arrow">→ {{ getStatusText(pendingStatus) }}</span>
+        </div>
+      </div>
+
+      <!-- Alertes -->
+      <div class="modal-alert warning" *ngIf="showWarnings()">
+        <i class="bx bx-error-circle"></i>
+        <div>
+          <div class="modal-alert-title">⚠️ Avertissements importants</div>
+          <ul>
+            <li *ngIf="pendingVehicle?.status === VehicleStatus.Rented">Ce véhicule est actuellement <strong>loué</strong>. Terminez d'abord la location.</li>
+            <li *ngIf="pendingVehicle?.status === VehicleStatus.Reserved">Ce véhicule est <strong>réservé</strong>. Annulez d'abord la réservation.</li>
+            <li *ngIf="pendingVehicle?.isInsuranceExpired">L'<strong>assurance est expirée</strong>. Le véhicule ne pourra pas être loué.</li>
+            <li *ngIf="pendingStatus === VehicleStatus.OutOfService">Cette action est <strong>définitive</strong> et nécessite une justification détaillée.</li>
+          </ul>
+        </div>
+      </div>
+
+      <form [formGroup]="reasonForm" (ngSubmit)="submitReason()">
+
+        <!-- Raison -->
+        <div class="field-group">
+          <label class="field-label">{{ getReasonLabel() }} <span class="required">*</span></label>
+          <textarea class="field-textarea" formControlName="reason" rows="4"
+            [placeholder]="getPlaceholderText()"
+            [class.is-invalid]="reasonSubmitted && reasonForm.get('reason')?.invalid"
+            maxlength="500"></textarea>
+          <div class="field-footer">
+            <span class="field-hint">{{ getCharacterHint() }}</span>
+            <span class="char-count" [class.ok]="reasonForm.get('reason')?.value?.length >= 20">
+              {{ reasonForm.get('reason')?.value?.length || 0 }} / 500
+            </span>
+          </div>
+          <div *ngIf="reasonSubmitted && reasonForm.get('reason')?.invalid" class="field-error">
+            <i class="bx bx-error-circle"></i>
+            <span *ngIf="reasonForm.get('reason')?.errors?.['required']">Veuillez saisir la raison.</span>
+            <span *ngIf="reasonForm.get('reason')?.errors?.['minlength']">Minimum {{ reasonForm.get('reason')?.errors?.['minlength']?.requiredLength }} caractères.</span>
+          </div>
+        </div>
+
+        <!-- Catégories maintenance -->
+        <div *ngIf="pendingStatus === VehicleStatus.Maintenance" class="field-group" style="margin-top:14px;">
+          <label class="field-label">Catégorie <span class="optional">(Optionnel)</span></label>
+          <div class="category-grid">
+            <div class="category-card" *ngFor="let cat of maintenanceCategories"
+              [class.active]="reasonForm.get('category')?.value === cat.value"
+              (click)="reasonForm.get('category')?.setValue(cat.value)">
+              <i [class]="cat.icon"></i>
+              <strong>{{ cat.label }}</strong>
+              <small>{{ cat.description }}</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date retour -->
+        <div *ngIf="pendingStatus === VehicleStatus.Maintenance" class="field-group" style="margin-top:14px;">
+          <label class="field-label">Date de retour estimée <span class="optional">(Optionnel)</span></label>
+          <input type="date" class="field-input" formControlName="estimatedReturnDate" [min]="today | date:'yyyy-MM-dd'" style="max-width:240px;">
+        </div>
+
+        <!-- Récapitulatif -->
+        <div class="recap-card">
+          <div class="recap-title"><i class="bx bx-check-circle"></i> Récapitulatif</div>
+          <div class="recap-row">
+            <div><span class="recap-label">Véhicule</span><strong>{{ pendingVehicle?.code }}</strong></div>
+            <div>
+              <span class="recap-label">Changement</span>
+              <div class="recap-status-change">
+                <span class="status-badge" [ngClass]="getStatusBadgeClass(pendingVehicle?.status ?? VehicleStatus.Available)">{{ getStatusText(pendingVehicle?.status ?? VehicleStatus.Available) }}</span>
+                <i class="bx bx-right-arrow-alt"></i>
+                <span class="status-badge" [ngClass]="getStatusBadgeClass(pendingStatus ?? VehicleStatus.Available)">{{ getStatusText(pendingStatus ?? VehicleStatus.Available) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-form-footer">
+          <small class="footer-meta"><i class="bx bx-time"></i> Par {{ userName }} le {{ today | date:'dd/MM/yyyy à HH:mm' }}</small>
+          <div class="modal-form-btns">
+            <button type="button" class="btn btn-outline" (click)="closeReasonModal()"><i class="bx bx-x"></i> Annuler</button>
+            <button type="submit" class="btn" [ngClass]="{
+              'btn-warning': pendingStatus === VehicleStatus.Maintenance,
+              'btn-danger':  pendingStatus === VehicleStatus.OutOfService,
+              'btn-success': pendingStatus === VehicleStatus.Available
+            }" [disabled]="reasonLoading">
+              <span *ngIf="reasonLoading" class="spinner spinner-sm"></span>
+              <i [class]="getSubmitIcon()" *ngIf="!reasonLoading"></i>
+              {{ getSubmitButtonText() }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ MODAL RÉSERVATION ══ -->
+  <div class="modal-backdrop" *ngIf="showReservationModal" (click)="closeReservationModal()"></div>
+
+  <div class="side-modal side-modal--md" *ngIf="showReservationModal" [class.show]="showReservationModal" (click)="$event.stopPropagation()">
+    <div class="side-modal-header">
+      <div class="side-modal-title"><i class="bx bx-time"></i> Louer / Réserver</div>
+      <button class="side-modal-close" (click)="closeReservationModal()"><i class="bx bx-x"></i></button>
+    </div>
+    <div class="side-modal-body">
+
+      <div *ngIf="reservationVehicle" class="detail-hero">
+        <div class="detail-hero-icon"><i [class]="getVehicleIcon(reservationVehicle.type)"></i></div>
+        <div>
+          <div class="detail-hero-name">{{ reservationVehicle.brand }} {{ reservationVehicle.model }}</div>
+          <div class="detail-hero-badges">
+            <span class="meta-badge">{{ reservationVehicle.code }}</span>
+            <span class="type-badge" [ngClass]="getTypeBadgeClass(reservationVehicle.type)">{{ getTypeText(reservationVehicle.type) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="reservationSubmitted && reservationForm.invalid" class="modal-alert danger">
+        <i class="bx bx-error-circle"></i> Veuillez corriger les erreurs dans le formulaire
+      </div>
+
+      <form [formGroup]="reservationForm" (ngSubmit)="onReservationSubmit()">
+        <input type="hidden" formControlName="vehicleId">
+
+        <div class="card form-card">
+          <div class="card-header"><div class="card-title"><i class="bx bx-user"></i> Client</div></div>
+          <div class="card-body">
+            <div class="field-group">
+              <label class="field-label">Client / Tiers <span class="required">*</span></label>
+              <input type="text" class="field-input" placeholder="Rechercher par nom, téléphone…"
+                (input)="filterTiers($event.target.value)" [disabled]="tiersLoading"
+                [class.is-invalid]="reservationSubmitted && rf['customerId'].invalid">
+              <select class="field-select" formControlName="customerId" size="5" [disabled]="tiersLoading" style="margin-top:8px;height:auto;">
+                <option value="" disabled>— Sélectionnez un client —</option>
+                <option *ngFor="let tier of filteredTiers" [value]="tier.id">
+                  {{ tiersService.getFullName(tier) }} - {{ tier.phone }}
+                  <span *ngIf="tier.tierNumber">({{ tier.tierNumber }})</span>
+                </option>
+              </select>
+              <div *ngIf="rf['customerId'].value && getSelectedTier()" class="modal-alert success" style="margin-top:8px;">
+                <i class="bx bx-check-circle"></i> Client sélectionné : <strong>{{ getSelectedTierName() }}</strong>
+              </div>
+              <div *ngIf="reservationSubmitted && rf['customerId'].invalid" class="field-error">Veuillez sélectionner un client</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card form-card">
+          <div class="card-header"><div class="card-title"><i class="bx bx-calendar"></i> Période</div></div>
+          <div class="card-body">
+            <div class="form-grid form-grid-2">
+              <div class="field-group">
+                <label class="field-label">Date de début <span class="required">*</span></label>
+                <input type="date" class="field-input" formControlName="expectedStartDate"
+                  [min]="today | date:'yyyy-MM-dd'"
+                  [class.is-invalid]="reservationSubmitted && rf['expectedStartDate'].invalid">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Durée (jours) <span class="required">*</span></label>
+                <input type="number" class="field-input" formControlName="reservationDurationDays" min="1" max="30">
+                <span class="field-hint">Entre 1 et 30 jours</span>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Date de fin estimée</label>
+                <input type="date" class="field-input" [value]="calculateEndDate()" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card form-card">
+          <div class="card-header"><div class="card-title"><i class="bx bx-note"></i> Notes</div></div>
+          <div class="card-body">
+            <textarea class="field-textarea" formControlName="notes" rows="3"
+              placeholder="Informations complémentaires…"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-form-footer">
+          <button type="button" class="btn btn-outline" (click)="closeReservationModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="reservationLoading">
+            <span *ngIf="reservationLoading" class="spinner spinner-sm"></span>
+            <i class="bx bx-check" *ngIf="!reservationLoading"></i> Confirmer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ MODAL ANNULATION RÉSERVATION ══ -->
+  <div class="modal-backdrop" *ngIf="showCancelReservationModal" (click)="showCancelReservationModal = false"></div>
+  <div class="center-modal center-modal--sm" *ngIf="showCancelReservationModal" [class.show]="showCancelReservationModal" (click)="$event.stopPropagation()">
+    <div class="center-modal-header header-warning">
+      <div class="center-modal-icon"><i class="bx bx-x-circle"></i></div>
+      <div><div class="center-modal-title">Annuler une location</div></div>
+      <button class="center-modal-close" (click)="showCancelReservationModal = false"><i class="bx bx-x"></i></button>
+    </div>
+    <div class="center-modal-body">
+      <form [formGroup]="cancelReservationForm" (ngSubmit)="onCancelReservationSubmit()">
+        <div class="field-group">
+          <label class="field-label">Motif de l'annulation <span class="required">*</span></label>
+          <textarea class="field-textarea" formControlName="reason" rows="4"
+            placeholder="Ex: Client a changé d'avis, véhicule en panne… (min. 5 caractères)"></textarea>
+          <div *ngIf="cf['reason'].invalid && cancelReservationSubmitted" class="field-error">Minimum 5 caractères requis</div>
+        </div>
+        <div class="modal-form-footer">
+          <button type="button" class="btn btn-outline" (click)="showCancelReservationModal = false">Retour</button>
+          <button type="submit" class="btn btn-danger" [disabled]="cancelReservationLoading">
+            <span *ngIf="cancelReservationLoading" class="spinner spinner-sm"></span>
+            <i class="bx bx-trash" *ngIf="!cancelReservationLoading"></i> Annuler la location
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ MODAL CONFIRMATION RÉSERVATION ══ -->
+  <div class="modal-backdrop" *ngIf="showConfirmReservationModal" (click)="showConfirmReservationModal = false"></div>
+  <div class="side-modal side-modal--md" *ngIf="showConfirmReservationModal" [class.show]="showConfirmReservationModal" (click)="$event.stopPropagation()">
+    <div class="side-modal-header header-success">
+      <div class="side-modal-title"><i class="bx bx-check-circle"></i> Confirmer une location</div>
+      <button class="side-modal-close" (click)="showConfirmReservationModal = false"><i class="bx bx-x"></i></button>
+    </div>
+    <div class="side-modal-body">
+
+      <div class="modal-alert info">
+        <i class="bx bx-info-circle"></i>
+        <div>
+          <strong>Réservation à confirmer</strong>
+          <div class="form-grid form-grid-2" style="margin-top:6px;">
+            <span><strong>Véhicule :</strong> {{ selectedReservation?.vehicleName || 'N/A' }}</span>
+            <span><strong>Client :</strong> {{ selectedReservation?.customerName || 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="confirmReservationForm" (ngSubmit)="onConfirmReservationSubmit()">
+        <div class="field-group" style="margin-top:16px;">
+          <label class="field-label">Sélectionnez un contrat <span class="required">*</span></label>
+          <div class="search-input-wrap" style="margin-bottom:8px;">
+            <i class="bx bx-search"></i>
+            <input type="text" placeholder="Rechercher par numéro…" (input)="filterContracts($event.target.value)">
+          </div>
+          <div class="scroll-list">
+            <div *ngIf="filteredContracts.length === 0" class="empty-state">Aucun contrat disponible</div>
+            <div *ngFor="let contract of filteredContracts" class="list-item"
+              [class.selected]="confirmReservationForm.get('contractId')?.value === contract.id"
+              (click)="selectContract(contract)">
+              <div class="list-item-main">
+                <span class="cell-ref">{{ contract.contractNumber }}</span>
+                <span class="cell-sub">{{ contract.durationInWeeks }} sem. · {{ formatCurrency(contract.totalAmount) }}</span>
+              </div>
+              <span class="status-badge" [ngClass]="getContractStatusBadge(contract.status)">{{ getContractStatusText(contract.status) }}</span>
+            </div>
+          </div>
+          <input type="hidden" formControlName="contractId">
+          <div *ngIf="conf['contractId'].invalid && confirmReservationSubmitted" class="field-error">Veuillez sélectionner un contrat</div>
+        </div>
+
+        <div class="field-group" style="margin-top:14px;">
+          <label class="field-label">Notes additionnelles <span class="optional">(Optionnel)</span></label>
+          <textarea class="field-textarea" rows="3" placeholder="Remarques…" formControlName="additionalNotes"></textarea>
+        </div>
+
+        <div class="modal-form-footer">
+          <button type="button" class="btn btn-outline" (click)="showConfirmReservationModal = false">Annuler</button>
+          <button type="submit" class="btn btn-success" [disabled]="confirmReservationLoading">
+            <span *ngIf="confirmReservationLoading" class="spinner spinner-sm"></span>
+            <i class="bx bx-link" *ngIf="!confirmReservationLoading"></i> Confirmer et lier
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ MODAL AFFECTATION LOCATION ══ -->
+  <div class="modal-backdrop" *ngIf="showAssignRentalModal" (click)="showAssignRentalModal = false"></div>
+  <div class="side-modal side-modal--md" *ngIf="showAssignRentalModal" [class.show]="showAssignRentalModal" (click)="$event.stopPropagation()">
+    <div class="side-modal-header">
+      <div class="side-modal-title"><i class="bx bx-key"></i> Affecter à une location</div>
+      <button class="side-modal-close" (click)="showAssignRentalModal = false"><i class="bx bx-x"></i></button>
+    </div>
+    <div class="side-modal-body">
+
+      <div class="modal-alert info">
+        <i class="bx bx-car"></i>
+        <div>
+          <strong>Véhicule :</strong> {{ assignRentalVehicle?.code }} · {{ assignRentalVehicle?.brand }} {{ assignRentalVehicle?.model }}
+          <span class="cell-sub">{{ assignRentalVehicle?.plateNumber }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="assignRentalForm" (ngSubmit)="onAssignRentalSubmit()">
+
+        <!-- Sélection client -->
+        <div class="field-group" style="margin-top:16px;">
+          <label class="field-label">Client <span class="required">*</span></label>
+          <div class="search-input-wrap" style="margin-bottom:8px;">
+            <i class="bx bx-search"></i>
+            <input type="text" placeholder="Nom, téléphone…" (input)="filterTiersForAssignment($any($event.target).value)">
+          </div>
+          <div class="scroll-list">
+            <div *ngIf="isLoadingTiersForAssignment" class="loading-state"><div class="spinner"></div><span>Chargement…</span></div>
+            <div *ngIf="!isLoadingTiersForAssignment && filteredTiersForAssignment.length === 0" class="empty-state">Aucun client</div>
+            <div *ngFor="let tier of filteredTiersForAssignment" class="list-item"
+              [class.selected]="assignRentalForm.get('customerId')?.value === tier.id"
+              (click)="selectTierForAssignment(tier)">
+              <div class="list-item-main">
+                <span class="cell-name">{{ tiersService.getFullName(tier) }}</span>
+                <span class="cell-sub">{{ tier.phone || 'N/A' }} · {{ tier.tierNumber || 'N/A' }}</span>
+              </div>
+              <span class="status-badge" [ngClass]="getTierStatusBadge(tier.status)">{{ getTierStatusText(tier.status) }}</span>
+            </div>
+          </div>
+          <div *ngIf="arf['customerId'].invalid && assignRentalSubmitted" class="field-error">Veuillez sélectionner un client</div>
+        </div>
+
+        <!-- Sélection contrat -->
+        <div class="field-group" style="margin-top:14px;">
+          <label class="field-label">Contrat de location <span class="required">*</span></label>
+          <div class="search-input-wrap" style="margin-bottom:8px;">
+            <i class="bx bx-search"></i>
+            <input type="text" placeholder="Numéro de contrat…" (input)="filterContractsForAssignment($any($event.target).value)">
+          </div>
+          <div class="scroll-list">
+            <div *ngIf="isLoadingContractsForAssignment" class="loading-state"><div class="spinner"></div><span>Chargement…</span></div>
+            <div *ngIf="!isLoadingContractsForAssignment && filteredContractsForAssignment.length === 0" class="empty-state">Aucun contrat disponible</div>
+            <div *ngFor="let contract of filteredContractsForAssignment" class="list-item"
+              [class.selected]="assignRentalForm.get('contractId')?.value === contract.id"
+              (click)="selectContractForAssignment(contract)">
+              <div class="list-item-main">
+                <span class="cell-ref">{{ contract.contractNumber }}</span>
+                <span class="cell-sub">{{ contract.durationInWeeks }} sem. · {{ formatCurrency(contract.totalAmount) }}</span>
+              </div>
+              <span class="status-badge" [ngClass]="getContractStatusBadge(contract.status)">{{ getContractStatusText(contract.status) }}</span>
+            </div>
+          </div>
+          <div *ngIf="arf['contractId'].invalid && assignRentalSubmitted" class="field-error">Veuillez sélectionner un contrat</div>
+        </div>
+
+        <!-- Date + kilométrage -->
+        <div class="form-grid form-grid-2" style="margin-top:14px;">
+          <div class="field-group">
+            <label class="field-label">Date de début <span class="required">*</span></label>
+            <input type="datetime-local" class="field-input" formControlName="startDate" [min]="today.toISOString().slice(0,16)">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Kilométrage départ <span class="required">*</span></label>
+            <input type="number" class="field-input" formControlName="startMileage" min="0" [max]="assignRentalVehicle?.currentMileage ?? null">
+            <span class="field-hint">Actuel : {{ assignRentalVehicle?.currentMileage || 0 }} km</span>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top:14px;">
+          <label class="field-label">Remarques <span class="optional">(Optionnel)</span></label>
+          <textarea class="field-textarea" rows="3" placeholder="Informations supplémentaires…" formControlName="notes"></textarea>
+        </div>
+
+        <div class="modal-form-footer">
+          <button type="button" class="btn btn-outline" (click)="showAssignRentalModal = false">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="assignRentalLoading || assignRentalForm.invalid">
+            <span *ngIf="assignRentalLoading" class="spinner spinner-sm"></span>
+            <i class="bx bx-check" *ngIf="!assignRentalLoading"></i>
+            {{ assignRentalLoading ? 'Affectation…' : 'Affecter le véhicule' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ MODAL ÉDITION ══ -->
+  <div class="modal-backdrop" *ngIf="showEditModal" (click)="closeEditModal()"></div>
+  <div class="side-modal" *ngIf="showEditModal" [class.show]="showEditModal" (click)="$event.stopPropagation()">
+    <div class="side-modal-header">
+      <div class="side-modal-title"><i class="bx bx-edit"></i> Modifier le véhicule</div>
+      <button class="side-modal-close" (click)="closeEditModal()"><i class="bx bx-x"></i></button>
+    </div>
+    <div class="side-modal-body">
+
+      <div *ngIf="!selectedVehicle" class="loading-state"><div class="spinner"></div><span>Chargement…</span></div>
+
+      <form *ngIf="selectedVehicle" [formGroup]="editVehicleForm" (ngSubmit)="onEditSubmit()">
+
+        <div class="detail-hero">
+          <div class="detail-hero-icon"><i [class]="getVehicleIcon(selectedVehicle.type)"></i></div>
+          <div>
+            <div class="detail-hero-name">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</div>
+            <div class="detail-hero-badges">
+              <span class="meta-badge">{{ selectedVehicle.code }}</span>
+              <span class="type-badge" [ngClass]="getTypeBadgeClass(selectedVehicle.type)">{{ getTypeText(selectedVehicle.type) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="editSubmitted && editVehicleForm.invalid" class="modal-alert danger" style="margin-top:14px;">
+          <i class="bx bx-error-circle"></i> Veuillez corriger les erreurs
+        </div>
+
+        <div class="card form-card" style="margin-top:16px;">
+          <div class="card-header"><div class="card-title"><i class="bx bx-info-circle"></i> Informations de base</div></div>
+          <div class="card-body">
+            <div class="form-grid form-grid-2">
+              <div class="field-group">
+                <label class="field-label">Plaque <span class="required">*</span></label>
+                <input type="text" class="field-input" formControlName="plateNumber" [class.is-invalid]="editSubmitted && ef['plateNumber'].invalid">
+                <div *ngIf="editSubmitted && ef['plateNumber'].invalid" class="field-error">
+                  <span *ngIf="ef['plateNumber'].errors?.['required']">Requis</span>
+                  <span *ngIf="ef['plateNumber'].errors?.['minlength']">Min. 5 caractères</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Couleur</label>
+                <input type="text" class="field-input" formControlName="color">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Kilométrage <span class="required">*</span></label>
+                <input type="number" class="field-input" formControlName="currentMileage" [class.is-invalid]="editSubmitted && ef['currentMileage'].invalid">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card form-card">
+          <div class="card-header"><div class="card-title"><i class="bx bx-shield-alt"></i> Assurance</div></div>
+          <div class="card-body">
+            <div class="form-grid form-grid-2">
+              <div class="field-group"><label class="field-label">Compagnie</label><input type="text" class="field-input" formControlName="insuranceCompany"></div>
+              <div class="field-group"><label class="field-label">N° Police</label><input type="text" class="field-input" formControlName="insurancePolicyNumber"></div>
+              <div class="field-group"><label class="field-label">Date début</label><input type="date" class="field-input" formControlName="insuranceStartDate"></div>
+              <div class="field-group"><label class="field-label">Date fin</label><input type="date" class="field-input" formControlName="insuranceEndDate"></div>
+              <div class="field-group"><label class="field-label">Couverture</label><input type="text" class="field-input" formControlName="insuranceCoverageType"></div>
+              <div class="field-group"><label class="field-label">Prime annuelle</label><input type="number" class="field-input" formControlName="insuranceAnnualPremium"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card form-card">
+          <div class="card-header"><div class="card-title"><i class="bx bx-cog"></i> Caractéristiques</div></div>
+          <div class="card-body">
+            <div class="checkbox-group" style="margin-bottom:14px;">
+              <label class="checkbox-item">
+                <input type="checkbox" class="checkbox-input" formControlName="hasGps">
+                <span class="checkbox-box"></span>
+                <span class="checkbox-label"><i class="bx bx-navigation"></i> GPS</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" class="checkbox-input" formControlName="hasAirConditioning">
+                <span class="checkbox-box"></span>
+                <span class="checkbox-label"><i class="bx bx-wind"></i> Climatisation</span>
+              </label>
+            </div>
+            <div class="form-grid form-grid-2">
+              <div class="field-group"><label class="field-label">Transmission</label><input type="text" class="field-input" formControlName="transmission"></div>
+              <div class="field-group"><label class="field-label">Cylindrée (cm³)</label><input type="number" class="field-input" formControlName="engineCapacity"></div>
+              <div class="field-group"><label class="field-label">Réservoir (L)</label><input type="number" class="field-input" formControlName="fuelCapacity"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card form-card">
+          <div class="card-header"><div class="card-title"><i class="bx bx-note"></i> Notes</div></div>
+          <div class="card-body">
+            <textarea class="field-textarea" formControlName="notes" rows="3" placeholder="Notes internes…"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-form-footer">
+          <button type="button" class="btn btn-outline" (click)="closeEditModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="editLoading">
+            <span *ngIf="editLoading" class="spinner spinner-sm"></span>
+            <i class="bx bx-save" *ngIf="!editLoading"></i> Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION + CONFIRM DIALOG -->
+  <app-notification-component></app-notification-component>
+  <app-confirm-dialog
+    [title]="confirmDialogTitle" [message]="confirmDialogMessage"
+    [details]="confirmDialogDetails" [confirmText]="confirmDialogConfirmText"
+    [cancelText]="confirmDialogCancelText" [visible]="showConfirmDialog"
+    (confirm)="onDialogConfirm()" (cancel)="onDialogCancel()">
+  </app-confirm-dialog>
 
 </div>

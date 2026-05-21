@@ -48,7 +48,6 @@ export interface ContractPaginatedResponse {
   styleUrls: ['./vehicules-list.scss'],
 })
 export class VehiculesList implements OnInit, OnDestroy {
-[x: string]: any;
 
   /** Contrôle l'affichage du dialog de confirmation */
   showConfirmDialog = false;
@@ -457,6 +456,22 @@ export class VehiculesList implements OnInit, OnDestroy {
       attachments: [[]]
     });
   }
+
+  /**
+ * Obtient la classe CSS pour le badge de statut (pour ngClass)
+ */
+getVehicleStatusClass(status: VehicleStatus | null | undefined): string {
+  if (!status) return 'badge-secondary';
+
+  switch (status) {
+    case VehicleStatus.Available: return 'badge-success';
+    case VehicleStatus.Rented: return 'badge-warning';
+    case VehicleStatus.Maintenance: return 'badge-info';
+    case VehicleStatus.Reserved: return 'badge-primary';
+    case VehicleStatus.OutOfService: return 'badge-danger';
+    default: return 'badge-secondary';
+  }
+}
 
   // Soumission du formulaire
   submitReason(): void {
