@@ -48,6 +48,7 @@ export interface ContractPaginatedResponse {
   styleUrls: ['./vehicules-list.scss'],
 })
 export class VehiculesList implements OnInit, OnDestroy {
+[x: string]: any;
 
   /** Contrôle l'affichage du dialog de confirmation */
   showConfirmDialog = false;
