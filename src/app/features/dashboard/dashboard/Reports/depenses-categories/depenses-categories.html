@@ -1,463 +1,444 @@
-<div class="layout-wrapper">
-  <!-- =========================================================================== -->
-  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
-  <!-- =========================================================================== -->
-<app-sidebar-component></app-sidebar-component>
+<div class="app-wrapper">
 
-  <!-- =========================================================================== -->
-  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
-  <!-- =========================================================================== -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
 
-    <!-- ========================================== -->
-    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
-    <!-- ========================================== -->
-    <nav class="layout-navbar">
-      <!-- Contrôles de navigation -->
-      <div class="d-flex align-items-center">
-        <!-- Bouton de bascule de la sidebar -->
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class='bx bx-menu'></i>
+          <i class="bx bx-menu"></i>
         </button>
-        <!-- Titre de la page -->
-        <h3 class="mb-0 ms-3">Dépenses par catégorie</h3>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Tableau de Bord</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Dépenses par catégorie</span>
+        </div>
       </div>
 
-      <!-- Menu utilisateur -->
-      <ul class="navbar-nav">
-        <!-- Dropdown utilisateur avec photo dynamique -->
-        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
-          <div class="avatar dropdown-toggle">
-            <!-- Photo de profil -->
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''"
-                 [src]="userPhotoUrl"
-                 [alt]="userName"
-                 (error)="userPhotoUrl = getDefaultAvatar()" />
-            <!-- Avatar par défaut si pas de photo -->
-            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-              {{ getUserInitials() }}
-            </div>
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
+
+        <button class="topbar-icon-btn">
+          <i class="bx bx-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
           </div>
-          <!-- Menu déroulant utilisateur -->
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
+          </div>
+
           <div class="dropdown-menu" [class.show]="showUserMenu">
-            <div style="padding: 1rem;">
-              <!-- Informations utilisateur -->
-              <div class="fw-bold">{{ userName }}</div>
-              <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
-              </div>
-              <hr style="margin: 0.5rem 0;">
-
-              <!-- Liens du menu utilisateur -->
-              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                <i class='bx bx-user me-2'></i> Mon profil
-              </a>
-              <a [routerLink]="['/settings']" class="dropdown-item">
-                <i class='bx bx-cog me-2'></i> Paramètres
-              </a>
-              <hr style="margin: 0.5rem 0;">
-
-              <!-- Déconnexion -->
-              <a (click)="logout()" class="dropdown-item logout-item">
-                <i class='bx bx-log-out me-2'></i> Déconnexion
-              </a>
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
             </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/settings']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
           </div>
-        </li>
-      </ul>
-    </nav>
+        </div>
+      </div>
+    </header>
 
-    <!-- ========================================== -->
-    <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
-    <!-- ========================================== -->
-<!-- ══════════════════════════════════════════════════ -->
-      <!-- CONTENU PRINCIPAL                                 -->
-      <!-- ══════════════════════════════════════════════════ -->
-      <div class="content-wrapper">
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
 
-        <!-- ── EN-TÊTE ──────────────────────────────────── -->
-        <div class="exp-header">
-          <div class="exp-header__left">
-            <div class="exp-header__icon">
-              <i class="bx bx-pie-chart-alt-2"></i>
-            </div>
-            <div>
-              <h4 class="exp-header__title">Dépenses par catégorie</h4>
-              <p class="exp-header__subtitle">
-                Analyse et ventilation des charges opérationnelles de la flotte
-              </p>
-            </div>
+      <!-- ══ HERO BANNER ══ -->
+      <div class="hero-banner">
+        <div class="hero-deco"><i class="bx bx-pie-chart-alt-2"></i></div>
+        <div class="hero-content">
+          <div class="hero-greeting">Analyse opérationnelle — LOGISTIK</div>
+          <div class="hero-title">Dépenses par <span>catégorie</span></div>
+          <div class="hero-subtitle">
+            Analyse et ventilation des charges opérationnelles de la flotte
           </div>
 
-          <!-- Contrôles période + filtre -->
-          <div class="exp-controls">
-            <!-- Sélecteur période -->
-            <div class="exp-period">
-              <button class="exp-period__nav" (click)="previousMonth()">
-                <i class="bx bx-chevron-left"></i>
-              </button>
-              <div class="exp-period__selects">
-                <select [(ngModel)]="selectedMonth" (change)="onPeriodChange()">
-                  <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
-                </select>
-                <select [(ngModel)]="selectedYear" (change)="onPeriodChange()">
-                  <option *ngFor="let y of years" [value]="y">{{ y }}</option>
-                </select>
-              </div>
-              <button class="exp-period__nav" (click)="nextMonth()" [disabled]="isNextMonthDisabled">
-                <i class="bx bx-chevron-right"></i>
-              </button>
-              <button class="exp-period__refresh" (click)="loadReport()" [disabled]="isLoading">
-                <i class="bx bx-refresh" [class.spin]="isLoading"></i>
-              </button>
+          <!-- Sélecteur de période intégré au hero -->
+          <div class="rpt-period-selector">
+            <button class="rpt-period-selector__nav" (click)="previousMonth()" title="Mois précédent">
+              <i class="bx bx-chevron-left"></i>
+            </button>
+            <div class="rpt-period-selector__controls">
+              <select class="rpt-period-selector__select" [(ngModel)]="selectedMonth" (change)="onPeriodChange()">
+                <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
+              </select>
+              <select class="rpt-period-selector__select" [(ngModel)]="selectedYear" (change)="onPeriodChange()">
+                <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+              </select>
             </div>
+            <button class="rpt-period-selector__nav" (click)="nextMonth()" [disabled]="isNextMonthDisabled" title="Mois suivant">
+              <i class="bx bx-chevron-right"></i>
+            </button>
+            <button class="rpt-period-selector__refresh" (click)="loadReport()" [disabled]="isLoading" title="Actualiser">
+              <i class="bx bx-refresh" [class.spin]="isLoading"></i>
+            </button>
           </div>
         </div>
 
-        <!-- ── SKELETON ─────────────────────────────────── -->
-        <div *ngIf="isLoading" class="exp-skeleton-wrapper">
-          <div class="exp-sk-row">
-            <div class="exp-sk exp-sk--kpi" *ngFor="let i of [1,2,3]"></div>
+        <!-- Hero Stats dynamiques -->
+        <div class="hero-stats" *ngIf="reportData && !isLoading">
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ formatAmount(reportData.totalExpenses) }}</div>
+            <div class="hero-stat-label">Total dépenses</div>
           </div>
-          <div class="exp-sk-row">
-            <div class="exp-sk exp-sk--big"></div>
-            <div class="exp-sk exp-sk--side"></div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ categories.length }}</div>
+            <div class="hero-stat-label">Catégories</div>
           </div>
-          <div class="exp-sk exp-sk--table"></div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ byVehicle.length }}</div>
+            <div class="hero-stat-label">Véhicules</div>
+          </div>
         </div>
+      </div>
 
-        <!-- ── ERREUR ────────────────────────────────────── -->
-        <div *ngIf="hasError && !isLoading" class="exp-error">
-          <i class="bx bx-error-circle"></i>
-          <div>
-            <strong>Impossible de charger le rapport</strong>
-            <p>{{ errorMessage }}</p>
-          </div>
-          <button class="btn btn-sm btn-primary" (click)="loadReport()">
-            <i class="bx bx-refresh me-1"></i> Réessayer
-          </button>
+      <!-- ══ ÉTAT DE CHARGEMENT ══ -->
+      <div *ngIf="isLoading" class="grid grid-3">
+        <div class="kpi-card kpi-card--skeleton"></div>
+        <div class="kpi-card kpi-card--skeleton"></div>
+        <div class="kpi-card kpi-card--skeleton"></div>
+      </div>
+
+      <!-- ══ ÉTAT D'ERREUR ══ -->
+      <div *ngIf="hasError && !isLoading" class="rpt-error-card">
+        <div class="rpt-error-card__icon"><i class="bx bx-error-circle"></i></div>
+        <div class="rpt-error-card__content">
+          <h6>Impossible de charger le rapport</h6>
+          <p>{{ errorMessage }}</p>
         </div>
+        <button class="btn btn-primary btn-sm" (click)="loadReport()">
+          <i class="bx bx-refresh"></i> Réessayer
+        </button>
+      </div>
 
-        <!-- ── RAPPORT ───────────────────────────────────── -->
-        <ng-container *ngIf="reportData && !isLoading && !hasError">
+      <!-- ══ CONTENU DU RAPPORT ══ -->
+      <ng-container *ngIf="reportData && !isLoading && !hasError">
 
-          <!-- ══════════════════════════════════════════════ -->
-          <!-- BLOC 1 : KPI SUMMARY CARDS                    -->
-          <!-- ══════════════════════════════════════════════ -->
-          <div class="exp-kpi-row">
+        <!-- ══ KPI CARDS ══ -->
+        <div class="grid grid-3">
 
-            <!-- Total dépenses -->
-            <div class="exp-kpi exp-kpi--total">
-              <div class="exp-kpi__glow"></div>
-              <div class="exp-kpi__icon"><i class="bx bx-wallet-alt"></i></div>
-              <div class="exp-kpi__body">
-                <span class="exp-kpi__label">Total dépenses</span>
-                <span class="exp-kpi__value">{{ formatAmount(reportData.totalExpenses) }}</span>
-                <span class="exp-kpi__sub">{{ periodLabel }}</span>
-              </div>
+          <!-- Total dépenses -->
+          <div class="kpi-card red">
+            <div class="kpi-header">
+              <div class="kpi-icon red"><i class="bx bx-wallet-alt"></i></div>
             </div>
+            <div class="kpi-value">{{ formatAmount(reportData.totalExpenses) }}</div>
+            <div class="kpi-label">Total dépenses</div>
+            <div class="kpi-sublabel">{{ periodLabel }}</div>
+          </div>
 
-            <!-- Catégorie principale -->
-            <div class="exp-kpi exp-kpi--top"
-                 *ngIf="topCategory"
-                 [style.--cat-color]="getCategoryColor(topCategory.categoryLabel)">
-              <div class="exp-kpi__glow"></div>
-              <div class="exp-kpi__icon">
+          <!-- Catégorie principale -->
+          <div class="kpi-card amber" *ngIf="topCategory">
+            <div class="kpi-header">
+              <div class="kpi-icon amber">
                 <i class="bx" [ngClass]="getCategoryIcon(topCategory.categoryLabel)"></i>
               </div>
-              <div class="exp-kpi__body">
-                <span class="exp-kpi__label">Poste principal</span>
-                <span class="exp-kpi__value">{{ topCategory.categoryLabel }}</span>
-                <span class="exp-kpi__badge">
-                  {{ formatPercent(topCategory.percentOfTotal) }} du total
-                </span>
-              </div>
-            </div>
-
-            <!-- Véhicule le + coûteux -->
-            <div class="exp-kpi exp-kpi--vehicle" *ngIf="mostExpensiveVehicle">
-              <div class="exp-kpi__glow"></div>
-              <div class="exp-kpi__icon"><i class="bx bx-car"></i></div>
-              <div class="exp-kpi__body">
-                <span class="exp-kpi__label">Véhicule le + coûteux</span>
-                <span class="exp-kpi__value">{{ mostExpensiveVehicle.vehicleCode }}</span>
-                <span class="exp-kpi__sub">{{ formatAmount(mostExpensiveVehicle.totalExpense) }}</span>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ══════════════════════════════════════════════ -->
-          <!-- BLOC 2 : GRAPHIQUE PRINCIPAL + LÉGENDE        -->
-          <!-- ══════════════════════════════════════════════ -->
-          <div class="exp-main-row">
-
-            <!-- Graphique barres horizontales -->
-            <div class="exp-card exp-card--chart">
-              <div class="exp-card__header">
-                <span class="exp-card__title">
-                  <i class="bx bx-bar-chart-alt-2"></i> Répartition par catégorie
-                </span>
-                <span class="exp-card__meta">{{ formatAmount(reportData.totalExpenses) }} total</span>
-              </div>
-              <div class="exp-card__body">
-                <div class="exp-category-list">
-                  <div class="exp-category-item"
-                       *ngFor="let cat of categories"
-                       (mouseenter)="hoveredCategory = cat.categoryLabel"
-                       (mouseleave)="hoveredCategory = null"
-                       [class.exp-category-item--hovered]="hoveredCategory === cat.categoryLabel">
-
-                    <!-- Icône + label -->
-                    <div class="exp-category-item__head">
-                      <div class="exp-category-item__icon"
-                           [style.background]="getCategorySoftColor(cat.categoryLabel)"
-                           [style.color]="getCategoryColor(cat.categoryLabel)">
-                        <i class="bx" [ngClass]="getCategoryIcon(cat.categoryLabel)"></i>
-                      </div>
-                      <div class="exp-category-item__info">
-                        <span class="exp-category-item__label">{{ cat.categoryLabel }}</span>
-                        <span class="exp-category-item__count">
-                          {{ cat.transactionCount }} transaction{{ cat.transactionCount > 1 ? 's' : '' }}
-                        </span>
-                      </div>
-                      <div class="exp-category-item__amounts">
-                        <span class="exp-category-item__amount">{{ formatAmount(cat.amount) }}</span>
-                        <span class="exp-category-item__pct"
-                              [style.color]="getCategoryColor(cat.categoryLabel)">
-                          {{ formatPercent(cat.percentOfTotal) }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Barre de progression -->
-                    <div class="exp-category-item__track">
-                      <div class="exp-category-item__bar"
-                           [style.width.%]="cat.percentOfTotal"
-                           [style.background]="getCategoryColor(cat.categoryLabel)">
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Donut visuel + récapitulatif -->
-            <div class="exp-card exp-card--donut">
-              <div class="exp-card__header">
-                <span class="exp-card__title">
-                  <i class="bx bx-pie-chart"></i> Synthèse
-                </span>
-              </div>
-              <div class="exp-card__body exp-card__body--center">
-
-                <!-- Faux donut CSS -->
-                <div class="exp-donut">
-                  <div class="exp-donut__inner">
-                    <span class="exp-donut__total">{{ formatAmount(reportData.totalExpenses) }}</span>
-                    <span class="exp-donut__label">Total</span>
-                  </div>
-                  <!-- Segments CSS conic-gradient -->
-                  <div class="exp-donut__ring"
-                       [style.background]="buildConicGradient()">
-                  </div>
-                </div>
-
-                <!-- Légende -->
-                <div class="exp-legend">
-                  <div class="exp-legend__item"
-                       *ngFor="let cat of categories"
-                       [class.exp-legend__item--active]="hoveredCategory === cat.categoryLabel"
-                       (mouseenter)="hoveredCategory = cat.categoryLabel"
-                       (mouseleave)="hoveredCategory = null">
-                    <span class="exp-legend__dot"
-                          [style.background]="getCategoryColor(cat.categoryLabel)">
-                    </span>
-                    <span class="exp-legend__name">{{ cat.categoryLabel }}</span>
-                    <span class="exp-legend__pct">{{ formatPercent(cat.percentOfTotal) }}</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ══════════════════════════════════════════════ -->
-          <!-- BLOC 3 : ÉVOLUTION MENSUELLE (mini sparkbars) -->
-          <!-- ══════════════════════════════════════════════ -->
-          <div class="exp-card exp-card--full" *ngIf="monthly.length > 0">
-            <div class="exp-card__header">
-              <span class="exp-card__title">
-                <i class="bx bx-line-chart"></i> Évolution mensuelle des dépenses
+              <span class="kpi-trend down">
+                <i class="bx bx-trending-up"></i>
+                {{ formatPercent(topCategory.percentOfTotal) }}
               </span>
             </div>
-            <div class="exp-card__body">
-              <div class="exp-monthly-chart">
-                <div class="exp-monthly-bar-group"
-                     *ngFor="let m of monthly"
-                     [title]="m.monthLabel + ' : ' + formatAmount(m.totalExpense)">
-                  <!-- Barre empilée -->
-                  <div class="exp-monthly-bars">
-                    <div class="exp-monthly-bar exp-monthly-bar--maint"
-                         [style.height.px]="barHeight(m.maintenanceCost)"
-                         [title]="'Maintenance : ' + formatAmount(m.maintenanceCost)">
+            <div class="kpi-value" style="font-size: 18px;">{{ topCategory.categoryLabel }}</div>
+            <div class="kpi-label">Poste principal</div>
+            <div class="kpi-sublabel">{{ formatAmount(topCategory.amount) }}</div>
+          </div>
+
+          <!-- Véhicule le + coûteux -->
+          <div class="kpi-card purple" *ngIf="mostExpensiveVehicle">
+            <div class="kpi-header">
+              <div class="kpi-icon purple"><i class="bx bx-car"></i></div>
+            </div>
+            <div class="kpi-value" style="font-size: 18px;">{{ mostExpensiveVehicle.vehicleCode }}</div>
+            <div class="kpi-label">Véhicule le + coûteux</div>
+            <div class="kpi-sublabel">{{ formatAmount(mostExpensiveVehicle.totalExpense) }}</div>
+          </div>
+
+        </div>
+
+        <!-- ══ GRAPHIQUE PRINCIPAL + DONUT ══ -->
+        <div class="grid grid-2" style="margin-top: 18px;">
+
+          <!-- Barres horizontales par catégorie -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="bx bx-bar-chart-alt-2"></i> Répartition par catégorie</div>
+              <span class="session-pill">{{ formatAmount(reportData.totalExpenses) }}</span>
+            </div>
+            <div class="card-body">
+              <div class="exp-category-list">
+                <div class="exp-category-item"
+                     *ngFor="let cat of categories"
+                     (mouseenter)="hoveredCategory = cat.categoryLabel"
+                     (mouseleave)="hoveredCategory = null"
+                     [class.exp-category-item--hovered]="hoveredCategory === cat.categoryLabel">
+
+                  <div class="exp-category-item__head">
+                    <div class="exp-category-item__icon"
+                         [style.background]="getCategorySoftColor(cat.categoryLabel)"
+                         [style.color]="getCategoryColor(cat.categoryLabel)">
+                      <i class="bx" [ngClass]="getCategoryIcon(cat.categoryLabel)"></i>
                     </div>
-                    <div class="exp-monthly-bar exp-monthly-bar--fuel"
-                         [style.height.px]="barHeight(m.fuelCost)"
-                         [title]="'Carburant : ' + formatAmount(m.fuelCost)">
+                    <div class="exp-category-item__info">
+                      <span class="exp-category-item__label">{{ cat.categoryLabel }}</span>
+                      <span class="exp-category-item__count">
+                        {{ cat.transactionCount }} transaction{{ cat.transactionCount > 1 ? 's' : '' }}
+                      </span>
                     </div>
-                    <div class="exp-monthly-bar exp-monthly-bar--ins"
-                         [style.height.px]="barHeight(m.insuranceCost)"
-                         [title]="'Assurance : ' + formatAmount(m.insuranceCost)">
+                    <div class="exp-category-item__amounts">
+                      <span class="exp-category-item__amount">{{ formatAmount(cat.amount) }}</span>
+                      <span class="status-badge status-failed" style="font-size:10.5px;">
+                        {{ formatPercent(cat.percentOfTotal) }}
+                      </span>
                     </div>
                   </div>
-                  <!-- Label mois -->
-                  <span class="exp-monthly-label">{{ m.monthLabel }}</span>
-                  <!-- Total au-dessus -->
-                  <span class="exp-monthly-total">{{ formatAmount(m.totalExpense) }}</span>
-                </div>
-              </div>
 
-              <!-- Légende barres -->
-              <div class="exp-monthly-legend">
-                <span><span class="exp-monthly-dot exp-monthly-dot--maint"></span> Maintenance</span>
-                <span><span class="exp-monthly-dot exp-monthly-dot--fuel"></span> Carburant</span>
-                <span><span class="exp-monthly-dot exp-monthly-dot--ins"></span> Assurance</span>
+                  <div class="rpt-progress-bar" style="margin-top: 8px;">
+                    <div class="rpt-progress-bar__fill"
+                         [style.width.%]="cat.percentOfTotal"
+                         [style.background]="getCategoryColor(cat.categoryLabel)">
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- ══════════════════════════════════════════════ -->
-          <!-- BLOC 4 : TABLEAU PAR VÉHICULE                 -->
-          <!-- ══════════════════════════════════════════════ -->
-          <div class="exp-card exp-card--full" *ngIf="byVehicle.length > 0">
-            <div class="exp-card__header">
-              <span class="exp-card__title">
-                <i class="bx bx-car"></i> Détail par véhicule
-              </span>
-              <!-- Toggle vue -->
-              <div class="exp-toggle">
-                <button [class.exp-toggle__btn--active]="vehicleView === 'bars'"
-                        class="exp-toggle__btn"
-                        (click)="vehicleView = 'bars'">
-                  <i class="bx bx-bar-chart"></i>
-                </button>
-                <button [class.exp-toggle__btn--active]="vehicleView === 'table'"
-                        class="exp-toggle__btn"
-                        (click)="vehicleView = 'table'">
-                  <i class="bx bx-table"></i>
-                </button>
-              </div>
+          <!-- Donut + légende -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="bx bx-pie-chart"></i> Synthèse</div>
             </div>
-            <div class="exp-card__body">
+            <div class="card-body" style="display:flex; flex-direction:column; align-items:center; gap:20px;">
 
-              <!-- VUE BARRES -->
-              <div *ngIf="vehicleView === 'bars'" class="exp-vehicle-bars">
-                <div class="exp-vehicle-bar-item"
-                     *ngFor="let v of sortedVehicles.slice(0, 8)">
-                  <div class="exp-vehicle-bar-item__label">
-                    <div class="exp-vehicle-avatar">
-                      <i class="bx bx-car"></i>
-                    </div>
-                    <div>
-                      <div class="exp-vehicle-bar-item__name">{{ v.vehicleName }}</div>
-                      <div class="exp-vehicle-bar-item__code">{{ v.vehicleCode }}</div>
-                    </div>
-                  </div>
-
-                  <!-- Barre segmentée -->
-                  <div class="exp-vehicle-bar-item__track">
-                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--maint"
-                         [style.width.%]="(v.maintenanceCost / v.totalExpense) * 100"
-                         [title]="'Maintenance : ' + formatAmount(v.maintenanceCost)">
-                    </div>
-                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--fuel"
-                         [style.width.%]="(v.fuelCost / v.totalExpense) * 100"
-                         [title]="'Carburant : ' + formatAmount(v.fuelCost)">
-                    </div>
-                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--ins"
-                         [style.width.%]="(v.insuranceCost / v.totalExpense) * 100"
-                         [title]="'Assurance : ' + formatAmount(v.insuranceCost)">
-                    </div>
-                    <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--other"
-                         [style.width.%]="(v.otherCost / v.totalExpense) * 100"
-                         [title]="'Autres : ' + formatAmount(v.otherCost)">
-                    </div>
-                  </div>
-
-                  <span class="exp-vehicle-bar-item__total">
-                    {{ formatAmount(v.totalExpense) }}
-                  </span>
+              <!-- Donut CSS conic-gradient -->
+              <div class="exp-donut">
+                <div class="exp-donut__ring" [style.background]="buildConicGradient()"></div>
+                <div class="exp-donut__inner">
+                  <span class="exp-donut__total">{{ formatAmount(reportData.totalExpenses) }}</span>
+                  <span class="exp-donut__label">Total</span>
                 </div>
               </div>
 
-              <!-- VUE TABLEAU -->
-              <div *ngIf="vehicleView === 'table'" class="exp-vehicle-table-wrapper">
-                <table class="exp-vehicle-table">
-                  <thead>
-                    <tr>
-                      <th>Véhicule</th>
-                      <th (click)="sortBy('totalExpense')" class="sortable">
-                        Total
-                        <i class="bx" [ngClass]="sortColumn === 'totalExpense' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
-                      </th>
-                      <th (click)="sortBy('maintenanceCost')" class="sortable">
-                        Maintenance
-                        <i class="bx" [ngClass]="sortColumn === 'maintenanceCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
-                      </th>
-                      <th (click)="sortBy('fuelCost')" class="sortable">
-                        Carburant
-                        <i class="bx" [ngClass]="sortColumn === 'fuelCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
-                      </th>
-                      <th (click)="sortBy('insuranceCost')" class="sortable">
-                        Assurance
-                        <i class="bx" [ngClass]="sortColumn === 'insuranceCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
-                      </th>
-                      <th>Autres</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let v of sortedVehicles">
-                      <td>
-                        <div class="exp-vehicle-cell">
-                          <div class="exp-vehicle-avatar">
-                            <i class="bx bx-car"></i>
-                          </div>
-                          <div>
-                            <div class="fw-bold text-sm">{{ v.vehicleName }}</div>
-                            <div class="text-muted text-xs">{{ v.vehicleCode }}</div>
-                          </div>
+              <!-- Légende -->
+              <div class="exp-legend">
+                <div class="exp-legend__item"
+                     *ngFor="let cat of categories"
+                     [class.exp-legend__item--active]="hoveredCategory === cat.categoryLabel"
+                     (mouseenter)="hoveredCategory = cat.categoryLabel"
+                     (mouseleave)="hoveredCategory = null">
+                  <span class="exp-legend__dot" [style.background]="getCategoryColor(cat.categoryLabel)"></span>
+                  <span class="exp-legend__name">{{ cat.categoryLabel }}</span>
+                  <span class="exp-legend__pct">{{ formatPercent(cat.percentOfTotal) }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ══ ÉVOLUTION MENSUELLE ══ -->
+        <div class="card" style="margin-top: 18px;" *ngIf="monthly.length > 0">
+          <div class="card-header">
+            <div class="card-title"><i class="bx bx-line-chart"></i> Évolution mensuelle des dépenses</div>
+          </div>
+          <div class="card-body">
+            <div class="exp-monthly-chart">
+              <div class="exp-monthly-bar-group"
+                   *ngFor="let m of monthly"
+                   [title]="m.monthLabel + ' : ' + formatAmount(m.totalExpense)">
+                <span class="exp-monthly-total">{{ formatAmount(m.totalExpense) }}</span>
+                <div class="exp-monthly-bars">
+                  <div class="exp-monthly-bar exp-monthly-bar--maint"
+                       [style.height.px]="barHeight(m.maintenanceCost)"
+                       [title]="'Maintenance : ' + formatAmount(m.maintenanceCost)">
+                  </div>
+                  <div class="exp-monthly-bar exp-monthly-bar--fuel"
+                       [style.height.px]="barHeight(m.fuelCost)"
+                       [title]="'Carburant : ' + formatAmount(m.fuelCost)">
+                  </div>
+                  <div class="exp-monthly-bar exp-monthly-bar--ins"
+                       [style.height.px]="barHeight(m.insuranceCost)"
+                       [title]="'Assurance : ' + formatAmount(m.insuranceCost)">
+                  </div>
+                </div>
+                <span class="exp-monthly-label">{{ m.monthLabel }}</span>
+              </div>
+            </div>
+
+            <div class="exp-monthly-legend">
+              <span class="status-badge status-pending">
+                <span style="display:inline-block;width:8px;height:8px;background:#F79009;border-radius:50%;margin-right:4px;"></span>
+                Maintenance
+              </span>
+              <span class="status-badge status-rented">
+                <span style="display:inline-block;width:8px;height:8px;background:#0BA5EC;border-radius:50%;margin-right:4px;"></span>
+                Carburant
+              </span>
+              <span class="status-badge status-reserved">
+                <span style="display:inline-block;width:8px;height:8px;background:#696CFF;border-radius:50%;margin-right:4px;"></span>
+                Assurance
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ DÉTAIL PAR VÉHICULE ══ -->
+        <div class="card" style="margin-top: 18px;" *ngIf="byVehicle.length > 0">
+          <div class="card-header">
+            <div class="card-title"><i class="bx bx-car"></i> Détail par véhicule</div>
+            <div class="rpt-toggle-pills">
+              <button class="btn btn-sm"
+                      [class.btn-primary]="vehicleView === 'bars'"
+                      [class.btn-outline]="vehicleView !== 'bars'"
+                      (click)="vehicleView = 'bars'">
+                <i class="bx bx-bar-chart"></i>
+              </button>
+              <button class="btn btn-sm"
+                      [class.btn-primary]="vehicleView === 'table'"
+                      [class.btn-outline]="vehicleView !== 'table'"
+                      (click)="vehicleView = 'table'">
+                <i class="bx bx-table"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <!-- VUE BARRES -->
+            <div *ngIf="vehicleView === 'bars'" class="exp-vehicle-bars">
+              <div class="exp-vehicle-bar-item" *ngFor="let v of sortedVehicles.slice(0, 8)">
+                <div class="exp-vehicle-bar-item__label">
+                  <div class="kpi-icon amber" style="width:32px;height:32px;font-size:14px;flex-shrink:0;">
+                    <i class="bx bx-car"></i>
+                  </div>
+                  <div>
+                    <div class="cell-name">{{ v.vehicleName }}</div>
+                    <div class="cell-ref" style="font-size:11px;">{{ v.vehicleCode }}</div>
+                  </div>
+                </div>
+                <div class="exp-vehicle-bar-item__track">
+                  <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--maint"
+                       [style.width.%]="(v.maintenanceCost / v.totalExpense) * 100"
+                       [title]="'Maintenance : ' + formatAmount(v.maintenanceCost)">
+                  </div>
+                  <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--fuel"
+                       [style.width.%]="(v.fuelCost / v.totalExpense) * 100"
+                       [title]="'Carburant : ' + formatAmount(v.fuelCost)">
+                  </div>
+                  <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--ins"
+                       [style.width.%]="(v.insuranceCost / v.totalExpense) * 100"
+                       [title]="'Assurance : ' + formatAmount(v.insuranceCost)">
+                  </div>
+                  <div class="exp-vehicle-bar-item__seg exp-vehicle-bar-item__seg--other"
+                       [style.width.%]="(v.otherCost / v.totalExpense) * 100"
+                       [title]="'Autres : ' + formatAmount(v.otherCost)">
+                  </div>
+                </div>
+                <span class="exp-vehicle-bar-item__total">{{ formatAmount(v.totalExpense) }}</span>
+              </div>
+            </div>
+
+            <!-- VUE TABLEAU -->
+            <div *ngIf="vehicleView === 'table'" style="padding: 0; margin: -22px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Véhicule</th>
+                    <th (click)="sortBy('totalExpense')" class="sortable">
+                      Total <i class="bx" [ngClass]="sortColumn === 'totalExpense' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                    </th>
+                    <th (click)="sortBy('maintenanceCost')" class="sortable">
+                      Maintenance <i class="bx" [ngClass]="sortColumn === 'maintenanceCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                    </th>
+                    <th (click)="sortBy('fuelCost')" class="sortable">
+                      Carburant <i class="bx" [ngClass]="sortColumn === 'fuelCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                    </th>
+                    <th (click)="sortBy('insuranceCost')" class="sortable">
+                      Assurance <i class="bx" [ngClass]="sortColumn === 'insuranceCost' ? (sortAsc ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i>
+                    </th>
+                    <th>Autres</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let v of sortedVehicles">
+                    <td>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="kpi-icon amber" style="width:32px;height:32px;font-size:14px;flex-shrink:0;">
+                          <i class="bx bx-car"></i>
                         </div>
-                      </td>
-                      <td><strong class="text-danger">{{ formatAmount(v.totalExpense) }}</strong></td>
-                      <td>{{ formatAmount(v.maintenanceCost) }}</td>
-                      <td>{{ formatAmount(v.fuelCost) }}</td>
-                      <td>{{ formatAmount(v.insuranceCost) }}</td>
-                      <td>{{ formatAmount(v.otherCost) }}</td>
-                    </tr>
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td><strong>TOTAL</strong></td>
-                      <td><strong class="text-danger">{{ formatAmount(reportData.totalExpenses) }}</strong></td>
-                      <td><strong>{{ formatAmount(byVehicle | sum:'maintenanceCost') }}</strong></td>
-                      <td><strong>{{ formatAmount(byVehicle | sum:'fuelCost') }}</strong></td>
-                      <td><strong>{{ formatAmount(byVehicle | sum:'insuranceCost') }}</strong></td>
-                      <td><strong>{{ formatAmount(byVehicle | sum:'otherCost') }}</strong></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-
+                        <div>
+                          <div class="cell-name">{{ v.vehicleName }}</div>
+                          <div class="cell-ref" style="font-size:11px;">{{ v.vehicleCode }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="status-badge status-failed">{{ formatAmount(v.totalExpense) }}</span></td>
+                    <td>{{ formatAmount(v.maintenanceCost) }}</td>
+                    <td>{{ formatAmount(v.fuelCost) }}</td>
+                    <td>{{ formatAmount(v.insuranceCost) }}</td>
+                    <td>{{ formatAmount(v.otherCost) }}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr class="data-table__tfoot">
+                    <td><span class="cell-name">TOTAL</span></td>
+                    <td><span class="status-badge status-failed">{{ formatAmount(reportData.totalExpenses) }}</span></td>
+                    <td><strong>{{ formatAmount(byVehicle | sum:'maintenanceCost') }}</strong></td>
+                    <td><strong>{{ formatAmount(byVehicle | sum:'fuelCost') }}</strong></td>
+                    <td><strong>{{ formatAmount(byVehicle | sum:'insuranceCost') }}</strong></td>
+                    <td><strong>{{ formatAmount(byVehicle | sum:'otherCost') }}</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
+
           </div>
+        </div>
 
-        </ng-container>
-      </div>
+      </ng-container>
 
-          <!-- COMPOSANT DE NOTIFICATION -->
-      <app-notification-component></app-notification-component>
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
+
+    </main>
   </div>
 </div>
+
+<app-notification-component></app-notification-component>
