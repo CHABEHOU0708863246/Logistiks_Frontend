@@ -3,30 +3,21 @@
   <!-- SIDEBAR -->
   <app-sidebar-component></app-sidebar-component>
 
-  <!-- MAIN -->
+  <!-- MAIN CONTENT -->
   <div class="main-content">
 
-    <!-- TOPBAR (version formulaire - même style que ton dashboard) -->
+    <!-- ══ TOPBAR ══ -->
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
           <i class="bx bx-menu"></i>
         </button>
-
         <div class="breadcrumb">
           <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
           <span class="breadcrumb-sep">/</span>
-          <span class="breadcrumb-current">Gestion des Utilisateurs</span>
-        </div>
-
-        <div class="topbar-search">
-          <i class="bx bx-search"></i>
-          <input
-            type="text"
-            placeholder="Rechercher dans la liste…"
-            [(ngModel)]="searchTerm"
-            (input)="onSearchChange()"
-          />
+          <span class="breadcrumb-current">Administration</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Utilisateurs</span>
         </div>
       </div>
 
@@ -37,7 +28,8 @@
         </div>
 
         <button class="topbar-icon-btn">
-          <i class="bx bx-refresh"></i>
+          <i class="bx bx-bell"></i>
+          <span class="notif-dot"></span>
         </button>
 
         <!-- User dropdown -->
@@ -45,13 +37,9 @@
           <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
             {{ getUserInitials() }}
           </div>
-          <img
-            *ngIf="userPhotoUrl && userPhotoUrl !== ''"
-            class="user-avatar"
-            [src]="userPhotoUrl"
-            [alt]="userName"
-            (error)="userPhotoUrl = getDefaultAvatar()"
-          />
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
           <div class="user-text">
             <span class="user-name-text">{{ userName }}</span>
             <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
@@ -78,41 +66,33 @@
       </div>
     </header>
 
-    <!-- CONTENT -->
+    <!-- ══ CONTENT AREA ══ -->
     <main class="content-area">
 
-      <!-- HERO BANNER (même style dashboard) -->
+      <!-- ══ HERO BANNER ══ -->
       <div class="hero-banner">
-        <div class="hero-deco"><i class="bx bxs-user"></i></div>
+        <div class="hero-deco"><i class="bx bx-user-circle"></i></div>
         <div class="hero-content">
-          <div class="hero-greeting">Administration • LOGISTIK</div>
-          <div class="hero-title">Gestion des Utilisateurs 👋</div>
+          <div class="hero-greeting">Administration système — LOGISTIK</div>
+          <div class="hero-title">Gestion des <span>Utilisateurs</span></div>
           <div class="hero-subtitle">
-            Gérez les comptes, permissions et statuts de votre équipe.
+            Gérez les comptes et permissions de votre équipe
           </div>
-
           <div class="hero-quick-actions">
-            <button class="hero-action-btn primary" (click)="exportUsers('xlsx')">
+            <a [routerLink]="['/dashboard/users/create']" class="hero-action-btn primary">
+              <i class="bx bx-plus"></i> Nouvel utilisateur
+            </a>
+            <button class="hero-action-btn" (click)="exportUsers('xlsx')">
               <i class="bx bx-file-excel"></i> Exporter Excel
-            </button>
-
-            <button
-              class="hero-action-btn"
-              [routerLink]="['/dashboard/admin/users-create']"
-            >
-              <i class="bx bx-plus"></i> Créer un utilisateur
             </button>
           </div>
         </div>
 
-        <!-- Stats hero -->
+        <!-- Hero Stats -->
         <div class="hero-stats">
           <div class="hero-stat">
-            <div class="hero-stat-value">
-              {{ statistics?.totalUsers || 0 }}
-              <span>/tot</span>
-            </div>
-            <div class="hero-stat-label">Utilisateurs</div>
+            <div class="hero-stat-value">{{ statistics?.totalUsers || 0 }}</div>
+            <div class="hero-stat-label">Total</div>
           </div>
           <div class="hero-stat-divider"></div>
           <div class="hero-stat">
@@ -122,20 +102,21 @@
           <div class="hero-stat-divider"></div>
           <div class="hero-stat">
             <div class="hero-stat-value">{{ statistics?.newUsersThisMonth || 0 }}</div>
-            <div class="hero-stat-label">Nouveaux</div>
+            <div class="hero-stat-label">Ce mois</div>
           </div>
         </div>
       </div>
 
-      <!-- ═ KPI CARDS (version stats) -->
+      <!-- ══ KPI CARDS ══ -->
       <div class="grid grid-4">
+
         <div class="kpi-card purple">
           <div class="kpi-header">
             <div class="kpi-icon purple"><i class="bx bx-user"></i></div>
           </div>
           <div class="kpi-value">{{ statistics?.totalUsers || 0 }}</div>
           <div class="kpi-label">Total Utilisateurs</div>
-          <div class="kpi-sublabel">Vue globale</div>
+          <div class="kpi-sublabel">Tous comptes confondus</div>
         </div>
 
         <div class="kpi-card green">
@@ -144,7 +125,7 @@
           </div>
           <div class="kpi-value">{{ statistics?.activeUsers || 0 }}</div>
           <div class="kpi-label">Actifs</div>
-          <div class="kpi-sublabel">Comptes en service</div>
+          <div class="kpi-sublabel">Comptes activés</div>
         </div>
 
         <div class="kpi-card amber">
@@ -153,7 +134,7 @@
           </div>
           <div class="kpi-value">{{ statistics?.inactiveUsers || 0 }}</div>
           <div class="kpi-label">Inactifs</div>
-          <div class="kpi-sublabel">Comptes suspendus</div>
+          <div class="kpi-sublabel">Comptes désactivés</div>
         </div>
 
         <div class="kpi-card red">
@@ -162,233 +143,201 @@
           </div>
           <div class="kpi-value">{{ statistics?.newUsersThisMonth || 0 }}</div>
           <div class="kpi-label">Nouveaux ce mois</div>
-          <div class="kpi-sublabel">Activité récente</div>
+          <div class="kpi-sublabel">Inscriptions récentes</div>
         </div>
+
       </div>
 
-      <!-- ═ FILTRES (style card dashboard) -->
-      <div class="filters-card card" style="margin-top: 18px;">
-        <div class="card-header">
-          <div class="card-title">
-            <i class="bx bx-filter"></i> Filtres & Recherche
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="filters-row">
+      <!-- ══ FILTRES ══ -->
+      <div class="card" style="margin-top: 18px;">
+        <div class="card-body" style="padding: 16px 22px;">
+          <div class="usr-filters">
 
-            <div class="filter-item flex-grow">
-              <label class="filter-label">
-                <i class="bx bx-search"></i>
-                Rechercher
-              </label>
+            <!-- Recherche -->
+            <div class="topbar-search" style="width: auto; flex: 1;">
+              <i class="bx bx-search"></i>
               <input
                 type="text"
-                class="filter-input"
                 placeholder="Nom, email, téléphone, rôle…"
                 [(ngModel)]="searchTerm"
-                (input)="onSearchChange()"
-              />
+                (input)="onSearchChange()" />
             </div>
 
-            <div class="filter-item">
-              <label class="filter-label">
-                <i class="bx bx-filter"></i>
-                Rôle
-              </label>
-              <select class="filter-select" [(ngModel)]="selectedRole" (change)="applyFilters()">
+            <!-- Filtre rôle -->
+            <div class="usr-filter-group">
+              <label class="usr-filter-label"><i class="bx bx-filter"></i> Rôle</label>
+              <select class="usr-filter-select" [(ngModel)]="selectedRole" (change)="applyFilters()">
                 <option value="">Tous les rôles</option>
-                <option *ngFor="let role of availableRoles" [value]="role.name">
-                  {{ role.roleName }}
-                </option>
+                <option *ngFor="let role of availableRoles" [value]="role.name">{{ role.roleName }}</option>
               </select>
             </div>
 
-            <div class="filter-item">
-              <label class="filter-label">
-                <i class="bx bx-toggle-left"></i>
-                Statut
-              </label>
-              <select class="filter-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+            <!-- Filtre statut -->
+            <div class="usr-filter-group">
+              <label class="usr-filter-label"><i class="bx bx-toggle-left"></i> Statut</label>
+              <select class="usr-filter-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
                 <option value="">Tous</option>
                 <option value="active">Actifs</option>
                 <option value="inactive">Inactifs</option>
               </select>
             </div>
 
-            <div class="filter-item">
-              <button class="btn btn-outline-secondary" (click)="resetFilters()">
-                <i class="bx bx-reset"></i>
-                Réinitialiser
-              </button>
-            </div>
+            <!-- Reset -->
+            <button class="btn btn-outline btn-sm" (click)="resetFilters()">
+              <i class="bx bx-reset"></i> Réinitialiser
+            </button>
 
           </div>
         </div>
       </div>
 
-      <!-- ═ TABLE (style card + table dashboard) -->
+      <!-- ══ TABLEAU ══ -->
       <div class="card" style="margin-top: 18px;">
         <div class="card-header">
-          <h3 class="card-title">
-            <i class="bx bx-table"></i>
+          <div class="card-title">
+            <i class="bx bx-list-ul"></i>
             {{ filteredUsers.length }} utilisateur(s)
-          </h3>
-
-          <div class="table-controls">
-            <label class="entries-label">
-              Afficher
-              <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
-                <option [value]="10">10</option>
-                <option [value]="25">25</option>
-                <option [value]="50">50</option>
-                <option [value]="100">100</option>
-              </select>
-              entrées
-            </label>
+          </div>
+          <div class="usr-page-size">
+            <span style="font-size:12.5px;color:#9590BB;">Afficher</span>
+            <select class="usr-filter-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+              <option [value]="50">50</option>
+              <option [value]="100">100</option>
+            </select>
+            <span style="font-size:12.5px;color:#9590BB;">entrées</span>
           </div>
         </div>
 
-        <div class="card-body">
+        <div class="card-body" style="padding: 0;">
+
           <!-- Loading -->
-          <div *ngIf="isLoading" class="loading-state">
-            <div class="spinner"></div>
-            <p>Chargement des utilisateurs...</p>
+          <div *ngIf="isLoading" class="usr-loading">
+            <div class="usr-spinner"></div>
+            <p>Chargement des utilisateurs…</p>
           </div>
 
           <!-- Empty -->
-          <div *ngIf="!isLoading && filteredUsers.length === 0" class="empty-state">
-            <i class="bx bx-user-x"></i>
-            <h3>Aucun utilisateur trouvé</h3>
-            <p *ngIf="searchTerm || selectedRole || selectedStatus">
-              Essayez de modifier vos filtres de recherche
+          <div *ngIf="!isLoading && filteredUsers.length === 0" class="empty-state" style="padding: 48px;">
+            <i class="bx bx-user-x" style="font-size:40px;display:block;margin-bottom:12px;color:#9590BB;"></i>
+            <h3 style="font-size:16px;font-weight:700;color:#1A1340;margin:0 0 6px;">Aucun utilisateur trouvé</h3>
+            <p style="font-size:13px;color:#9590BB;margin:0 0 16px;">
+              <ng-container *ngIf="searchTerm || selectedRole || selectedStatus">Essayez de modifier vos filtres</ng-container>
+              <ng-container *ngIf="!searchTerm && !selectedRole && !selectedStatus">Commencez par créer votre premier utilisateur</ng-container>
             </p>
-            <p *ngIf="!searchTerm && !selectedRole && !selectedStatus">
-              Commencez par créer votre premier utilisateur
-            </p>
-            <button class="btn btn-outline-primary" [routerLink]="['/dashboard/admin/users-create']">
-              <i class="bx bx-plus"></i>
-              Créer un utilisateur
-            </button>
+            <a [routerLink]="['/dashboard/admin/users-create']" class="btn btn-primary btn-sm">
+              <i class="bx bx-plus"></i> Créer un utilisateur
+            </a>
           </div>
 
           <!-- Table -->
           <div *ngIf="!isLoading && filteredUsers.length > 0" class="table-responsive">
-            <table class="users-table data-table">
+            <table class="data-table">
               <thead>
                 <tr>
-                  <th class="checkbox-col">
-                    <input type="checkbox" [(ngModel)]="selectAll" (change)="onSelectAllChange()" />
+                  <th style="width:40px; padding-left:18px;">
+                    <input type="checkbox" class="usr-checkbox" [(ngModel)]="selectAll" (change)="onSelectAllChange()" />
                   </th>
                   <th>Utilisateur</th>
                   <th>Email</th>
                   <th>Rôle(s)</th>
                   <th>Statut</th>
                   <th>Date création</th>
-                  <th class="actions-col">Actions</th>
+                  <th style="text-align:right; padding-right:18px;">Actions</th>
                 </tr>
               </thead>
-
               <tbody>
-                <tr *ngFor="let user of paginatedUsers" [class.selected]="isSelected(user.id)">
-                  <td class="checkbox-col">
-                    <input
-                      type="checkbox"
+                <tr *ngFor="let user of paginatedUsers" [class.usr-row-selected]="isSelected(user.id)">
+
+                  <!-- Checkbox -->
+                  <td style="padding-left:18px;">
+                    <input type="checkbox" class="usr-checkbox"
                       [checked]="isSelected(user.id)"
-                      (change)="toggleSelection(user.id)"
-                    />
+                      (change)="toggleSelection(user.id)" />
                   </td>
 
+                  <!-- Utilisateur -->
                   <td>
-                    <div class="user-cell">
-                      <div class="user-avatar" [style.background-color]="getAvatarColor(user.id)">
-                        <img
-                          *ngIf="user.photoUrl"
-                          [src]="user.photoUrl"
-                          [alt]="getFullName(user)"
-                          (error)="user.photoUrl = ''"
-                        />
+                    <div class="usr-cell">
+                      <div class="usr-avatar" [style.background]="getAvatarColor(user.id)">
+                        <img *ngIf="user.photoUrl" [src]="user.photoUrl" [alt]="getFullName(user)" (error)="user.photoUrl = ''" />
                         <span *ngIf="!user.photoUrl">{{ getInitials(user) }}</span>
                       </div>
-                      <div class="user-info">
-                        <div class="user-name">{{ getFullName(user) }}</div>
-                        <div class="user-username">@{{ user.username }}</div>
+                      <div>
+                        <div class="cell-name">{{ getFullName(user) }}</div>
+                        <div class="usr-username">@{{ user.username }}</div>
                       </div>
                     </div>
                   </td>
 
+                  <!-- Email -->
                   <td>
-                    <a [href]="'mailto:' + user.email" class="email-link">
-                      {{ user.email }}
-                    </a>
+                    <a [href]="'mailto:' + user.email" class="usr-email-link">{{ user.email }}</a>
                   </td>
 
+                  <!-- Rôles -->
                   <td>
-                    <div class="roles-badges">
-                      <span
-                        *ngFor="let role of user.roles"
-                        class="role-badge"
-                        [ngClass]="getRoleBadgeClass(role)"
-                      >
+                    <div class="usr-roles">
+                      <span *ngFor="let role of user.roles"
+                        class="status-badge"
+                        [ngClass]="getRoleBadgeClass(role)">
                         {{ getRoleDisplayName(role) }}
                       </span>
                     </div>
                   </td>
 
+                  <!-- Statut toggle -->
                   <td>
-                    <div class="status-pill">
-                      <i class="status-ic" [class.active]="user.isActive"></i>
-                      <span [class.active-label]="user.isActive" [class.inactive-label]="!user.isActive">
+                    <div class="usr-status-cell">
+                      <label class="usr-switch">
+                        <input type="checkbox" [checked]="user.isActive" (change)="toggleUserStatus(user)" />
+                        <span class="usr-slider"></span>
+                      </label>
+                      <span class="status-badge" [class.status-ok]="user.isActive" [class.status-inactive]="!user.isActive">
                         {{ user.isActive ? 'Actif' : 'Inactif' }}
                       </span>
-
-                      <label class="switch" title="Activer / désactiver">
-                        <input type="checkbox" [checked]="user.isActive" (change)="toggleUserStatus(user)" />
-                        <span class="slider"></span>
-                      </label>
                     </div>
                   </td>
 
+                  <!-- Date -->
                   <td>
-                    <div class="date-cell">
+                    <div class="usr-date-cell">
                       <i class="bx bx-calendar"></i>
                       {{ formatDate(user.createdAt) }}
                     </div>
                   </td>
 
-                  <td class="actions-col">
-                    <div class="action-buttons">
+                  <!-- Actions -->
+                  <td style="text-align:right; padding-right:18px;">
+                    <div class="usr-actions">
 
-                      <button class="btn-icon info" (click)="viewUserDetails(user)" title="Voir détails">
+                      <button class="topbar-icon-btn usr-action-btn usr-action-btn--info"
+                        (click)="viewUserDetails(user)" title="Voir détails">
                         <i class="bx bx-show"></i>
                       </button>
 
-                      <button
-                        *ngIf="permissions.isSuperAdmin()"
-                        class="btn-icon warning"
-                        (click)="manageUserPermissions(user)"
-                        title="Gérer permissions"
-                      >
+                      <button *ngIf="permissions.isSuperAdmin()"
+                        class="topbar-icon-btn usr-action-btn usr-action-btn--warning"
+                        (click)="manageUserPermissions(user)" title="Gérer permissions">
                         <i class="bx bx-shield-quarter"></i>
                       </button>
 
-                      <div class="dropdown">
-                        <button class="btn-icon secondary" (click)="toggleDropdown(user.id)">
+                      <!-- Dropdown actions -->
+                      <div class="usr-dropdown-wrap" style="position:relative;">
+                        <button class="topbar-icon-btn" (click)="toggleDropdown(user.id)">
                           <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
-
-                        <div class="dropdown-menu" [class.show]="isDropdownOpen(user.id)">
+                        <div class="dropdown-menu" [class.show]="isDropdownOpen(user.id)" style="right:0;left:auto;top:calc(100% + 6px);">
                           <a class="dropdown-item" (click)="resetPassword(user)">
-                            <i class="bx bx-lock-open"></i>
-                            Réinitialiser mot de passe
+                            <i class="bx bx-lock-open"></i> Réinitialiser mot de passe
                           </a>
                           <a class="dropdown-item" (click)="viewAuditLog(user)">
-                            <i class="bx bx-history"></i>
-                            Historique d'activité
+                            <i class="bx bx-history"></i> Historique d'activité
                           </a>
-                          <div class="dropdown-divider"></div>
-                          <a class="dropdown-item danger" (click)="confirmDelete(user)">
-                            <i class="bx bx-trash"></i>
-                            Supprimer
+                          <hr class="dropdown-divider" />
+                          <a class="dropdown-item dropdown-item--danger" (click)="confirmDelete(user)">
+                            <i class="bx bx-trash"></i> Supprimer
                           </a>
                         </div>
                       </div>
@@ -401,87 +350,146 @@
           </div>
 
           <!-- Pagination -->
-          <div *ngIf="!isLoading && filteredUsers.length > 0" class="pagination-wrapper">
-            <div class="pagination-info">
+          <div *ngIf="!isLoading && filteredUsers.length > 0" class="usr-pagination">
+            <div class="usr-pagination-info">
               Affichage de {{ (currentPage - 1) * pageSize + 1 }} à
               {{ Math.min(currentPage * pageSize, filteredUsers.length) }}
               sur {{ filteredUsers.length }} résultats
             </div>
-
-            <div class="pagination">
-              <button class="pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(1)">
+            <div class="usr-pagination-controls">
+              <button class="usr-page-btn" [disabled]="currentPage === 1" (click)="goToPage(1)">
                 <i class="bx bx-chevrons-left"></i>
               </button>
-
-              <button
-                class="pagination-btn"
-                [disabled]="currentPage === 1"
-                (click)="goToPage(currentPage - 1)"
-              >
+              <button class="usr-page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
                 <i class="bx bx-chevron-left"></i>
               </button>
-
-              <button
-                *ngFor="let page of visiblePages"
-                class="pagination-btn"
-                [class.active]="page === currentPage"
-                (click)="goToPage(page)"
-              >
+              <button *ngFor="let page of visiblePages"
+                class="usr-page-btn" [class.usr-page-btn--active]="page === currentPage"
+                (click)="goToPage(page)">
                 {{ page }}
               </button>
-
-              <button
-                class="pagination-btn"
-                [disabled]="currentPage === totalPages"
-                (click)="goToPage(currentPage + 1)"
-              >
+              <button class="usr-page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
                 <i class="bx bx-chevron-right"></i>
               </button>
-
-              <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">
+              <button class="usr-page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">
                 <i class="bx bx-chevrons-right"></i>
               </button>
             </div>
           </div>
+
         </div>
       </div>
 
-      <!-- Bulk actions (style banner / card) -->
-      <div *ngIf="selectedUserIds.length > 0" class="bulk-actions">
-        <div class="bulk-actions-content">
-          <div class="bulk-actions-info">
-            <i class="bx bx-checkbox-checked"></i>
-            {{ selectedUserIds.length }} utilisateur(s) sélectionné(s)
-          </div>
-
-          <div class="bulk-actions-buttons">
-            <button class="btn btn-outline-primary" (click)="bulkActivate()">
-              <i class="bx bx-check-circle"></i>
-              Activer
-            </button>
-            <button class="btn btn-outline-warning" (click)="bulkDeactivate()">
-              <i class="bx bx-x-circle"></i>
-              Désactiver
-            </button>
-            <button class="btn btn-outline-danger" (click)="bulkDelete()">
-              <i class="bx bx-trash"></i>
-              Supprimer
-            </button>
-            <button class="btn btn-outline-secondary" (click)="clearSelection()">
-              <i class="bx bx-x"></i>
-              Annuler
-            </button>
-          </div>
+      <!-- ══ BULK ACTIONS ══ -->
+      <div *ngIf="selectedUserIds.length > 0" class="usr-bulk-bar">
+        <div class="usr-bulk-bar__info">
+          <i class="bx bx-checkbox-checked"></i>
+          {{ selectedUserIds.length }} utilisateur(s) sélectionné(s)
+        </div>
+        <div class="usr-bulk-bar__actions">
+          <button class="btn btn-sm btn-primary" (click)="bulkActivate()">
+            <i class="bx bx-check-circle"></i> Activer
+          </button>
+          <button class="btn btn-sm btn-outline" (click)="bulkDeactivate()">
+            <i class="bx bx-x-circle"></i> Désactiver
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="bulkDelete()">
+            <i class="bx bx-trash"></i> Supprimer
+          </button>
+          <button class="btn btn-sm btn-outline" (click)="clearSelection()">
+            <i class="bx bx-x"></i> Annuler
+          </button>
         </div>
       </div>
+
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
 
     </main>
-
-    <!-- Footer notifications like template -->
-    <app-notification-component></app-notification-component>
-
-    <!-- MODAL (si tu gardes ton modal actuel : laisse tel quel) -->
-    <!-- Je ne te réécris pas toute la partie modal : ton style sera couvert par le SCSS ci-dessous -->
-    <!-- Tu peux garder exactement ton bloc modalOverlay / modalDialog existant -->
   </div>
 </div>
+
+<!-- ══ MODAL DÉTAILS UTILISATEUR ══ -->
+<div class="usr-modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+  <div class="usr-modal" (click)="$event.stopPropagation()">
+
+    <div class="usr-modal__header">
+      <div class="card-title"><i class="bx bx-user-circle"></i> Détails de l'utilisateur</div>
+      <button class="topbar-icon-btn" (click)="closeDetailsModal()">
+        <i class="bx bx-x"></i>
+      </button>
+    </div>
+
+    <div class="usr-modal__body" *ngIf="selectedUser">
+
+      <!-- Avatar + infos principales -->
+      <div class="usr-modal__hero">
+        <div class="usr-modal__avatar" [style.background]="getAvatarColor(selectedUser.id)">
+          <img *ngIf="selectedUser.photoUrl" [src]="selectedUser.photoUrl" [alt]="getFullName(selectedUser)" (error)="selectedUser.photoUrl = ''" />
+          <span *ngIf="!selectedUser.photoUrl">{{ getInitials(selectedUser) }}</span>
+        </div>
+        <div class="usr-modal__hero-info">
+          <h2 class="usr-modal__name">{{ getFullName(selectedUser) }}</h2>
+          <p class="usr-modal__username">@{{ selectedUser.username }}</p>
+          <span class="status-badge" [class.status-ok]="selectedUser.isActive" [class.status-inactive]="!selectedUser.isActive">
+            {{ selectedUser.isActive ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Détails grille -->
+      <div class="usr-modal__details">
+
+        <div class="usr-detail-item">
+          <div class="usr-detail-label"><i class="bx bx-envelope"></i> Email</div>
+          <div class="usr-detail-value">{{ selectedUser.email }}</div>
+        </div>
+
+        <div class="usr-detail-item">
+          <div class="usr-detail-label"><i class="bx bx-phone"></i> Téléphone</div>
+          <div class="usr-detail-value">{{ selectedUser.phone }}</div>
+        </div>
+
+        <div class="usr-detail-item usr-detail-item--full">
+          <div class="usr-detail-label"><i class="bx bx-shield-quarter"></i> Rôles</div>
+          <div class="usr-detail-value usr-roles">
+            <span *ngFor="let role of selectedUser.roles" class="status-badge" [ngClass]="getRoleBadgeClass(role)">
+              {{ getRoleDisplayName(role) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="usr-detail-item">
+          <div class="usr-detail-label"><i class="bx bx-calendar"></i> Date de création</div>
+          <div class="usr-detail-value">{{ formatDate(selectedUser.createdAt) }}</div>
+        </div>
+
+        <div class="usr-detail-item">
+          <div class="usr-detail-label"><i class="bx bx-user"></i> Créé par</div>
+          <div class="usr-detail-value">{{ selectedUser.createdBy || 'N/A' }}</div>
+        </div>
+
+        <div class="usr-detail-item" *ngIf="selectedUser.updatedAt">
+          <div class="usr-detail-label"><i class="bx bx-time"></i> Dernière modification</div>
+          <div class="usr-detail-value">{{ formatDate(selectedUser.updatedAt) }}</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="usr-modal__footer">
+      <button class="btn btn-outline btn-sm" (click)="closeDetailsModal()">Fermer</button>
+    </div>
+
+  </div>
+</div>
+
+<app-notification-component></app-notification-component>
