@@ -1,575 +1,490 @@
-<div class="layout-wrapper">
-  <!-- =========================================================================== -->
-  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
-  <!-- =========================================================================== -->
+<div class="app-wrapper">
+
+  <!-- SIDEBAR -->
   <app-sidebar-component></app-sidebar-component>
 
-  <!-- =========================================================================== -->
-  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
-  <!-- =========================================================================== -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-    <!-- ========================================== -->
-    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
-    <!-- ========================================== -->
-    <nav class="layout-navbar">
-      <!-- Contrôles de navigation -->
-      <div class="d-flex align-items-center">
-        <!-- Bouton de bascule de la sidebar -->
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class='bx bx-menu'></i>
+          <i class="bx bx-menu"></i>
         </button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Administration</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Rôles & Permissions</span>
+        </div>
       </div>
 
-      <!-- Menu utilisateur -->
-      <ul class="navbar-nav">
-        <!-- Dropdown utilisateur avec photo dynamique -->
-        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
-          <div class="avatar dropdown-toggle">
-            <!-- Photo de profil -->
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-              (error)="userPhotoUrl = getDefaultAvatar()" />
-            <!-- Avatar par défaut si pas de photo -->
-            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-              {{ getUserInitials() }}
-            </div>
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
+
+        <button class="topbar-icon-btn">
+          <i class="bx bx-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">{{ getUserInitials() }}</div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName" (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
           </div>
-          <!-- Menu déroulant utilisateur -->
           <div class="dropdown-menu" [class.show]="showUserMenu">
-            <div style="padding: 1rem;">
-              <!-- Informations utilisateur -->
-              <div class="fw-bold">{{ userName }}</div>
-              <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
-              </div>
-              <hr style="margin: 0.5rem 0;">
-
-              <!-- Liens du menu utilisateur -->
-              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                <i class='bx bx-user me-2'></i> Mon profil
-              </a>
-              <a [routerLink]="['/settings']" class="dropdown-item">
-                <i class='bx bx-cog me-2'></i> Paramètres
-              </a>
-              <hr style="margin: 0.5rem 0;">
-
-              <!-- Déconnexion -->
-              <a (click)="logout()" class="dropdown-item logout-item">
-                <i class='bx bx-log-out me-2'></i> Déconnexion
-              </a>
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
             </div>
-          </div>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- =========================================================================== -->
-    <!-- GESTION DES RÔLES - INTERFACE CRUD COMPLÈTE -->
-    <!-- =========================================================================== -->
-
-    <div class="content-wrapper">
-
-      <!-- ========================================== -->
-      <!-- HEADER -->
-      <!-- ========================================== -->
-      <div class="page-header">
-        <div class="header-content">
-          <div class="header-left">
-            <h1 class="page-title">
-              <i class='bx bx-shield-quarter'></i>
-              Gestion des Rôles et Permissions
-            </h1>
-            <p class="page-subtitle">Créez et gérez les rôles système avec leurs permissions associées</p>
-          </div>
-          <div class="header-actions">
-            <!-- <button class="btn btn-outline-primary" (click)="loadRoles()">
-              <i class='bx bx-refresh'></i>
-              Actualiser
-            </button> -->
-            <!-- <button class="btn btn-primary" (click)="openCreateModal()">
-              <i class='bx bx-plus'></i>
-              Nouveau Rôle
-            </button> -->
-          </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-icon primary">
-              <i class='bx bx-shield'></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ allRoles.length }}</div>
-              <div class="stat-label">Total Rôles</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon success">
-              <i class='bx bx-lock-open'></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ allPermissions.length }}</div>
-              <div class="stat-label">Permissions Disponibles</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon warning">
-              <i class='bx bx-cog'></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ systemRolesCount }}</div>
-              <div class="stat-label">Rôles Système</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon info">
-              <i class='bx bx-edit-alt'></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ customRolesCount }}</div>
-              <div class="stat-label">Rôles Personnalisés</div>
-            </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item"><i class="bx bx-user"></i> Mon profil</a>
+            <a [routerLink]="['/settings']" class="dropdown-item"><i class="bx bx-cog"></i> Paramètres</a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger"><i class="bx bx-log-out"></i> Déconnexion</a>
           </div>
         </div>
       </div>
+    </header>
 
-      <!-- ========================================== -->
-      <!-- FILTRES -->
-      <!-- ========================================== -->
-      <div class="filters-card">
-        <div class="filters-row">
-          <div class="filter-item flex-grow">
-            <label class="filter-label">
-              <i class='bx bx-search'></i>
-              Rechercher
-            </label>
-            <input type="text" class="filter-input" placeholder="Nom du rôle..." [(ngModel)]="searchTerm"
-              (input)="applyFilters()" />
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+
+      <!-- ══ HERO BANNER ══ -->
+      <div class="hero-banner">
+        <div class="hero-deco"><i class="bx bx-shield-quarter"></i></div>
+        <div class="hero-content">
+          <div class="hero-greeting">Administration système — LOGISTIK</div>
+          <div class="hero-title">Rôles & <span>Permissions</span></div>
+          <div class="hero-subtitle">
+            Créez et gérez les rôles système avec leurs permissions associées
           </div>
-
-          <div class="filter-item">
-            <label class="filter-label">
-              <i class='bx bx-filter'></i>
-              Type
-            </label>
-            <select class="filter-select" [(ngModel)]="filterType" (change)="applyFilters()">
-              <option value="">Tous les rôles</option>
-              <option value="system">Rôles système</option>
-              <option value="custom">Rôles personnalisés</option>
-            </select>
-          </div>
-
-          <div class="filter-item">
-            <label class="filter-label">
-              <i class='bx bx-show'></i>
-              Visibilité
-            </label>
-            <select class="filter-select" [(ngModel)]="filterVisibility" (change)="applyFilters()">
-              <option value="">Tous</option>
-              <option value="visible">Visibles</option>
-              <option value="hidden">Masqués</option>
-            </select>
-          </div>
-
-          <div class="filter-item">
-            <button class="btn btn-outline-secondary" (click)="resetFilters()">
-              <i class='bx bx-reset'></i>
-              Réinitialiser
+          <div class="hero-quick-actions">
+            <button class="hero-action-btn primary" (click)="openCreateModal()">
+              <i class="bx bx-plus"></i> Nouveau Rôle
+            </button>
+            <button class="hero-action-btn" (click)="loadRoles()">
+              <i class="bx bx-refresh"></i> Actualiser
             </button>
           </div>
         </div>
+
+        <!-- Hero Stats -->
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ allRoles.length }}</div>
+            <div class="hero-stat-label">Total rôles</div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ allPermissions.length }}</div>
+            <div class="hero-stat-label">Permissions</div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">{{ systemRolesCount }}</div>
+            <div class="hero-stat-label">Système</div>
+          </div>
+        </div>
       </div>
 
-      <!-- ========================================== -->
-      <!-- LISTE DES RÔLES -->
-      <!-- ========================================== -->
-      <div class="roles-grid">
-
-        <!-- Loading State -->
-        <div *ngIf="isLoading" class="loading-state full-width">
-          <div class="spinner"></div>
-          <p>Chargement des rôles...</p>
+      <!-- ══ KPI CARDS ══ -->
+      <div class="grid grid-4">
+        <div class="kpi-card purple">
+          <div class="kpi-header"><div class="kpi-icon purple"><i class="bx bx-shield"></i></div></div>
+          <div class="kpi-value">{{ allRoles.length }}</div>
+          <div class="kpi-label">Total Rôles</div>
+          <div class="kpi-sublabel">Tous confondus</div>
         </div>
-
-        <!-- Empty State -->
-        <div *ngIf="!isLoading && filteredRoles.length === 0" class="empty-state full-width">
-          <i class='bx bx-shield-x'></i>
-          <h3>Aucun rôle trouvé</h3>
-          <p *ngIf="searchTerm || filterType || filterVisibility">
-            Essayez de modifier vos filtres de recherche
-          </p>
-          <p *ngIf="!searchTerm && !filterType && !filterVisibility && allRoles.length === 0">
-            Commencez par créer votre premier rôle personnalisé
-          </p>
-          <button class="btn btn-primary" (click)="openCreateModal()">
-            <i class='bx bx-plus'></i>
-            Créer un rôle
-          </button>
+        <div class="kpi-card green">
+          <div class="kpi-header"><div class="kpi-icon green"><i class="bx bx-lock-open"></i></div></div>
+          <div class="kpi-value">{{ allPermissions.length }}</div>
+          <div class="kpi-label">Permissions disponibles</div>
+          <div class="kpi-sublabel">Dans le système</div>
         </div>
+        <div class="kpi-card amber">
+          <div class="kpi-header"><div class="kpi-icon amber"><i class="bx bx-cog"></i></div></div>
+          <div class="kpi-value">{{ systemRolesCount }}</div>
+          <div class="kpi-label">Rôles Système</div>
+          <div class="kpi-sublabel">Non modifiables</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-header"><div class="kpi-icon red"><i class="bx bx-edit-alt"></i></div></div>
+          <div class="kpi-value">{{ customRolesCount }}</div>
+          <div class="kpi-label">Rôles Personnalisés</div>
+          <div class="kpi-sublabel">Éditables</div>
+        </div>
+      </div>
 
-        <!-- Role Cards -->
-        <div *ngFor="let role of filteredRoles" class="role-card" [class.system-role]="role.isSystem">
-          <!-- Header -->
-          <div class="role-card-header">
-            <div class="role-icon" [ngClass]="getRoleColorClass(role.code)">
-              <i [class]="getRoleIcon(role.code)"></i>
+      <!-- ══ FILTRES ══ -->
+      <div class="card" style="margin-top: 18px;">
+        <div class="card-body" style="padding: 16px 22px;">
+          <div class="usr-filters">
+
+            <div class="topbar-search" style="flex:1;">
+              <i class="bx bx-search"></i>
+              <input type="text" placeholder="Nom du rôle…"
+                [(ngModel)]="searchTerm" (input)="applyFilters()" />
             </div>
-            <div class="role-badges">
-              <span *ngIf="role.isSystem" class="badge badge-system">
-                <i class='bx bx-lock'></i>
-                Système
-              </span>
-              <span *ngIf="!role.isVisible" class="badge badge-hidden">
-                <i class='bx bx-hide'></i>
-                Masqué
-              </span>
+
+            <div class="usr-filter-group">
+              <label class="usr-filter-label"><i class="bx bx-filter"></i> Type</label>
+              <select class="usr-filter-select" [(ngModel)]="filterType" (change)="applyFilters()">
+                <option value="">Tous les rôles</option>
+                <option value="system">Rôles système</option>
+                <option value="custom">Rôles personnalisés</option>
+              </select>
             </div>
+
+            <div class="usr-filter-group">
+              <label class="usr-filter-label"><i class="bx bx-show"></i> Visibilité</label>
+              <select class="usr-filter-select" [(ngModel)]="filterVisibility" (change)="applyFilters()">
+                <option value="">Tous</option>
+                <option value="visible">Visibles</option>
+                <option value="hidden">Masqués</option>
+              </select>
+            </div>
+
+            <button class="btn btn-outline btn-sm" (click)="resetFilters()">
+              <i class="bx bx-reset"></i> Réinitialiser
+            </button>
+
           </div>
+        </div>
+      </div>
 
-          <!-- Body -->
-          <div class="role-card-body">
-            <h3 class="role-name">{{ role.roleName }}</h3>
-            <p class="role-code">Code: {{ role.code }}</p>
-            <p class="role-description">
-              {{ role.description || 'Aucune description disponible' }}
+      <!-- ══ GRILLE DES RÔLES ══ -->
+      <div style="margin-top: 18px;">
+
+        <!-- Loading -->
+        <div *ngIf="isLoading" class="usr-loading">
+          <div class="usr-spinner"></div>
+          <p>Chargement des rôles…</p>
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="!isLoading && filteredRoles.length === 0" class="card">
+          <div class="card-body empty-state" style="padding: 48px; text-align:center;">
+            <i class="bx bx-shield-x" style="font-size:40px;display:block;margin-bottom:12px;color:#9590BB;"></i>
+            <h3 style="font-size:16px;font-weight:700;color:#1A1340;margin:0 0 6px;">Aucun rôle trouvé</h3>
+            <p style="font-size:13px;color:#9590BB;margin:0 0 16px;">
+              <ng-container *ngIf="searchTerm || filterType || filterVisibility">Essayez de modifier vos filtres</ng-container>
+              <ng-container *ngIf="!searchTerm && !filterType && !filterVisibility && allRoles.length === 0">Commencez par créer votre premier rôle</ng-container>
             </p>
-
-            <!-- Permissions Count -->
-            <div class="role-stats">
-              <div class="role-stat">
-                <i class='bx bx-shield-quarter'></i>
-                <span>{{ role.permissions.length || 0 }} permissions</span>
-              </div>
-            </div>
-
-            <!-- Permissions Preview -->
-            <div class="permissions-preview" *ngIf="role.permissions && role.permissions.length > 0">
-              <div class="permissions-tags">
-                <span *ngFor="let permission of role.permissions | slice:0:3" class="permission-tag">
-                  {{ permission }}
-                </span>
-                <span *ngIf="role.permissions.length > 3" class="permission-more">
-                  +{{ role.permissions.length - 3 }} autres
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="role-card-footer">
-            <button class="btn-card-action primary" (click)="viewRoleDetails(role)" title="Voir détails">
-              <i class='bx bx-show'></i>
-              Détails
-            </button>
-            <button *ngIf="!role.isSystem" class="btn-card-action info" (click)="openEditModal(role)" title="Modifier">
-              <i class='bx bx-edit'></i>
-              Modifier
-            </button>
-            <button *ngIf="!role.isSystem" class="btn-card-action danger" (click)="confirmDelete(role)"
-              title="Supprimer">
-              <i class='bx bx-trash'></i>
-              Supprimer
-            </button>
-            <button *ngIf="role.isSystem" class="btn-card-action disabled" disabled
-              title="Les rôles système ne peuvent pas être modifiés">
-              <i class='bx bx-lock'></i>
-              Protégé
+            <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+              <i class="bx bx-plus"></i> Créer un rôle
             </button>
           </div>
         </div>
 
-      </div>
+        <!-- Role Cards Grid -->
+        <div class="rol-grid" *ngIf="!isLoading && filteredRoles.length > 0">
+          <div *ngFor="let role of filteredRoles"
+            class="card rol-card"
+            [class.rol-card--system]="role.isSystem">
 
-      <!-- ========================================== -->
-      <!-- MODAL CRÉATION/ÉDITION -->
-      <!-- ========================================== -->
-      <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-        <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>
-              <i [class]="isEditMode ? 'bx bx-edit' : 'bx bx-plus'"></i>
-              {{ isEditMode ? 'Modifier le rôle' : 'Créer un nouveau rôle' }}
-            </h3>
-            <button class="btn-close" (click)="closeModal()">
-              <i class='bx bx-x'></i>
-            </button>
-          </div>
-
-          <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
-            <div class="modal-body">
-
-              <!-- Informations de base -->
-              <div class="form-section">
-                <h4 class="section-title">
-                  <i class='bx bx-info-circle'></i>
-                  Informations du rôle
-                </h4>
-
-                <div class="form-group">
-                  <label class="form-label required">
-                    <i class='bx bx-text'></i>
-                    Nom du rôle
-                  </label>
-                  <input type="text" class="form-control" formControlName="roleName"
-                    placeholder="ex: Gestionnaire de Flotte" [class.is-invalid]="isFieldInvalid('roleName')" />
-                  <div class="invalid-feedback" *ngIf="isFieldInvalid('roleName')">
-                    Le nom du rôle est requis
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label required">
-                    <i class='bx bx-code'></i>
-                    Code unique
-                  </label>
-                  <input type="text" class="form-control" formControlName="code" placeholder="ex: FLEET_MANAGER"
-                    [class.is-invalid]="isFieldInvalid('code')" [readonly]="isEditMode" />
-                  <div class="form-hint">
-                    Lettres majuscules, chiffres et underscores uniquement. Ne peut pas être modifié après création.
-                  </div>
-                  <div class="invalid-feedback" *ngIf="isFieldInvalid('code')">
-                    <span *ngIf="roleForm.get('code')?.errors?.['required']">
-                      Le code est requis
-                    </span>
-                    <span *ngIf="roleForm.get('code')?.errors?.['pattern']">
-                      Format invalide (ex: ROLE_NAME)
-                    </span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">
-                    <i class='bx bx-message-square-detail'></i>
-                    Description
-                  </label>
-                  <textarea class="form-control" formControlName="description" rows="3"
-                    placeholder="Décrivez les responsabilités de ce rôle..."></textarea>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="switch-label">
-                      <input type="checkbox" formControlName="isVisible" class="switch-input" />
-                      <span class="switch-slider"></span>
-                      <span class="switch-text">
-                        <i class='bx bx-show'></i>
-                        Rôle visible dans les sélections
-                      </span>
-                    </label>
-                  </div>
-                </div>
+            <!-- Header -->
+            <div class="rol-card__header">
+              <div class="kpi-icon purple rol-card__icon">
+                <i [class]="getRoleIcon(role.code)"></i>
               </div>
-
-              <!-- Sélection des permissions -->
-              <div class="form-section">
-                <h4 class="section-title">
-                  <i class='bx bx-shield-quarter'></i>
-                  Permissions ({{ selectedPermissions.length }}/{{ allPermissions.length }})
-                </h4>
-
-                <!-- Recherche dans permissions -->
-                <div class="permissions-search">
-                  <input type="text" class="form-control" placeholder="Rechercher une permission..."
-                    [(ngModel)]="permissionSearchTerm" [ngModelOptions]="{standalone: true}"
-                    (input)="filterPermissions()" />
-                  <i class='bx bx-search'></i>
-                </div>
-
-                <!-- Actions rapides -->
-                <div class="permissions-quick-actions">
-                  <button type="button" class="btn btn-sm btn-outline-primary" (click)="selectAllPermissions()">
-                    <i class='bx bx-check-double'></i>
-                    Tout sélectionner
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearAllPermissions()">
-                    <i class='bx bx-x'></i>
-                    Tout désélectionner
-                  </button>
-                </div>
-
-                <!-- Liste des permissions groupées -->
-                <div class="permissions-list">
-                  <div *ngFor="let group of groupedPermissions | keyvalue" class="permission-group">
-                    <div class="permission-group-header" (click)="toggleGroup(group.key)">
-                      <i [class]="isGroupExpanded(group.key) ? 'bx bx-chevron-down' : 'bx bx-chevron-right'"></i>
-                      <span class="group-name">{{ group.key }}</span>
-                      <span class="group-count">
-                        {{ getGroupSelectedCount(group.value) }}/{{ group.value.length }}
-                      </span>
-                    </div>
-
-                    <div class="permission-group-items" *ngIf="isGroupExpanded(group.key)">
-                      <label *ngFor="let permission of group.value" class="permission-checkbox">
-                        <input type="checkbox" [checked]="isPermissionSelected(permission)"
-                          (change)="togglePermission(permission)" />
-                        <span class="checkbox-custom"></span>
-                        <span class="permission-name">{{ permission }}</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Message si aucune permission -->
-                <div class="empty-state-small" *ngIf="filteredPermissions.length === 0">
-                  <i class='bx bx-info-circle'></i>
-                  <p>Aucune permission trouvée</p>
-                </div>
+              <div class="rol-card__badges">
+                <span *ngIf="role.isSystem" class="status-badge status-inactive">
+                  <i class="bx bx-lock"></i> Système
+                </span>
+                <span *ngIf="!role.isVisible" class="status-badge status-failed">
+                  <i class="bx bx-hide"></i> Masqué
+                </span>
               </div>
-
             </div>
 
-            <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">
-                <i class='bx bx-x'></i>
-                Annuler
+            <!-- Body -->
+            <div class="card-body rol-card__body">
+              <div class="cell-name rol-card__name">{{ role.roleName }}</div>
+              <div class="rol-card__code">{{ role.code }}</div>
+              <p class="rol-card__desc">{{ role.description || 'Aucune description disponible' }}</p>
+
+              <div class="rol-card__stats">
+                <span class="status-badge status-reserved">
+                  <i class="bx bx-shield-quarter"></i>
+                  {{ role.permissions.length || 0 }} permissions
+                </span>
+              </div>
+
+              <!-- Permissions preview -->
+              <div class="rol-card__perms" *ngIf="role.permissions && role.permissions.length > 0">
+                <span *ngFor="let p of role.permissions | slice:0:3" class="rol-perm-tag">{{ p }}</span>
+                <span *ngIf="role.permissions.length > 3" class="rol-perm-more">
+                  +{{ role.permissions.length - 3 }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="rol-card__footer">
+              <button class="btn btn-outline btn-sm" (click)="viewRoleDetails(role)">
+                <i class="bx bx-show"></i> Détails
               </button>
-              <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || roleForm.invalid">
-                <span *ngIf="!isSubmitting">
-                  <i [class]="isEditMode ? 'bx bx-save' : 'bx bx-plus'"></i>
-                  {{ isEditMode ? 'Enregistrer' : 'Créer le rôle' }}
-                </span>
-                <span *ngIf="isSubmitting">
-                  <i class='bx bx-loader-alt bx-spin'></i>
-                  {{ isEditMode ? 'Enregistrement...' : 'Création...' }}
-                </span>
+              <button *ngIf="!role.isSystem" class="btn btn-primary btn-sm" (click)="openEditModal(role)">
+                <i class="bx bx-edit"></i> Modifier
+              </button>
+              <button *ngIf="!role.isSystem" class="btn btn-danger btn-sm" (click)="confirmDelete(role)">
+                <i class="bx bx-trash"></i>
+              </button>
+              <button *ngIf="role.isSystem" class="btn btn-outline btn-sm" disabled style="opacity:.45;cursor:not-allowed;">
+                <i class="bx bx-lock"></i> Protégé
               </button>
             </div>
-          </form>
-        </div>
-      </div>
 
-      <!-- ========================================== -->
-      <!-- MODAL DÉTAILS -->
-      <!-- ========================================== -->
-      <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
-        <div class="modal-dialog" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>
-              <i class='bx bx-info-circle'></i>
-              Détails du rôle
-            </h3>
-            <button class="btn-close" (click)="closeDetailsModal()">
-              <i class='bx bx-x'></i>
-            </button>
-          </div>
-
-          <div class="modal-body" *ngIf="selectedRole">
-            <div class="role-details">
-
-              <!-- En-tête -->
-              <div class="role-details-header">
-                <div class="role-details-icon" [ngClass]="getRoleColorClass(selectedRole.code)">
-                  <i [class]="getRoleIcon(selectedRole.code)"></i>
-                </div>
-                <div class="role-details-info">
-                  <h2>{{ selectedRole.roleName }}</h2>
-                  <p class="role-code-badge">{{ selectedRole.code }}</p>
-                  <div class="role-tags">
-                    <span *ngIf="selectedRole.isSystem" class="badge badge-system">
-                      <i class='bx bx-lock'></i>
-                      Rôle système
-                    </span>
-                    <span *ngIf="selectedRole.isVisible" class="badge badge-success">
-                      <i class='bx bx-show'></i>
-                      Visible
-                    </span>
-                    <span *ngIf="!selectedRole.isVisible" class="badge badge-warning">
-                      <i class='bx bx-hide'></i>
-                      Masqué
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Description -->
-              <div class="details-section" *ngIf="selectedRole.description">
-                <h4>Description</h4>
-                <p>{{ selectedRole.description }}</p>
-              </div>
-
-              <!-- Permissions -->
-              <div class="details-section">
-                <h4>
-                  Permissions accordées ({{ selectedRole.permissions.length || 0 }})
-                </h4>
-                <div class="permissions-grid">
-                  <span *ngFor="let permission of selectedRole.permissions" class="permission-badge-detail">
-                    <i class='bx bx-check-circle'></i>
-                    {{ permission }}
-                  </span>
-                </div>
-                <div *ngIf="!selectedRole.permissions || selectedRole.permissions.length === 0" class="empty-message">
-                  <i class='bx bx-info-circle'></i>
-                  Aucune permission accordée à ce rôle
-                </div>
-              </div>
-
-              <!-- Métadonnées -->
-              <div class="details-section">
-                <h4>Informations système</h4>
-                <div class="metadata-grid">
-                  <div class="metadata-item">
-                    <span class="metadata-label">
-                      <i class='bx bx-calendar'></i>
-                      Créé le
-                    </span>
-                    <span class="metadata-value">
-                      {{ formatDate(selectedRole.createdAt) }}
-                    </span>
-                  </div>
-                  <div class="metadata-item" *ngIf="selectedRole.createdByName">
-                    <span class="metadata-label">
-                      <i class='bx bx-user'></i>
-                      Créé par
-                    </span>
-                    <span class="metadata-value">
-                      {{ selectedRole.createdByName }}
-                    </span>
-                  </div>
-                  <div class="metadata-item" *ngIf="selectedRole.updatedAt">
-                    <span class="metadata-label">
-                      <i class='bx bx-time'></i>
-                      Modifié le
-                    </span>
-                    <span class="metadata-value">
-                      {{ formatDate(selectedRole.updatedAt) }}
-                    </span>
-                  </div>
-                  <div class="metadata-item" *ngIf="selectedRole.updatedByName">
-                    <span class="metadata-label">
-                      <i class='bx bx-user-check'></i>
-                      Modifié par
-                    </span>
-                    <span class="metadata-value">
-                      {{ selectedRole.updatedByName }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-outline-secondary" (click)="closeDetailsModal()">
-              <i class='bx bx-x'></i>
-              Fermer
-            </button>
-            <button *ngIf="selectedRole && !selectedRole.isSystem" class="btn btn-primary" (click)="editFromDetails()">
-              <i class='bx bx-edit'></i>
-              Modifier
-            </button>
           </div>
         </div>
+
       </div>
 
-    </div>Nouvea
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
 
-    <!-- COMPOSANT DE NOTIFICATION -->
-    <app-notification-component></app-notification-component>
+    </main>
   </div>
 </div>
+
+<!-- ══ MODAL CRÉATION / ÉDITION ══ -->
+<div class="usr-modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="usr-modal usr-modal--lg" (click)="$event.stopPropagation()">
+
+    <div class="usr-modal__header">
+      <div class="card-title">
+        <i [class]="isEditMode ? 'bx bx-edit' : 'bx bx-plus'"></i>
+        {{ isEditMode ? 'Modifier le rôle' : 'Créer un nouveau rôle' }}
+      </div>
+      <button class="topbar-icon-btn" (click)="closeModal()"><i class="bx bx-x"></i></button>
+    </div>
+
+    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+      <div class="usr-modal__body">
+
+        <!-- Informations de base -->
+        <div class="rol-form-section">
+          <div class="crt-section-title"><i class="bx bx-info-circle"></i> Informations du rôle</div>
+
+          <div class="crt-form-group">
+            <label class="crt-label crt-label--required"><i class="bx bx-text"></i> Nom du rôle</label>
+            <input type="text" class="crt-input" formControlName="roleName"
+              placeholder="ex: Gestionnaire de Flotte"
+              [class.crt-input--invalid]="isFieldInvalid('roleName')" />
+            <div class="crt-feedback" *ngIf="isFieldInvalid('roleName')">Le nom du rôle est requis</div>
+          </div>
+
+          <div class="crt-form-group">
+            <label class="crt-label crt-label--required"><i class="bx bx-code"></i> Code unique</label>
+            <input type="text" class="crt-input" formControlName="code"
+              placeholder="ex: FLEET_MANAGER"
+              [class.crt-input--invalid]="isFieldInvalid('code')"
+              [readonly]="isEditMode" />
+            <p class="crt-hint" style="margin-top:4px;">Lettres majuscules, chiffres et underscores. Non modifiable après création.</p>
+            <div class="crt-feedback" *ngIf="isFieldInvalid('code')">
+              <span *ngIf="roleForm.get('code')?.errors?.['required']">Le code est requis</span>
+              <span *ngIf="roleForm.get('code')?.errors?.['pattern']">Format invalide (ex: ROLE_NAME)</span>
+            </div>
+          </div>
+
+          <div class="crt-form-group">
+            <label class="crt-label"><i class="bx bx-message-square-detail"></i> Description</label>
+            <textarea class="crt-input" formControlName="description" rows="3"
+              placeholder="Décrivez les responsabilités de ce rôle…" style="resize:vertical;"></textarea>
+          </div>
+
+          <label class="crt-switch-label">
+            <input type="checkbox" formControlName="isVisible" class="crt-switch-input" />
+            <span class="crt-switch-slider"></span>
+            <span class="crt-switch-text"><i class="bx bx-show"></i> Rôle visible dans les sélections</span>
+          </label>
+        </div>
+
+        <!-- Permissions -->
+        <div class="rol-form-section" style="margin-top: 24px;">
+          <div class="crt-section-title">
+            <i class="bx bx-shield-quarter"></i>
+            Permissions ({{ selectedPermissions.length }}/{{ allPermissions.length }})
+          </div>
+
+          <!-- Recherche -->
+          <div class="topbar-search" style="margin-bottom:14px;">
+            <i class="bx bx-search"></i>
+            <input type="text" placeholder="Rechercher une permission…"
+              [(ngModel)]="permissionSearchTerm" [ngModelOptions]="{standalone: true}"
+              (input)="filterPermissions()" />
+          </div>
+
+          <!-- Actions rapides -->
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button type="button" class="btn btn-outline btn-sm" (click)="selectAllPermissions()">
+              <i class="bx bx-check-double"></i> Tout sélectionner
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" (click)="clearAllPermissions()">
+              <i class="bx bx-x"></i> Tout désélectionner
+            </button>
+          </div>
+
+          <!-- Groupes de permissions -->
+          <div class="rol-perms-list">
+            <div *ngFor="let group of groupedPermissions | keyvalue" class="rol-perm-group">
+
+              <div class="rol-perm-group__header" (click)="toggleGroup(group.key)">
+                <i class="bx" [class.bx-chevron-down]="isGroupExpanded(group.key)"
+                   [class.bx-chevron-right]="!isGroupExpanded(group.key)"></i>
+                <span class="rol-perm-group__name">{{ group.key }}</span>
+                <span class="session-pill" style="margin-left:auto;font-size:10.5px;padding:3px 9px;">
+                  {{ getGroupSelectedCount(group.value) }}/{{ group.value.length }}
+                </span>
+              </div>
+
+              <div class="rol-perm-group__items" *ngIf="isGroupExpanded(group.key)">
+                <label *ngFor="let permission of group.value" class="rol-perm-checkbox">
+                  <input type="checkbox"
+                    [checked]="isPermissionSelected(permission)"
+                    (change)="togglePermission(permission)" />
+                  <span class="rol-perm-checkbox__custom"></span>
+                  <span class="rol-perm-checkbox__label">{{ permission }}</span>
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+          <div *ngIf="filteredPermissions.length === 0" class="crt-empty-sm" style="margin-top:12px;">
+            <i class="bx bx-info-circle"></i>
+            <p>Aucune permission trouvée</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="usr-modal__footer">
+        <button type="button" class="btn btn-outline btn-sm" (click)="closeModal()">
+          <i class="bx bx-x"></i> Annuler
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="isSubmitting || roleForm.invalid">
+          <ng-container *ngIf="!isSubmitting">
+            <i [class]="isEditMode ? 'bx bx-save' : 'bx bx-plus'"></i>
+            {{ isEditMode ? 'Enregistrer' : 'Créer le rôle' }}
+          </ng-container>
+          <ng-container *ngIf="isSubmitting">
+            <i class="bx bx-loader-alt bx-spin"></i>
+            {{ isEditMode ? 'Enregistrement…' : 'Création…' }}
+          </ng-container>
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- ══ MODAL DÉTAILS ══ -->
+<div class="usr-modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+  <div class="usr-modal" (click)="$event.stopPropagation()">
+
+    <div class="usr-modal__header">
+      <div class="card-title"><i class="bx bx-info-circle"></i> Détails du rôle</div>
+      <button class="topbar-icon-btn" (click)="closeDetailsModal()"><i class="bx bx-x"></i></button>
+    </div>
+
+    <div class="usr-modal__body" *ngIf="selectedRole">
+
+      <!-- Hero du rôle -->
+      <div class="usr-modal__hero">
+        <div class="kpi-icon purple" style="width:56px;height:56px;font-size:24px;flex-shrink:0;">
+          <i [class]="getRoleIcon(selectedRole.code)"></i>
+        </div>
+        <div class="usr-modal__hero-info">
+          <h2 class="usr-modal__name">{{ selectedRole.roleName }}</h2>
+          <p class="usr-modal__username">{{ selectedRole.code }}</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+            <span *ngIf="selectedRole.isSystem" class="status-badge status-inactive">
+              <i class="bx bx-lock"></i> Système
+            </span>
+            <span *ngIf="selectedRole.isVisible" class="status-badge status-ok">
+              <i class="bx bx-show"></i> Visible
+            </span>
+            <span *ngIf="!selectedRole.isVisible" class="status-badge status-pending">
+              <i class="bx bx-hide"></i> Masqué
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="usr-detail-item" *ngIf="selectedRole.description" style="margin-bottom:12px;">
+        <div class="usr-detail-label"><i class="bx bx-message-square-detail"></i> Description</div>
+        <div class="usr-detail-value">{{ selectedRole.description }}</div>
+      </div>
+
+      <!-- Permissions -->
+      <div class="usr-detail-item usr-detail-item--full" style="margin-bottom:12px;">
+        <div class="usr-detail-label">
+          <i class="bx bx-shield-quarter"></i>
+          Permissions accordées ({{ selectedRole.permissions.length || 0 }})
+        </div>
+        <div class="usr-detail-value" style="flex-wrap:wrap;gap:6px;">
+          <span *ngFor="let p of selectedRole.permissions" class="status-badge status-ok" style="font-size:11px;">
+            <i class="bx bx-check-circle"></i> {{ p }}
+          </span>
+          <span *ngIf="!selectedRole.permissions || selectedRole.permissions.length === 0"
+            class="crt-hint">Aucune permission accordée</span>
+        </div>
+      </div>
+
+      <!-- Métadonnées -->
+      <div class="usr-modal__details" style="margin-top:4px;">
+        <div class="usr-detail-item">
+          <div class="usr-detail-label"><i class="bx bx-calendar"></i> Créé le</div>
+          <div class="usr-detail-value">{{ formatDate(selectedRole.createdAt) }}</div>
+        </div>
+        <div class="usr-detail-item" *ngIf="selectedRole.createdByName">
+          <div class="usr-detail-label"><i class="bx bx-user"></i> Créé par</div>
+          <div class="usr-detail-value">{{ selectedRole.createdByName }}</div>
+        </div>
+        <div class="usr-detail-item" *ngIf="selectedRole.updatedAt">
+          <div class="usr-detail-label"><i class="bx bx-time"></i> Modifié le</div>
+          <div class="usr-detail-value">{{ formatDate(selectedRole.updatedAt) }}</div>
+        </div>
+        <div class="usr-detail-item" *ngIf="selectedRole.updatedByName">
+          <div class="usr-detail-label"><i class="bx bx-user-check"></i> Modifié par</div>
+          <div class="usr-detail-value">{{ selectedRole.updatedByName }}</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="usr-modal__footer">
+      <button class="btn btn-outline btn-sm" (click)="closeDetailsModal()">
+        <i class="bx bx-x"></i> Fermer
+      </button>
+      <button *ngIf="selectedRole && !selectedRole.isSystem"
+        class="btn btn-primary btn-sm" (click)="editFromDetails()">
+        <i class="bx bx-edit"></i> Modifier
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<app-notification-component></app-notification-component>

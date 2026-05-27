@@ -198,11 +198,11 @@
               <span class="nav-text">ROI par véhicule</span>
             </a>
           </li>
-          <li class="nav-item"  *ngIf="permission.isManagerOrAbove()">
+          <!-- <li class="nav-item"  *ngIf="permission.isManagerOrAbove()">
             <a [routerLink]="['/dashboard/rentabilite/comparaisons']" class="nav-link">
               <span class="nav-text">Comparaisons périodes</span>
             </a>
-          </li>
+          </li> -->
         </ul>
       </li>
 
@@ -351,7 +351,7 @@
       <!-- <div class="sidebar-footer-name">{{ userName }}</div> -->
       <!-- <div class="sidebar-footer-role">{{ currentUser?.roles?.[0] || 'Utilisateur' }}</div> -->
     </div>
-    <div class="sidebar-footer-name">MAJ : 15 / 05 / 2026</div>
+    <div class="sidebar-footer-name">MAJ : 27 / 05 / 2026</div>
 
     <div class="sidebar-footer-actions">
       <button class="footer-icon-btn" [routerLink]="['/dashboard/settings/general']" title="Paramètres">

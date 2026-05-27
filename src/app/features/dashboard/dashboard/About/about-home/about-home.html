@@ -1,548 +1,492 @@
-<div class="layout-wrapper">
-  <!-- =========================================================================== -->
-  <!-- SECTION 1: SIDEBAR DE NAVIGATION PRINCIPALE -->
-  <!-- =========================================================================== -->
+<div class="app-wrapper">
+
+  <!-- SIDEBAR -->
   <app-sidebar-component></app-sidebar-component>
 
-  <!-- =========================================================================== -->
-  <!-- SECTION 2: CONTENU PRINCIPAL DE LA PAGE -->
-  <!-- =========================================================================== -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-    <!-- ========================================== -->
-    <!-- SECTION 2.1: NAVBAR SUPERIEURE -->
-    <!-- ========================================== -->
-    <nav class="layout-navbar">
-      <!-- Contrôles de navigation -->
-      <div class="d-flex align-items-center">
-        <!-- Bouton de bascule de la sidebar -->
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
         <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class='bx bx-menu'></i>
+          <i class="bx bx-menu"></i>
         </button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">À propos</span>
+        </div>
       </div>
 
-      <!-- Menu utilisateur -->
-      <ul class="navbar-nav">
-        <!-- Dropdown utilisateur avec photo dynamique -->
-        <li class="nav-item dropdown" (click)="$event.stopPropagation(); toggleUserMenu()">
-          <div class="avatar dropdown-toggle">
-            <!-- Photo de profil -->
-            <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" [src]="userPhotoUrl" [alt]="userName"
-              (error)="userPhotoUrl = getDefaultAvatar()" />
-            <!-- Avatar par défaut si pas de photo -->
-            <div *ngIf="!userPhotoUrl || userPhotoUrl === ''" class="avatar-default">
-              {{ getUserInitials() }}
-            </div>
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
+
+        <button class="topbar-icon-btn">
+          <i class="bx bx-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <div class="topbar-user" (click)="toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">{{ getUserInitials() }}</div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName" (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
           </div>
-          <!-- Menu déroulant utilisateur -->
           <div class="dropdown-menu" [class.show]="showUserMenu">
-            <div style="padding: 1rem;">
-              <!-- Informations utilisateur -->
-              <div class="fw-bold">{{ userName }}</div>
-              <div class="text-muted fs-sm">
-                {{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}
-              </div>
-              <hr style="margin: 0.5rem 0;">
-
-              <!-- Liens du menu utilisateur -->
-              <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
-                <i class='bx bx-user me-2'></i> Mon profil
-              </a>
-              <a [routerLink]="['/settings']" class="dropdown-item">
-                <i class='bx bx-cog me-2'></i> Paramètres
-              </a>
-              <hr style="margin: 0.5rem 0;">
-
-              <!-- Déconnexion -->
-              <a (click)="logout()" class="dropdown-item logout-item">
-                <i class='bx bx-log-out me-2'></i> Déconnexion
-              </a>
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
             </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item"><i class="bx bx-user"></i> Mon profil</a>
+            <a [routerLink]="['/settings']" class="dropdown-item"><i class="bx bx-cog"></i> Paramètres</a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger"><i class="bx bx-log-out"></i> Déconnexion</a>
           </div>
-        </li>
-      </ul>
-    </nav>
+        </div>
+      </div>
+    </header>
 
-    <!-- ========================================== -->
-    <!-- SECTION 2.2: CONTENU DU FORMULAIRE -->
-    <!-- ========================================== -->
-    <div class="content-wrapper">
-      <div class="about-hero">
-        <div class="about-hero-content">
-          <div class="hero-badge">
-            <i class='bx bx-certification'></i>
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+
+      <!-- ══ HERO BANNER ══ -->
+      <div class="hero-banner abt-hero">
+        <div class="hero-deco"><i class="bx bx-certification"></i></div>
+        <div class="hero-content">
+          <div class="abt-badge">
+            <i class="bx bx-certification"></i>
             <span>Solution Professionnelle de Gestion de Flotte</span>
           </div>
-          <h1 class="hero-title">
-            Bienvenue sur <span class="gradient-text">LOGISTIK</span>
-          </h1>
-          <p class="hero-subtitle">
+          <div class="hero-title" style="margin-top:10px;">
+            Bienvenue sur <span>LOGISTIK</span>
+          </div>
+          <div class="hero-subtitle">
             La plateforme complète pour gérer votre activité de location de véhicules avec intelligence et simplicité
-          </p>
-          <div class="hero-stats">
-            <div class="hero-stat">
-              <div class="stat-number">100%</div>
-              <div class="stat-label">Digital</div>
+          </div>
+          <!-- Floating cards déco -->
+          <div class="abt-floating-row">
+            <div class="abt-float-card">
+              <i class="bx bx-car"></i> <span>Gestion Véhicules</span>
             </div>
-            <div class="hero-stat">
-              <div class="stat-number">24/7</div>
-              <div class="stat-label">Accessible</div>
+            <div class="abt-float-card">
+              <i class="bx bx-receipt"></i> <span>Paiements</span>
             </div>
-            <div class="hero-stat">
-              <div class="stat-number">15+</div>
-              <div class="stat-label">Modules</div>
+            <div class="abt-float-card abt-float-card--accent">
+              <i class="bx bx-trending-up"></i> <span>ROI</span>
             </div>
           </div>
-        </div>
-        <div class="hero-illustration">
-          <div class="floating-card card-1">
-            <i class='bx bx-car'></i>
-            <span>Gestion Véhicules</span>
-          </div>
-          <div class="floating-card card-2">
-            <i class='bx bx-receipt'></i>
-            <span>Paiements</span>
-          </div>
-          <div class="floating-card card-3">
-            <i class='bx bx-trending-up'></i>
-            <span>ROI</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION VISION & MISSION -->
-      <div class="about-section">
-        <div class="section-header">
-          <span class="section-badge">Notre Mission</span>
-          <h2 class="section-title">Digitaliser la Gestion de Flotte</h2>
-          <p class="section-description">
-            LOGISTIKS est né de la volonté de simplifier et professionnaliser la gestion de location de véhicules pour
-            livreurs et professionnels
-          </p>
         </div>
 
-        <div class="mission-grid">
-          <div class="mission-card">
-            <div class="mission-icon success">
-              <i class='bx bx-rocket'></i>
-            </div>
-            <h3>Vision</h3>
-            <p>Devenir la référence en gestion de flotte pour les startups et PME, en offrant une solution complète,
-              intuitive et évolutive</p>
+        <!-- Hero Stats -->
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value">100%</div>
+            <div class="hero-stat-label">Digital</div>
           </div>
-          <div class="mission-card">
-            <div class="mission-icon primary">
-              <i class='bx bx-target-lock'></i>
-            </div>
-            <h3>Mission</h3>
-            <p>Automatiser et optimiser chaque aspect de votre activité : de la location au calcul de rentabilité, en
-              passant par les paiements</p>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">24/7</div>
+            <div class="hero-stat-label">Accessible</div>
           </div>
-          <div class="mission-card">
-            <div class="mission-icon warning">
-              <i class='bx bx-shield-quarter'></i>
-            </div>
-            <h3>Valeurs</h3>
-            <p>Transparence, fiabilité et innovation au service de votre croissance. Vos données sont sécurisées et
-              accessibles à tout moment</p>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">15+</div>
+            <div class="hero-stat-label">Modules</div>
           </div>
         </div>
       </div>
 
-      <!-- SECTION MODULES CLÉS -->
-      <div class="about-section bg-light">
-        <div class="section-header">
-          <span class="section-badge">Fonctionnalités</span>
-          <h2 class="section-title">17 Modules Puissants à Votre Service</h2>
-          <p class="section-description">
-            Une suite complète couvrant tous les aspects de votre activité
-          </p>
+      <!-- ══ VISION & MISSION ══ -->
+      <div class="abt-section-header">
+        <span class="abt-badge">Notre Mission</span>
+        <h2 class="abt-section-title">Digitaliser la Gestion de Flotte</h2>
+        <p class="abt-section-desc">
+          LOGISTIKS est né de la volonté de simplifier et professionnaliser la gestion de location de véhicules pour livreurs et professionnels
+        </p>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="card abt-mission-card">
+          <div class="card-body" style="text-align:center;">
+            <div class="kpi-icon green abt-mission-icon"><i class="bx bx-rocket"></i></div>
+            <div class="abt-mission-title">Vision</div>
+            <p class="abt-mission-text">Devenir la référence en gestion de flotte pour les startups et PME, en offrant une solution complète, intuitive et évolutive</p>
+          </div>
         </div>
-
-        <div class="modules-showcase">
-          <!-- Module 1 : Tiers -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);">
-              <i class='bx bx-group'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Gestion des Tiers</h4>
-              <p>Clients, livreurs, fournisseurs : tout votre réseau centralisé avec validation documents et statuts</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> Fiches complètes</li>
-                <li><i class='bx bx-check'></i> Documents vérifiés</li>
-                <li><i class='bx bx-check'></i> Historique complet</li>
-              </ul>
-            </div>
+        <div class="card abt-mission-card">
+          <div class="card-body" style="text-align:center;">
+            <div class="kpi-icon purple abt-mission-icon"><i class="bx bx-target-lock"></i></div>
+            <div class="abt-mission-title">Mission</div>
+            <p class="abt-mission-text">Automatiser et optimiser chaque aspect de votre activité : de la location au calcul de rentabilité, en passant par les paiements</p>
           </div>
-
-          <!-- Module 2 : Véhicules -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #71dd37 0%, #5cb85c 100%);">
-              <i class='bx bx-car'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Gestion de Flotte</h4>
-              <p>Suivez vos véhicules en temps réel : disponibilité, maintenance, affectation, historique</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> Statuts en direct</li>
-                <li><i class='bx bx-check'></i> Suivi maintenance</li>
-                <li><i class='bx bx-check'></i> Coûts détaillés</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Module 3 : Contrats -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #ff3e1d 0%, #e63946 100%);">
-              <i class='bx bx-file'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Gestion Contrats</h4>
-              <p>Création, suivi et renouvellement automatique avec génération de documents professionnels</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> Templates personnalisables</li>
-                <li><i class='bx bx-check'></i> Échéances automatiques</li>
-                <li><i class='bx bx-check'></i> Alertes de fin</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Module 4 : Paiements -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #ffab00 0%, #ffa726 100%);">
-              <i class='bx bx-money'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Suivi Paiements</h4>
-              <p>Gestion hebdomadaire des loyers avec détection automatique des retards et relances</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> Multi-modes paiement</li>
-                <li><i class='bx bx-check'></i> Alertes impayés</li>
-                <li><i class='bx bx-check'></i> Réconciliation auto</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Module 5 : Finances -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #00cfe8 0%, #03a9f4 100%);">
-              <i class='bx bx-wallet'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Finance & Comptabilité</h4>
-              <p>Comptes, charges, dépenses : une vision financière complète et en temps réel</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> Comptes multiples</li>
-                <li><i class='bx bx-check'></i> Suivi charges</li>
-                <li><i class='bx bx-check'></i> Mouvements internes</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Module 6 : ROI -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #9c27b0 0%, #8e24aa 100%);">
-              <i class='bx bx-trending-up'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Rentabilité & ROI</h4>
-              <p>Calculez la rentabilité de chaque véhicule et prenez des décisions éclairées</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> ROI par véhicule</li>
-                <li><i class='bx bx-check'></i> Comparaisons périodes</li>
-                <li><i class='bx bx-check'></i> Prévisions</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Module 7 : Dashboards -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #ff6f00 0%, #f57c00 100%);">
-              <i class='bx bx-bar-chart-alt-2'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Tableaux de Bord</h4>
-              <p>KPIs en temps réel, graphiques intuitifs, vision 360° de votre activité</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> KPIs personnalisables</li>
-                <li><i class='bx bx-check'></i> Graphiques interactifs</li>
-                <li><i class='bx bx-check'></i> Export rapports</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Module 8 : Documents -->
-          <div class="module-showcase-card">
-            <div class="module-showcase-icon" style="background: linear-gradient(135deg, #607d8b 0%, #546e7a 100%);">
-              <i class='bx bx-folder'></i>
-            </div>
-            <div class="module-showcase-content">
-              <h4>Gestion Documentaire</h4>
-              <p>Stockage sécurisé, versioning, validation : tous vos documents au bon endroit</p>
-              <ul class="feature-list">
-                <li><i class='bx bx-check'></i> Upload sécurisé</li>
-                <li><i class='bx bx-check'></i> Validation workflow</li>
-                <li><i class='bx bx-check'></i> Archivage auto</li>
-              </ul>
-            </div>
+        </div>
+        <div class="card abt-mission-card">
+          <div class="card-body" style="text-align:center;">
+            <div class="kpi-icon amber abt-mission-icon"><i class="bx bx-shield-quarter"></i></div>
+            <div class="abt-mission-title">Valeurs</div>
+            <p class="abt-mission-text">Transparence, fiabilité et innovation au service de votre croissance. Vos données sont sécurisées et accessibles à tout moment</p>
           </div>
         </div>
       </div>
 
-      <!-- SECTION AVANTAGES -->
-      <div class="about-section">
-        <div class="section-header">
-          <span class="section-badge">Pourquoi LOGISTIK</span>
-          <h2 class="section-title">Des Avantages Concrets pour Votre Business</h2>
+      <!-- ══ MODULES ══ -->
+      <div class="abt-section-header" style="margin-top: 40px;">
+        <span class="abt-badge">Fonctionnalités</span>
+        <h2 class="abt-section-title">17 Modules Puissants à Votre Service</h2>
+        <p class="abt-section-desc">Une suite complète couvrant tous les aspects de votre activité</p>
+      </div>
+
+      <div class="abt-modules-grid">
+
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#696cff,#5f61e6);">
+              <i class="bx bx-group"></i>
+            </div>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Gestion des Tiers</div>
+              <p class="abt-module-desc">Clients, livreurs, fournisseurs : tout votre réseau centralisé avec validation documents et statuts</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Fiches complètes</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Documents vérifiés</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Historique complet</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="benefits-grid">
-          <div class="benefit-card">
-            <div class="benefit-number">01</div>
-            <div class="benefit-icon">
-              <i class='bx bx-time-five'></i>
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#71dd37,#5cb85c);">
+              <i class="bx bx-car"></i>
             </div>
-            <h4>Gain de Temps</h4>
-            <p>Automatisez 80% de vos tâches administratives et concentrez-vous sur votre croissance</p>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Gestion de Flotte</div>
+              <p class="abt-module-desc">Suivez vos véhicules en temps réel : disponibilité, maintenance, affectation, historique</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Statuts en direct</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Suivi maintenance</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Coûts détaillés</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="benefit-card">
-            <div class="benefit-number">02</div>
-            <div class="benefit-icon">
-              <i class='bx bx-pie-chart-alt-2'></i>
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#ff3e1d,#e63946);">
+              <i class="bx bx-file"></i>
             </div>
-            <h4>Visibilité Totale</h4>
-            <p>Accédez à vos données en temps réel, où que vous soyez, 24h/24</p>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Gestion Contrats</div>
+              <p class="abt-module-desc">Création, suivi et renouvellement automatique avec génération de documents professionnels</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Templates</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Échéances auto</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Alertes de fin</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="benefit-card">
-            <div class="benefit-number">03</div>
-            <div class="benefit-icon">
-              <i class='bx bx-shield-quarter'></i>
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#ffab00,#ffa726);">
+              <i class="bx bx-money"></i>
             </div>
-            <h4>Sécurité Maximale</h4>
-            <p>Vos données sont cryptées, sauvegardées et protégées selon les normes internationales</p>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Suivi Paiements</div>
+              <p class="abt-module-desc">Gestion hebdomadaire des loyers avec détection automatique des retards et relances</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Multi-modes</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Alertes impayés</span>
+                <span class="status-badge status-ok"><i class="bx bx-check"></i> Réconciliation</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="benefit-card">
-            <div class="benefit-number">04</div>
-            <div class="benefit-icon">
-              <i class='bx bx-trending-up'></i>
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#00cfe8,#03a9f4);">
+              <i class="bx bx-wallet"></i>
             </div>
-            <h4>ROI Mesurable</h4>
-            <p>Identifiez vos véhicules les plus rentables et optimisez votre flotte</p>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Finance & Comptabilité</div>
+              <p class="abt-module-desc">Comptes, charges, dépenses : une vision financière complète et en temps réel</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-rented"><i class="bx bx-check"></i> Comptes multiples</span>
+                <span class="status-badge status-rented"><i class="bx bx-check"></i> Suivi charges</span>
+                <span class="status-badge status-rented"><i class="bx bx-check"></i> Mouvements</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="benefit-card">
-            <div class="benefit-number">05</div>
-            <div class="benefit-icon">
-              <i class='bx bx-support'></i>
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#9c27b0,#8e24aa);">
+              <i class="bx bx-trending-up"></i>
             </div>
-            <h4>Support Dédié</h4>
-            <p>Une équipe à votre écoute pour vous accompagner dans votre réussite</p>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Rentabilité & ROI</div>
+              <p class="abt-module-desc">Calculez la rentabilité de chaque véhicule et prenez des décisions éclairées</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-reserved"><i class="bx bx-check"></i> ROI par véhicule</span>
+                <span class="status-badge status-reserved"><i class="bx bx-check"></i> Comparaisons</span>
+                <span class="status-badge status-reserved"><i class="bx bx-check"></i> Prévisions</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="benefit-card">
-            <div class="benefit-number">06</div>
-            <div class="benefit-icon">
-              <i class='bx bx-rocket'></i>
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#ff6f00,#f57c00);">
+              <i class="bx bx-bar-chart-alt-2"></i>
             </div>
-            <h4>Scalabilité</h4>
-            <p>De 4 à +100 véhicules, LOGISTIK grandit avec vous sans limite</p>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Tableaux de Bord</div>
+              <p class="abt-module-desc">KPIs en temps réel, graphiques intuitifs, vision 360° de votre activité</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-pending"><i class="bx bx-check"></i> KPIs live</span>
+                <span class="status-badge status-pending"><i class="bx bx-check"></i> Graphiques</span>
+                <span class="status-badge status-pending"><i class="bx bx-check"></i> Export</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card abt-module-card">
+          <div class="card-body">
+            <div class="abt-module-icon" style="background:linear-gradient(135deg,#607d8b,#546e7a);">
+              <i class="bx bx-folder"></i>
+            </div>
+            <div class="abt-module-content">
+              <div class="abt-module-title">Gestion Documentaire</div>
+              <p class="abt-module-desc">Stockage sécurisé, versioning, validation : tous vos documents au bon endroit</p>
+              <div class="abt-feature-list">
+                <span class="status-badge status-inactive"><i class="bx bx-check"></i> Upload sécurisé</span>
+                <span class="status-badge status-inactive"><i class="bx bx-check"></i> Workflow</span>
+                <span class="status-badge status-inactive"><i class="bx bx-check"></i> Archivage</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ AVANTAGES ══ -->
+      <div class="abt-section-header" style="margin-top: 40px;">
+        <span class="abt-badge">Pourquoi LOGISTIK</span>
+        <h2 class="abt-section-title">Des Avantages Concrets pour Votre Business</h2>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="card abt-benefit-card" *ngFor="let b of [
+          {n:'01', icon:'bx-time-five',   title:'Gain de Temps',      desc:'Automatisez 80% de vos tâches administratives et concentrez-vous sur votre croissance'},
+          {n:'02', icon:'bx-pie-chart-alt-2', title:'Visibilité Totale', desc:'Accédez à vos données en temps réel, où que vous soyez, 24h/24'},
+          {n:'03', icon:'bx-shield-quarter',  title:'Sécurité Maximale', desc:'Vos données sont cryptées, sauvegardées et protégées selon les normes internationales'},
+          {n:'04', icon:'bx-trending-up',  title:'ROI Mesurable',      desc:'Identifiez vos véhicules les plus rentables et optimisez votre flotte'},
+          {n:'05', icon:'bx-support',      title:'Support Dédié',      desc:'Une équipe à votre écoute pour vous accompagner dans votre réussite'},
+          {n:'06', icon:'bx-rocket',       title:'Scalabilité',        desc:'De 4 à +100 véhicules, LOGISTIK grandit avec vous sans limite'}
+        ]">
+          <div class="card-body">
+            <div class="abt-benefit-num">{{ b.n }}</div>
+            <div class="kpi-icon purple" style="margin-bottom:12px;"><i class="bx {{ b.icon }}"></i></div>
+            <div class="abt-module-title">{{ b.title }}</div>
+            <p class="abt-mission-text">{{ b.desc }}</p>
           </div>
         </div>
       </div>
 
-      <!-- SECTION CHIFFRES CLÉS -->
-      <div class="about-section bg-gradient">
-        <div class="stats-showcase">
-          <div class="stat-showcase">
-            <div class="stat-showcase-icon">
-              <i class='bx bx-code-alt'></i>
-            </div>
-            <div class="stat-showcase-number">+20 000</div>
-            <div class="stat-showcase-label">Lignes de Code</div>
-          </div>
+      <!-- ══ CHIFFRES CLÉS ══ -->
+      <div class="abt-stats-banner">
+        <div class="abt-stat-item">
+          <div class="abt-stat-icon"><i class="bx bx-code-alt"></i></div>
+          <div class="abt-stat-value">+20 000</div>
+          <div class="abt-stat-label">Lignes de Code</div>
+        </div>
+        <div class="abt-stat-divider"></div>
+        <div class="abt-stat-item">
+          <div class="abt-stat-icon"><i class="bx bx-shield-quarter"></i></div>
+          <div class="abt-stat-value">100%</div>
+          <div class="abt-stat-label">Sécurisé</div>
+        </div>
+        <div class="abt-stat-divider"></div>
+        <div class="abt-stat-item">
+          <div class="abt-stat-icon"><i class="bx bx-bolt"></i></div>
+          <div class="abt-stat-value">&lt;2s</div>
+          <div class="abt-stat-label">Temps Réponse</div>
+        </div>
+        <div class="abt-stat-divider"></div>
+        <div class="abt-stat-item">
+          <div class="abt-stat-icon"><i class="bx bx-mobile"></i></div>
+          <div class="abt-stat-value">100%</div>
+          <div class="abt-stat-label">Responsive</div>
+        </div>
+      </div>
 
-          <div class="stat-showcase">
-            <div class="stat-showcase-icon">
-              <i class='bx bx-shield-quarter'></i>
-            </div>
-            <div class="stat-showcase-number">100%</div>
-            <div class="stat-showcase-label">Sécurisé</div>
-          </div>
+      <!-- ══ STACK TECHNIQUE ══ -->
+      <div class="abt-section-header" style="margin-top: 40px;">
+        <span class="abt-badge">Technologie</span>
+        <h2 class="abt-section-title">Une Stack Moderne et Performante</h2>
+        <p class="abt-section-desc">LOGISTIK repose sur les technologies les plus avancées pour garantir performance et fiabilité</p>
+      </div>
 
-          <div class="stat-showcase">
-            <div class="stat-showcase-icon">
-              <i class='bx bx-bolt'></i>
-            </div>
-            <div class="stat-showcase-number">&lt;2s</div>
-            <div class="stat-showcase-label">Temps Réponse</div>
+      <div class="grid grid-4" style="max-width: 700px;">
+        <div class="card abt-tech-card">
+          <div class="card-body" style="text-align:center;">
+            <div class="abt-tech-icon abt-tech-icon--angular"><i class="bx bxl-angular"></i></div>
+            <div class="abt-module-title" style="font-size:13px;">Angular 21+</div>
+            <p class="crt-hint">Frontend réactif</p>
           </div>
-
-          <div class="stat-showcase">
-            <div class="stat-showcase-icon">
-              <i class='bx bx-mobile'></i>
-            </div>
-            <div class="stat-showcase-number">100%</div>
-            <div class="stat-showcase-label">Responsive</div>
+        </div>
+        <div class="card abt-tech-card">
+          <div class="card-body" style="text-align:center;">
+            <div class="abt-tech-icon abt-tech-icon--dotnet"><i class="bx bxl-microsoft"></i></div>
+            <div class="abt-module-title" style="font-size:13px;">ASP.NET Core 8</div>
+            <p class="crt-hint">Backend robuste</p>
+          </div>
+        </div>
+        <div class="card abt-tech-card">
+          <div class="card-body" style="text-align:center;">
+            <div class="abt-tech-icon abt-tech-icon--mongo"><i class="bx bx-data"></i></div>
+            <div class="abt-module-title" style="font-size:13px;">MongoDB</div>
+            <p class="crt-hint">Base NoSQL</p>
+          </div>
+        </div>
+        <div class="card abt-tech-card">
+          <div class="card-body" style="text-align:center;">
+            <div class="abt-tech-icon abt-tech-icon--cloud"><i class="bx bx-cloud"></i></div>
+            <div class="abt-module-title" style="font-size:13px;">Cloud Ready</div>
+            <p class="crt-hint">Déploiement flexible</p>
           </div>
         </div>
       </div>
 
-      <!-- SECTION STACK TECHNIQUE -->
-      <div class="about-section">
-        <div class="section-header">
-          <span class="section-badge">Technologie</span>
-          <h2 class="section-title">Une Stack Moderne et Performante</h2>
-          <p class="section-description">
-            LOGISTIK repose sur les technologies les plus avancées pour garantir performance et fiabilité
-          </p>
-        </div>
+      <!-- ══ ROADMAP ══ -->
+      <div class="abt-section-header" style="margin-top: 40px;">
+        <span class="abt-badge">Évolution</span>
+        <h2 class="abt-section-title">Notre Feuille de Route 2026-2027</h2>
+      </div>
 
-        <div class="tech-stack">
-          <div class="tech-card">
-            <div class="tech-icon angular">
-              <i class='bx bxl-angular'></i>
-            </div>
-            <h5>Angular 21+</h5>
-            <p>Frontend réactif</p>
-          </div>
+      <div class="card" style="max-width: 720px;">
+        <div class="card-body">
+          <div class="abt-roadmap">
 
-          <div class="tech-card">
-            <div class="tech-icon dotnet">
-              <i class='bx bxl-microsoft'></i>
+            <div class="abt-roadmap-item abt-roadmap-item--done">
+              <div class="abt-roadmap-marker abt-roadmap-marker--done">
+                <i class="bx bx-check"></i>
+              </div>
+              <div class="abt-roadmap-body">
+                <div class="abt-roadmap-date">Q4 2025 — Terminé</div>
+                <div class="abt-module-title">Socle Technique</div>
+                <p class="crt-hint">Authentification, utilisateurs, rôles, sécurité</p>
+              </div>
             </div>
-            <h5>ASP.NET Core 8</h5>
-            <p>Backend robuste</p>
-          </div>
 
-          <div class="tech-card">
-            <div class="tech-icon mongodb">
-              <i class='bx bx-data'></i>
+            <div class="abt-roadmap-item abt-roadmap-item--done">
+              <div class="abt-roadmap-marker abt-roadmap-marker--done">
+                <i class="bx bx-check"></i>
+              </div>
+              <div class="abt-roadmap-body">
+                <div class="abt-roadmap-date">Q1 2026 — Terminé</div>
+                <div class="abt-module-title">Modules Fondamentaux</div>
+                <p class="crt-hint">Tiers, Véhicules, Documents, Contrats</p>
+              </div>
             </div>
-            <h5>MongoDB</h5>
-            <p>Base NoSQL</p>
-          </div>
 
-          <div class="tech-card">
-            <div class="tech-icon cloud">
-              <i class='bx bx-cloud'></i>
+            <div class="abt-roadmap-item abt-roadmap-item--done">
+              <div class="abt-roadmap-marker abt-roadmap-marker--done">
+                <i class="bx bx-check"></i>
+              </div>
+              <div class="abt-roadmap-body">
+                <div class="abt-roadmap-date">Q2-Q3 2026 — Terminé</div>
+                <div class="abt-module-title">Finance & ROI</div>
+                <p class="crt-hint">Paiements, Charges, Rentabilité, Dashboards</p>
+              </div>
             </div>
-            <h5>Cloud Ready</h5>
-            <p>Déploiement flexible</p>
+
+            <div class="abt-roadmap-item abt-roadmap-item--active">
+              <div class="abt-roadmap-marker abt-roadmap-marker--active">
+                <i class="bx bx-rocket"></i>
+              </div>
+              <div class="abt-roadmap-body">
+                <div class="abt-roadmap-date">Q4 2026 – Q2 2027 — En cours</div>
+                <div class="abt-module-title">Optimisation & Scale</div>
+                <p class="crt-hint">Notifications, Exports, Intégrations, Mobile</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- SECTION ROADMAP -->
-      <div class="about-section bg-light">
-        <div class="section-header">
-          <span class="section-badge">Évolution</span>
-          <h2 class="section-title">Notre Feuille de Route 2026-2027</h2>
-        </div>
-
-        <div class="roadmap">
-          <div class="roadmap-item">
-            <div class="roadmap-marker completed">
-              <i class='bx bx-check'></i>
-            </div>
-            <div class="roadmap-content">
-              <div class="roadmap-date">Q4 2026 - Terminé</div>
-              <h4>Socle Technique</h4>
-              <p>Authentification, utilisateurs, rôles, sécurité</p>
-            </div>
-          </div>
-
-          <div class="roadmap-item">
-            <div class="roadmap-marker completed">
-            <i class='bx bx-time-five'></i>
-            </div>
-            <div class="roadmap-content">
-              <div class="roadmap-date">Q1 2026 - Terminé</div>
-              <h4>Modules Fondamentaux</h4>
-              <p>Tiers, Véhicules, Documents, Contrats</p>
-            </div>
-          </div>
-
-          <div class="roadmap-item">
-            <div class="roadmap-marker completed">
-              <i class='bx bx-calendar'></i>
-            </div>
-            <div class="roadmap-content">
-              <div class="roadmap-date">Q2-Q3 2026 - Terminé</div>
-              <h4>Finance & ROI</h4>
-              <p>Paiements, Charges, Rentabilité, Dashboards</p>
-            </div>
-          </div>
-
-          <div class="roadmap-item">
-            <div class="roadmap-marker active">
-              <i class='bx bx-rocket'></i>
-            </div>
-            <div class="roadmap-content">
-              <div class="roadmap-date">Q4 2026 - Q2 2027 En cours</div>
-              <h4>Optimisation & Scale</h4>
-              <p>Notifications, Exports, Intégrations, Mobile</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION CONTACT / CTA -->
-      <div class="about-section">
-        <div class="cta-container">
-          <div class="cta-content">
-            <h2>Prêt à Transformer Votre Gestion de Flotte ?</h2>
-            <p>Rejoignez les entrepreneurs qui font confiance à LOGISTIK pour développer leur activité</p>
-            <div class="cta-buttons">
-              <button class="btn btn-primary btn-lg">
-                <i class='bx bx-rocket'></i>
-                Démarrer Maintenant
+      <!-- ══ CTA ══ -->
+      <div class="abt-cta">
+        <div class="abt-cta__content">
+          <div class="abt-cta__icon"><i class="bx bx-trophy"></i></div>
+          <div>
+            <h2 class="abt-cta__title">Prêt à Transformer Votre Gestion de Flotte ?</h2>
+            <p class="abt-cta__sub">Rejoignez les entrepreneurs qui font confiance à LOGISTIK pour développer leur activité</p>
+            <div class="hero-quick-actions" style="margin-top:20px;">
+              <button class="hero-action-btn primary">
+                <i class="bx bx-rocket"></i> Démarrer Maintenant
               </button>
-              <button class="btn btn-outline-primary btn-lg">
-                <i class='bx bx-phone'></i>
-                Nous Contacter
+              <button class="hero-action-btn">
+                <i class="bx bx-phone"></i> Nous Contacter
               </button>
             </div>
           </div>
-          <div class="cta-illustration">
-            <i class='bx bx-trophy'></i>
-          </div>
         </div>
       </div>
 
-      <!-- FOOTER INFO -->
-      <div class="about-footer">
-        <div class="footer-info">
-          <div class="footer-column">
-            <h5>À Propos</h5>
-            <p>LOGISTIK - Solution de gestion de flotte pour professionnels</p>
-            <div class="footer-social">
-              <a href="#"><i class='bx bxl-facebook'></i></a>
-              <a href="#"><i class='bx bxl-twitter'></i></a>
-              <a href="#"><i class='bx bxl-linkedin'></i></a>
-              <a href="#"><i class='bx bxl-instagram'></i></a>
-            </div>
-          </div>
-
-          <div class="footer-column">
-            <h5>Contact</h5>
-            <p><i class='bx bx-envelope'></i> contact@logistiks.com</p>
-            <p><i class='bx bx-phone'></i> +225 07 59 76 42 20</p>
-            <p><i class='bx bx-map'></i> Abidjan, Côte d'Ivoire</p>
-          </div>
-
-          <div class="footer-column">
-            <h5>Informations</h5>
-            <p>Version: 1.0.0</p>
-            <p>© 2025-2026 LOGISTIK</p>
+      <!-- ══ FOOTER ABOUT ══ -->
+      <div class="abt-info-footer">
+        <div class="abt-info-col">
+          <div class="abt-info-title">À Propos</div>
+          <p class="crt-hint">LOGISTIK — Solution de gestion de flotte pour professionnels</p>
+          <div class="abt-social">
+            <a href="#" class="topbar-icon-btn"><i class="bx bxl-facebook"></i></a>
+            <a href="#" class="topbar-icon-btn"><i class="bx bxl-twitter"></i></a>
+            <a href="#" class="topbar-icon-btn"><i class="bx bxl-linkedin"></i></a>
+            <a href="#" class="topbar-icon-btn"><i class="bx bxl-instagram"></i></a>
           </div>
         </div>
+        <div class="abt-info-col">
+          <div class="abt-info-title">Contact</div>
+          <p class="crt-hint"><i class="bx bx-envelope"></i> contact@logistiks.com</p>
+          <p class="crt-hint"><i class="bx bx-phone"></i> +225 07 59 76 42 20</p>
+          <p class="crt-hint"><i class="bx bx-map"></i> Abidjan, Côte d'Ivoire</p>
+        </div>
+        <div class="abt-info-col">
+          <div class="abt-info-title">Informations</div>
+          <p class="crt-hint">Version : 1.0.0</p>
+          <p class="crt-hint">© 2025-2026 LOGISTIK</p>
+        </div>
       </div>
-    </div>
-    <!-- COMPOSANT DE NOTIFICATION -->
-    <app-notification-component></app-notification-component>
+
+      <!-- ══ FOOTER PAGE ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
+
+    </main>
   </div>
 </div>
+
+<app-notification-component></app-notification-component>
