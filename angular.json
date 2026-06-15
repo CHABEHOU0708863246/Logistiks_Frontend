@@ -23,8 +23,8 @@
           "options": {
             "browser": "src/main.ts",
             "polyfills": [
-                "zone.js"
-              ],
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -47,7 +47,7 @@
                   "maximumError": "5MB"
                 },
                 {
-                 "type": "anyComponentStyle",
+                  "type": "anyComponentStyle",
                   "maximumWarning": "50kB",
                   "maximumError": "100kB"
                 }
@@ -72,10 +72,36 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "Logistiks_Frontend:build:production"
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.production.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2MB",
+                  "maximumError": "5MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "50kB",
+                  "maximumError": "100kB"
+                }
+              ],
+              "outputHashing": "all"
             },
             "development": {
-              "buildTarget": "Logistiks_Frontend:build:development"
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "development"
