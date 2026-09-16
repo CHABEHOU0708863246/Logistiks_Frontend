@@ -9,7 +9,7 @@ import { Auth } from '../../../../../core/services/Auth/auth';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 import { Token } from '../../../../../core/services/Token/token';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import { VehicleDto } from '../../../../../core/models/Vehicles/Vehicle.dtos';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";

@@ -2,7 +2,7 @@ import { Component, HostListener } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import { VehicleType, FuelType } from '../../../../../core/models/Enums/Logistiks-enums';
 import { VehicleDto } from '../../../../../core/models/Vehicles/Vehicle.dtos';

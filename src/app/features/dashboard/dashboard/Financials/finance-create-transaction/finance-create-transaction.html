@@ -320,11 +320,6 @@
                         (click)="transactionForm.patchValue({paymentMethod: PaymentMethod.MobileMoney})">
                         <i class="bx bx-mobile"></i><span>Mobile Money</span>
                       </div>
-                      <div class="payment-card"
-                        [class.active]="transactionForm.get('paymentMethod')?.value === PaymentMethod.CreditCard"
-                        (click)="transactionForm.patchValue({paymentMethod: PaymentMethod.CreditCard})">
-                        <i class="bx bx-credit-card"></i><span>Carte</span>
-                      </div>
 
                     </div>
                   </div>

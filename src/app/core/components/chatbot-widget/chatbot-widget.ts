@@ -132,10 +132,23 @@ export class ChatbotWidget implements OnInit, AfterViewChecked {
     }
   }
 
-  /** Formate le markdown simple : **gras** → <strong>, _italique_ → <em>, \n → <br> */
+  /**
+   * Formate le markdown simple : **gras** → <strong>, _italique_ → <em>, \n → <br>.
+   *
+   * 🔒 Le texte est ÉCHAPPÉ avant les remplacements : il est injecté via
+   * `[innerHTML]`, donc sans échappement un message contenant du HTML
+   * (réponse serveur ou écho d'une saisie) exécuterait du script arbitraire
+   * (XSS → vol des jetons du localStorage).
+   */
   formatText(text: string): string {
     if (!text) return '';
-    return text
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    return escaped
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g,     '<em>$1</em>')
       .replace(/_(.*?)_/g,       '<em>$1</em>')

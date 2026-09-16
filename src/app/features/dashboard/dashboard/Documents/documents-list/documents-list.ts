@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { Router, RouterModule } from '@angular/router';
 import { map, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import { DocumentStatus, DocumentEntityType } from '../../../../../core/models/Enums/Logistiks-enums';
 import { DocumentDto } from '../../../../../core/models/Documents/Document-response.models';

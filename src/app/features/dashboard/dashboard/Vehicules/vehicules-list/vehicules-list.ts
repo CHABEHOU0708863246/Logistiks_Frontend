@@ -3,7 +3,7 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import { VehicleStatus, VehicleType, FuelType, TierStatus, ContractStatus } from '../../../../../core/models/Enums/Logistiks-enums';
 import { UpdateVehicleRequest, VehicleDto, VehicleSearchCriteria, VehicleStatistics } from '../../../../../core/models/Vehicles/Vehicle.dtos';

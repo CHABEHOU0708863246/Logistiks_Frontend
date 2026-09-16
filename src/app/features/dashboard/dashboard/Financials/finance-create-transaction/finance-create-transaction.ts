@@ -3,7 +3,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import {

@@ -11,6 +11,7 @@ import { ResetPasswordRequest } from '../../models/Auth/Password/ResetPasswordRe
 import { RefreshTokenRequest } from '../../models/Auth/Token/RefreshTokenRequest';
 import { ValidateResetTokenRequest } from '../../models/Auth/Token/ValidateResetTokenRequest';
 import { ApiResponseData } from '../../models/Common/ApiResponseData';
+import { ApiResponse } from '../../models/Common/ApiResponse';
 import { User } from '../../models/Core/Users/Entities/User';
 
 @Injectable({

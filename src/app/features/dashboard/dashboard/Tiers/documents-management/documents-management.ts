@@ -30,7 +30,7 @@ import { Token } from '../../../../../core/services/Token/token';
 import { ConfirmDialog } from "../../../../../core/components/confirm-dialog/confirm-dialog";
 
 // Environnement
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
 /**

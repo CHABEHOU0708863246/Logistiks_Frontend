@@ -34,12 +34,11 @@ export class Token {
     (payload as any)['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
 
   if (!userId) {
+    // 🔒 Ne jamais journaliser le payload JWT (e-mail, rôles, permissions).
     console.error('❌ User ID introuvable dans le token');
-    console.log('📋 Payload complet:', JSON.stringify(payload, null, 2));
     return null;
   }
 
-  console.log('✅ User ID récupéré:', userId);
   return userId;
 }
 

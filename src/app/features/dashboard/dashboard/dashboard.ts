@@ -9,7 +9,7 @@ import { DocumentStatus, TierRoleType, TierStatus } from '../../../core/models/E
 import { Auth } from '../../../core/services/Auth/auth';
 import { Tiers } from '../../../core/services/Tiers/tiers';
 import { Token } from '../../../core/services/Token/token';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 import { Tier } from '../../../core/models/Tiers/Tiers';
 import { PaginatedResponse } from '../../../core/models/Common/PaginatedResponse';
 import { Contract } from '../../../core/services/Contract/contract';

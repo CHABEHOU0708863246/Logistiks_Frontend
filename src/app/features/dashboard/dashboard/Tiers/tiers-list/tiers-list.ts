@@ -21,7 +21,7 @@ import { ConfirmDialog } from "../../../../../core/components/confirm-dialog/con
 import { ConfirmDialogWithInput } from "../../../../../core/components/confirm-dialog-with-input/confirm-dialog-with-input";
 
 // Environnement
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 /**

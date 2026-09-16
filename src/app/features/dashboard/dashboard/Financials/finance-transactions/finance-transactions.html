@@ -247,6 +247,9 @@
         <div class="card-header">
           <div class="card-title"><i class="bx bx-list-ul"></i> Liste des Transactions</div>
           <div class="card-header-actions">
+            <button class="btn btn-secondary btn-sm" (click)="openExportModal()" title="Export Excel personnalisé">
+              <i class="bx bx-export"></i> Exporter Excel
+            </button>
             <select class="form-select-sm" [(ngModel)]="pagination.pageSize"
               (change)="changePageSize(pagination.pageSize)">
               <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / page</option>
@@ -351,11 +354,13 @@
                   </td>
 
                   <td>
-                    <span *ngIf="transaction.verifiedBy" class="status-badge status-ok">
-                      <i class="bx bx-check-circle"></i> Vérifiée
-                    </span>
-                    <span *ngIf="!transaction.verifiedBy" class="status-badge status-pending">
-                      <i class="bx bx-time"></i> En attente
+                    <span class="status-badge" [class]="getStatusClass(transaction)">
+                      <i class="bx"
+                        [class.bx-check-double]="transaction.isPaid"
+                        [class.bx-check-circle]="!transaction.isPaid && (transaction.status === TransactionStatus.Verified || transaction.verifiedBy)"
+                        [class.bx-x-circle]="transaction.status === TransactionStatus.Cancelled"
+                        [class.bx-time]="!transaction.isPaid && transaction.status !== TransactionStatus.Verified && !transaction.verifiedBy && transaction.status !== TransactionStatus.Cancelled"></i>
+                      {{ getStatusLabel(transaction) }}
                     </span>
                   </td>
 
@@ -367,9 +372,13 @@
                       <button class="action-btn action-btn--info" (click)="openEditModal(transaction)" title="Modifier">
                         <i class="bx bx-edit"></i>
                       </button>
-                      <button *ngIf="!transaction.verifiedBy" class="action-btn action-btn--success"
-                        (click)="verifyTransaction(transaction)" title="Vérifier">
+                      <button *ngIf="canVerify(transaction)" class="action-btn action-btn--success"
+                        (click)="verifyTransaction(transaction)" title="Vérifier (RG-006)">
                         <i class="bx bx-check"></i>
+                      </button>
+                      <button *ngIf="canMarkPaid(transaction)" class="action-btn action-btn--success"
+                        (click)="markTransactionPaid(transaction)" title="Confirmer le paiement (comptabilise la transaction)">
+                        <i class="bx bx-check-double"></i>
                       </button>
                     </div>
                   </td>
@@ -483,7 +492,6 @@
                 <option [value]="PaymentMethod.BankTransfer">Virement bancaire</option>
                 <option [value]="PaymentMethod.Check">Chèque</option>
                 <option [value]="PaymentMethod.MobileMoney">Mobile Money</option>
-                <option [value]="PaymentMethod.CreditCard">Carte de crédit</option>
               </select>
             </div>
 
@@ -629,6 +637,76 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" (click)="closeDeleteModal()"><i class="bx bx-x"></i> Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL : EXPORT EXCEL PERSONNALISÉ ══ -->
+  <div class="modal-backdrop" *ngIf="showExportModal" (click)="closeExportModal()"></div>
+  <div class="modal-wrap" [class.modal-wrap--show]="showExportModal" *ngIf="showExportModal">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class="bx bx-export"></i> Export Excel personnalisé</div>
+        <button class="modal-close-btn" (click)="closeExportModal()"><i class="bx bx-x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Filtres -->
+        <div class="export-grid">
+          <div class="form-group">
+            <label class="form-label">Du</label>
+            <input type="date" class="form-input" [(ngModel)]="exportOptions.dateFrom" name="exportDateFrom" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Au</label>
+            <input type="date" class="form-input" [(ngModel)]="exportOptions.dateTo" name="exportDateTo" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="form-input" [(ngModel)]="exportOptions.type" name="exportType">
+              <option value="">Revenus et dépenses</option>
+              <option value="income">Revenus uniquement</option>
+              <option value="expense">Dépenses uniquement</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <select class="form-input" [(ngModel)]="exportOptions.status" name="exportStatus">
+              <option value="">Tous les statuts</option>
+              <option value="pending">En attente</option>
+              <option value="verified">Vérifiées</option>
+              <option value="paid">Payées</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Recherche</label>
+            <input type="text" class="form-input" placeholder="Description, référence, n°…"
+              [(ngModel)]="exportOptions.searchTerm" name="exportSearch" />
+          </div>
+        </div>
+
+        <!-- Colonnes -->
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label">Colonnes à exporter ({{ exportOptions.columns.length }})</label>
+          <div class="export-columns">
+            <label class="export-column-option" *ngFor="let column of exportColumnOptions">
+              <input type="checkbox" [checked]="isExportColumnSelected(column.key)"
+                (change)="toggleExportColumn(column.key)" />
+              {{ column.label }}
+            </label>
+          </div>
+          <p class="export-hint">
+            Le récapitulatif Excel ne compte que les transactions <strong>payées</strong> (RG-008/RG-009).
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeExportModal()"><i class="bx bx-x"></i> Annuler</button>
+        <button class="btn btn-primary" [disabled]="isExporting" (click)="exportTransactions()">
+          <i class="bx bx-download"></i>
+          {{ isExporting ? 'Génération en cours…' : 'Télécharger le fichier Excel' }}
+        </button>
       </div>
     </div>
   </div>

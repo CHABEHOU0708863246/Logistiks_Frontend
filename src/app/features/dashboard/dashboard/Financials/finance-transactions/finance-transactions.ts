@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 // ============================================================================
 // CORE IMPORTS
 // ============================================================================
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
@@ -16,12 +16,13 @@ import { SidebarComponent } from "../../../../../core/components/sidebar-compone
 // ============================================================================
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import {
+  TransactionStatus,
   TransactionType,
   TransactionCategory,
   PaymentMethod
 } from '../../../../../core/models/Financials/Financial.models';
 import { FinancialTransaction } from '../../../../../core/models/Financials/Financial.models';
-import { CreateTransactionRequest } from '../../../../../core/models/Financials/Financial-requests.models';
+import { CreateTransactionRequest, ExportTransactionsRequest } from '../../../../../core/models/Financials/Financial-requests.models';
 
 // ============================================================================
 // SERVICES IMPORTS
@@ -87,6 +88,7 @@ export class FinanceTransactions implements OnInit, OnDestroy {
 
   /** Énumérations pour les templates */
   readonly TransactionType = TransactionType;
+  readonly TransactionStatus = TransactionStatus;
   readonly TransactionCategory = TransactionCategory;
   readonly PaymentMethod = PaymentMethod;
   readonly Math = Math;
@@ -973,6 +975,223 @@ export class FinanceTransactions implements OnInit, OnDestroy {
           this.notificationService.error('Erreur de vérification', error.message || 'Impossible de vérifier la transaction');
         }
       });
+  }
+
+  // ============================================================================
+  // SECTION 22 bis: WORKFLOW DE PAIEMENT (RG-006 → RG-008/RG-009)
+  // ============================================================================
+
+  /** Libellé français du statut d'une transaction. */
+  getStatusLabel(transaction: FinancialTransaction): string {
+    switch (transaction.status) {
+      case TransactionStatus.Paid: return 'Payée';
+      case TransactionStatus.Verified: return 'Vérifiée';
+      case TransactionStatus.Cancelled: return 'Annulée';
+      case TransactionStatus.Pending: return 'En attente';
+      default:
+        // Données historiques : champ status absent, verifiedAt fait foi.
+        return transaction.isVerified ? 'Vérifiée (ancien)' : 'En attente';
+    }
+  }
+
+  /** Classe CSS du badge de statut. */
+  getStatusClass(transaction: FinancialTransaction): string {
+    switch (transaction.status) {
+      case TransactionStatus.Paid: return 'status-paid';
+      case TransactionStatus.Verified: return 'status-verified';
+      case TransactionStatus.Cancelled: return 'status-cancelled';
+      case TransactionStatus.Pending: return 'status-pending';
+      default:
+        return transaction.isVerified ? 'status-verified' : 'status-pending';
+    }
+  }
+
+  /** Une transaction peut être vérifiée si elle est encore en attente. */
+  canVerify(transaction: FinancialTransaction): boolean {
+    return transaction.status === TransactionStatus.Pending
+      || (!transaction.status && !transaction.isVerified);
+  }
+
+  /**
+   * Une transaction vérifiée (mais pas encore payée) peut être marquée payée.
+   * RG-006 : la vérification est obligatoire avant la confirmation du paiement.
+   */
+  canMarkPaid(transaction: FinancialTransaction): boolean {
+    if (transaction.status === TransactionStatus.Verified) return true;
+    // Données historiques : vérifiées avant l'ajout du statut.
+    return !transaction.status && transaction.isVerified;
+  }
+
+  /**
+   * Confirme la réception/paiement : la transaction entre alors dans les
+   * calculs de rentabilité (RG-008/RG-009).
+   */
+  markTransactionPaid(transaction: FinancialTransaction): void {
+    if (!this.canMarkPaid(transaction)) return;
+
+    this.financialService
+      .markTransactionPaid(transaction.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.notificationService.success(
+              'Paiement confirmé',
+              `La transaction ${transaction.transactionNumber} est désormais comptabilisée.`
+            );
+            this.loadTransactions();
+          } else {
+            this.notificationService.error('Paiement non confirmé', response.message || 'Opération impossible.');
+          }
+        },
+        error: (error) => {
+          console.error('Erreur confirmation paiement:', error);
+          this.notificationService.error(
+            'Erreur de confirmation',
+            error.message || 'Impossible de confirmer le paiement.'
+          );
+        }
+      });
+  }
+
+  // ============================================================================
+  // SECTION 22 ter: EXPORT EXCEL PERSONNALISÉ
+  // ============================================================================
+
+  /** Modale d'export ouverte/fermée. */
+  showExportModal = false;
+
+  /** État de l'export en cours. */
+  isExporting = false;
+
+  /** Colonnes disponibles pour l'export (clé = colonne backend). */
+  readonly exportColumnOptions: { key: string; label: string }[] = [
+    { key: 'date', label: 'Date' },
+    { key: 'number', label: 'N° transaction' },
+    { key: 'type', label: 'Type' },
+    { key: 'category', label: 'Catégorie' },
+    { key: 'description', label: 'Description' },
+    { key: 'amount', label: 'Montant (FCFA)' },
+    { key: 'paymentMethod', label: 'Mode de paiement' },
+    { key: 'reference', label: 'Référence' },
+    { key: 'vehicle', label: 'Véhicule' },
+    { key: 'status', label: 'Statut' },
+    { key: 'verifiedBy', label: 'Vérifié par' },
+    { key: 'verifiedAt', label: 'Vérifié le' },
+    { key: 'paidAt', label: 'Payé le' },
+    { key: 'createdBy', label: 'Créé par' },
+    { key: 'createdAt', label: 'Créé le' },
+  ];
+
+  /** Options d'export (filtres + colonnes). */
+  exportOptions = {
+    dateFrom: '' as string,
+    dateTo: '' as string,
+    type: '' as '' | 'income' | 'expense',
+    status: '' as '' | 'pending' | 'verified' | 'paid',
+    searchTerm: '',
+    columns: [
+      'date', 'number', 'type', 'category', 'description',
+      'amount', 'paymentMethod', 'reference', 'vehicle', 'status'
+    ] as string[],
+  };
+
+  openExportModal(): void {
+    // Pré-remplir la période avec les filtres actuels de l'écran.
+    const start = this.filters.startDate;
+    const end = this.filters.endDate;
+    this.exportOptions.dateFrom = start ? this.toDateInputValue(start) : '';
+    this.exportOptions.dateTo = end ? this.toDateInputValue(end) : '';
+    this.showExportModal = true;
+  }
+
+  closeExportModal(): void {
+    this.showExportModal = false;
+  }
+
+  toggleExportColumn(key: string): void {
+    const columns = this.exportOptions.columns;
+    const index = columns.indexOf(key);
+    if (index >= 0) {
+      columns.splice(index, 1);
+    } else {
+      // Conserver l'ordre d'affichage de référence.
+      const reference = this.exportColumnOptions.map((c) => c.key);
+      columns.push(key);
+      columns.sort((a, b) => reference.indexOf(a) - reference.indexOf(b));
+    }
+  }
+
+  isExportColumnSelected(key: string): boolean {
+    return this.exportOptions.columns.includes(key);
+  }
+
+  /** Lance l'export Excel et déclenche le téléchargement du fichier. */
+  exportTransactions(): void {
+    if (this.isExporting) return;
+
+    if (this.exportOptions.columns.length === 0) {
+      this.notificationService.warning('Export impossible', 'Sélectionnez au moins une colonne à exporter.');
+      return;
+    }
+
+    this.isExporting = true;
+
+    const request: ExportTransactionsRequest = {
+      dateFrom: this.exportOptions.dateFrom || undefined,
+      dateTo: this.exportOptions.dateTo || undefined,
+      type: this.exportOptions.type === 'income'
+        ? TransactionType.Revenue
+        : this.exportOptions.type === 'expense'
+          ? TransactionType.Expense
+          : undefined,
+      statuses: this.exportOptions.status
+        ? [{
+            pending: TransactionStatus.Pending,
+            verified: TransactionStatus.Verified,
+            paid: TransactionStatus.Paid,
+          }[this.exportOptions.status] as TransactionStatus]
+        : undefined,
+      categories: this.filters.category ? [this.filters.category] : undefined,
+      searchTerm: this.exportOptions.searchTerm || undefined,
+      columns: [...this.exportOptions.columns],
+      title: 'TRANSACTIONS FINANCIÈRES — LOGISTIK',
+    };
+
+    this.financialService
+      .exportTransactions(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob) => {
+          this.isExporting = false;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `Transactions_Logistiks_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.showExportModal = false;
+          this.notificationService.success('Export terminé', 'Le fichier Excel a été téléchargé.');
+        },
+        error: async (error) => {
+          this.isExporting = false;
+          let message = error?.message || "Impossible de générer l'export.";
+          // Le backend peut renvoyer un JSON d'erreur dans un Blob.
+          try {
+            if (error?.error instanceof Blob) {
+              const text = await error.error.text();
+              const parsed = JSON.parse(text);
+              message = parsed?.message || parsed?.data?.message || message;
+            }
+          } catch { /* on garde le message par défaut */ }
+          this.notificationService.error('Export impossible', message);
+        }
+      });
+  }
+
+  private toDateInputValue(date: Date | string): string {
+    const d = new Date(date);
+    return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
   }
 
   /**

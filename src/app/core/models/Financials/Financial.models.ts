@@ -23,12 +23,17 @@ export enum TransactionCategory {
 }
 
 
+/**
+ * ⚠️ DOIT rester aligné sur Logistiks_Backend.Domain/Core/Enums/Enumerations.cs
+ * (PaymentMethod) — un décalage de valeurs corrompt silencieusement les modes de
+ * paiement enregistrés en base.
+ * Backend : Cash = 1, MobileMoney = 2, BankTransfer = 3, Check = 4.
+ */
 export enum PaymentMethod {
     Cash = 1,
-    BankTransfer = 2,
-    Check = 3,
-    MobileMoney = 4,
-    CreditCard = 5
+    MobileMoney = 2,
+    BankTransfer = 3,
+    Check = 4
 }
 
 export enum AccountType {
@@ -58,6 +63,18 @@ export enum Severity {
 }
 
 /**
+ * Statut du workflow financier (PDF LOGISTIK §6, RG-006 à RG-009).
+ * ⚠️ Aligné sur Logistiks_Backend.Domain/Core/Enums/Enumerations.cs.
+ * Seules les transactions `Paid` entrent dans les calculs.
+ */
+export enum TransactionStatus {
+  Pending = 1,
+  Verified = 2,
+  Paid = 3,
+  Cancelled = 4
+}
+
+/**
  * Modèle de transaction financière
  * Correspond au modèle C# FinancialTransaction
  */
@@ -77,10 +94,16 @@ export class FinancialTransaction {
   createdAt!: Date;
   verifiedBy?: string; // ID de l'utilisateur valideur
   verifiedAt?: Date;
+  status?: TransactionStatus; // Workflow RG-006 → RG-008
+  paidAt?: Date;
 
   // Propriétés calculées côté client
   get isVerified(): boolean {
     return !!this.verifiedBy && !!this.verifiedAt;
+  }
+
+  get isPaid(): boolean {
+    return this.status === TransactionStatus.Paid;
   }
 
   get isExpense(): boolean {

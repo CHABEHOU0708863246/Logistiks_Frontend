@@ -566,6 +566,48 @@ textarea.form-input { resize: vertical; }
 .status-pending { background: $warning-bg; color: $warning; &::before { background: $warning; animation: pulse-dot 1.2s infinite; } }
 .status-inactive{ background: rgba(0,0,0,.06); color: $text-3; &::before { background: $text-3; } }
 
+// ── Statuts du workflow financier (RG-006 → RG-009) ──────────────────
+.status-verified { background: rgba(105,108,255,.12); color: #4640c8; &::before { background: #696cff; } }
+.status-paid     { background: $success-bg; color: $success; &::before { background: $success; } }
+.status-cancelled{ background: rgba(0,0,0,.06); color: $text-3; &::before { background: $text-3; } }
+
+// ── Export Excel personnalisé ────────────────────────────────────────
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.export-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px 16px;
+  margin-top: 8px;
+}
+
+.export-column-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $text-2;
+  cursor: pointer;
+  user-select: none;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: #696cff;
+    cursor: pointer;
+  }
+}
+
+.export-hint {
+  font-size: 12px;
+  color: $text-3;
+  margin-top: 6px;
+}
+
 // ── Inline badges ────────────────────────────────────────────────────
 .badge {
   display: inline-flex; align-items: center; gap: 4px;

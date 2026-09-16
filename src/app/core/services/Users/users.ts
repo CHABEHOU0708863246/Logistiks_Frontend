@@ -61,7 +61,6 @@ export class Users {
   return this.http.get<any>(`${this.baseUrl}/me`)
     .pipe(
       map(response => {
-        console.log('API /me raw response:', response); // à supprimer après vérification
         // Cas 1 : { data: { user, profile } }
         if (response?.data?.user) return response.data;
         // Cas 2 : { user, profile } directement
@@ -80,8 +79,24 @@ export class Users {
   updateCurrentUser(updateRequest: UpdateProfileRequest): Observable<UserResponse> {
     const formData = this.createUpdateProfileFormData(updateRequest);
 
-    return this.http.put<UserResponse>(`${this.baseUrl}/me`, formData)
+    return this.http.put<any>(`${this.baseUrl}/me`, formData)
       .pipe(
+        map(response => {
+          // ⚠️ Le backend renvoie { message, user } (objet anonyme) : on le
+          // normalise en UserResponse pour que les écrans puissent tester
+          // `succeeded` sans afficher une fausse erreur après un succès.
+          if (response && (response.user || response.data)) {
+            return {
+              succeeded: true,
+              message: response.message ?? 'Profil mis à jour avec succès.',
+              errors: [],
+              user: response.user ?? response.data?.user,
+              profile: response.profile ?? response.data?.profile,
+              preferences: response.preferences ?? response.data?.preferences,
+            } as UserResponse;
+          }
+          return response as UserResponse;
+        }),
         catchError(this.handleError)
       );
   }

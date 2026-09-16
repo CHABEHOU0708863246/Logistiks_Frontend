@@ -451,7 +451,9 @@ export class Contract {
    */
   uploadSignedContract(contractId: string, file: File): Observable<ApiResponseData<any>> {
     const formData = new FormData();
-    formData.append('signedContract', file);
+    // ⚠️ Le DTO backend `UploadSignedContractRequest` attend le champ
+    // `SignedContractFile` (le binding ne fait pas de correspondance sémantique).
+    formData.append('SignedContractFile', file);
 
     return this.http
       .post<ApiResponseData<any>>(`${this.baseUrl}/${contractId}/upload-signed`, formData)

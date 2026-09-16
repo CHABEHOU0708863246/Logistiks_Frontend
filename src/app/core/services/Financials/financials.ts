@@ -4,7 +4,7 @@ import { Observable, catchError, map, throwError } from 'rxjs';
 //import { environment } from '../../../../environments/environment.development';
 import { environment } from '../../../../environments/environment';
 import { ApiResponseData } from '../../models/Common/ApiResponseData';
-import { CreateTransactionRequest, CalculateProfitabilityRequest, GenerateReportRequest } from '../../models/Financials/Financial-requests.models';
+import { CreateTransactionRequest, CalculateProfitabilityRequest, GenerateReportRequest, ExportTransactionsRequest } from '../../models/Financials/Financial-requests.models';
 import { VehicleProfitabilityResponse, FinancialDashboardResponse, MonthlyFinancialSummary, FinancialReportResponse } from '../../models/Financials/Financial-responses.models';
 import { FinancialTransaction, TransactionCategory, VehicleProfitability } from '../../models/Financials/Financial.models';
 
@@ -95,6 +95,31 @@ export class Financials {
         `${this.baseUrl}/transactions/${transactionId}/verify`,
         {}
       )
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Confirmer la réception/paiement d'une transaction vérifiée (RG-006/008/009).
+   * PUT /api/Finance/transactions/{transactionId}/pay
+   */
+  markTransactionPaid(
+    transactionId: string
+  ): Observable<ApiResponseData<FinancialTransaction>> {
+    return this.http
+      .put<ApiResponseData<FinancialTransaction>>(
+        `${this.baseUrl}/transactions/${transactionId}/pay`,
+        {}
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Export Excel personnalisé des transactions (filtres + colonnes au choix).
+   * POST /api/Finance/transactions/export
+   */
+  exportTransactions(request: ExportTransactionsRequest): Observable<Blob> {
+    return this.http
+      .post(`${this.baseUrl}/transactions/export`, request, { responseType: 'blob' })
       .pipe(catchError(this.handleError));
   }
 

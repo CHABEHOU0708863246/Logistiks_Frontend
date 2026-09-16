@@ -98,12 +98,14 @@ export class Roles {
   }
 
   /**
-   * Récupérer toutes les permissions disponibles
+   * Récupérer toutes les permissions disponibles.
+   * ⚠️ Le backend renvoie un TABLEAU BRUT (`Ok(permissions)`), pas une
+   * enveloppe ApiResponseData — mapper `.data` produisait `undefined`.
    */
   getAllPermissions(): Observable<string[]> {
-    return this.http.get<ApiResponseData<string[]>>(`${this.baseUrl}/permissions`)
+    return this.http.get<string[]>(`${this.baseUrl}/permissions`)
       .pipe(
-        map(response => response.data),
+        map(response => Array.isArray(response) ? response : (response as any)?.data ?? []),
         catchError(this.handleError)
       );
   }

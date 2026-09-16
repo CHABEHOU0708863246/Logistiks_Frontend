@@ -16,7 +16,7 @@ import { Token } from '../../../../../core/services/Token/token';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 
 // Environnement
-import { environment } from '../../../../../../environments/environment.development';
+import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
