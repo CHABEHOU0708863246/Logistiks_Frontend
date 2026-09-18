@@ -282,6 +282,13 @@
                 <span>Revenus</span>
                 <strong>{{ formatCurrency(kpi?.totalRevenue ?? 0) }}</strong>
               </div>
+              <div class="finance-row">
+                <span>Montant encaissé</span>
+                <strong>
+                  {{ formatCurrency(financeSummary?.totalPaymentsReceived ?? 0) }}
+                  <small class="finance-count">{{ financeSummary?.paymentsCount ?? 0 }} encaissement(s)</small>
+                </strong>
+              </div>
               <div class="finance-row finance-row--expense">
                 <span>Dépenses</span>
                 <strong>{{ formatCurrency(kpi?.totalExpenses ?? 0) }}</strong>
@@ -304,6 +311,15 @@
                 Marge {{ formatPercent(kpi?.profitMarginPercent ?? 0) }}
               </div>
               <div class="finance-divider"></div>
+              <div class="finance-row">
+                <span>Reste à échoir</span>
+                <strong>{{ formatCurrency(financeSummary?.pendingPayments ?? 0) }}</strong>
+              </div>
+              <div class="finance-row finance-row--expense">
+                <span>Impayés exigibles</span>
+                <strong>{{ formatCurrency(financeSummary?.latePayments ?? 0) }}</strong>
+              </div>
+              <div class="finance-divider"></div>
               <div class="stat-list">
                 <div class="stat-list__item">
                   <span class="stat-list__label">Contrats actifs</span>
@@ -312,10 +328,10 @@
                 <div class="stat-list__item">
                   <span class="stat-list__label">Taux recouvrement</span>
                   <span class="stat-list__value"
-                    [class.green]="(contractPerf?.collectionRate ?? 0) >= 80"
-                    [class.amber]="(contractPerf?.collectionRate ?? 0) >= 60 && (contractPerf?.collectionRate ?? 0) < 80"
-                    [class.red]="(contractPerf?.collectionRate ?? 0) < 60">
-                    {{ formatPercent(contractPerf?.collectionRate ?? 0) }}
+                    [class.green]="hasCollectionRate() && (contractPerf?.collectionRate ?? 0) >= 80"
+                    [class.amber]="hasCollectionRate() && (contractPerf?.collectionRate ?? 0) >= 60 && (contractPerf?.collectionRate ?? 0) < 80"
+                    [class.red]="hasCollectionRate() && (contractPerf?.collectionRate ?? 0) < 60">
+                    {{ hasCollectionRate() ? formatPercent(contractPerf?.collectionRate ?? 0) : '—' }}
                   </span>
                 </div>
                 <div class="stat-list__item">

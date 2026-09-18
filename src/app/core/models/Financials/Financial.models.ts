@@ -9,8 +9,10 @@ export enum TransactionCategory {
     LateFees = 2,
     DamageFees = 3,
     OtherIncome = 4,
+    /** Caution encaissée : dépôt remboursable, PAS un revenu (hors résultat). */
+    SecurityDepositReceived = 5,
 
-    // Dépenses (101-109)
+    // Dépenses (101-110)
     Maintenance = 101,
     Fuel = 102,
     Insurance = 103,
@@ -19,7 +21,9 @@ export enum TransactionCategory {
     Utilities = 106,
     OfficeSupplies = 107,
     Marketing = 108,
-    OtherExpense = 109
+    OtherExpense = 109,
+    /** Caution remboursée : sortie de trésorerie, PAS une dépense (hors résultat). */
+    SecurityDepositRefunded = 110
 }
 
 

@@ -14,4 +14,12 @@ export const CONTRACT_ROUTES: Routes = [
       breadcrumb: 'Liste'
     }
   },
+  {
+    path: 'stats',
+    loadComponent: () => import('./contrat-statistics/contrat-statistics').then(m => m.ContratStatistics),
+    data: {
+      title: 'Statistiques des contrats',
+      breadcrumb: 'Statistiques'
+    }
+  },
 ];

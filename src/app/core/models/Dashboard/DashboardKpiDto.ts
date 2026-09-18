@@ -5,10 +5,14 @@ export interface DashboardKpiDto {
     netProfit: number;
     profitMarginPercent: number;
 
-    /** Variation revenus vs mois précédent (%) */
-    revenueGrowthPercent: number;
-    expenseGrowthPercent: number;
-    profitGrowthPercent: number;
+    /**
+     * Variation (%) vs période précédente : mois calendaire précédent pour un
+     * mois complet, sinon fenêtre de même durée. `null` = pas de période de
+     * comparaison disponible → afficher « — ».
+     */
+    revenueGrowthPercent: number | null;
+    expenseGrowthPercent: number | null;
+    profitGrowthPercent: number | null;
 
     // ── Flotte ──────────────────────────────────────────────
     totalVehicles: number;

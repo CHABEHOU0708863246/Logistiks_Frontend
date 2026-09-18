@@ -1069,4 +1069,37 @@ export class TiersList implements OnInit, OnDestroy {
         }
       });
   }
+
+  // ===========================================================================
+  // FICHE D'IDENTITÉ
+  // ===========================================================================
+
+  /**
+   * Télécharge la fiche d'identité PDF d'un tier
+   * @param tier - Tier dont la fiche doit être générée
+   */
+  downloadIdentityPdf(tier: Tier): void {
+    this.tiersService.downloadIdentityPdf(tier.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Fiche_Identite_${tier.tierNumber}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+
+          this.notificationService.success(
+            'Fiche générée',
+            `La fiche d'identité de ${this.getFullName(tier)} a été téléchargée`
+          );
+        },
+        error: (error: any) => {
+          const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+          this.notificationService.error('Erreur de génération', errorMessage);
+          console.error('Erreur de génération de la fiche d\'identité:', error);
+        }
+      });
+  }
 }

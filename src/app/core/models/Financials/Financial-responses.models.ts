@@ -61,8 +61,13 @@ export class FinancialDashboardResponse {
 
     // Détails revenus
     activeContracts!: number;
+    /** Montant encaissé sur la période (loyers + pénalités, hors caution). */
     totalPaymentsReceived!: number;
+    /** Nombre d'échéances encaissées sur la période. */
+    paymentsCount!: number;
+    /** Montant restant à échoir (échéances futures non payées, pénalités incluses). */
     pendingPayments!: number;
+    /** Montant des impayés exigibles (échéances échues non réglées, à date). */
     latePayments!: number;
 
     // Détails dépenses
@@ -87,7 +92,11 @@ export class MonthlyFinancialSummary {
     totalExpenses!: number;
     netProfit!: number;
 
+    /** Nombre d'échéances encaissées dans le mois. */
     paymentsReceived!: number;
+    /** Montant encaissé dans le mois (loyers + pénalités, hors caution). */
+    paymentsAmountReceived!: number;
+    /** Nombre d'échéances échues et impayées à date pour le mois. */
     paymentsMissed!: number;
 
     dailyData: DailyFinancialData[] = [];

@@ -1,1 +1,428 @@
-<p>contrat-statistics works!</p>
+<div class="app-wrapper">
+
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item">Tableau de Bord</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item">Contrats</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Statistiques</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-outline btn-sm" (click)="refresh()" [disabled]="isLoading">
+          <i class="bx bx-refresh icon-refresh" [class.spinning]="isLoading"></i>
+          Actualiser
+        </button>
+      </div>
+    </header>
+
+    <!-- ══ CONTENT AREA ══ -->
+    <div class="content-area">
+      <div class="stats-page">
+
+        <!-- ── EN-TÊTE DE PAGE ── -->
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Statistiques des contrats</h1>
+            <p class="page-subtitle">
+              Revenus encaissés, recouvrement et rentabilité estimée
+              <ng-container *ngIf="stats">
+                · {{ formatDate(stats.periodStart) }} – {{ formatDate(stats.periodEnd) }}
+              </ng-container>
+            </p>
+          </div>
+          <div class="page-actions">
+            <div class="tab-bar">
+              <button type="button" class="tab-btn" [class.active]="periodPreset === 'month'" (click)="setPreset('month')">Ce mois</button>
+              <button type="button" class="tab-btn" [class.active]="periodPreset === 'quarter'" (click)="setPreset('quarter')">Trimestre</button>
+              <button type="button" class="tab-btn" [class.active]="periodPreset === 'year'" (click)="setPreset('year')">Année</button>
+              <button type="button" class="tab-btn" [class.active]="periodPreset === 'custom'" (click)="setPreset('custom')">Personnalisé</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── FILTRES ── -->
+        <div class="filters-bar">
+          <div class="filter-field">
+            <label for="stats-start">Du</label>
+            <input id="stats-start" type="date" [(ngModel)]="periodStart" (change)="onCustomDateChange()"
+              [disabled]="periodPreset !== 'custom'">
+          </div>
+          <div class="filter-field">
+            <label for="stats-end">Au</label>
+            <input id="stats-end" type="date" [(ngModel)]="periodEnd" (change)="onCustomDateChange()"
+              [disabled]="periodPreset !== 'custom'">
+          </div>
+          <div class="filter-field">
+            <label for="stats-vehicle">Véhicule</label>
+            <select id="stats-vehicle" [(ngModel)]="selectedVehicleId" (ngModelChange)="onVehicleChange()">
+              <option value="">Tous les véhicules</option>
+              <option *ngFor="let vehicle of vehicleOptions" [value]="vehicle.id">{{ vehicle.label }}</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="stats-status">Statut</label>
+            <select id="stats-status" [(ngModel)]="selectedStatus" (ngModelChange)="onStatusChange()">
+              <option value="">Tous les statuts</option>
+              <option *ngFor="let option of statusOptions" [ngValue]="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── CHARGEMENT / ERREUR ── -->
+        <div class="loading-bar" *ngIf="isLoading"><div class="loading-bar-fill"></div></div>
+
+        <div class="error-banner" *ngIf="errorMessage">
+          <div class="error-banner-content">
+            <i class="bx bx-error-circle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" (click)="refresh()">Réessayer</button>
+        </div>
+
+        <ng-container *ngIf="stats && !errorMessage">
+
+          <!-- ── CARTES KPI ── -->
+          <div class="grid grid-6">
+            <div class="kpi-card purple">
+              <div class="kpi-header">
+                <div class="kpi-icon purple"><i class="bx bx-file"></i></div>
+              </div>
+              <div class="kpi-value">{{ stats.totalContracts }}</div>
+              <div class="kpi-label">Contrats</div>
+              <div class="kpi-sublabel">
+                {{ stats.activeContracts }} actif(s) · {{ stats.completedContracts }} terminé(s)
+              </div>
+            </div>
+
+            <div class="kpi-card blue">
+              <div class="kpi-header">
+                <div class="kpi-icon blue"><i class="bx bx-purchase-tag"></i></div>
+              </div>
+              <div class="kpi-value">{{ formatAmount(stats.totalContractedValue) }}</div>
+              <div class="kpi-label">Valeur contractuelle</div>
+              <div class="kpi-sublabel">Moyenne : {{ formatAmount(stats.averageContractValue) }}</div>
+            </div>
+
+            <div class="kpi-card green">
+              <div class="kpi-header">
+                <div class="kpi-icon green"><i class="bx bx-wallet"></i></div>
+              </div>
+              <div class="kpi-value">{{ formatAmount(stats.totalRevenueInPeriod) }}</div>
+              <div class="kpi-label">Encaissé sur la période</div>
+              <div class="kpi-sublabel">Loyer hebdo moyen : {{ formatAmount(stats.averageWeeklyAmount) }}</div>
+            </div>
+
+            <div class="kpi-card" [ngClass]="stats.collectionRateApplicable ? 'teal' : 'muted'">
+              <div class="kpi-header">
+                <div class="kpi-icon teal"><i class="bx bx-pie-chart-alt-2"></i></div>
+              </div>
+              <div class="kpi-value">
+                {{ formatPercent(stats.collectionRatePercent, stats.collectionRateApplicable) }}
+              </div>
+              <div class="kpi-label">Taux de recouvrement</div>
+              <div class="kpi-sublabel">
+                Dû période : {{ formatAmount(stats.totalDueInPeriod) }}
+                <ng-container *ngIf="!stats.collectionRateApplicable"> · aucune échéance due</ng-container>
+              </div>
+            </div>
+
+            <div class="kpi-card red">
+              <div class="kpi-header">
+                <div class="kpi-icon red"><i class="bx bx-error"></i></div>
+              </div>
+              <div class="kpi-value">{{ formatAmount(stats.totalOverdue) }}</div>
+              <div class="kpi-label">Impayés exigibles</div>
+              <div class="kpi-sublabel">
+                Reste dû : {{ formatAmount(stats.totalOutstanding) }} ·
+                {{ stats.contractsWithOverdue }} contrat(s)
+              </div>
+            </div>
+
+            <div class="kpi-card amber">
+              <div class="kpi-header">
+                <div class="kpi-icon amber"><i class="bx bx-line-chart"></i></div>
+                <span class="estimate-badge">estimation</span>
+              </div>
+              <div class="kpi-value" [class.kpi-value--danger]="stats.totalEstimatedNetProfit < 0">
+                {{ formatAmount(stats.totalEstimatedNetProfit) }}
+              </div>
+              <div class="kpi-label">Profit net estimé</div>
+              <div class="kpi-sublabel">
+                Charges estimées : {{ formatAmount(stats.totalEstimatedExpenses) }} ·
+                marge moy. {{ formatPercent(stats.averageMarginPercent) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- ── TABLEAU DES CONTRATS ── -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="bx bx-list-ul"></i> Contrats de la période</div>
+              <span class="card-meta-pill">{{ stats.contracts.length }} contrat(s)</span>
+            </div>
+
+            <div class="contracts-table-wrap" *ngIf="stats.contracts.length > 0">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Client</th>
+                    <th>Véhicule</th>
+                    <th>Statut</th>
+                    <th>Début</th>
+                    <th>Fin</th>
+                    <th class="ta-right">Loyer hebdo</th>
+                    <th class="ta-right">Encaissé période</th>
+                    <th class="ta-right">Dû période</th>
+                    <th class="ta-right">Taux</th>
+                    <th class="ta-right">Reste dû</th>
+                    <th class="ta-right">Impayé</th>
+                    <th class="ta-right">Retard max</th>
+                    <th>Performance</th>
+                    <th class="ta-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let contract of stats.contracts">
+                    <td class="cell-ref">{{ contract.contractNumber }}</td>
+                    <td class="cell-name">
+                      {{ contract.customerName || '—' }}
+                      <div class="cell-sub">{{ contract.customerPhone }}</div>
+                    </td>
+                    <td>
+                      {{ contract.vehicleCode || '—' }}
+                      <div class="cell-sub">{{ contract.vehicleName }}</div>
+                    </td>
+                    <td><span class="status-badge" [ngClass]="statusClass(contract.status)">{{ contract.statusLabel }}</span></td>
+                    <td>{{ formatShortDate(contract.startDate) }}</td>
+                    <td>{{ formatShortDate(contract.endDate) }}</td>
+                    <td class="ta-right">{{ formatAmount(contract.weeklyAmount) }}</td>
+                    <td class="ta-right cell-money">{{ formatAmount(contract.revenueInPeriod) }}</td>
+                    <td class="ta-right">{{ formatAmount(contract.dueInPeriod) }}</td>
+                    <td class="ta-right">
+                      <span class="rate-badge" [ngClass]="collectionClass(contract)">
+                        {{ formatPercent(contract.collectionRatePercent, contract.collectionRateApplicable) }}
+                      </span>
+                    </td>
+                    <td class="ta-right">{{ formatAmount(contract.outstandingAmount) }}</td>
+                    <td class="ta-right" [class.text-danger]="contract.overdueAmount > 0">
+                      {{ formatAmount(contract.overdueAmount) }}
+                    </td>
+                    <td class="ta-right">{{ contract.maxDaysLate > 0 ? contract.maxDaysLate + ' j' : '—' }}</td>
+                    <td>
+                      <span class="perf-badge" [ngClass]="performanceClass(contract.performanceLevel)">
+                        {{ contract.performanceLevel }}
+                      </span>
+                    </td>
+                    <td class="ta-right">
+                      <button type="button" class="btn-icon" title="Voir le détail" (click)="openDetail(contract)">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="empty-state" *ngIf="stats.contracts.length === 0">
+              <i class="bx bx-folder-open"></i>
+              <span>Aucun contrat sur la période</span>
+            </div>
+          </div>
+
+          <div class="page-footer">
+            <i class="bx bx-info-circle"></i>
+            <span>Charges véhicule réparties au prorata des jours de location — estimation.</span>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALE DE DÉTAIL ══ -->
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetail()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ detailContractNumber || 'Détail du contrat' }}</div>
+        <div class="modal-subtitle">Performance de paiement et rentabilité de la période</div>
+      </div>
+      <button type="button" class="modal-close" (click)="closeDetail()">
+        <i class="bx bx-x"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="loading-bar" *ngIf="detailLoading"><div class="loading-bar-fill"></div></div>
+
+      <div class="error-banner" *ngIf="detailError">
+        <div class="error-banner-content">
+          <i class="bx bx-error-circle"></i>
+          <span>{{ detailError }}</span>
+        </div>
+      </div>
+
+      <ng-container *ngIf="detail && !detailLoading">
+
+        <!-- ── SYNTHÈSE CONTRAT ── -->
+        <div class="detail-summary">
+          <div class="summary-item">
+            <span class="summary-label">Client</span>
+            <span class="summary-value">{{ detail.customerName || '—' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Véhicule</span>
+            <span class="summary-value">{{ detail.vehicleCode || '—' }} · {{ detail.vehicleName }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Période contractuelle</span>
+            <span class="summary-value">{{ formatDate(detail.startDate) }} – {{ formatDate(detail.endDate) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Statut</span>
+            <span class="status-badge" [ngClass]="statusClass(detail.status)">{{ detail.statusLabel }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Avancement</span>
+            <span class="summary-value">{{ formatPercent(detail.progressPercent) }} · {{ detail.durationInWeeks }} semaine(s)</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Performance</span>
+            <span class="perf-badge" [ngClass]="performanceClass(detail.performanceLevel)">{{ detail.performanceLevel }}</span>
+          </div>
+        </div>
+
+        <!-- ── INDICATEURS DU CONTRAT ── -->
+        <div class="detail-kpis">
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Encaissé période</span>
+            <span class="detail-kpi-value">{{ formatAmount(detail.revenueInPeriod) }}</span>
+          </div>
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Dû période</span>
+            <span class="detail-kpi-value">{{ formatAmount(detail.dueInPeriod) }}</span>
+          </div>
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Taux de recouvrement</span>
+            <span class="detail-kpi-value">
+              {{ formatPercent(detail.collectionRatePercent, detail.collectionRateApplicable) }}
+            </span>
+          </div>
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Reste dû</span>
+            <span class="detail-kpi-value">{{ formatAmount(detail.outstandingAmount) }}</span>
+          </div>
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Impayé exigible</span>
+            <span class="detail-kpi-value" [class.text-danger]="detail.overdueAmount > 0">
+              {{ formatAmount(detail.overdueAmount) }}
+            </span>
+          </div>
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Échéances</span>
+            <span class="detail-kpi-value">
+              {{ detail.installmentsPaid }}/{{ detail.installmentsTotal }} payée(s) ·
+              {{ detail.installmentsLate }} en retard
+            </span>
+          </div>
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Charges estimées</span>
+            <span class="detail-kpi-value">{{ formatAmount(detail.estimatedExpenses) }}</span>
+          </div>
+          <div class="detail-kpi">
+            <span class="detail-kpi-label">Profit net estimé</span>
+            <span class="detail-kpi-value" [class.text-danger]="detail.estimatedNetProfit < 0">
+              {{ formatAmount(detail.estimatedNetProfit) }}
+              <span class="kpi-value-sm">(marge {{ formatPercent(detail.estimatedMarginPercent) }})</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- ── ÉCHÉANCIER ── -->
+        <div class="detail-section">
+          <div class="detail-section-title"><i class="bx bx-calendar"></i> Échéancier</div>
+          <div class="contracts-table-wrap" *ngIf="detail.installments.length > 0">
+            <table class="data-table data-table--compact">
+              <thead>
+                <tr>
+                  <th>N°</th>
+                  <th>Échéance</th>
+                  <th class="ta-right">Dû</th>
+                  <th class="ta-right">Payé</th>
+                  <th class="ta-right">Pénalité</th>
+                  <th>Statut</th>
+                  <th class="ta-right">Retard</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let installment of detail.installments">
+                  <td class="cell-ref">{{ installment.installmentNumber }}</td>
+                  <td>{{ formatDate(installment.dueDate) }}</td>
+                  <td class="ta-right">{{ formatAmount(installment.amountDue) }}</td>
+                  <td class="ta-right">{{ formatAmount(installment.amountPaid) }}</td>
+                  <td class="ta-right">{{ installment.lateFee > 0 ? formatAmount(installment.lateFee) : '—' }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="installmentStatusClass(installment.effectiveStatus)">
+                      {{ installment.statusLabel }}
+                    </span>
+                  </td>
+                  <td class="ta-right">{{ installment.daysLate > 0 ? installment.daysLate + ' j' : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="empty-state" *ngIf="detail.installments.length === 0">
+            <i class="bx bx-calendar-x"></i>
+            <span>Aucune échéance sur ce contrat</span>
+          </div>
+        </div>
+
+        <!-- ── VENTILATION MENSUELLE ── -->
+        <div class="detail-section" *ngIf="detail.monthly.length > 0">
+          <div class="detail-section-title"><i class="bx bx-bar-chart-alt-2"></i> Revenus et charges par mois</div>
+
+          <div class="mini-chart">
+            <div class="chart-legend">
+              <span class="leg-item"><span class="leg-dot leg-green"></span> Revenus encaissés</span>
+              <span class="leg-item"><span class="leg-dot leg-red"></span> Charges estimées</span>
+            </div>
+            <div class="mini-bars">
+              <div class="mini-bar-group" *ngFor="let point of detail.monthly">
+                <div class="mini-bar-col">
+                  <div class="mini-bar bar-green" [style.height.%]="barPercent(point.revenue)"
+                    [title]="monthlyLabel(point) + ' — revenus : ' + formatAmount(point.revenue)"></div>
+                  <div class="mini-bar bar-red" [style.height.%]="barPercent(point.expenses)"
+                    [title]="monthlyLabel(point) + ' — charges estimées : ' + formatAmount(point.expenses)"></div>
+                </div>
+                <span class="mini-bar-label">{{ monthShort(point.monthLabel) }}</span>
+                <span class="mini-bar-net" [class.negative]="point.netProfit < 0"
+                  [title]="'Résultat net : ' + formatAmount(point.netProfit)">
+                  {{ compactAmount(point.netProfit) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="estimate-note">
+          <i class="bx bx-info-circle"></i>
+          <span>Charges véhicule réparties au prorata des jours de location — estimation.</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

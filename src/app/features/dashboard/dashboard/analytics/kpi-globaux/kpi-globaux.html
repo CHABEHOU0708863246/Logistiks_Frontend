@@ -114,9 +114,9 @@
           <div class="kpi-card green">
             <div class="kpi-header">
               <div class="kpi-icon green"><i class="bx bx-trending-up"></i></div>
-              <div class="kpi-trend" [class.up]="kpis.revenueGrowthPercent >= 0" [class.down]="kpis.revenueGrowthPercent < 0">
-                <i class="bx" [class.bx-trending-up]="kpis.revenueGrowthPercent >= 0" [class.bx-trending-down]="kpis.revenueGrowthPercent < 0"></i>
-                {{ kpis.revenueGrowthPercent >= 0 ? '+' : '' }}{{ kpis.revenueGrowthPercent | number:'1.1-1' }}%
+              <div class="kpi-trend" [class.up]="growthUp(kpis.revenueGrowthPercent)" [class.down]="growthDown(kpis.revenueGrowthPercent)">
+                <i class="bx" [class.bx-trending-up]="growthUp(kpis.revenueGrowthPercent)" [class.bx-trending-down]="growthDown(kpis.revenueGrowthPercent)"></i>
+                {{ formatGrowth(kpis.revenueGrowthPercent) }}
               </div>
             </div>
             <div class="kpi-value">{{ kpis.totalRevenue | number:'1.0-0' }}<span class="kpi-value-sm"> FCFA</span></div>
@@ -127,9 +127,9 @@
           <div class="kpi-card red">
             <div class="kpi-header">
               <div class="kpi-icon red"><i class="bx bx-trending-down"></i></div>
-              <div class="kpi-trend" [class.down]="kpis.expenseGrowthPercent > 0" [class.up]="kpis.expenseGrowthPercent <= 0">
-                <i class="bx" [class.bx-trending-up]="kpis.expenseGrowthPercent <= 0" [class.bx-trending-down]="kpis.expenseGrowthPercent > 0"></i>
-                {{ kpis.expenseGrowthPercent >= 0 ? '+' : '' }}{{ kpis.expenseGrowthPercent | number:'1.1-1' }}%
+              <div class="kpi-trend" [class.down]="growthUp(kpis.expenseGrowthPercent)" [class.up]="growthDown(kpis.expenseGrowthPercent)">
+                <i class="bx" [class.bx-trending-up]="growthUp(kpis.expenseGrowthPercent)" [class.bx-trending-down]="growthDown(kpis.expenseGrowthPercent)"></i>
+                {{ formatGrowth(kpis.expenseGrowthPercent) }}
               </div>
             </div>
             <div class="kpi-value">{{ kpis.totalExpenses | number:'1.0-0' }}<span class="kpi-value-sm"> FCFA</span></div>
@@ -140,9 +140,9 @@
           <div class="kpi-card blue">
             <div class="kpi-header">
               <div class="kpi-icon blue"><i class="bx bx-wallet"></i></div>
-              <div class="kpi-trend" [class.up]="kpis.profitGrowthPercent >= 0" [class.down]="kpis.profitGrowthPercent < 0">
-                <i class="bx" [class.bx-trending-up]="kpis.profitGrowthPercent >= 0" [class.bx-trending-down]="kpis.profitGrowthPercent < 0"></i>
-                {{ kpis.profitGrowthPercent >= 0 ? '+' : '' }}{{ kpis.profitGrowthPercent | number:'1.1-1' }}%
+              <div class="kpi-trend" [class.up]="growthUp(kpis.profitGrowthPercent)" [class.down]="growthDown(kpis.profitGrowthPercent)">
+                <i class="bx" [class.bx-trending-up]="growthUp(kpis.profitGrowthPercent)" [class.bx-trending-down]="growthDown(kpis.profitGrowthPercent)"></i>
+                {{ formatGrowth(kpis.profitGrowthPercent) }}
               </div>
             </div>
             <div class="kpi-value">{{ kpis.netProfit | number:'1.0-0' }}<span class="kpi-value-sm"> FCFA</span></div>
@@ -153,13 +153,9 @@
           <div class="kpi-card purple">
             <div class="kpi-header">
               <div class="kpi-icon purple"><i class="bx bx-pie-chart-alt-2"></i></div>
-              <div class="kpi-trend flat">
-                <i class="bx bx-minus"></i> stable
-              </div>
             </div>
             <div class="kpi-value">{{ kpis.profitMarginPercent | number:'1.1-1' }}<span class="kpi-value-sm">%</span></div>
             <div class="kpi-label">Marge bénéficiaire</div>
-            <div class="kpi-sublabel">vs période précédente</div>
           </div>
 
         </div>
@@ -211,7 +207,7 @@
               </div>
             </div>
             <div class="kpi-value">{{ kpis.totalOutstandingDebt | number:'1.0-0' }}<span class="kpi-value-sm"> FCFA</span></div>
-            <div class="kpi-label">Impayés clients</div>
+            <div class="kpi-label">Impayés exigibles</div>
             <div class="kpi-sublabel">{{ kpis.clientsWithDebt }} clients concernés</div>
           </div>
 
@@ -223,7 +219,7 @@
           <!-- Graphique revenus -->
           <div class="card">
             <div class="card-header">
-              <div class="card-title"><i class="bx bx-bar-chart-alt-2"></i> Évolution financière — {{ chartMonths }} derniers mois</div>
+              <div class="card-title"><i class="bx bx-bar-chart-alt-2"></i> Évolution financière — 6 derniers mois</div>
             </div>
             <div class="chart-area">
               <div class="y-axis">
@@ -417,7 +413,7 @@
           <div class="card-header">
             <div class="card-title"><i class="bx bx-file-blank"></i> Top 10 contrats — taux de recouvrement</div>
             <span class="card-meta-pill">
-              Taux global : {{ contractPerformance.collectionRate | number:'1.1-1' }}%
+              Taux global : {{ hasGlobalCollectionRate() ? (contractPerformance.collectionRate | number:'1.1-1') + '%' : '—' }}
             </span>
           </div>
           <div class="contracts-table-wrap">
@@ -441,12 +437,15 @@
                   <td style="text-align:right; font-family: var(--font-display); font-weight:700;">{{ c.weeklyAmount | number:'1.0-0' }}</td>
                   <td style="text-align:right; font-family: var(--font-display); font-weight:700;">{{ c.totalPaid | number:'1.0-0' }}</td>
                   <td style="text-align:right">
-                    <span class="rate-badge"
+                    <span *ngIf="c.totalDue > 0; else noCollectionRate" class="rate-badge"
                       [class.rate-good]="c.collectionRate >= 80"
                       [class.rate-mid]="c.collectionRate >= 50 && c.collectionRate < 80"
                       [class.rate-bad]="c.collectionRate < 50">
                       {{ c.collectionRate | number:'1.0-0' }}%
                     </span>
+                    <ng-template #noCollectionRate>
+                      <span class="rate-badge rate-none">—</span>
+                    </ng-template>
                   </td>
                   <td>
                     <span class="status-badge"

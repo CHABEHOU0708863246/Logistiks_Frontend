@@ -435,6 +435,7 @@ export class Financials {
     [TransactionCategory.LateFees]:       'Pénalités retard',
     [TransactionCategory.DamageFees]:     'Frais dommages',
     [TransactionCategory.OtherIncome]:    'Autres revenus',
+    [TransactionCategory.SecurityDepositReceived]: 'Caution encaissée',
     [TransactionCategory.Maintenance]:    'Maintenance',
     [TransactionCategory.Fuel]:           'Carburant',
     [TransactionCategory.Insurance]:      'Assurance',
@@ -444,9 +445,44 @@ export class Financials {
     [TransactionCategory.OfficeSupplies]: 'Fournitures bureau',
     [TransactionCategory.Marketing]:      'Marketing',
     [TransactionCategory.OtherExpense]:   'Autres dépenses',
+    [TransactionCategory.SecurityDepositRefunded]: 'Caution remboursée',
   };
   return map[category] ?? `Catégorie ${category}`;
 }
+
+  /**
+   * Couleur associée à une catégorie (neutre pour les cautions, hors résultat).
+   */
+  getCategoryColor(category: TransactionCategory): string {
+    const colors: Record<number, string> = {
+      [TransactionCategory.RentalIncome]:   '#12B76A',
+      [TransactionCategory.LateFees]:       '#F79009',
+      [TransactionCategory.DamageFees]:     '#F04438',
+      [TransactionCategory.OtherIncome]:    '#0BA5EC',
+      [TransactionCategory.SecurityDepositReceived]: '#9590BB',
+
+      [TransactionCategory.Maintenance]:    '#696CFF',
+      [TransactionCategory.Fuel]:           '#0BA5EC',
+      [TransactionCategory.Insurance]:      '#7F77DD',
+      [TransactionCategory.Taxes]:          '#BA7517',
+      [TransactionCategory.Salary]:         '#FFAB00',
+      [TransactionCategory.Utilities]:      '#12B76A',
+      [TransactionCategory.OfficeSupplies]: '#9590BB',
+      [TransactionCategory.Marketing]:      '#E24B4A',
+      [TransactionCategory.OtherExpense]:   '#888780',
+      [TransactionCategory.SecurityDepositRefunded]: '#9590BB',
+    };
+    return colors[category] ?? '#9590BB';
+  }
+
+  /**
+   * Une caution est de la trésorerie, jamais un revenu ni une dépense :
+   * elle est exclue de tous les agrégats de résultat.
+   */
+  isSecurityDepositCategory(category: TransactionCategory): boolean {
+    return category === TransactionCategory.SecurityDepositReceived
+      || category === TransactionCategory.SecurityDepositRefunded;
+  }
 
   /**
    * Calculer le taux de croissance entre deux valeurs
@@ -533,8 +569,9 @@ export class Financials {
     [TransactionCategory.LateFees]: 'bx-time',
     [TransactionCategory.DamageFees]: 'bx-sad',
     [TransactionCategory.OtherIncome]: 'bx-dots-horizontal-rounded',
+    [TransactionCategory.SecurityDepositReceived]: 'bx-lock-alt',
 
-    // Dépenses (101-109)
+    // Dépenses (101-110)
     [TransactionCategory.Maintenance]: 'bx-wrench',
     [TransactionCategory.Fuel]: 'bx-gas-pump',
     [TransactionCategory.Insurance]: 'bx-shield-alt-2',
@@ -543,7 +580,8 @@ export class Financials {
     [TransactionCategory.Utilities]: 'bx-plug',
     [TransactionCategory.OfficeSupplies]: 'bx-briefcase',
     [TransactionCategory.Marketing]: 'bx-bullhorn',
-    [TransactionCategory.OtherExpense]: 'bx-dots-horizontal-rounded'
+    [TransactionCategory.OtherExpense]: 'bx-dots-horizontal-rounded',
+    [TransactionCategory.SecurityDepositRefunded]: 'bx-undo'
   };
   return icons[category] || 'bx-help-circle';
 }

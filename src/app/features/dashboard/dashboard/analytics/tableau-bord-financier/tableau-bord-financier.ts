@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { SidebarComponent } from '../../../../../core/components/sidebar-component/sidebar-component';
@@ -18,7 +18,9 @@ import { DashboardKpiDto } from '../../../../../core/models/Dashboard/DashboardK
 import { DashboardSummaryDto } from '../../../../../core/models/Dashboard/DashboardSummaryDto';
 import { FleetStatsDto } from '../../../../../core/models/Dashboard/FleetStatsDto';
 import { MonthlyChartPoint } from '../../../../../core/models/Dashboard/MonthlyChartPoint';
+import { FinancialDashboardResponse } from '../../../../../core/models/Financials/Financial-responses.models';
 import { Dashboard } from '../../../../../core/services/Dashboard/dashboard';
+import { Financials } from '../../../../../core/services/Financials/financials';
 
 // ─────────────────────────────────────────────────────────────
 // Interface locale pour le classement véhicules
@@ -66,6 +68,7 @@ export class TableauBordFinancier  implements OnInit, OnDestroy {
   fleetStats:         FleetStatsDto | null           = null;
   chartData:          MonthlyChartPoint[]            = [];
   contractPerf:       ContractPerformanceDto | null  = null;
+  financeSummary:     FinancialDashboardResponse | null = null;
   rankedVehicles:     RankedVehicle[]                = [];
 
   // ============================================================================
@@ -203,8 +206,8 @@ getExpensePct(category: string): number {
   // ============================================================================
 
   constructor(
-    private formBuilder:         FormBuilder,
     private dashboardService:    Dashboard,
+    private financialsService:   Financials,
     private notificationService: NotificationService,
     private authService:         Auth,
     private tokenService:        Token,
@@ -234,6 +237,7 @@ getExpensePct(category: string): number {
     this.hasError  = false;
 
     const { start, end } = this.getPeriodBounds();
+    const dateBounds = this.getPeriodDateBounds();
 
     forkJoin({
       summary:   this.dashboardService.getDashboardSummary(start, end),
@@ -241,15 +245,17 @@ getExpensePct(category: string): number {
       fleet:     this.dashboardService.getFleetStats(),
       chart:     this.dashboardService.getRevenueChart(this.chartMonths),
       contracts: this.dashboardService.getContractPerformance(start, end),
+      finance:   this.financialsService.getFinancialDashboard(dateBounds.start, dateBounds.end),
     })
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: ({ summary, kpi, fleet, chart, contracts }) => {
-        this.summaryData  = summary.data  ?? null;
-        this.kpi          = kpi.data      ?? null;
-        this.fleetStats   = fleet.data    ?? null;
-        this.chartData    = chart.data    ?? [];
-        this.contractPerf = contracts.data ?? null;
+      next: ({ summary, kpi, fleet, chart, contracts, finance }) => {
+        this.summaryData    = summary.data  ?? null;
+        this.kpi            = kpi.data      ?? null;
+        this.fleetStats     = fleet.data    ?? null;
+        this.chartData      = (chart.data ?? []).slice(-this.chartMonths);
+        this.contractPerf   = contracts.data ?? null;
+        this.financeSummary = finance.data  ?? null;
 
         this.buildChartScale();
         this.buildRankedVehicles();
@@ -386,7 +392,7 @@ private buildRankedVehicles(): void {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (r) => {
-          this.chartData = r.data ?? [];
+          this.chartData = (r.data ?? []).slice(-n);
           this.buildChartScale();
         },
         error: (err) => console.error('Chart error:', err),
@@ -406,6 +412,14 @@ private buildRankedVehicles(): void {
     const circumference = 2 * Math.PI * 15.9;
     const ratio = Math.min(Math.abs(value) / max, 1);
     return `${(circumference * ratio).toFixed(1)} ${circumference.toFixed(1)}`;
+  }
+
+  /**
+   * Le taux de recouvrement n'est affichable que si des échéances étaient
+   * exigibles sur la période (0 quand rien n'était dû → « — »).
+   */
+  hasCollectionRate(): boolean {
+    return !!this.contractPerf?.topContracts?.some(c => c.totalDue > 0);
   }
 
   /**
@@ -480,6 +494,13 @@ private buildRankedVehicles(): void {
       start: start.toISOString().split('T')[0],
       end:   end.toISOString().split('T')[0],
     };
+  }
+
+  /** Bornes Date de la période (fin de journée incluse) pour l'API Finance */
+  private getPeriodDateBounds(): { start: Date; end: Date } {
+    const start = new Date(this.selectedYear, this.selectedMonth - 1, 1);
+    const end   = new Date(this.selectedYear, this.selectedMonth, 0, 23, 59, 59);
+    return { start, end };
   }
 
   /** Libellé lisible de la période sélectionnée */

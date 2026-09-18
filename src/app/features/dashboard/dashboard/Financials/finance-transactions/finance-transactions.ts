@@ -67,6 +67,64 @@ interface SortConfig {
   ascending: boolean;
 }
 
+/**
+ * Agrégat (nombre + montant) d'un statut du workflow
+ */
+interface WorkflowKpi {
+  count: number;
+  amount: number;
+}
+
+/**
+ * Indicateurs du cycle Pending → Verified → Paid (Annulée terminale)
+ */
+interface WorkflowStats {
+  pending: WorkflowKpi;
+  verified: WorkflowKpi;
+  paid: WorkflowKpi;
+  cancelled: WorkflowKpi;
+  bookingRate: number;
+}
+
+/**
+ * Tranche du donut de répartition par catégorie
+ */
+interface CategorySlice {
+  category: TransactionCategory;
+  label: string;
+  icon: string;
+  color: string;
+  amount: number;
+  percent: number;
+}
+
+/**
+ * Tranche SVG du donut
+ */
+interface DonutSlice {
+  color: string;
+  dashArray: string;
+  dashOffset: string;
+}
+
+/**
+ * Point d'agrégation de la courbe de tendance
+ */
+interface TrendPoint {
+  label: string;
+  fullLabel: string;
+  revenue: number;
+  expenses: number;
+}
+
+/**
+ * Ligne de grille de la courbe de tendance
+ */
+interface TrendGridLine {
+  y: number;
+  label: string;
+}
+
 @Component({
   selector: 'app-finance-transactions',
   standalone: true,
@@ -103,11 +161,8 @@ export class FinanceTransactions implements OnInit, OnDestroy {
   /** Transactions filtrées et paginées */
   displayedTransactions: FinancialTransaction[] = [];
 
-  /** Transaction sélectionnée pour affichage/édition */
+  /** Transaction sélectionnée pour affichage */
   selectedTransaction: FinancialTransaction | null = null;
-
-  /** Transaction à supprimer */
-  transactionToDelete: FinancialTransaction | null = null;
 
   // ============================================================================
   // SECTION 3: STATISTIQUES DU TABLEAU DE BORD
@@ -127,6 +182,57 @@ export class FinanceTransactions implements OnInit, OnDestroy {
 
   /** Répartition par catégorie */
   categoryBreakdown: Map<string, number> = new Map();
+
+  // ============================================================================
+  // SECTION 3 bis: WORKFLOW, DONUT ET TENDANCE
+  // ============================================================================
+
+  /** Indicateurs du workflow (Pending → Verified → Paid, Annulée terminale) */
+  workflowStats: WorkflowStats = {
+    pending: { count: 0, amount: 0 },
+    verified: { count: 0, amount: 0 },
+    paid: { count: 0, amount: 0 },
+    cancelled: { count: 0, amount: 0 },
+    bookingRate: 0
+  };
+
+  /** Mode du donut de répartition (dépenses par défaut) */
+  donutMode: 'expense' | 'income' = 'expense';
+
+  /** Tranches SVG du donut */
+  donutSlices: DonutSlice[] = [];
+
+  /** Légende du donut */
+  donutLegend: CategorySlice[] = [];
+
+  /** Total de la répartition affichée */
+  donutTotal = 0;
+
+  /** Rayon du donut (viewBox 100 × 100) */
+  private readonly donutRadius = 36;
+
+  /** Points de la courbe de tendance revenus / dépenses */
+  trendPoints: TrendPoint[] = [];
+
+  /** Granularité de la tendance : jour ou semaine */
+  trendGranularity: 'day' | 'week' = 'day';
+
+  /** Valeur maximale de l'axe Y de la tendance */
+  trendMax = 0;
+
+  /** Lignes de grille de la courbe de tendance */
+  trendGridLines: TrendGridLine[] = [];
+
+  /** Dimensions du SVG de tendance */
+  readonly trendW = 620;
+  readonly trendH = 220;
+  readonly trendPad = { l: 56, r: 16, t: 16, b: 28 };
+
+  /** Tooltip de la courbe de tendance */
+  tooltipVisible = false;
+  tooltipX = 0;
+  tooltipY = 0;
+  tooltipPoint: TrendPoint | null = null;
 
   // ============================================================================
   // SECTION 4: ÉTATS DE CHARGEMENT
@@ -186,11 +292,8 @@ export class FinanceTransactions implements OnInit, OnDestroy {
   // SECTION 8: FORMULAIRES
   // ============================================================================
 
-  /** Formulaire de création/édition de transaction */
+  /** Formulaire de création de transaction */
   transactionForm!: FormGroup;
-
-  /** Mode du formulaire (create ou edit) */
-  formMode: 'create' | 'edit' = 'create';
 
   // ============================================================================
   // SECTION 9: MODALES - ÉTATS D'AFFICHAGE
@@ -201,9 +304,6 @@ export class FinanceTransactions implements OnInit, OnDestroy {
 
   /** Affichage du modal de détails */
   showDetailsModal: boolean = false;
-
-  /** Affichage du modal de confirmation de suppression */
-  showDeleteModal: boolean = false;
 
   // ============================================================================
   // SECTION 10: UTILISATEUR ET INTERFACE
@@ -437,13 +537,16 @@ export class FinanceTransactions implements OnInit, OnDestroy {
    * Met à jour les statistiques du dashboard
    */
   private updateDashboardStats(): void {
+    // Les cautions sont de la trésorerie : jamais un revenu ni une dépense.
+    const resultTransactions = this.allTransactions.filter((t) => !this.isSecurityDeposit(t));
+
     // Revenus totaux
-    this.dashboardStats.totalRevenue = this.allTransactions
+    this.dashboardStats.totalRevenue = resultTransactions
       .filter(t => t.type === TransactionType.Revenue)
       .reduce((sum, t) => sum + t.amount, 0);
 
     // Dépenses totales
-    this.dashboardStats.totalExpenses = this.allTransactions
+    this.dashboardStats.totalExpenses = resultTransactions
       .filter(t => t.type === TransactionType.Expense)
       .reduce((sum, t) => sum + t.amount, 0);
 
@@ -471,6 +574,288 @@ export class FinanceTransactions implements OnInit, OnDestroy {
     this.dashboardStats.profitMargin = this.dashboardStats.totalRevenue > 0
       ? (this.dashboardStats.netProfit / this.dashboardStats.totalRevenue) * 100
       : 0;
+
+    // Synthèses visuelles de la période chargée
+    this.updateWorkflowStats();
+    this.buildCategoryDonut();
+    this.buildTrendChart();
+  }
+
+  // ============================================================================
+  // SECTION 15 bis: SYNTHÈSES DE LA PÉRIODE CHARGÉE
+  // ============================================================================
+
+  /**
+   * Une caution est de la trésorerie, exclue de tout calcul de résultat.
+   */
+  isSecurityDeposit(transaction: FinancialTransaction): boolean {
+    return this.financialService.isSecurityDepositCategory(transaction.category);
+  }
+
+  /**
+   * Statut effectif d'une transaction : les données historiques n'ont pas de
+   * champ status, verifiedAt fait alors foi (même règle que getStatusLabel).
+   */
+  private getWorkflowStatus(transaction: FinancialTransaction): TransactionStatus {
+    if (transaction.status) return transaction.status;
+    return transaction.isVerified ? TransactionStatus.Verified : TransactionStatus.Pending;
+  }
+
+  /**
+   * Agrège le cycle de vie du workflow sur la période chargée.
+   * Le taux de comptabilisation est montant Payé / montant total, cautions exclues.
+   */
+  private updateWorkflowStats(): void {
+    const stats: WorkflowStats = {
+      pending: { count: 0, amount: 0 },
+      verified: { count: 0, amount: 0 },
+      paid: { count: 0, amount: 0 },
+      cancelled: { count: 0, amount: 0 },
+      bookingRate: 0
+    };
+
+    this.allTransactions.forEach((transaction) => {
+      switch (this.getWorkflowStatus(transaction)) {
+        case TransactionStatus.Paid:
+          stats.paid.count += 1;
+          stats.paid.amount += transaction.amount;
+          break;
+        case TransactionStatus.Verified:
+          stats.verified.count += 1;
+          stats.verified.amount += transaction.amount;
+          break;
+        case TransactionStatus.Cancelled:
+          stats.cancelled.count += 1;
+          stats.cancelled.amount += transaction.amount;
+          break;
+        default:
+          stats.pending.count += 1;
+          stats.pending.amount += transaction.amount;
+      }
+    });
+
+    const countable = this.allTransactions.filter((t) => !this.isSecurityDeposit(t));
+    const totalAmount = countable.reduce((sum, t) => sum + t.amount, 0);
+    const paidAmount = countable
+      .filter((t) => this.getWorkflowStatus(t) === TransactionStatus.Paid)
+      .reduce((sum, t) => sum + t.amount, 0);
+    stats.bookingRate = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
+
+    this.workflowStats = stats;
+  }
+
+  /**
+   * Construit le donut de répartition par catégorie (cautions exclues).
+   */
+  private buildCategoryDonut(): void {
+    const wantedType = this.donutMode === 'income'
+      ? TransactionType.Revenue
+      : TransactionType.Expense;
+    const totals = new Map<TransactionCategory, number>();
+
+    this.allTransactions
+      .filter((t) => !this.isSecurityDeposit(t) && t.type === wantedType)
+      .forEach((t) => totals.set(t.category, (totals.get(t.category) ?? 0) + t.amount));
+
+    const entries = Array.from(totals.entries())
+      .filter(([, amount]) => amount > 0)
+      .sort((a, b) => b[1] - a[1]);
+
+    this.donutTotal = entries.reduce((sum, [, amount]) => sum + amount, 0);
+
+    this.donutLegend = entries.map(([category, amount]) => ({
+      category,
+      label: this.getCategoryName(category),
+      icon: this.getCategoryIcon(category),
+      color: this.getCategoryColor(category),
+      amount,
+      percent: this.donutTotal > 0 ? (amount / this.donutTotal) * 100 : 0
+    }));
+
+    const circumference = 2 * Math.PI * this.donutRadius;
+    let offset = 0;
+    this.donutSlices = this.donutLegend.map((slice) => {
+      const dash = (slice.percent / 100) * circumference;
+      const donutSlice: DonutSlice = {
+        color: slice.color,
+        dashArray: `${dash} ${circumference - dash}`,
+        dashOffset: `${-offset}`
+      };
+      offset += dash;
+      return donutSlice;
+    });
+  }
+
+  /**
+   * Bascule le donut entre dépenses et revenus.
+   */
+  setDonutMode(mode: 'expense' | 'income'): void {
+    if (this.donutMode === mode) return;
+    this.donutMode = mode;
+    this.buildCategoryDonut();
+  }
+
+  /**
+   * Agrège la période chargée par jour, ou par semaine quand elle dépasse 31 jours.
+   */
+  private buildTrendChart(): void {
+    const countable = this.allTransactions.filter((t) => !this.isSecurityDeposit(t));
+    const dates = countable
+      .map((t) => new Date(t.date))
+      .filter((d) => !isNaN(d.getTime()));
+
+    let start = this.filters.startDate ? new Date(this.filters.startDate) : null;
+    let end = this.filters.endDate ? new Date(this.filters.endDate) : null;
+
+    if (!start && dates.length) {
+      start = new Date(Math.min(...dates.map((d) => d.getTime())));
+    }
+    if (!end && dates.length) {
+      end = new Date(Math.max(...dates.map((d) => d.getTime())));
+    }
+    if (!start || !end) {
+      this.trendPoints = [];
+      this.trendMax = 0;
+      this.trendGridLines = [];
+      return;
+    }
+
+    const periodStart = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const periodEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    const totalDays = Math.floor((periodEnd.getTime() - periodStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    this.trendGranularity = totalDays > 31 ? 'week' : 'day';
+
+    const buckets = new Map<number, TrendPoint>();
+    countable.forEach((transaction) => {
+      const date = new Date(transaction.date);
+      if (isNaN(date.getTime()) || date < periodStart || date > periodEnd) return;
+
+      const key = this.getTrendBucketStart(date).getTime();
+      let point = buckets.get(key);
+      if (!point) {
+        point = { label: '', fullLabel: '', revenue: 0, expenses: 0 };
+        buckets.set(key, point);
+      }
+      if (transaction.type === TransactionType.Revenue) {
+        point.revenue += transaction.amount;
+      } else {
+        point.expenses += transaction.amount;
+      }
+    });
+
+    const points: TrendPoint[] = [];
+    const cursor = this.getTrendBucketStart(periodStart);
+    while (cursor <= periodEnd) {
+      const bucket = buckets.get(cursor.getTime())
+        ?? { label: '', fullLabel: '', revenue: 0, expenses: 0 };
+      bucket.label = this.formatTrendLabel(cursor);
+      bucket.fullLabel = this.formatTrendFullLabel(cursor);
+      points.push(bucket);
+      cursor.setDate(cursor.getDate() + (this.trendGranularity === 'day' ? 1 : 7));
+    }
+
+    this.trendPoints = points;
+    const max = points.reduce((current, point) => Math.max(current, point.revenue, point.expenses), 0);
+    this.trendMax = max === 0 ? 0 : Math.ceil(max * 1.15);
+    this.trendGridLines = this.trendMax > 0
+      ? Array.from({ length: 5 }, (_, i) => {
+          const value = (this.trendMax / 4) * (4 - i);
+          return { y: this.getTrendY(value), label: this.compactAmount(value) };
+        })
+      : [];
+  }
+
+  /**
+   * Premier jour du bucket (jour même, ou lundi pour une semaine).
+   */
+  private getTrendBucketStart(date: Date): Date {
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    if (this.trendGranularity === 'week') {
+      const day = (start.getDay() + 6) % 7;
+      start.setDate(start.getDate() - day);
+    }
+    return start;
+  }
+
+  private formatTrendLabel(date: Date): string {
+    const options: Intl.DateTimeFormatOptions = this.trendGranularity === 'week'
+      ? { day: '2-digit', month: 'short' }
+      : { day: '2-digit', month: '2-digit' };
+    return new Intl.DateTimeFormat('fr-FR', options).format(date);
+  }
+
+  private formatTrendFullLabel(date: Date): string {
+    if (this.trendGranularity === 'week') {
+      const weekEnd = new Date(date);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      const dayFormat = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short' });
+      return `Semaine du ${dayFormat.format(date)} au ${dayFormat.format(weekEnd)}`;
+    }
+    return new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+    }).format(date);
+  }
+
+  /** Coordonnée X d'un point de la courbe. */
+  getTrendX(index: number): number {
+    const width = this.trendW - this.trendPad.l - this.trendPad.r;
+    if (this.trendPoints.length <= 1) return this.trendPad.l + width / 2;
+    return this.trendPad.l + (width / (this.trendPoints.length - 1)) * index;
+  }
+
+  /** Coordonnée Y d'une valeur de la courbe. */
+  getTrendY(value: number): number {
+    const height = this.trendH - this.trendPad.t - this.trendPad.b;
+    const ratio = this.trendMax === 0 ? 0 : value / this.trendMax;
+    return this.trendPad.t + height * (1 - Math.max(0, ratio));
+  }
+
+  /** Chemin SVG d'une ligne de la courbe. */
+  getTrendLinePath(field: 'revenue' | 'expenses'): string {
+    return this.trendPoints
+      .map((point, i) => `${i === 0 ? 'M' : 'L'}${this.getTrendX(i)},${this.getTrendY(point[field])}`)
+      .join(' ');
+  }
+
+  /** Chemin SVG de l'aire remplie sous une ligne. */
+  getTrendAreaPath(field: 'revenue' | 'expenses'): string {
+    if (!this.trendPoints.length) return '';
+    const baseline = this.trendH - this.trendPad.b;
+    const lastX = this.getTrendX(this.trendPoints.length - 1);
+    return `${this.getTrendLinePath(field)} L${lastX},${baseline} L${this.getTrendX(0)},${baseline} Z`;
+  }
+
+  /** N'affiche qu'un libellé sur N pour éviter le chevauchement de l'axe X. */
+  showTrendLabel(index: number): boolean {
+    const count = this.trendPoints.length;
+    if (count <= 12) return true;
+    const step = Math.ceil(count / 12);
+    return index % step === 0 || index === count - 1;
+  }
+
+  /** Affiche le tooltip de la courbe. */
+  showTrendTooltip(event: MouseEvent, point: TrendPoint): void {
+    const wrap = (event.target as SVGElement).closest('.trend-chart-wrap') as HTMLElement;
+    const wrapRect = wrap?.getBoundingClientRect();
+    if (wrapRect) {
+      this.tooltipX = event.clientX - wrapRect.left + 12;
+      this.tooltipY = event.clientY - wrapRect.top - 40;
+    }
+    this.tooltipPoint = point;
+    this.tooltipVisible = true;
+  }
+
+  /** Cache le tooltip de la courbe. */
+  hideTrendTooltip(): void {
+    this.tooltipVisible = false;
+  }
+
+  /** Montant compact pour les axes et le centre du donut (k / M). */
+  compactAmount(value: number): string {
+    const abs = Math.abs(value);
+    if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)} M`;
+    if (abs >= 1_000) return `${Math.round(value / 1_000)} k`;
+    return `${Math.round(value)}`;
   }
 
   // ============================================================================
@@ -732,6 +1117,9 @@ export class FinanceTransactions implements OnInit, OnDestroy {
       let comparison = 0;
 
       switch (this.sortConfig.column) {
+        case 'transactionNumber':
+          comparison = a.transactionNumber.localeCompare(b.transactionNumber);
+          break;
         case 'date':
           comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
           break;
@@ -856,7 +1244,6 @@ export class FinanceTransactions implements OnInit, OnDestroy {
    * Ouvre le modal de création de transaction
    */
   openCreateModal(): void {
-    this.formMode = 'create';
     this.transactionForm.reset({
       type: TransactionType.Expense,
       category: TransactionCategory.OtherExpense,
@@ -868,29 +1255,7 @@ export class FinanceTransactions implements OnInit, OnDestroy {
   }
 
   /**
-   * Ouvre le modal d'édition de transaction
-   */
-  openEditModal(transaction: FinancialTransaction): void {
-    this.formMode = 'edit';
-    this.selectedTransaction = transaction;
-
-    this.transactionForm.patchValue({
-      type: transaction.type,
-      category: transaction.category,
-      amount: transaction.amount,
-      date: new Date(transaction.date).toISOString().split('T')[0],
-      description: transaction.description,
-      paymentMethod: transaction.paymentMethod,
-      reference: transaction.reference || '',
-      relatedId: transaction.relatedId || '',
-      relatedType: transaction.relatedType || ''
-    });
-
-    this.showFormModal = true;
-  }
-
-  /**
-   * Soumet le formulaire de transaction
+   * Soumet le formulaire de transaction (création uniquement : RG-013/RG-014)
    */
   submitTransactionForm(): void {
     if (this.transactionForm.invalid) {
@@ -914,10 +1279,7 @@ export class FinanceTransactions implements OnInit, OnDestroy {
       relatedType: formValue.relatedType || undefined
     };
 
-    if (this.formMode === 'create') {
-      this.createTransaction(request);
-    }
-    // Note: L'édition sera implémentée ultérieurement
+    this.createTransaction(request);
   }
 
   /**
@@ -1194,14 +1556,6 @@ export class FinanceTransactions implements OnInit, OnDestroy {
     return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
   }
 
-  /**
-   * Ouvre le modal de confirmation de suppression
-   */
-  confirmDelete(transaction: FinancialTransaction): void {
-    this.transactionToDelete = transaction;
-    this.showDeleteModal = true;
-  }
-
   // ============================================================================
   // SECTION 23: GESTION DES MODALES
   // ============================================================================
@@ -1221,14 +1575,6 @@ export class FinanceTransactions implements OnInit, OnDestroy {
   closeDetailsModal(): void {
     this.showDetailsModal = false;
     this.selectedTransaction = null;
-  }
-
-  /**
-   * Ferme le modal de suppression
-   */
-  closeDeleteModal(): void {
-    this.showDeleteModal = false;
-    this.transactionToDelete = null;
   }
 
   // ============================================================================
@@ -1256,6 +1602,13 @@ export class FinanceTransactions implements OnInit, OnDestroy {
    */
   getCategoryIcon(category: TransactionCategory): string {
     return this.financialService.getCategoryIcon(category);
+  }
+
+  /**
+   * Obtient la couleur de la catégorie
+   */
+  getCategoryColor(category: TransactionCategory): string {
+    return this.financialService.getCategoryColor(category);
   }
 
   /**

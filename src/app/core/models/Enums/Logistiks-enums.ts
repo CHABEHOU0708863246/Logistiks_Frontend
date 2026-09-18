@@ -108,6 +108,7 @@ export enum TransactionCategory {
   LateFees = 2,
   DamageFees = 3,
   OtherIncome = 4,
+  SecurityDepositReceived = 5,
 
   // Dépenses
   Maintenance = 101,
@@ -118,7 +119,8 @@ export enum TransactionCategory {
   Utilities = 106,
   OfficeSupplies = 107,
   Marketing = 108,
-  OtherExpense = 109
+  OtherExpense = 109,
+  SecurityDepositRefunded = 110
 }
 
 export enum PaymentMethod {

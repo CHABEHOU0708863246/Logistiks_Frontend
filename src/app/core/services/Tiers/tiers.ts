@@ -328,6 +328,17 @@ export class Tiers {
   }
 
   /**
+   * Télécharger la fiche d'identité PDF d'un tier
+   */
+  downloadIdentityPdf(tierId: string): Observable<Blob> {
+    return this.http
+      .get(`${this.baseUrl}/${tierId}/identity-pdf`, {
+        responseType: 'blob',
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Télécharger un document et déclencher le téléchargement dans le navigateur
    */
   downloadDocumentAndSave(

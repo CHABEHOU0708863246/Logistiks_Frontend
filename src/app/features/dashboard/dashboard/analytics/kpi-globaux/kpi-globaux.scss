@@ -1075,6 +1075,7 @@ $font-display:   'Space Grotesk', sans-serif;
   &.rate-good { background: $success-bg; color: $success; }
   &.rate-mid  { background: $warning-bg; color: $warning; }
   &.rate-bad  { background: $danger-bg;  color: $danger; }
+  &.rate-none { background: rgba(0, 0, 0, .06); color: $text-3; }
 }
 
 // ── Status badges ────────────────────────────────────────────────────

@@ -1,0 +1,438 @@
+<div class="app-wrapper">
+
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" [style.marginLeft]="isSidebarCollapsed ? '0' : '268px'">
+
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item">Administration</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Journal d'audit</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
+
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
+          </div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
+          </div>
+
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
+            </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/settings']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+
+      <!-- ══ PAGE HEADER ══ -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title">Journal d'audit</div>
+          <div class="page-subtitle">
+            Traçabilité légale des actions : qui a fait quoi, avec les valeurs avant / après.
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline btn-sm" (click)="refreshAuditLogs()" [disabled]="isLoading">
+            <i class="bx bx-refresh" [class.spin]="isLoading"></i> Actualiser
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="exportCsv()" [disabled]="isExporting">
+            <i class="bx bx-download"></i>
+            {{ isExporting ? 'Export en cours…' : 'Exporter CSV' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ KPI CARDS ══ -->
+      <div class="grid grid-3">
+
+        <div class="kpi-card blue">
+          <div class="kpi-header">
+            <div class="kpi-icon blue"><i class="bx bx-list-ul"></i></div>
+          </div>
+          <div class="kpi-value">{{ totalEntries }}</div>
+          <div class="kpi-label">Total entrées</div>
+          <div class="kpi-sublabel">Selon les filtres actifs</div>
+        </div>
+
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <div class="kpi-icon green"><i class="bx bx-calendar-check"></i></div>
+          </div>
+          <div class="kpi-value">{{ entriesToday }}</div>
+          <div class="kpi-label">Entrées aujourd'hui</div>
+          <div class="kpi-sublabel">Toutes actions confondues</div>
+        </div>
+
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <div class="kpi-icon amber"><i class="bx bx-time-five"></i></div>
+          </div>
+          <div class="kpi-value kpi-value--sm">{{ formatDateTime(lastEntryAt) }}</div>
+          <div class="kpi-label">Dernière entrée</div>
+          <div class="kpi-sublabel">Selon les filtres actifs</div>
+        </div>
+
+      </div>
+
+      <!-- ══ FILTRES ══ -->
+      <div class="card" style="margin-top: 18px;">
+        <div class="card-header">
+          <div class="card-title"><i class="bx bx-filter"></i> Filtres</div>
+        </div>
+        <div class="card-body">
+          <div class="filter-row">
+            <div class="filter-field">
+              <label class="filter-label"><i class="bx bx-category"></i> Type d'entité</label>
+              <select class="form-input" [(ngModel)]="filters.entityType" (change)="applyFilters()">
+                <option *ngFor="let option of entityTypeOptions" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label"><i class="bx bx-purchase-tag"></i> Action</label>
+              <input type="text" class="form-input" [(ngModel)]="filters.action"
+                (keyup.enter)="applyFilters()" placeholder="Ex : VEHICLE_CREATED" />
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label"><i class="bx bx-user"></i> Utilisateur (ID)</label>
+              <input type="text" class="form-input" [(ngModel)]="filters.userId"
+                (keyup.enter)="applyFilters()" placeholder="ID de l'utilisateur" />
+            </div>
+          </div>
+
+          <div class="filter-row" style="margin-top: 14px;">
+            <div class="filter-field">
+              <label class="filter-label"><i class="bx bx-calendar"></i> Date de début</label>
+              <input type="date" class="form-input" [value]="filters.fromDate" (change)="onFromDateChange($event)" />
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label"><i class="bx bx-calendar"></i> Date de fin</label>
+              <input type="date" class="form-input" [value]="filters.toDate" (change)="onToDateChange($event)" />
+            </div>
+
+            <div class="filter-field filter-field--lg">
+              <label class="filter-label"><i class="bx bx-search"></i> Recherche</label>
+              <div class="search-input-wrap">
+                <i class="bx bx-search search-input-icon"></i>
+                <input type="text" class="form-input" [(ngModel)]="filters.searchTerm"
+                  (input)="onSearchChange(filters.searchTerm)"
+                  placeholder="ID entité, action ou utilisateur…" />
+                <button class="search-clear-btn" *ngIf="filters.searchTerm"
+                  (click)="filters.searchTerm = ''; onSearchChange('')">
+                  <i class="bx bx-x"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-field filter-field--actions">
+              <button class="btn btn-primary" (click)="applyFilters()" [disabled]="isLoading">
+                <i class="bx bx-search-alt"></i> Appliquer
+              </button>
+              <button class="btn btn-outline" (click)="resetFilters()" [disabled]="isLoading">
+                <i class="bx bx-reset"></i> Réinitialiser
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TABLEAU ══ -->
+      <div class="card" style="margin-top: 18px;">
+        <div class="card-header">
+          <div class="card-title"><i class="bx bx-history"></i> Entrées du journal</div>
+          <div class="card-header-actions">
+            <select class="form-select-sm" [(ngModel)]="pagination.pageSize"
+              (change)="changePageSize(pagination.pageSize)">
+              <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / page</option>
+            </select>
+            <span class="result-count"><strong>{{ pagination.totalItems }}</strong> résultat(s)</span>
+          </div>
+        </div>
+
+        <div class="card-body" style="padding: 0;">
+
+          <!-- Chargement -->
+          <div *ngIf="isLoading" class="state-placeholder">
+            <div class="spinner"></div>
+            <p class="state-placeholder-text">Chargement du journal…</p>
+          </div>
+
+          <!-- Aucun résultat -->
+          <div *ngIf="!isLoading && auditLogs.length === 0" class="state-placeholder">
+            <i class="bx bx-inbox state-placeholder-icon"></i>
+            <h5 class="state-placeholder-title">Aucune entrée d'audit</h5>
+            <p class="state-placeholder-text">Aucune entrée ne correspond à vos critères.</p>
+            <button class="btn btn-primary btn-sm" (click)="resetFilters()">
+              <i class="bx bx-reset"></i> Réinitialiser les filtres
+            </button>
+          </div>
+
+          <!-- Table -->
+          <div *ngIf="!isLoading && auditLogs.length > 0" class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 46px;">#</th>
+                  <th>Date / heure</th>
+                  <th>Utilisateur</th>
+                  <th>Action</th>
+                  <th>Entité</th>
+                  <th>ID entité</th>
+                  <th>Adresse IP</th>
+                  <th class="th-center" style="width: 90px;">Détails</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let log of auditLogs; let i = index" class="tr-clickable" (click)="openDetails(log)">
+                  <td class="td-index">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
+
+                  <td>
+                    <span class="cell-date">
+                      <i class="bx bx-calendar"></i> {{ formatDateTime(log.timestamp) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="cell-desc">
+                      <span class="cell-name">{{ getLogUser(log) }}</span>
+                      <small class="cell-ref-sub" *ngIf="log.userName && log.userId">
+                        <i class="bx bx-id-card"></i> {{ log.userId }}
+                      </small>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="badge" [class]="getActionClass(log.action)" [title]="log.action">
+                      <i class="bx bx-bolt-circle"></i> {{ getActionLabel(log.action) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="cell-category">
+                      <i [class]="'bx ' + getEntityIcon(log.entityType)"></i>
+                      {{ getEntityLabel(log.entityType) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="cell-ref">{{ log.entityId || '—' }}</span>
+                  </td>
+
+                  <td>
+                    <span class="cell-ip">{{ log.ipAddress || '—' }}</span>
+                  </td>
+
+                  <td class="td-center">
+                    <button class="action-btn action-btn--primary" (click)="$event.stopPropagation(); openDetails(log)"
+                      title="Voir les détails">
+                      <i class="bx bx-show"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="!isLoading && pagination.totalPages > 1" class="pagination-bar">
+            <div class="pagination-info">
+              Page <strong>{{ pagination.currentPage }}</strong> sur <strong>{{ pagination.totalPages }}</strong>
+              · {{ pagination.totalItems }} entrée(s)
+            </div>
+            <div class="pagination-controls">
+              <button class="page-btn" [disabled]="pagination.currentPage === 1" (click)="goToPage(1)">
+                <i class="bx bx-chevrons-left"></i>
+              </button>
+              <button class="page-btn" [disabled]="pagination.currentPage === 1" (click)="previousPage()">
+                <i class="bx bx-chevron-left"></i>
+              </button>
+              <button *ngFor="let page of visiblePages" class="page-btn"
+                [class.page-btn--active]="page === pagination.currentPage" (click)="goToPage(page)">
+                {{ page }}
+              </button>
+              <button class="page-btn" [disabled]="pagination.currentPage === pagination.totalPages" (click)="nextPage()">
+                <i class="bx bx-chevron-right"></i>
+              </button>
+              <button class="page-btn" [disabled]="pagination.currentPage === pagination.totalPages"
+                (click)="goToPage(pagination.totalPages)">
+                <i class="bx bx-chevrons-right"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ FOOTER ══ -->
+      <footer class="content-footer">
+        <div class="footer-text">
+          © 2026 Logistik — Version 1.0.0
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">Aide &amp; Support</a>
+          <span class="footer-sep">•</span>
+          <a [routerLink]="['/dashboard/about']" class="footer-link">À propos</a>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- ══ MODAL : DÉTAILS DE L'ENTRÉE D'AUDIT ══ -->
+  <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
+  <div class="modal-wrap" [class.modal-wrap--show]="showDetailsModal" *ngIf="showDetailsModal && selectedLog">
+    <div class="modal-dialog modal-dialog--lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="bx bx-history"></i> Détails de l'entrée d'audit
+        </div>
+        <button class="modal-close-btn" (click)="closeDetailsModal()"><i class="bx bx-x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Informations principales -->
+        <div class="detail-section">
+          <div class="detail-section-title"><i class="bx bx-info-circle"></i> Informations principales</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Date / heure</span>
+              <span class="detail-value">{{ formatDateTime(selectedLog.timestamp) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Utilisateur</span>
+              <span class="detail-value">{{ getLogUser(selectedLog) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Action</span>
+              <span class="detail-value">
+                <span class="badge" [class]="getActionClass(selectedLog.action || '')">
+                  {{ getActionLabel(selectedLog.action || '') }}
+                </span>
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Entité</span>
+              <span class="detail-value">
+                <i [class]="'bx ' + getEntityIcon(selectedLog.entityType || '')"></i>
+                {{ getEntityLabel(selectedLog.entityType || '') }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">ID entité</span>
+              <span class="detail-value cell-ref">{{ selectedLog.entityId || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Adresse IP</span>
+              <span class="detail-value">{{ selectedLog.ipAddress || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Changements -->
+        <div class="detail-section" *ngIf="hasChanges(selectedLog)">
+          <div class="detail-section-title"><i class="bx bx-git-compare"></i> Modifications (avant → après)</div>
+          <div class="table-scroll">
+            <table class="data-table changes-table">
+              <thead>
+                <tr>
+                  <th>Propriété</th>
+                  <th>Ancienne valeur</th>
+                  <th>Nouvelle valeur</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let change of selectedLog.changes || []">
+                  <td><span class="cell-ref">{{ change.property }}</span></td>
+                  <td class="change-old">{{ change.oldValue || '—' }}</td>
+                  <td class="change-new">{{ change.newValue || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Valeurs avant / après (JSON) -->
+        <ng-container *ngIf="!hasChanges(selectedLog) && (selectedLog.oldValues || selectedLog.newValues)">
+          <div class="detail-section" *ngIf="selectedLog.oldValues">
+            <div class="detail-section-title"><i class="bx bx-time"></i> Valeurs précédentes</div>
+            <pre class="json-block">{{ formatJson(selectedLog.oldValues) }}</pre>
+          </div>
+          <div class="detail-section" *ngIf="selectedLog.newValues">
+            <div class="detail-section-title"><i class="bx bx-check-circle"></i> Nouvelles valeurs</div>
+            <pre class="json-block">{{ formatJson(selectedLog.newValues) }}</pre>
+          </div>
+        </ng-container>
+
+        <!-- Aucun détail -->
+        <div class="detail-section"
+          *ngIf="!hasChanges(selectedLog) && !selectedLog.oldValues && !selectedLog.newValues">
+          <div class="inline-alert inline-alert--warning">
+            <i class="bx bx-info-circle"></i> Aucun détail de modification n'est associé à cette action.
+          </div>
+        </div>
+
+        <!-- Technique -->
+        <div class="detail-section">
+          <div class="detail-section-title"><i class="bx bx-chip"></i> Informations techniques</div>
+          <div class="detail-item">
+            <span class="detail-label">Identifiant de l'entrée</span>
+            <span class="detail-value cell-ref">{{ selectedLog.id }}</span>
+          </div>
+          <div class="detail-item" style="margin-top: 12px;">
+            <span class="detail-label">Agent utilisateur</span>
+            <span class="detail-value detail-value--break">{{ selectedLog.userAgent || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeDetailsModal()"><i class="bx bx-x"></i> Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <app-notification-component></app-notification-component>
+
+</div>

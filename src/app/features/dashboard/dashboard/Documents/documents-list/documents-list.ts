@@ -15,6 +15,7 @@ import { Document as DocumentService } from '../../../../../core/services/Docume
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { Tiers } from '../../../../../core/services/Tiers/tiers';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
+import { Contract as ContractService } from '../../../../../core/services/Contract/contract';
 import { CreateDocumentRequest } from '../../../../../core/models/Documents/Document-request.models';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
 
@@ -73,6 +74,15 @@ replacementFile: File | null = null;
   uploadSubmitted: boolean = false;
 
   activeMenuDocumentId: string | null = null;
+
+  /** Document ciblé par le menu d'actions flottant */
+  menuDocument: DocumentDto | null = null;
+
+  /** Position à l'écran du menu d'actions (coordonnées viewport) */
+  menuPosition = { top: 0, left: 0 };
+
+  private readonly rowMenuWidth = 220;
+  private readonly rowMenuHeight = 300;
 
   /** Énumération des types d'entités */
   DocumentEntityType = DocumentEntityType;
@@ -228,6 +238,7 @@ replacementFile: File | null = null;
     private tokenService: Token,
     private vehicleService: Vehicles,  // Ajoute ceci
     private tierService: Tiers,
+    private contractService: ContractService,
     private router: Router
   ) {
     this.initializeForms();
@@ -331,13 +342,28 @@ replacementFile: File | null = null;
   }
 
   /**
-   * Charger la liste des contrats (à implémenter avec ton service)
+   * Charger la liste des contrats (service de contrats existant)
    */
   private loadContracts(): void {
-    // TODO: Implémenter avec ton service de contrats
-    this.contracts = [];
-    this.loadingEntities = false;
-    this.notificationService.info('Info', 'Chargement des contrats à implémenter');
+    this.contractService
+      .searchContracts({
+        page: 1,
+        pageSize: 100,
+        sortBy: 'createdAt',
+        sortDescending: true
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.contracts = response.data || [];
+          this.loadingEntities = false;
+        },
+        error: (error) => {
+          console.error('Erreur chargement contrats:', error);
+          this.notificationService.error('Erreur', 'Impossible de charger les contrats');
+          this.loadingEntities = false;
+        }
+      });
   }
 
   /**
@@ -606,6 +632,26 @@ refreshAllData(): void {
 }
 
 
+
+  /**
+   * Liste d'entités associée au type sélectionné dans le formulaire d'upload
+   */
+  get relatedEntities(): any[] {
+    switch (this.uploadForm?.get('entityType')?.value) {
+      case 'Vehicle':
+        return this.vehicles;
+      case 'Tier':
+        return this.tiers;
+      case 'Contract':
+        return this.contracts;
+      case 'Expense':
+        return this.expenses;
+      case 'Maintenance':
+        return this.maintenances;
+      default:
+        return [];
+    }
+  }
 
   getEntityLabel(lowercase: boolean = false): string {
     const entityType = this.uploadForm.get('entityType')?.value;
@@ -994,6 +1040,21 @@ private emitExpiringDocumentsUpdated(): void {
     this.sidebarVisible = !this.sidebarVisible;
   }
 
+  /**
+   * Réinitialiser tous les critères de recherche
+   */
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.selectedType = null;
+    this.selectedStatus = null;
+    this.selectedEntityType = null;
+    this.showOnlyExpired = false;
+    this.showOnlySigned = false;
+    this.showArchived = false;
+    this.pagination.currentPage = 1;
+    this.loadDocuments();
+  }
+
   // ============================================================================
   // SECTION 21: TRI
   // ============================================================================
@@ -1075,18 +1136,34 @@ private emitExpiringDocumentsUpdated(): void {
     });
 }
 
-  toggleActionsMenu(document: DocumentDto & { showActionsMenu?: boolean }, event: Event): void {
+  toggleActionsMenu(document: DocumentDto, event: Event): void {
     event.stopPropagation();
-    this.documents.forEach((d) => {
-      if (d !== document) {
-        (d as DocumentDto & { showActionsMenu?: boolean }).showActionsMenu = false;
-      }
-    });
-    document.showActionsMenu = !document.showActionsMenu;
+
+    // Un second clic sur le même bouton referme le menu
+    if (this.activeMenuDocumentId === document.id) {
+      this.closeAllMenus();
+      return;
+    }
+
+    // Le menu est rendu une seule fois et positionné par rapport au déclencheur :
+    // il échappe ainsi au rognage du tableau scrollable.
+    const trigger = event.currentTarget as HTMLElement | null;
+    if (trigger) {
+      const rect = trigger.getBoundingClientRect();
+      const opensUpward = rect.bottom + this.rowMenuHeight > window.innerHeight;
+      this.menuPosition = {
+        top: opensUpward ? Math.max(12, rect.top - this.rowMenuHeight) : rect.bottom + 6,
+        left: Math.max(12, rect.right - this.rowMenuWidth)
+      };
+    }
+
+    this.menuDocument = document;
+    this.activeMenuDocumentId = document.id;
   }
 
   closeAllMenus(): void {
     this.activeMenuDocumentId = null;
+    this.menuDocument = null;
   }
 
   // ============================================================================
@@ -1210,9 +1287,16 @@ private emitExpiringDocumentsUpdated(): void {
     return this.documentService.formatFileSize(bytes);
   }
 
+  /**
+   * Icône BoxIcons adaptée au type MIME du fichier
+   */
   getDocumentTypeIcon(mimeType: string | undefined): string {
     if (!mimeType) return 'bx bx-file';
-    return this.documentService.getDocumentTypeIcon(mimeType);
+    if (mimeType.startsWith('image/')) return 'bx bx-image';
+    if (mimeType === 'application/pdf') return 'bx bxs-file-pdf';
+    if (mimeType.includes('word') || mimeType.includes('document')) return 'bx bxs-file-doc';
+    if (mimeType.includes('sheet') || mimeType.includes('excel')) return 'bx bx-table';
+    return 'bx bx-file';
   }
 
   getDocumentTypeName(type: number): string {
@@ -1256,6 +1340,36 @@ getDocumentStatusLabel(document: DocumentDto): string {
 
   getStatusBadgeClass(status: DocumentStatus): string {
     return this.documentService.getStatusBadgeColor(status);
+  }
+
+  /**
+   * Classe visuelle du badge de statut calculé à partir du document
+   */
+  getDocumentStatusBadgeClass(document: DocumentDto): string {
+    if (document.isArchived) return 'neutral';
+    if (document.isExpired) return 'danger';
+    if (document.isSigned) return 'success';
+    if (document.daysUntilExpiry !== undefined &&
+        document.daysUntilExpiry > 0 &&
+        document.daysUntilExpiry <= 30) {
+      return 'warning';
+    }
+    return 'info';
+  }
+
+  /**
+   * Icône du badge de statut calculé à partir du document
+   */
+  getDocumentStatusBadgeIcon(document: DocumentDto): string {
+    if (document.isArchived) return 'bx bx-archive';
+    if (document.isExpired) return 'bx bx-calendar-x';
+    if (document.isSigned) return 'bx bx-check-circle';
+    if (document.daysUntilExpiry !== undefined &&
+        document.daysUntilExpiry > 0 &&
+        document.daysUntilExpiry <= 30) {
+      return 'bx bx-time-five';
+    }
+    return 'bx bx-time';
   }
 
   getStatusIcon(status: DocumentStatus): string {
@@ -1580,26 +1694,24 @@ onDeleteDocument(): void {
 }
 
 navigateToEntity(entityType: string, entityId: string): void {
+  // Routes réelles de l'application (les pages "details" n'existent pas)
   switch (entityType) {
     case 'Vehicle':
-      this.router.navigate(['/vehicles/details', entityId]);
+      this.router.navigate(['/dashboard/vehicules/list']);
       break;
     case 'Tier':
-      this.router.navigate(['/tiers/details', entityId]);
+      this.router.navigate(['/dashboard/tiers/list']);
       break;
     case 'Contract':
-      this.router.navigate(['/contracts/details', entityId]);
+      this.router.navigate(['/dashboard/contrats/list']);
       break;
     case 'Expense':
-      this.router.navigate(['/expenses/details', entityId]);
-      break;
-    case 'Maintenance':
-      this.router.navigate(['/maintenances/details', entityId]);
+      this.router.navigate(['/dashboard/finances/transactions']);
       break;
     default:
       this.notificationService.info(
         'Navigation',
-        `La navigation vers les détails des ${entityType.toLowerCase()}s n'est pas encore implémentée.`
+        `La page de gestion des ${entityType.toLowerCase()}s n'est pas encore disponible (référence : ${this.getEntityIdPreview(entityId)}).`
       );
   }
 }
@@ -1637,7 +1749,11 @@ closeDetailsModal(): void {
   // ============================================================================
 
   exportToExcel(): void {
-    this.notificationService.info('Export en cours de développement', 'L\'export des documents sera bientôt disponible.');
+    // Aucun endpoint d'export n'existe dans le service Document
+    this.notificationService.info(
+      'Export Excel non disponible',
+      'L\'export des documents n\'est pas encore pris en charge par l\'API.'
+    );
   }
 
   getDocumentStatus(document: DocumentDto): DocumentStatus {
@@ -1671,6 +1787,16 @@ closeDetailsModal(): void {
     if (!target.closest('.dropdown-toggle') && !target.closest('.dropdown-menu')) {
       this.showUserMenu = false;
     }
+
+    // Fermer le menu d'actions d'une ligne au clic extérieur
+    if (!target.closest('.row-menu') && !target.closest('.actions-trigger')) {
+      this.closeAllMenus();
+    }
+  }
+
+  @HostListener('window:scroll')
+  closeRowMenuOnScroll(): void {
+    this.closeAllMenus();
   }
 
   toggleSidebar(): void {

@@ -860,6 +860,12 @@ $font-display:   'Space Grotesk', sans-serif;
     color: $info;
     &:hover { background: $info; border-color: $info; color: #fff; transform: translateY(-1px); }
   }
+
+  &--primary {
+    border-color: rgba(105, 108, 255, .35);
+    color: $primary;
+    &:hover { background: $primary; border-color: $primary; color: #fff; transform: translateY(-1px); }
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════

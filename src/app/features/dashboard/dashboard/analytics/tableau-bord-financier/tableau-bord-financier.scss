@@ -640,6 +640,14 @@ $font-display:   'Space Grotesk', sans-serif;
   strong { font-weight: 800; }
 }
 
+.finance-count {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: $text-3;
+  text-align: right;
+}
+
 .finance-divider {
   height: 1px;
   background: $border;

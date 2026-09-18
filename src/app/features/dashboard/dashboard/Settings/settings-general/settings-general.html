@@ -1,0 +1,159 @@
+<div class="app-wrapper">
+
+  <!-- SIDEBAR -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" [style.marginLeft]="isSidebarCollapsed ? '0' : ''">
+
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item">Paramétrage</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">{{ breadcrumb }}</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="session-pill">
+          <span class="session-dot"></span>
+          Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
+        </div>
+
+        <!-- User dropdown -->
+        <div class="topbar-user" (click)="$event.stopPropagation(); toggleUserMenu()">
+          <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
+            {{ getUserInitials() }}
+          </div>
+          <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
+            [src]="userPhotoUrl" [alt]="userName"
+            (error)="userPhotoUrl = getDefaultAvatar()" />
+          <div class="user-text">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}</span>
+          </div>
+
+          <div class="dropdown-menu" [class.show]="showUserMenu">
+            <div class="dropdown-header">
+              <div class="dropdown-username">{{ userName }}</div>
+              <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistiks' }}</div>
+            </div>
+            <hr class="dropdown-divider" />
+            <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
+              <i class="bx bx-user"></i> Mon profil
+            </a>
+            <a [routerLink]="['/dashboard/settings/general']" class="dropdown-item">
+              <i class="bx bx-cog"></i> Paramètres
+            </a>
+            <hr class="dropdown-divider" />
+            <a (click)="logout()" class="dropdown-item dropdown-item--danger">
+              <i class="bx bx-log-out"></i> Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
+      <div class="settings-page">
+
+        <!-- ══ PAGE HEADER ══ -->
+        <div class="page-header">
+          <div class="page-header-left">
+            <div class="page-title">{{ pageTitle }}</div>
+            <div class="page-subtitle">{{ pageSubtitle }}</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-outline btn-sm" (click)="reset()" [disabled]="isLoading || isSaving">
+              <i class="bx bx-reset"></i> Réinitialiser
+            </button>
+            <button class="btn btn-primary btn-sm" (click)="save()"
+              [disabled]="isLoading || isSaving || fields.length === 0">
+              <i class="bx bx-save"></i>
+              {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ══ LOADING BAR ══ -->
+        <div class="loading-bar" *ngIf="isLoading">
+          <div class="loading-bar-fill"></div>
+        </div>
+
+        <!-- ══ ERREUR ══ -->
+        <div class="error-banner" *ngIf="errorMessage">
+          <div class="error-banner-content">
+            <i class="bx bx-error-circle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+          <button class="btn btn-danger-soft btn-sm" (click)="loadSettings()">Réessayer</button>
+        </div>
+
+        <!-- ══ CARTE DE PARAMÉTRAGE ══ -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="bx bx-cog"></i> {{ pageTitle }}</div>
+            <span class="card-meta-pill" *ngIf="fields.length > 0">
+              {{ fields.length }} paramètre{{ fields.length > 1 ? 's' : '' }}
+            </span>
+          </div>
+
+          <div class="card-body">
+            <div class="form-grid" *ngIf="!isLoading && fields.length > 0">
+              <div class="form-field" *ngFor="let field of fields">
+                <label class="field-label" [attr.for]="'setting-' + field.key">{{ field.label }}</label>
+
+                <ng-container [ngSwitch]="field.inputType">
+                  <!-- Booléen : interrupteur -->
+                  <div class="switch-wrap" *ngSwitchCase="'boolean'">
+                    <label class="switch">
+                      <input type="checkbox" [id]="'setting-' + field.key" [(ngModel)]="field.boolValue" />
+                      <span class="switch-slider"></span>
+                    </label>
+                    <span class="switch-state">{{ field.boolValue ? 'Activé' : 'Désactivé' }}</span>
+                  </div>
+
+                  <!-- Texte / nombre -->
+                  <div class="input-wrap" *ngSwitchDefault>
+                    <input class="field-input" [id]="'setting-' + field.key"
+                      [type]="field.inputType === 'number' ? 'number' : 'text'"
+                      [(ngModel)]="field.value" />
+                    <span class="input-suffix" *ngIf="field.isMoney">FCFA</span>
+                  </div>
+                </ng-container>
+
+                <!-- Montants : affichage avec séparateurs de milliers -->
+                <div class="field-preview" *ngIf="field.isMoney && field.value">
+                  {{ toNumber(field.value) | number:'1.0-0' }} FCFA
+                </div>
+
+                <div class="field-desc" *ngIf="field.description">{{ field.description }}</div>
+              </div>
+            </div>
+
+            <div class="empty-state" *ngIf="!isLoading && fields.length === 0 && !errorMessage">
+              <i class="bx bx-data"></i>
+              <span>Aucun paramètre disponible pour cette catégorie</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ PAGE FOOTER ══ -->
+        <div class="page-footer">
+          <i class="bx bx-time"></i>
+          Dernière modification : {{ lastUpdatedAt ? (lastUpdatedAt | date:'dd/MM/yyyy à HH:mm') : '—' }}
+        </div>
+
+      </div>
+    </main>
+
+    <!-- COMPOSANT DE NOTIFICATION -->
+    <app-notification-component></app-notification-component>
+
+  </div>
+</div>

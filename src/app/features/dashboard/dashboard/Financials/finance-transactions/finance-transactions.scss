@@ -236,6 +236,9 @@ $font-display:   'Space Grotesk', sans-serif;
   &.amber::before  { background: linear-gradient(90deg, $accent, $accent-light); }
   &.green::before  { background: linear-gradient(90deg, $success, #34D399); }
   &.red::before    { background: linear-gradient(90deg, $danger, #FCA5A5); }
+  &.neutral::before{ background: linear-gradient(90deg, $text-3, #C4C0DD); }
+  &.muted::before  { background: linear-gradient(90deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)); }
+  &.muted          { background: $surface2; }
 
   &:hover { transform: translateY(-3px); box-shadow: $shadow-lg; }
 }
@@ -255,6 +258,7 @@ $font-display:   'Space Grotesk', sans-serif;
   &.amber  { background: $accent-glow;   color: $accent; }
   &.green  { background: $success-bg;    color: $success; }
   &.red    { background: $danger-bg;     color: $danger; }
+  &.neutral{ background: rgba(149, 144, 187, .16); color: $text-3; }
 }
 
 .kpi-trend {
@@ -263,6 +267,7 @@ $font-display:   'Space Grotesk', sans-serif;
   display: flex; align-items: center; gap: 3px;
   &.up   { background: $success-bg; color: $success; }
   &.down { background: $danger-bg;  color: $danger; }
+  &.flat { background: $surface2;   color: $text-3; }
 }
 
 .kpi-value {
@@ -447,6 +452,9 @@ textarea.form-input { resize: vertical; }
     background: $surface2; color: $text-3;
     &:hover { color: $text-1; border-color: $border-strong; background: $surface2; }
   }
+  &--sm {
+    padding: 4px 10px; font-size: 11.5px;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -504,6 +512,11 @@ textarea.form-input { resize: vertical; }
   display: flex; align-items: center; gap: 5px;
   font-size: 13px; color: $text-2;
   i { color: $primary; }
+
+  &--neutral {
+    color: $text-3;
+    i { color: $text-3; }
+  }
 }
 
 .cell-desc { display: flex; flex-direction: column; gap: 2px; }
@@ -516,8 +529,9 @@ textarea.form-input { resize: vertical; }
 
 .tx-amount {
   font-family: $font-display; font-size: 13.5px; font-weight: 700;
-  &--credit { color: $success; }
-  &--debit  { color: $danger; }
+  &--credit  { color: $success; }
+  &--debit   { color: $danger; }
+  &--neutral { color: $text-2; }
 }
 
 // ── Action buttons ───────────────────────────────────────────────────
@@ -547,6 +561,15 @@ textarea.form-input { resize: vertical; }
     border-color: rgba($danger, 0.3); color: $danger;
     &:hover { background: $danger-bg; border-color: $danger; }
   }
+  &--disabled {
+    border-color: $border-strong; color: $text-3;
+    opacity: .55; cursor: not-allowed;
+  }
+}
+
+.action-tooltip {
+  display: inline-flex;
+  cursor: not-allowed;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -608,6 +631,128 @@ textarea.form-input { resize: vertical; }
   margin-top: 6px;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// SYNTHÈSES VISUELLES (donut + tendance)
+// ══════════════════════════════════════════════════════════════════════
+.charts-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 2fr;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.chart-toggle { display: flex; align-items: center; gap: 6px; }
+
+.chart-legend-inline {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+
+.leg-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: $text-2;
+}
+
+.leg-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  &.leg-green { background: $success; }
+  &.leg-red   { background: $danger; }
+}
+
+// ── Donut ────────────────────────────────────────────────────────────
+.donut-wrap {
+  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+}
+
+.donut-svg { flex-shrink: 0; }
+
+.donut-legend {
+  flex: 1; min-width: 200px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.donut-leg {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: $text-2;
+}
+
+.donut-leg-dot {
+  width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
+}
+
+.donut-leg-name {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  i { color: $text-3; }
+}
+
+.donut-leg-amount {
+  font-family: $font-display; font-weight: 700; color: $text-1;
+  white-space: nowrap;
+}
+
+.donut-leg-pct {
+  min-width: 48px; text-align: right;
+  font-weight: 700; color: $text-3;
+}
+
+// ── Tendance ─────────────────────────────────────────────────────────
+.trend-chart-wrap {
+  position: relative; width: 100%; min-height: 220px;
+}
+
+.trend-svg {
+  width: 100%; height: 220px; display: block; overflow: visible;
+}
+
+.trend-gridline { stroke: $border; stroke-width: 1; }
+
+.trend-axis-label {
+  font-family: $font; font-size: 11px; fill: $text-3;
+}
+
+.trend-dot {
+  cursor: pointer;
+  transition: r .18s ease;
+  &:hover { r: 6; }
+}
+
+// ── Tooltip ──────────────────────────────────────────────────────────
+.chart-tooltip {
+  position: absolute;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  padding: 12px 16px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .22s ease, transform .22s ease;
+  min-width: 160px;
+  z-index: 10;
+
+  &--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &__title {
+    font-size: 12px; font-weight: 700; color: $text-1;
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid $border;
+  }
+
+  &__row {
+    display: flex; justify-content: space-between; gap: 14px;
+    font-size: 12px; padding: 2px 0; color: $text-3;
+
+    strong { font-weight: 700; }
+    &--revenue strong { color: $success; }
+    &--expense strong { color: $danger; }
+  }
+}
+
 // ── Inline badges ────────────────────────────────────────────────────
 .badge {
   display: inline-flex; align-items: center; gap: 4px;
@@ -620,6 +765,7 @@ textarea.form-input { resize: vertical; }
   &-danger  { background: $danger-bg;  color: $danger; }
   &-info    { background: $info-bg;    color: $info; }
   &-warning { background: $warning-bg; color: $warning; }
+  &-neutral { background: rgba(0, 0, 0, .06); color: $text-3; }
   &-xs      { padding: 2px 7px; font-size: 10.5px; }
 }
 
@@ -874,6 +1020,7 @@ textarea.form-input { resize: vertical; }
 // ══════════════════════════════════════════════════════════════════════
 @media (max-width: 1100px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 900px) {

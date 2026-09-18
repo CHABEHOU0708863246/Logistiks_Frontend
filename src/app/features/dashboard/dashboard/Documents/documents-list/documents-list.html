@@ -1,33 +1,31 @@
-<div class="layout-wrapper premium-dashboard">
+<div class="app-wrapper">
 
   <!-- SIDEBAR -->
   <app-sidebar-component></app-sidebar-component>
 
   <!-- MAIN CONTENT -->
-  <div class="layout-page" [style.marginLeft]="isSidebarCollapsed ? '0' : '280px'">
+  <div class="main-content" [style.marginLeft]="isSidebarCollapsed ? '0' : '268px'">
 
-    <!-- ══ TOPBAR PREMIUM ══ -->
-    <nav class="layout-navbar premium-navbar">
-      <div class="navbar-left">
-        <button class="menu-toggle-btn" (click)="toggleSidebar()">
+    <!-- ══ TOPBAR ══ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle-btn" (click)="toggleSidebar()" title="Replier le menu">
           <i class='bx bx-menu'></i>
         </button>
-        <div class="page-title">
-          <h3>Gestion des documents</h3>
-          <span class="page-badge">Documents</span>
+        <div class="breadcrumb">
+          <span class="breadcrumb-home"><i class='bx bx-home-alt-2'></i></span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item">Gestion</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Documents</span>
         </div>
       </div>
 
-      <div class="navbar-right">
+      <div class="topbar-actions">
         <div class="session-pill">
           <span class="session-dot"></span>
           Connecté · {{ currentUser?.roles?.[0] || 'Utilisateur' }}
         </div>
-
-        <button class="topbar-icon-btn">
-          <i class='bx bx-bell'></i>
-          <span class="notif-dot"></span>
-        </button>
 
         <div class="topbar-user" (click)="$event.stopPropagation(); toggleUserMenu()">
           <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
@@ -41,7 +39,7 @@
             <span class="user-role-text">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</span>
           </div>
 
-          <div class="dropdown-menu" [class.show]="showUserMenu">
+          <div class="dropdown-menu" [class.show]="showUserMenu" (click)="$event.stopPropagation()">
             <div class="dropdown-header">
               <div class="dropdown-username">{{ userName }}</div>
               <div class="dropdown-role">{{ currentUser?.roles?.[0] || 'Utilisateur Logistik' }}</div>
@@ -60,100 +58,130 @@
           </div>
         </div>
       </div>
-    </nav>
+    </header>
 
-    <!-- ══ CONTENT WRAPPER ══ -->
-    <div class="content-wrapper premium-content-wrapper">
+    <!-- ══ CONTENT AREA ══ -->
+    <main class="content-area">
 
       <app-notification-component></app-notification-component>
 
-      <!-- ══ STATISTIQUES PREMIUM ══ -->
-      <div class="stats-grid">
-        <div class="stat-card premium-stat-card">
-          <div class="stat-icon primary">
-            <i class='bx bx-file'></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ stats.totalDocuments }}</h3>
-            <p>Total Documents</p>
-            <div class="stat-footer">
-              <i class='bx bx-folder-open'></i>
-              <span>Dans la base</span>
-            </div>
+      <!-- ══ EN-TÊTE DE PAGE ══ -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title">Gestion des documents</div>
+          <div class="page-subtitle">
+            Coffre-fort central : identités, permis, cartes grises, assurances, contrats signés et reçus.
           </div>
         </div>
+        <div class="page-actions">
+          <span class="auto-refresh-pill" title="Les données se rafraîchissent automatiquement toutes les 30 secondes">
+            <i class='bx bx-sync'></i> Auto 30 s
+          </span>
+          <button class="btn btn-outline btn-sm" (click)="refreshAllData()" [disabled]="loading">
+            <i class='bx bx-refresh'></i> Actualiser
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="openUploadModal()">
+            <i class='bx bx-upload'></i> Nouveau document
+          </button>
+        </div>
+      </div>
 
-        <div class="stat-card premium-stat-card">
-          <div class="stat-icon success">
-            <i class='bx bx-check-circle'></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ stats.validatedDocuments }}</h3>
-            <p>Validés</p>
-            <div class="stat-footer">
-              <i class='bx bx-check-shield'></i>
-              <span>Approuvés</span>
+      <!-- ══ KPI DOCUMENTS ══ -->
+      <div class="grid grid-4">
+        <div class="kpi-card purple">
+          <div class="kpi-header">
+            <div class="kpi-icon purple"><i class='bx bx-folder'></i></div>
+            <div class="kpi-trend warn" *ngIf="stats.expiringDocuments > 0">
+              <i class='bx bx-time-five'></i> {{ stats.expiringDocuments }} expirent
             </div>
           </div>
+          <div class="kpi-value">{{ stats.totalDocuments }}</div>
+          <div class="kpi-label">Total documents</div>
+          <div class="kpi-sublabel">Dans la base documentaire</div>
         </div>
 
-        <div class="stat-card premium-stat-card">
-          <div class="stat-icon warning">
-            <i class='bx bx-time'></i>
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <div class="kpi-icon green"><i class='bx bx-check-shield'></i></div>
           </div>
-          <div class="stat-content">
-            <h3>{{ stats.pendingDocuments }}</h3>
-            <p>En Attente</p>
-            <div class="stat-footer">
-              <i class='bx bx-hourglass'></i>
-              <span>À traiter</span>
-            </div>
-          </div>
+          <div class="kpi-value">{{ stats.validatedDocuments }}</div>
+          <div class="kpi-label">Validés</div>
+          <div class="kpi-sublabel">Documents signés et approuvés</div>
         </div>
 
-        <div class="stat-card premium-stat-card">
-          <div class="stat-icon danger">
-            <i class='bx bx-error-circle'></i>
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <div class="kpi-icon amber"><i class='bx bx-hourglass'></i></div>
           </div>
-          <div class="stat-content">
-            <h3>{{ stats.expiredDocuments }}</h3>
-            <p>Expirés</p>
-            <div class="stat-footer">
-              <i class='bx bx-calendar-x'></i>
-              <span>Hors validité</span>
-            </div>
+          <div class="kpi-value">{{ stats.pendingDocuments }}</div>
+          <div class="kpi-label">En attente</div>
+          <div class="kpi-sublabel">À traiter par l'équipe</div>
+        </div>
+
+        <div class="kpi-card red">
+          <div class="kpi-header">
+            <div class="kpi-icon red"><i class='bx bx-calendar-x'></i></div>
           </div>
+          <div class="kpi-value">{{ stats.expiredDocuments }}</div>
+          <div class="kpi-label">Expirés</div>
+          <div class="kpi-sublabel">Hors validité</div>
         </div>
       </div>
 
       <!-- ══ DOCUMENTS EXPIRANT BIENTÔT ══ -->
-      <div class="premium-card" *ngIf="expiringDocuments.length > 0" style="margin-bottom: 24px;">
-        <div class="card-header-premium warning">
-          <div class="header-left">
-            <i class='bx bx-error-circle'></i>
-            <h4>Documents expirant bientôt</h4>
-            <span class="badge-premium warning">{{ expiringDocuments.length }}</span>
+      <div class="card expiring-card" *ngIf="expiringDocuments.length > 0">
+        <div class="card-header">
+          <div class="card-title">
+            <i class='bx bx-error-circle warning'></i> Documents expirant bientôt
+            <span class="count-badge warning">{{ expiringDocuments.length }}</span>
           </div>
-          <button class="btn-icon-premium" (click)="loadExpiringDocuments()">
-            <i class='bx bx-refresh'></i>
-          </button>
+          <div class="card-header-actions">
+            <button class="action-btn action-btn--primary" (click)="loadExpiringDocuments()" title="Actualiser la liste">
+              <i class='bx bx-refresh'></i>
+            </button>
+          </div>
         </div>
-        <div class="card-body-premium" style="padding: 0;">
-          <div *ngIf="expiringLoading" class="loading-state">
-            <div class="spinner-premium"></div>
-            <p>Chargement...</p>
+        <div class="card-body card-body--flush">
+          <div *ngIf="expiringLoading" class="state-placeholder">
+            <div class="spinner"></div>
+            <p class="state-placeholder-text">Chargement des documents…</p>
           </div>
-          <div *ngIf="!expiringLoading" class="table-responsive-premium">
-            <table class="premium-table">
+          <div *ngIf="!expiringLoading" class="table-scroll">
+            <table class="data-table">
               <thead>
-                <tr><th>Type</th><th>Document</th><th>Expiration</th><th>Actions</th></tr>
+                <tr>
+                  <th style="width: 54px;">Type</th>
+                  <th>Document</th>
+                  <th style="width: 150px;">Expiration</th>
+                  <th style="width: 80px;" class="th-center">Action</th>
+                </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let doc of expiringDocuments" [class.row-warning]="doc.daysUntilExpiry != null && doc.daysUntilExpiry <= 30 && doc.daysUntilExpiry > 0" [class.row-danger]="doc.isExpired === true">
-                  <td><i [class]="getDocumentTypeIcon(doc.mimeType)" class="type-icon"></i></td>
-                  <td><div class="doc-name"><strong>{{ doc.name }}</strong><small>{{ doc.type }} • <span class="status-badge-premium" [ngClass]="getExpiryBadgeClass(doc.daysUntilExpiry)">{{ (doc.daysUntilExpiry || 0) > 0 ? (doc.daysUntilExpiry || 0) + 'j' : 'Expiré' }}</span></small></div></td>
-                  <td><small [class.text-danger]="doc.isExpired">{{ formatDate(doc.expiryDate) }}</small></td>
-                  <td><button class="btn-icon-premium" (click)="downloadDocument(doc)" title="Télécharger"><i class='bx bx-download'></i></button></td>
+                <tr *ngFor="let doc of expiringDocuments"
+                    [class.row-warning]="doc.daysUntilExpiry != null && doc.daysUntilExpiry <= 30 && doc.daysUntilExpiry > 0"
+                    [class.row-danger]="doc.isExpired === true">
+                  <td class="td-center">
+                    <span class="file-type-icon"><i [class]="getDocumentTypeIcon(doc.mimeType)"></i></span>
+                  </td>
+                  <td>
+                    <div class="doc-cell">
+                      <strong class="doc-name">{{ doc.name }}</strong>
+                      <small class="doc-meta">
+                        {{ getDocumentTypeName(doc.type) }} ·
+                        <span class="status-badge" [ngClass]="getExpiryBadgeClass(doc.daysUntilExpiry)">
+                          {{ (doc.daysUntilExpiry || 0) > 0 ? (doc.daysUntilExpiry || 0) + ' j' : 'Expiré' }}
+                        </span>
+                      </small>
+                    </div>
+                  </td>
+                  <td>
+                    <span [class.text-danger]="doc.isExpired">{{ formatDate(doc.expiryDate) }}</span>
+                  </td>
+                  <td class="td-center">
+                    <button class="action-btn action-btn--primary" (click)="downloadDocument(doc)" title="Télécharger">
+                      <i class='bx bx-download'></i>
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -161,464 +189,776 @@
         </div>
       </div>
 
-      <!-- ══ BARRE DE RECHERCHE ET ACTIONS ══ -->
-      <div class="premium-card search-section">
-        <div class="search-bar">
-          <div class="search-input-wrapper">
-            <i class='bx bx-search'></i>
-            <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Rechercher un document...">
-          </div>
-          <button class="btn-primary-premium" (click)="onSearch()">
-            <i class='bx bx-search'></i> Rechercher
-          </button>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn-success-premium" (click)="openUploadModal()">
-            <i class='bx bx-upload'></i> Nouveau
-          </button>
-          <button class="btn-outline-premium" (click)="exportToExcel()">
-            <i class='bx bx-export'></i> Exporter
-          </button>
-          <button class="btn-outline-premium" (click)="toggleFiltersSidebar()">
-            <i class='bx bx-filter-alt'></i> Filtres
-          </button>
-          <button class="btn-outline-premium" (click)="refreshAllData()">
-            <i class='bx bx-refresh'></i> Actualiser
-          </button>
-        </div>
-      </div>
-
-      <!-- ══ FILTRES RAPIDES ══ -->
-      <div class="premium-card quick-filters-card" *ngIf="!sidebarVisible">
-        <div class="filter-row">
-          <span class="filter-label">Type :</span>
-          <div class="filter-chips">
-            <button *ngFor="let type of documentTypes" class="filter-chip" [class.active]="selectedType === type.value" (click)="onFilterByType(type.value)">
-              <i [class]="type.icon"></i>
+      <!-- ══ RECHERCHE & FILTRES ══ -->
+      <div class="card filters-card">
+        <div class="card-header">
+          <div class="card-title"><i class='bx bx-filter-alt'></i> Recherche &amp; filtres</div>
+          <div class="card-header-actions">
+            <button class="btn btn-outline btn-sm" (click)="exportToExcel()">
+              <i class='bx bx-export'></i> Exporter
             </button>
-            <button class="filter-chip" (click)="onFilterByType(null)"><i class='bx bx-x'></i></button>
-          </div>
-        </div>
-        <div class="filter-row">
-          <span class="filter-label">Statut :</span>
-          <div class="filter-chips">
-            <button *ngFor="let status of documentStatuses" class="filter-chip" [class.active]="selectedStatus === status.value" (click)="onFilterByStatus(status.value)">
-              <i [class]="status.icon"></i>
+            <button class="btn btn-outline btn-sm" (click)="toggleFiltersSidebar()">
+              <i class='bx' [ngClass]="sidebarVisible ? 'bx-show' : 'bx-hide'"></i>
+              {{ sidebarVisible ? 'Afficher' : 'Masquer' }}
             </button>
-            <button class="filter-chip" (click)="onFilterByStatus(null)"><i class='bx bx-x'></i></button>
           </div>
         </div>
-      </div>
 
-      <!-- ══ TABLEAU DES DOCUMENTS ══ -->
-      <div class="premium-card documents-table-card">
-        <div class="card-header-premium">
-          <div class="header-left">
-            <i class='bx bx-folder'></i>
-            <h4>Liste des Documents</h4>
-          </div>
-          <div class="header-right">
-            <div class="page-size-selector">
-              <select (change)="onPageSizeChange()" [(ngModel)]="pagination.pageSize">
-                <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / page</option>
+        <div class="card-body" *ngIf="!sidebarVisible">
+          <div class="filter-row">
+            <div class="filter-field filter-field--lg">
+              <label class="filter-label"><i class='bx bx-search'></i> Recherche</label>
+              <div class="search-input-wrap">
+                <i class='bx bx-search search-input-icon'></i>
+                <input type="text" class="form-input" [(ngModel)]="searchTerm"
+                  (keyup.enter)="onSearch()" placeholder="Nom, description, référence…">
+                <button type="button" class="search-clear-btn" *ngIf="searchTerm"
+                  (click)="searchTerm = ''; onSearch()" title="Effacer">
+                  <i class='bx bx-x'></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label"><i class='bx bx-file'></i> Type de document</label>
+              <select class="form-input" [ngModel]="selectedType" (ngModelChange)="onFilterByType($event)">
+                <option [ngValue]="null">Tous les types</option>
+                <option *ngFor="let type of documentTypes" [ngValue]="type.value">{{ type.label }}</option>
               </select>
             </div>
-            <span class="results-count">{{ pagination.totalCount }} résultat(s)</span>
+
+            <div class="filter-field">
+              <label class="filter-label"><i class='bx bx-purchase-tag'></i> Statut</label>
+              <select class="form-input" [ngModel]="selectedStatus" (ngModelChange)="onFilterByStatus($event)">
+                <option [ngValue]="null">Tous les statuts</option>
+                <option *ngFor="let status of documentStatuses" [ngValue]="status.value">{{ status.label }}</option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label"><i class='bx bx-link'></i> Entité liée</label>
+              <select class="form-input" [ngModel]="selectedEntityType" (ngModelChange)="onFilterByEntityType($event)">
+                <option [ngValue]="null">Toutes les entités</option>
+                <option *ngFor="let entity of entityTypes" [ngValue]="entity.value">{{ entity.label }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-row filter-row--bottom">
+            <div class="filter-field filter-field--chips">
+              <label class="filter-label"><i class='bx bx-slider-alt'></i> Filtres rapides</label>
+              <div class="chip-group">
+                <button class="chip" [class.chip--danger]="showOnlyExpired" (click)="toggleExpiredFilter()">
+                  <i class='bx bx-calendar-x'></i> Expirés
+                </button>
+                <button class="chip" [class.chip--success]="showOnlySigned" (click)="toggleSignedFilter()">
+                  <i class='bx bx-check-shield'></i> Signés
+                </button>
+                <button class="chip" [class.chip--primary]="showArchived" (click)="toggleArchivedFilter()">
+                  <i class='bx bx-archive'></i> Archivés
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-actions">
+              <button class="btn btn-primary btn-sm" (click)="onSearch()">
+                <i class='bx bx-search'></i> Rechercher
+              </button>
+              <button class="btn btn-outline btn-sm" (click)="resetFilters()">
+                <i class='bx bx-reset'></i> Réinitialiser
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LISTE DES DOCUMENTS ══ -->
+      <div class="card table-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class='bx bx-list-ul'></i> Liste des documents
+            <span class="count-badge">{{ pagination.totalCount }}</span>
+          </div>
+          <div class="card-header-actions">
+            <select class="form-select-sm" [(ngModel)]="pagination.pageSize" (ngModelChange)="onPageSizeChange()">
+              <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }} / page</option>
+            </select>
+            <span class="result-count">{{ pagination.totalCount }} résultat(s)</span>
           </div>
         </div>
 
-        <div class="card-body-premium" style="padding: 0;">
+        <div class="card-body card-body--flush">
 
           <!-- LOADING -->
-          <div *ngIf="loading" class="loading-state">
-            <div class="spinner-premium"></div>
-            <p>Chargement des documents...</p>
+          <div *ngIf="loading" class="state-placeholder">
+            <div class="spinner"></div>
+            <p class="state-placeholder-text">Chargement des documents…</p>
           </div>
 
           <!-- ERROR -->
-          <div *ngIf="error && !loading" class="error-state">
-            <i class='bx bx-error-circle'></i>
-            <p>{{ error }}</p>
+          <div *ngIf="error && !loading" class="state-placeholder">
+            <i class='bx bx-error-circle state-placeholder-icon state-placeholder-icon--danger'></i>
+            <h5 class="state-placeholder-title">Impossible de charger les documents</h5>
+            <p class="state-placeholder-text">{{ error }}</p>
+            <button class="btn btn-primary btn-sm" (click)="loadDocuments()">
+              <i class='bx bx-refresh'></i> Réessayer
+            </button>
           </div>
 
           <!-- TABLE -->
-          <div *ngIf="!loading && !error" class="table-responsive-premium">
-            <table class="premium-table">
-              <thead>
-                <tr>
-                  <th style="width: 50px;">#</th>
-                  <th (click)="onSortChange('name')" class="sortable">
-                    Nom
-                    <i class='bx bx-sort' *ngIf="selectedSort !== 'name'"></i>
-                    <i class='bx bx-sort-up' *ngIf="selectedSort === 'name' && !sortDescending"></i>
-                    <i class='bx bx-sort-down' *ngIf="selectedSort === 'name' && sortDescending"></i>
-                  </th>
-                  <th style="width: 120px;">Expiration</th>
-                  <th style="width: 70px;">Signature</th>
-                  <th style="width: 100px;">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let document of documents; let i = index"
-                    [class.row-warning]="isNearExpiry(document.expiryDate)"
-                    [class.row-danger]="document.isExpired">
-                  <td class="row-index">{{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}</td>
-                  <td>
-                    <div class="doc-info">
-                      <strong class="doc-name">{{ getDocumentDisplayName(document) }}</strong>
-                      <small class="doc-meta">{{ formatDate(document.createdAt) }} • {{ formatFileSize(document.fileSize) }}</small>
-                      <small class="doc-entity">{{ document.relatedEntityType }}: {{ document?.relatedEntityId?.substring(0, 8) }}...</small>
-                    </div>
-                  </td>
-                  <td>
-                    <div *ngIf="document.expiryDate">
-                      <span [class.text-danger]="document.isExpired" [class.text-warning]="isNearExpiry(document.expiryDate)">
-                        {{ formatDate(document.expiryDate) }}
-                      </span>
-                      <div class="expiry-days" [class.text-danger]="document.isExpired" [class.text-warning]="isNearExpiry(document.expiryDate)">
-                        {{ getDaysUntilExpiry(document.expiryDate) }}
+          <ng-container *ngIf="!loading && !error">
+            <div class="table-scroll" *ngIf="documents.length > 0">
+              <table class="data-table documents-table">
+                <thead>
+                  <tr>
+                    <th style="width: 46px;" class="th-center">#</th>
+                    <th (click)="onSortChange('name')" class="th-sortable">
+                      Document
+                      <i class='bx' [ngClass]="selectedSort !== 'name' ? 'bx-sort' : (sortDescending ? 'bx-sort-down' : 'bx-sort-up')"></i>
+                    </th>
+                    <th style="width: 180px;">Type</th>
+                    <th style="width: 150px;">Statut</th>
+                    <th style="width: 150px;">Expiration</th>
+                    <th style="width: 70px;" class="th-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let document of documents; let i = index"
+                      [class.row-warning]="isNearExpiry(document.expiryDate)"
+                      [class.row-danger]="document.isExpired">
+
+                    <td class="td-index td-center">
+                      {{ i + 1 + (pagination.currentPage - 1) * pagination.pageSize }}
+                    </td>
+
+                    <td>
+                      <div class="doc-cell">
+                        <span class="file-type-icon">
+                          <i [ngClass]="getDocumentTypeIcon(document.mimeType)"></i>
+                        </span>
+                        <div class="doc-cell-info">
+                          <strong class="doc-name">{{ getDocumentDisplayName(document) }}</strong>
+                          <small class="doc-meta">
+                            <i class='bx bx-calendar'></i> {{ formatDate(document.createdAt) }}
+                            · {{ formatFileSize(document.fileSize) }}
+                          </small>
+                          <small class="doc-entity" *ngIf="document.relatedEntityType">
+                            <i class='bx bx-link'></i> {{ document.relatedEntityType }} :
+                            {{ document.relatedEntityName || getEntityIdPreview(document.relatedEntityId) }}
+                          </small>
+                        </div>
                       </div>
-                    </div>
-                    <span *ngIf="!document.expiryDate" class="text-muted">—</span>
-                  </td>
-                  <td>
-                    <span *ngIf="document.isSigned" class="status-badge-premium success">
-                      <i class='bx bx-check-circle'></i>
-                    </span>
-                    <span *ngIf="!document.isSigned" class="status-badge-premium secondary">
-                      <i class='bx bx-x-circle'></i>
-                    </span>
-                  </td>
-                  <td>
-                    <div class="actions-dropdown">
-                      <button class="actions-trigger" (click)="toggleActionsMenu(document, $event)">
+                    </td>
+
+                    <td>
+                      <span class="type-cell">
+                        <i [ngClass]="getDocumentTypeIcon(document.mimeType)"></i>
+                        {{ getDocumentTypeName(document.type) }}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span class="status-badge" [ngClass]="getDocumentStatusBadgeClass(document)">
+                        <i class='bx' [ngClass]="getDocumentStatusBadgeIcon(document)"></i>
+                        {{ getDocumentStatusLabel(document) }}
+                      </span>
+                    </td>
+
+                    <td>
+                      <ng-container *ngIf="document.expiryDate; else noExpiry">
+                        <span [class.text-danger]="document.isExpired"
+                              [class.text-warning]="isNearExpiry(document.expiryDate)">
+                          {{ formatDate(document.expiryDate) }}
+                        </span>
+                        <div class="expiry-days" [class.text-danger]="document.isExpired"
+                             [class.text-warning]="isNearExpiry(document.expiryDate)">
+                          {{ getDaysUntilExpiry(document.expiryDate) }}
+                        </div>
+                      </ng-container>
+                      <ng-template #noExpiry>
+                        <span class="text-muted">—</span>
+                      </ng-template>
+                    </td>
+
+                    <td class="td-center">
+                      <button class="actions-trigger" (click)="toggleActionsMenu(document, $event)"
+                        [class.active]="activeMenuDocumentId === document.id" title="Actions">
                         <i class='bx bx-dots-vertical-rounded'></i>
                       </button>
-                      <div class="dropdown-menu-premium" [class.show]="document.createdAt" (click)="$event.stopPropagation()">
-                        <a class="dropdown-item-premium info" (click)="showDocumentDetails(document)">
-                          <i class='bx bx-show'></i> Détails
-                        </a>
-                        <a class="dropdown-item-premium primary" (click)="downloadDocument(document)">
-                          <i class='bx bx-download'></i> Télécharger
-                        </a>
-                        <a class="dropdown-item-premium warning" (click)="openEditMetadataModal(document)">
-                          <i class='bx bx-edit'></i> Modifier
-                        </a>
-                        <a class="dropdown-item-premium secondary" (click)="openReplaceFileModal(document)">
-                          <i class='bx bx-refresh'></i> Remplacer
-                        </a>
-                        <div class="dropdown-divider-premium"></div>
-                        <a *ngIf="!document.isSigned" class="dropdown-item-premium success" (click)="validateDocument(document)">
-                          <i class='bx bx-check'></i> Valider
-                        </a>
-                        <a *ngIf="!document.isSigned" class="dropdown-item-premium danger" (click)="openRejectModal(document)">
-                          <i class='bx bx-x'></i> Rejeter
-                        </a>
-                        <a *ngIf="!document.isSigned" class="dropdown-item-premium info" (click)="openSignModal(document)">
-                          <i class='bx bx-edit'></i> Signer
-                        </a>
-                        <div class="dropdown-divider-premium"></div>
-                        <a class="dropdown-item-premium danger" (click)="openDeleteModal(document)">
-                          <i class='bx bx-trash'></i> {{ document.isArchived ? 'Supprimer' : 'Archiver' }}
-                        </a>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <!-- EMPTY STATE -->
-            <div *ngIf="documents.length === 0 && !loading" class="empty-state-premium">
-              <i class='bx bx-folder-open'></i>
-              <h5>Aucun document trouvé</h5>
-              <p>Modifiez vos critères de recherche ou uploader un nouveau document.</p>
-              <button class="btn-primary-premium" (click)="openUploadModal()">
-                <i class='bx bx-upload'></i> Uploader un document
-              </button>
+            <div *ngIf="documents.length === 0" class="state-placeholder">
+              <i class='bx bx-folder-open state-placeholder-icon'></i>
+              <h5 class="state-placeholder-title">Aucun document trouvé</h5>
+              <p class="state-placeholder-text">
+                Modifiez vos critères de recherche ou ajoutez un nouveau document au coffre-fort.
+              </p>
+              <div class="state-placeholder-actions">
+                <button class="btn btn-outline btn-sm" (click)="resetFilters()">
+                  <i class='bx bx-reset'></i> Réinitialiser les filtres
+                </button>
+                <button class="btn btn-primary btn-sm" (click)="openUploadModal()">
+                  <i class='bx bx-upload'></i> Uploader un document
+                </button>
+              </div>
             </div>
-          </div>
+          </ng-container>
 
           <!-- PAGINATION -->
-          <div *ngIf="!loading && !error && pagination.totalPages > 1" class="pagination-premium">
+          <div *ngIf="!loading && !error && pagination.totalPages > 1" class="pagination-bar">
             <div class="pagination-info">
-              Page {{ pagination.currentPage }} sur {{ pagination.totalPages }}
+              Page <strong>{{ pagination.currentPage }}</strong> sur <strong>{{ pagination.totalPages }}</strong>
+              · {{ pagination.totalCount }} document(s)
             </div>
             <div class="pagination-controls">
-              <button class="page-btn" [class.disabled]="!pagination.hasPreviousPage" (click)="onPageChange(pagination.currentPage - 1)">
+              <button class="page-btn" [disabled]="!pagination.hasPreviousPage" (click)="onPageChange(pagination.currentPage - 1)">
                 <i class='bx bx-chevron-left'></i>
               </button>
-              <button *ngFor="let page of visiblePages" class="page-btn" [class.active]="page === pagination.currentPage" (click)="onPageChange(page)">
+              <button *ngFor="let page of visiblePages" class="page-btn"
+                [class.page-btn--active]="page === pagination.currentPage" (click)="onPageChange(page)">
                 {{ page }}
               </button>
-              <button class="page-btn" [class.disabled]="!pagination.hasNextPage" (click)="onPageChange(pagination.currentPage + 1)">
+              <button class="page-btn" [disabled]="!pagination.hasNextPage" (click)="onPageChange(pagination.currentPage + 1)">
                 <i class='bx bx-chevron-right'></i>
               </button>
             </div>
           </div>
+
         </div>
       </div>
 
-      <!-- ══ MODAL D'UPLOAD PREMIUM ══ -->
-      <div class="modal-backdrop-premium" *ngIf="showUploadModal" (click)="closeUploadModal()"></div>
-      <div class="modal-premium" *ngIf="showUploadModal" [class.show]="showUploadModal">
-        <div class="modal-container-premium modal-lg">
-          <div class="modal-header-premium primary">
-            <h5><i class='bx bx-upload'></i> Nouveau document</h5>
-            <button class="modal-close" (click)="closeUploadModal()"><i class='bx bx-x'></i></button>
-          </div>
-          <div class="modal-body-premium">
-            <div *ngIf="uploadSubmitted && uploadForm.invalid" class="alert-danger">
-              <i class='bx bx-error-circle'></i> Veuillez corriger les erreurs
+    </main>
+  </div>
+
+  <!-- ══ MENU D'ACTIONS D'UNE LIGNE (rendu unique, hors rognage du tableau) ══ -->
+  <div class="row-menu" *ngIf="activeMenuDocumentId && menuDocument"
+       [style.top.px]="menuPosition.top" [style.left.px]="menuPosition.left"
+       (click)="$event.stopPropagation(); closeAllMenus()">
+    <button class="row-menu-item info" (click)="showDocumentDetails(menuDocument)">
+      <i class='bx bx-show'></i> Détails
+    </button>
+    <button class="row-menu-item primary" (click)="downloadDocument(menuDocument)">
+      <i class='bx bx-download'></i> Télécharger
+    </button>
+    <button class="row-menu-item warning" (click)="openEditMetadataModal(menuDocument)">
+      <i class='bx bx-edit'></i> Modifier
+    </button>
+    <button class="row-menu-item secondary" (click)="openReplaceFileModal(menuDocument)">
+      <i class='bx bx-refresh'></i> Remplacer
+    </button>
+    <div class="row-menu-divider"></div>
+    <button *ngIf="!menuDocument.isSigned" class="row-menu-item success" (click)="validateDocument(menuDocument)">
+      <i class='bx bx-check'></i> Valider
+    </button>
+    <button *ngIf="!menuDocument.isSigned" class="row-menu-item danger" (click)="openRejectModal(menuDocument)">
+      <i class='bx bx-x'></i> Rejeter
+    </button>
+    <button *ngIf="!menuDocument.isSigned" class="row-menu-item info" (click)="openSignModal(menuDocument)">
+      <i class='bx bx-pen'></i> Signer
+    </button>
+    <div class="row-menu-divider"></div>
+    <button class="row-menu-item danger" (click)="openDeleteModal(menuDocument)">
+      <i class='bx bx-trash'></i> {{ menuDocument.isArchived ? 'Supprimer' : 'Archiver' }}
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL — NOUVEAU DOCUMENT
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-wrap" *ngIf="showUploadModal" (click)="closeUploadModal()">
+    <div class="modal-dialog modal-dialog--lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class='bx bx-upload'></i> Nouveau document</div>
+        <button class="modal-close-btn" (click)="closeUploadModal()" title="Fermer">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="inline-alert inline-alert--warning" *ngIf="uploadSubmitted && (!selectedFile || uploadForm.invalid)">
+          <i class='bx bx-error-circle'></i> Veuillez corriger les champs manquants avant d'envoyer.
+        </div>
+
+        <form [formGroup]="uploadForm" (ngSubmit)="onUploadSubmit()">
+
+          <!-- Zone de dépôt -->
+          <div class="upload-dropzone" (click)="fileInput.click()">
+            <input #fileInput type="file" class="file-input-hidden" (change)="onFileSelected($event)"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+
+            <div class="upload-placeholder" *ngIf="!selectedFile">
+              <i class='bx bx-cloud-upload'></i>
+              <p>Cliquez pour sélectionner un fichier</p>
+              <small>PDF, DOC, JPG ou PNG — 10 MB maximum</small>
             </div>
-            <form [formGroup]="uploadForm" (ngSubmit)="onUploadSubmit()">
 
-              <!-- Upload Area -->
-              <div class="upload-area" (click)="fileInput.click()">
-                <input #fileInput type="file" class="d-none" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                <div class="upload-placeholder" *ngIf="!selectedFile">
-                  <i class='bx bx-cloud-upload'></i>
-                  <p>Cliquez pour sélectionner un fichier</p>
-                  <small>PDF, DOC, JPG, PNG (max 10 MB)</small>
-                </div>
-                <div class="file-preview" *ngIf="selectedFile">
-                  <i class='bx bx-file'></i>
-                  <div class="file-info">
-                    <strong>{{ selectedFile.name }}</strong>
-                    <span class="badge-premium primary">{{ formatFileSize(selectedFile.size) }}</span>
-                  </div>
-                  <button type="button" class="btn-icon-danger" (click)="removeFile(); $event.stopPropagation()">
-                    <i class='bx bx-trash'></i>
-                  </button>
-                </div>
+            <div class="file-preview" *ngIf="selectedFile">
+              <i class='bx bx-file'></i>
+              <div class="file-info">
+                <strong>{{ selectedFile.name }}</strong>
+                <span class="badge badge-info">{{ formatFileSize(selectedFile.size) }}</span>
               </div>
-              <div class="form-error" *ngIf="!selectedFile && uploadSubmitted && uploadForm.get('file')?.invalid">Fichier requis</div>
-
-              <div class="form-grid-2">
-                <div class="form-group">
-                  <label>Nom du document</label>
-                  <input type="text" class="premium-input" formControlName="name" placeholder="Ex: Permis de conduire">
-                </div>
-                <div class="form-group">
-                  <label>Type de document *</label>
-                  <select class="premium-select" formControlName="type">
-                    <option value="">Sélectionnez...</option>
-                    <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label>Description</label>
-                <textarea class="premium-textarea" formControlName="description" rows="2" placeholder="Description optionnelle..."></textarea>
-              </div>
-
-              <!-- Association entité -->
-              <div class="form-section-title"><i class='bx bx-link'></i> Association</div>
-              <div class="form-grid-2">
-                <div class="form-group">
-                  <label>Type d'entité *</label>
-                  <select class="premium-select" formControlName="entityType" (change)="onEntityTypeChange()">
-                    <option value="">Sélectionnez...</option>
-                    <option *ngFor="let entity of entityTypes" [value]="entity.value">{{ entity.label }}</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Sélectionnez {{ getEntityLabel() }} *</label>
-                  <div *ngIf="loadingEntities" class="loading-small"><div class="spinner-small"></div> Chargement...</div>
-                  <select *ngIf="!loadingEntities" class="premium-select" formControlName="entityId" (change)="onEntitySelected()">
-                    <option value="">-- Sélectionner --</option>
-                    <!-- <option *ngFor="let entity of relatedEntities" [value]="entity.id">{{ entity.name }}</option> -->
-                  </select>
-                </div>
-              </div>
-
-              <!-- Date expiration -->
-              <div class="form-section-title"><i class='bx bx-calendar'></i> Date d'expiration</div>
-              <div class="form-grid-2">
-                <div class="form-group">
-                  <label>Date d'expiration</label>
-                  <input type="date" class="premium-input" formControlName="expiryDate" [min]="today | date:'yyyy-MM-dd'">
-                  <small>Optionnel - Laissez vide si sans expiration</small>
-                </div>
-                <div class="alert-info">
-                  <i class='bx bx-info-circle'></i>
-                  <small>Les documents avec date d'expiration seront suivis automatiquement.</small>
-                </div>
-              </div>
-
-              <div class="modal-footer-premium">
-                <button type="button" class="btn-secondary-premium" (click)="closeUploadModal()">Annuler</button>
-                <button type="submit" class="btn-primary-premium" [disabled]="uploadLoading || !selectedFile">
-                  <span *ngIf="uploadLoading" class="btn-spinner"></span>
-                  <i class='bx bx-upload' *ngIf="!uploadLoading"></i>
-                  {{ uploadLoading ? 'Upload...' : 'Uploader' }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ MODAL DÉTAILS DOCUMENT PREMIUM ══ -->
-      <div class="modal-backdrop-premium" *ngIf="showDetailsModal" (click)="closeDetailsModal()"></div>
-      <div class="modal-premium modal-xl" *ngIf="showDetailsModal" [class.show]="showDetailsModal">
-        <div class="modal-container-premium modal-xl">
-          <div class="modal-header-premium info">
-            <h5><i class='bx bx-file-blank'></i> Détails du document</h5>
-            <button class="modal-close" (click)="closeDetailsModal()"><i class='bx bx-x'></i></button>
-          </div>
-          <div class="modal-body-premium">
-            <div *ngIf="documentDetailsLoading" class="loading-state"><div class="spinner-premium"></div><p>Chargement...</p></div>
-            <div *ngIf="!documentDetailsLoading && selectedDocument">
-
-              <!-- Hero Section -->
-              <div class="doc-detail-hero">
-                <div class="doc-icon-large">
-                  <i [class]="getDocumentTypeIcon(selectedDocument.mimeType)"></i>
-                </div>
-                <div class="doc-info-large">
-                  <h2>{{ selectedDocument.name }}</h2>
-                  <p><i class='bx bx-paperclip'></i> {{ selectedDocument.fileName }}</p>
-                  <div class="doc-meta">
-                    <span><i class='bx bx-data'></i> {{ formatFileSize(selectedDocument.fileSize) }}</span>
-                    <span><i class='bx bx-file'></i> {{ selectedDocument.mimeType }}</span>
-                  </div>
-                </div>
-                <div class="doc-status-badges">
-                  <span class="status-badge-premium" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">
-                    {{ getDocumentStatusLabel(selectedDocument) }}
-                  </span>
-                  <span class="status-badge-premium primary">{{ getDocumentTypeName(selectedDocument.type) }}</span>
-                  <span *ngIf="selectedDocument.isSigned" class="status-badge-premium success"><i class='bx bx-check-shield'></i> Signé</span>
-                  <span *ngIf="selectedDocument.isArchived" class="status-badge-premium secondary"><i class='bx bx-archive'></i> Archivé</span>
-                </div>
-              </div>
-
-              <!-- Quick Actions -->
-              <div class="doc-quick-actions">
-                <button class="btn-primary-premium" (click)="downloadDocument(selectedDocument)"><i class='bx bx-download'></i> Télécharger</button>
-                <button class="btn-outline-premium" (click)="openEditMetadataModal(selectedDocument)"><i class='bx bx-edit'></i> Modifier</button>
-              </div>
-
-              <!-- Description -->
-              <div class="info-card" *ngIf="selectedDocument.description">
-                <div class="card-header-icon"><i class='bx bx-text'></i><h4>Description</h4></div>
-                <div class="card-content"><p>{{ selectedDocument.description }}</p></div>
-              </div>
-
-              <!-- Info Grid -->
-              <div class="info-grid">
-                <div class="info-card">
-                  <div class="card-header-icon"><i class='bx bx-calendar'></i><h4>Informations temporelles</h4></div>
-                  <div class="card-content">
-                    <div class="info-item"><span class="info-label"><i class='bx bx-calendar-plus'></i> Création</span><span class="info-value">{{ formatDate(selectedDocument.createdAt) }}</span></div>
-                    <div class="info-item" *ngIf="selectedDocument.expiryDate" [class.danger]="selectedDocument.isExpired">
-                      <span class="info-label"><i class='bx bx-calendar-x'></i> Expiration</span>
-                      <span class="info-value">{{ formatDate(selectedDocument.expiryDate) }} <span class="expiry-badge" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">{{ getDaysUntilExpiry(selectedDocument.expiryDate) }}</span></span>
-                    </div>
-                    <div class="info-item" *ngIf="selectedDocument.signedAt"><span class="info-label"><i class='bx bx-pen'></i> Signature</span><span class="info-value success">{{ formatDate(selectedDocument.signedAt) }}</span></div>
-                  </div>
-                </div>
-
-                <div class="info-card">
-                  <div class="card-header-icon"><i class='bx bx-link'></i><h4>Association</h4></div>
-                  <div class="card-content">
-                    <div class="entity-link" *ngIf="selectedDocument.relatedEntityType">
-                      <div class="entity-icon"><i [class]="getEntityTypeIcon(selectedDocument.relatedEntityType)"></i></div>
-                      <div class="entity-details"><span class="entity-type">{{ selectedDocument.relatedEntityType }}</span><span class="entity-name">{{ selectedDocument.relatedEntityName || selectedDocument.relatedEntityId }}</span></div>
-                      <button class="btn-view-entity" (click)="navigateToEntity(selectedDocument.relatedEntityType, selectedDocument.relatedEntityId)"><i class='bx bx-right-arrow-circle'></i></button>
-                    </div>
-                    <div class="no-association" *ngIf="!selectedDocument.relatedEntityType"><i class='bx bx-unlink'></i> Aucune entité associée</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Actions Grid -->
-              <div class="actions-section">
-                <h4 class="section-title"><i class='bx bx-cog'></i> Actions disponibles</h4>
-                <div class="actions-grid">
-                  <button class="action-card" (click)="downloadDocument(selectedDocument)"><div class="action-icon blue"><i class='bx bx-download'></i></div><div class="action-info"><span class="action-title">Télécharger</span><span class="action-desc">Obtenir une copie</span></div></button>
-                  <button class="action-card" (click)="openEditMetadataModal(selectedDocument)"><div class="action-icon gray"><i class='bx bx-edit'></i></div><div class="action-info"><span class="action-title">Modifier</span><span class="action-desc">Éditer les métadonnées</span></div></button>
-                  <button class="action-card" (click)="openReplaceFileModal(selectedDocument)"><div class="action-icon orange"><i class='bx bx-refresh'></i></div><div class="action-info"><span class="action-title">Remplacer</span><span class="action-desc">Mettre à jour le fichier</span></div></button>
-                  <button class="action-card" *ngIf="!selectedDocument.isSigned" (click)="openSignModal(selectedDocument)"><div class="action-icon green"><i class='bx bx-pen'></i></div><div class="action-info"><span class="action-title">Signer</span><span class="action-desc">Apposer signature</span></div></button>
-                  <button class="action-card danger" (click)="openDeleteModal(selectedDocument)"><div class="action-icon red"><i class='bx bx-trash'></i></div><div class="action-info"><span class="action-title">Archiver</span><span class="action-desc">Déplacer archives</span></div></button>
-                </div>
-              </div>
+              <button type="button" class="action-btn action-btn--danger"
+                (click)="removeFile(); $event.stopPropagation()" title="Retirer le fichier">
+                <i class='bx bx-trash'></i>
+              </button>
             </div>
           </div>
-          <div class="modal-footer-premium"><button class="btn-secondary-premium" (click)="closeDetailsModal()">Fermer</button></div>
-        </div>
-      </div>
+          <div class="form-error" *ngIf="!selectedFile && uploadSubmitted">Fichier requis</div>
 
-      <!-- ══ AUTRES MODAUX (simplifiés mais stylisés) ══ -->
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Nom du document</label>
+              <input type="text" class="form-input" formControlName="name" placeholder="Ex : Permis de conduire">
+            </div>
 
-      <!-- MODAL ÉDITION MÉTADONNÉES -->
-      <div class="modal-backdrop-premium" *ngIf="showEditMetadataModal" (click)="closeEditMetadataModal()"></div>
-      <div class="modal-premium" *ngIf="showEditMetadataModal" [class.show]="showEditMetadataModal">
-        <div class="modal-container-premium modal-sm">
-          <div class="modal-header-premium primary"><h5><i class='bx bx-edit'></i> Modifier le document</h5><button class="modal-close" (click)="closeEditMetadataModal()"><i class='bx bx-x'></i></button></div>
-          <div class="modal-body-premium">
-            <form [formGroup]="metadataForm" (ngSubmit)="onUpdateMetadata()">
-              <div class="form-group"><label>Nom *</label><input type="text" class="premium-input" formControlName="name"></div>
-              <div class="form-group"><label>Type *</label><select class="premium-select" formControlName="type"><option value="">Sélectionner</option><option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option></select></div>
-              <div class="form-group"><label>Description</label><textarea class="premium-textarea" formControlName="description" rows="3"></textarea></div>
-              <div class="form-group"><label>Date d'expiration</label><input type="date" class="premium-input" formControlName="expiryDate"></div>
-              <div class="modal-footer-premium"><button type="button" class="btn-secondary-premium" (click)="closeEditMetadataModal()">Annuler</button><button type="submit" class="btn-primary-premium">Enregistrer</button></div>
-            </form>
+            <div class="form-group">
+              <label class="form-label">Type de document <span class="required">*</span></label>
+              <select class="form-input" formControlName="type">
+                <option value="">Sélectionnez…</option>
+                <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
+              </select>
+            </div>
+
+            <div class="form-group form-group--full">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" formControlName="description" rows="2"
+                placeholder="Description optionnelle…"></textarea>
+            </div>
+
+            <div class="form-section-title form-group--full">
+              <i class='bx bx-link'></i> Association à une entité
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Type d'entité <span class="required">*</span></label>
+              <select class="form-input" formControlName="entityType" (change)="onEntityTypeChange()">
+                <option value="">Sélectionnez…</option>
+                <option *ngFor="let entity of entityTypes" [value]="entity.value">{{ entity.label }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Sélectionnez {{ getEntityLabel() }} <span class="required">*</span></label>
+              <div *ngIf="loadingEntities" class="loading-inline">
+                <span class="spinner spinner--sm"></span> Chargement…
+              </div>
+              <select *ngIf="!loadingEntities" class="form-input" formControlName="entityId" (change)="onEntitySelected()">
+                <option value="">-- Sélectionner --</option>
+                <option *ngFor="let entity of relatedEntities" [value]="entity.id">{{ getEntityDisplayName(entity) }}</option>
+              </select>
+              <small class="form-hint" *ngIf="!loadingEntities && uploadForm.get('entityType')?.value && relatedEntities.length === 0">
+                Aucun élément disponible pour ce type.
+              </small>
+            </div>
+
+            <div class="form-section-title form-group--full">
+              <i class='bx bx-calendar'></i> Date d'expiration
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date d'expiration</label>
+              <input type="date" class="form-input" formControlName="expiryDate" [min]="today | date:'yyyy-MM-dd'">
+              <small class="form-hint">Optionnel — laissez vide si le document n'expire pas.</small>
+            </div>
+
+            <div class="inline-alert inline-alert--info">
+              <i class='bx bx-info-circle'></i>
+              Les documents datés sont suivis automatiquement et signalés 30 jours avant expiration.
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- MODAL REMPLACEMENT FICHIER -->
-      <div class="modal-backdrop-premium" *ngIf="showReplaceFileModal" (click)="closeReplaceFileModal()"></div>
-      <div class="modal-premium" *ngIf="showReplaceFileModal" [class.show]="showReplaceFileModal">
-        <div class="modal-container-premium modal-sm">
-          <div class="modal-header-premium warning"><h5><i class='bx bx-refresh'></i> Remplacer le fichier</h5><button class="modal-close" (click)="closeReplaceFileModal()"><i class='bx bx-x'></i></button></div>
-          <div class="modal-body-premium">
-            <div class="alert-warning"><i class='bx bx-info-circle'></i> Le fichier actuel sera remplacé.</div>
-            <form [formGroup]="replaceFileForm" (ngSubmit)="onReplaceFile()">
-              <div class="form-group"><label>Nouveau fichier *</label><input type="file" class="premium-input" (change)="onReplacementFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"></div>
-              <div class="form-group"><label>Commentaire</label><textarea class="premium-textarea" formControlName="versionComment" rows="2" placeholder="Raison du remplacement..."></textarea></div>
-              <div class="modal-footer-premium"><button type="button" class="btn-secondary-premium" (click)="closeReplaceFileModal()">Annuler</button><button type="submit" class="btn-warning-premium" [disabled]="!replacementFile">Remplacer</button></div>
-            </form>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeUploadModal()">Annuler</button>
+            <button type="submit" class="btn btn-primary" [disabled]="uploadLoading || !selectedFile">
+              <span class="spinner spinner--xs" *ngIf="uploadLoading"></span>
+              <i class='bx bx-upload' *ngIf="!uploadLoading"></i>
+              {{ uploadLoading ? 'Envoi…' : 'Uploader' }}
+            </button>
           </div>
-        </div>
+        </form>
       </div>
-
-      <!-- MODAL SIGNATURE -->
-      <div class="modal-backdrop-premium" *ngIf="showSignModal" (click)="closeSignModal()"></div>
-      <div class="modal-premium" *ngIf="showSignModal" [class.show]="showSignModal">
-        <div class="modal-container-premium modal-sm">
-          <div class="modal-header-premium success"><h5><i class='bx bx-edit'></i> Signer le document</h5><button class="modal-close" (click)="closeSignModal()"><i class='bx bx-x'></i></button></div>
-          <div class="modal-body-premium">
-            <form [formGroup]="signForm" (ngSubmit)="onSignDocument()">
-              <div class="form-group"><label>Type de signature</label><select class="premium-select" formControlName="signatureType"><option value="digital">Signature numérique</option><option value="electronic">Signature électronique</option></select></div>
-              <div class="form-group"><label>Commentaire</label><textarea class="premium-textarea" formControlName="comment" rows="2"></textarea></div>
-              <div class="form-group"><label>Mot de passe *</label><input type="password" class="premium-input" formControlName="password" placeholder="Confirmation"></div>
-              <div class="modal-footer-premium"><button type="button" class="btn-secondary-premium" (click)="closeSignModal()">Annuler</button><button type="submit" class="btn-success-premium" [disabled]="signForm.invalid">Signer</button></div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODAL SUPPRESSION/ARCHIVAGE -->
-      <div class="modal-backdrop-premium" *ngIf="showDeleteModal" (click)="closeDeleteModal()"></div>
-      <div class="modal-premium" *ngIf="showDeleteModal" [class.show]="showDeleteModal">
-        <div class="modal-container-premium modal-sm">
-          <div class="modal-header-premium danger"><h5><i class='bx bx-archive'></i> Archiver le document</h5><button class="modal-close" (click)="closeDeleteModal()"><i class='bx bx-x'></i></button></div>
-          <div class="modal-body-premium">
-            <div class="alert-warning"><i class='bx bx-error-circle'></i> <strong>Attention !</strong> Cette action va archiver le document.</div>
-            <form [formGroup]="deleteForm" (ngSubmit)="onDeleteDocument()">
-              <div class="form-group"><label>Raison (optionnel)</label><textarea class="premium-textarea" formControlName="reason" rows="3"></textarea></div>
-              <div class="form-check-group"><label class="checkbox-label"><input type="checkbox" formControlName="permanentDelete"> <i class='bx bx-trash'></i> Suppression permanente (irréversible)</label></div>
-              <div class="modal-footer-premium"><button type="button" class="btn-secondary-premium" (click)="closeDeleteModal()">Annuler</button><button type="submit" class="btn-danger-premium">Archiver</button></div>
-            </form>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL — DÉTAILS DU DOCUMENT
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-wrap" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal-dialog modal-dialog--xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class='bx bx-file'></i> Détails du document</div>
+        <button class="modal-close-btn" (click)="closeDetailsModal()" title="Fermer">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="documentDetailsLoading" class="state-placeholder">
+          <div class="spinner"></div>
+          <p class="state-placeholder-text">Chargement…</p>
+        </div>
+
+        <ng-container *ngIf="!documentDetailsLoading && selectedDocument">
+          <!-- En-tête document -->
+          <div class="doc-hero">
+            <div class="doc-hero-icon">
+              <i [ngClass]="getDocumentTypeIcon(selectedDocument.mimeType)"></i>
+            </div>
+            <div class="doc-hero-info">
+              <h2>{{ selectedDocument.name }}</h2>
+              <p><i class='bx bx-paperclip'></i> {{ selectedDocument.fileName }}</p>
+              <div class="doc-hero-meta">
+                <span><i class='bx bx-data'></i> {{ formatFileSize(selectedDocument.fileSize) }}</span>
+                <span><i class='bx bx-file'></i> {{ selectedDocument.mimeType }}</span>
+                <span><i class='bx bx-hash'></i> {{ getEntityIdPreview(selectedDocument.id) }}</span>
+              </div>
+            </div>
+            <div class="doc-hero-badges">
+              <span class="status-badge" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">
+                {{ getDocumentStatusLabel(selectedDocument) }}
+              </span>
+              <span class="status-badge primary">{{ getDocumentTypeName(selectedDocument.type) }}</span>
+              <span *ngIf="selectedDocument.isSigned" class="status-badge success">
+                <i class='bx bx-check-shield'></i> Signé
+              </span>
+              <span *ngIf="selectedDocument.isArchived" class="status-badge neutral">
+                <i class='bx bx-archive'></i> Archivé
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions rapides -->
+          <div class="doc-quick-actions">
+            <button class="btn btn-primary btn-sm" (click)="downloadDocument(selectedDocument)">
+              <i class='bx bx-download'></i> Télécharger
+            </button>
+            <button class="btn btn-outline btn-sm" (click)="openEditMetadataModal(selectedDocument)">
+              <i class='bx bx-edit'></i> Modifier
+            </button>
+          </div>
+
+          <!-- Description -->
+          <div class="info-card" *ngIf="selectedDocument.description">
+            <div class="info-card-header"><i class='bx bx-text'></i><h4>Description</h4></div>
+            <div class="info-card-body"><p>{{ selectedDocument.description }}</p></div>
+          </div>
+
+          <!-- Informations -->
+          <div class="info-grid">
+            <div class="info-card">
+              <div class="info-card-header"><i class='bx bx-calendar'></i><h4>Informations temporelles</h4></div>
+              <div class="info-card-body">
+                <div class="info-item">
+                  <span class="info-label"><i class='bx bx-calendar-plus'></i> Création</span>
+                  <span class="info-value">{{ formatDate(selectedDocument.createdAt) }}</span>
+                </div>
+                <div class="info-item" *ngIf="selectedDocument.expiryDate" [class.info-item--danger]="selectedDocument.isExpired">
+                  <span class="info-label"><i class='bx bx-calendar-x'></i> Expiration</span>
+                  <span class="info-value">
+                    {{ formatDate(selectedDocument.expiryDate) }}
+                    <span class="status-badge" [ngClass]="getExpiryBadgeClass(selectedDocument.daysUntilExpiry)">
+                      {{ getDaysUntilExpiry(selectedDocument.expiryDate) }}
+                    </span>
+                  </span>
+                </div>
+                <div class="info-item" *ngIf="selectedDocument.signedAt">
+                  <span class="info-label"><i class='bx bx-pen'></i> Signature</span>
+                  <span class="info-value info-value--success">{{ formatDate(selectedDocument.signedAt) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <div class="info-card-header"><i class='bx bx-link'></i><h4>Association</h4></div>
+              <div class="info-card-body">
+                <div class="entity-link" *ngIf="selectedDocument.relatedEntityType">
+                  <div class="entity-icon">
+                    <i [ngClass]="getEntityTypeIcon(selectedDocument.relatedEntityType)"></i>
+                  </div>
+                  <div class="entity-details">
+                    <span class="entity-type">{{ selectedDocument.relatedEntityType }}</span>
+                    <span class="entity-name">
+                      {{ selectedDocument.relatedEntityName || getEntityIdPreview(selectedDocument.relatedEntityId) }}
+                    </span>
+                  </div>
+                  <button class="btn-view-entity"
+                    (click)="navigateToEntity(selectedDocument.relatedEntityType, selectedDocument.relatedEntityId)"
+                    title="Ouvrir la page de gestion">
+                    <i class='bx bx-right-arrow-circle'></i>
+                  </button>
+                </div>
+                <div class="no-association" *ngIf="!selectedDocument.relatedEntityType">
+                  <i class='bx bx-unlink'></i> Aucune entité associée
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions disponibles -->
+          <div class="actions-section">
+            <h4 class="section-title"><i class='bx bx-cog'></i> Actions disponibles</h4>
+            <div class="actions-grid">
+              <button class="action-card" (click)="downloadDocument(selectedDocument)">
+                <div class="action-icon blue"><i class='bx bx-download'></i></div>
+                <div class="action-info">
+                  <span class="action-title">Télécharger</span>
+                  <span class="action-desc">Obtenir une copie</span>
+                </div>
+              </button>
+              <button class="action-card" (click)="openEditMetadataModal(selectedDocument)">
+                <div class="action-icon gray"><i class='bx bx-edit'></i></div>
+                <div class="action-info">
+                  <span class="action-title">Modifier</span>
+                  <span class="action-desc">Éditer les métadonnées</span>
+                </div>
+              </button>
+              <button class="action-card" (click)="openReplaceFileModal(selectedDocument)">
+                <div class="action-icon orange"><i class='bx bx-refresh'></i></div>
+                <div class="action-info">
+                  <span class="action-title">Remplacer</span>
+                  <span class="action-desc">Mettre à jour le fichier</span>
+                </div>
+              </button>
+              <button class="action-card" *ngIf="!selectedDocument.isSigned" (click)="openSignModal(selectedDocument)">
+                <div class="action-icon green"><i class='bx bx-pen'></i></div>
+                <div class="action-info">
+                  <span class="action-title">Signer</span>
+                  <span class="action-desc">Apposer la signature</span>
+                </div>
+              </button>
+              <button class="action-card action-card--danger" (click)="openDeleteModal(selectedDocument)">
+                <div class="action-icon red"><i class='bx bx-trash'></i></div>
+                <div class="action-info">
+                  <span class="action-title">Archiver</span>
+                  <span class="action-desc">Déplacer vers les archives</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeDetailsModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL — MODIFIER LES MÉTADONNÉES
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-wrap" *ngIf="showEditMetadataModal" (click)="closeEditMetadataModal()">
+    <div class="modal-dialog modal-dialog--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class='bx bx-edit'></i> Modifier le document</div>
+        <button class="modal-close-btn" (click)="closeEditMetadataModal()" title="Fermer">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="metadataForm" (ngSubmit)="onUpdateMetadata()">
+          <div class="form-group">
+            <label class="form-label">Nom <span class="required">*</span></label>
+            <input type="text" class="form-input" formControlName="name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type <span class="required">*</span></label>
+            <select class="form-input" formControlName="type">
+              <option value="">Sélectionner</option>
+              <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-input" formControlName="description" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date d'expiration</label>
+            <input type="date" class="form-input" formControlName="expiryDate">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeEditMetadataModal()">Annuler</button>
+            <button type="submit" class="btn btn-primary" [disabled]="metadataForm.invalid">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL — REMPLACER LE FICHIER
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-wrap" *ngIf="showReplaceFileModal" (click)="closeReplaceFileModal()">
+    <div class="modal-dialog modal-dialog--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class='bx bx-refresh'></i> Remplacer le fichier</div>
+        <button class="modal-close-btn" (click)="closeReplaceFileModal()" title="Fermer">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="inline-alert inline-alert--warning">
+          <i class='bx bx-info-circle'></i> Le fichier actuel sera remplacé par le nouveau.
+        </div>
+
+        <form [formGroup]="replaceFileForm" (ngSubmit)="onReplaceFile()">
+          <div class="form-group">
+            <label class="form-label">Nouveau fichier <span class="required">*</span></label>
+            <input type="file" class="form-input" (change)="onReplacementFileSelected($event)"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            <small class="form-hint" *ngIf="replacementFile">
+              Fichier sélectionné : {{ replacementFile.name }}
+            </small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Commentaire</label>
+            <textarea class="form-input" formControlName="versionComment" rows="2"
+              placeholder="Raison du remplacement…"></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeReplaceFileModal()">Annuler</button>
+            <button type="submit" class="btn btn-warning" [disabled]="!replacementFile">Remplacer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL — SIGNER LE DOCUMENT
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-wrap" *ngIf="showSignModal" (click)="closeSignModal()">
+    <div class="modal-dialog modal-dialog--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class='bx bx-pen'></i> Signer le document</div>
+        <button class="modal-close-btn" (click)="closeSignModal()" title="Fermer">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="signForm" (ngSubmit)="onSignDocument()">
+          <div class="form-group">
+            <label class="form-label">Type de signature</label>
+            <select class="form-input" formControlName="signatureType">
+              <option value="digital">Signature numérique</option>
+              <option value="electronic">Signature électronique</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Commentaire</label>
+            <textarea class="form-input" formControlName="comment" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mot de passe <span class="required">*</span></label>
+            <input type="password" class="form-input" formControlName="password" placeholder="Confirmation">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeSignModal()">Annuler</button>
+            <button type="submit" class="btn btn-success" [disabled]="signForm.invalid">Signer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL — REJETER LE DOCUMENT
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-wrap" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal-dialog modal-dialog--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class='bx bx-x-circle text-danger'></i> Rejeter le document</div>
+        <button class="modal-close-btn" (click)="closeRejectModal()" title="Fermer">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="inline-alert inline-alert--warning">
+          <i class='bx bx-error-circle'></i> Le document sera marqué comme rejeté.
+        </div>
+
+        <form [formGroup]="rejectForm" (ngSubmit)="onRejectDocument()">
+          <div class="form-group">
+            <label class="form-label">Motif du rejet <span class="required">*</span></label>
+            <textarea class="form-input" formControlName="reason" rows="3"
+              placeholder="Expliquez pourquoi le document est rejeté…"></textarea>
+            <div class="form-error" *ngIf="rejectForm.get('reason')?.invalid && rejectForm.get('reason')?.touched">
+              Le motif est obligatoire.
+            </div>
+          </div>
+          <div class="form-check">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="notifyOwner"> Notifier le propriétaire du document
+            </label>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeRejectModal()">Annuler</button>
+            <button type="submit" class="btn btn-danger" [disabled]="rejectForm.invalid">Rejeter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL — ARCHIVER / SUPPRIMER
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="modal-wrap" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-dialog modal-dialog--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class='bx bx-archive text-danger'></i>
+          {{ deleteForm.get('permanentDelete')?.value ? 'Supprimer définitivement' : 'Archiver le document' }}
+        </div>
+        <button class="modal-close-btn" (click)="closeDeleteModal()" title="Fermer">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="inline-alert inline-alert--warning" *ngIf="!deleteForm.get('permanentDelete')?.value">
+          <i class='bx bx-error-circle'></i> Le document sera déplacé vers les archives.
+        </div>
+        <div class="inline-alert inline-alert--danger" *ngIf="deleteForm.get('permanentDelete')?.value">
+          <i class='bx bx-error-circle'></i> Suppression irréversible : le fichier sera définitivement perdu.
+        </div>
+
+        <form [formGroup]="deleteForm" (ngSubmit)="onDeleteDocument()">
+          <div class="form-group">
+            <label class="form-label">Raison (optionnel)</label>
+            <textarea class="form-input" formControlName="reason" rows="3"></textarea>
+          </div>
+
+          <div class="form-check">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="permanentDelete">
+              <i class='bx bx-trash'></i> Suppression permanente (irréversible)
+            </label>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeDeleteModal()">Annuler</button>
+            <button type="submit" class="btn btn-danger">
+              {{ deleteForm.get('permanentDelete')?.value ? 'Supprimer' : 'Archiver' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </div>

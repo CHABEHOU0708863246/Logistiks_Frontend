@@ -73,8 +73,8 @@ export class KpiGlobaux implements OnInit, OnDestroy {
 
   kpis: DashboardKpiDto = {
     totalRevenue: 0, totalExpenses: 0, netProfit: 0,
-    profitMarginPercent: 0, revenueGrowthPercent: 0,
-    expenseGrowthPercent: 0, profitGrowthPercent: 0,
+    profitMarginPercent: 0, revenueGrowthPercent: null,
+    expenseGrowthPercent: null, profitGrowthPercent: null,
     totalVehicles: 0, rentedVehicles: 0, availableVehicles: 0,
     maintenanceVehicles: 0, fleetUtilizationPercent: 0,
     activeContracts: 0, newContractsThisMonth: 0,
@@ -184,7 +184,7 @@ export class KpiGlobaux implements OnInit, OnDestroy {
             this.alerts = d.alerts;
           }
           if (chart.success && chart.data) {
-            this.revenueChart = chart.data.slice(-this.chartMonths);
+            this.revenueChart = chart.data;
             this.computeChartMax();
           }
           this.buildDonutSlices();
@@ -208,6 +208,42 @@ export class KpiGlobaux implements OnInit, OnDestroy {
 
   getBarHeight(value: number): number {
     return Math.round((value / this.chartMax) * this.chartHeight);
+  }
+
+  // ═══════════════════════════════════════════
+  // HELPERS VARIATIONS & RECOUVREMENT
+  // ═══════════════════════════════════════════
+
+  /** Variation disponible uniquement si une période précédente est comparable. */
+  hasGrowth(value: number | null | undefined): boolean {
+    return value !== null && value !== undefined && !isNaN(value);
+  }
+
+  /** Sens de la variation (toujours celui de la valeur affichée). */
+  growthUp(value: number | null | undefined): boolean {
+    return this.hasGrowth(value) && (value as number) >= 0;
+  }
+
+  growthDown(value: number | null | undefined): boolean {
+    return this.hasGrowth(value) && (value as number) < 0;
+  }
+
+  formatGrowth(value: number | null | undefined): string {
+    if (!this.hasGrowth(value)) return '—';
+    const v = value as number;
+    const formatted = v.toLocaleString('fr-FR', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
+    return `${v >= 0 ? '+' : ''}${formatted}%`;
+  }
+
+  /**
+   * Le taux de recouvrement global n'est calculable que si des échéances
+   * étaient exigibles sur la période : sinon afficher « — ».
+   */
+  hasGlobalCollectionRate(): boolean {
+    return this.contractPerformance.topContracts.some(c => c.totalDue > 0);
   }
 
   // ═══════════════════════════════════════════
