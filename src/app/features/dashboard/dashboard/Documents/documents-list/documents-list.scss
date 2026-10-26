@@ -50,8 +50,8 @@ $shadow:         0 4px 16px rgba(60, 52, 137, 0.10), 0 2px 4px rgba(60, 52, 137,
 $shadow-lg:      0 12px 32px rgba(60, 52, 137, 0.13), 0 4px 8px rgba(60, 52, 137, 0.06);
 $transition:     all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
-$font:           'Plus Jakarta Sans', sans-serif;
-$font-display:   'Space Grotesk', sans-serif;
+$font:           'Public Sans', sans-serif;
+$font-display:   'Public Sans', sans-serif;
 
 // ── Animations ───────────────────────────────────────────────────────
 @keyframes pulse-dot {
@@ -1295,6 +1295,17 @@ textarea.form-input { resize: vertical; }
   }
 }
 
+.replacement-preview {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  max-height: 160px;
+  margin-top: 8px;
+  border: 1px solid $border;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
 .upload-placeholder {
   i {
     font-size: 44px;
@@ -1318,6 +1329,15 @@ textarea.form-input { resize: vertical; }
   text-align: left;
 
   > i { font-size: 30px; color: $primary; flex-shrink: 0; }
+
+  .file-preview__image {
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid $border;
+  }
 
   .file-info {
     flex: 1;

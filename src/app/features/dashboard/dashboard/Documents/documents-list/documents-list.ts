@@ -1,4 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { map, Subject, takeUntil } from 'rxjs';
@@ -18,11 +19,12 @@ import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 import { Contract as ContractService } from '../../../../../core/services/Contract/contract';
 import { CreateDocumentRequest } from '../../../../../core/models/Documents/Document-request.models';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 
 @Component({
   selector: 'app-documents-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent, MobileFilterSheetComponent],
   templateUrl: './documents-list.html',
   styleUrl: './documents-list.scss',
 })
@@ -50,6 +52,7 @@ replaceFileForm!: FormGroup;
 
 // Fichier pour remplacement
 replacementFile: File | null = null;
+replacementFilePreview: string | null = null;
   // ============================================================================
   // SECTION 1: ÉNUMÉRATIONS ET CONSTANTES
   // ============================================================================
@@ -105,6 +108,9 @@ replacementFile: File | null = null;
 
   /** Fichier sélectionné pour l'upload */
   selectedFile: File | null = null;
+
+  /** Aperçu local (photo prise ou choisie) avant l'envoi */
+  selectedFilePreview: string | null = null;
 
   // ============================================================================
   // SECTION 3: STATISTIQUES
@@ -459,6 +465,7 @@ replacementFile: File | null = null;
     this.destroy$.next();
     this.destroy$.complete();
     this.stopAutoRefresh();
+    this.setSelectedFilePreview(null);
   }
 
   /**
@@ -735,7 +742,7 @@ refreshAllData(): void {
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
 
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   getUserInitials(): string {
@@ -748,7 +755,7 @@ refreshAllData(): void {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ============================================================================
@@ -951,6 +958,7 @@ private emitExpiringDocumentsUpdated(): void {
 
   removeFile(): void {
     this.selectedFile = null;
+    this.setSelectedFilePreview(null);
     // Réinitialiser l'input file
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
@@ -1174,16 +1182,19 @@ private emitExpiringDocumentsUpdated(): void {
     this.showUploadModal = true;
     this.uploadForm.reset();
     this.selectedFile = null;
+    this.setSelectedFilePreview(null);
   }
 
   closeUploadModal(): void {
     this.showUploadModal = false;
     this.uploadForm.reset();
     this.selectedFile = null;
+    this.setSelectedFilePreview(null);
   }
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
+    this.setSelectedFilePreview(null);
     if (file) {
       // Validation de la taille
       if (!this.documentService.isValidFileSize(file, 10)) {
@@ -1198,6 +1209,8 @@ private emitExpiringDocumentsUpdated(): void {
       }
 
       this.selectedFile = file;
+      this.setSelectedFilePreview(file);
+
 
       // Optionnel : mettre à jour le nom du document automatiquement
       if (!this.uploadForm.get('name')?.value) {
@@ -1205,6 +1218,17 @@ private emitExpiringDocumentsUpdated(): void {
           name: file.name.replace(/\.[^/.]+$/, "") // Enlever l'extension
         });
       }
+    }
+  }
+
+  private setSelectedFilePreview(file: File | null): void {
+    if (this.selectedFilePreview) {
+      URL.revokeObjectURL(this.selectedFilePreview);
+      this.selectedFilePreview = null;
+    }
+
+    if (file?.type.startsWith('image/')) {
+      this.selectedFilePreview = URL.createObjectURL(file);
     }
   }
 
@@ -1489,6 +1513,7 @@ onUpdateMetadata(): void {
   openReplaceFileModal(document: DocumentDto): void {
   this.selectedDocument = document;
   this.replacementFile = null;
+  this.setReplacementFilePreview(null);
   this.showReplaceFileModal = true;
 }
 
@@ -1496,11 +1521,13 @@ closeReplaceFileModal(): void {
   this.showReplaceFileModal = false;
   this.replaceFileForm.reset();
   this.replacementFile = null;
+  this.setReplacementFilePreview(null);
   this.selectedDocument = null;
 }
 
 onReplacementFileSelected(event: any): void {
   const file = event.target.files[0];
+  this.setReplacementFilePreview(null);
   if (file) {
     if (!this.documentService.isValidFileSize(file, 10)) {
       this.notificationService.error('Le fichier est trop volumineux', 'Max 10 MB');
@@ -1513,6 +1540,18 @@ onReplacementFileSelected(event: any): void {
     }
 
     this.replacementFile = file;
+    this.setReplacementFilePreview(file);
+  }
+}
+
+private setReplacementFilePreview(file: File | null): void {
+  if (this.replacementFilePreview) {
+    URL.revokeObjectURL(this.replacementFilePreview);
+    this.replacementFilePreview = null;
+  }
+
+  if (file?.type.startsWith('image/')) {
+    this.replacementFilePreview = URL.createObjectURL(file);
   }
 }
 

@@ -190,6 +190,7 @@
       </div>
 
       <!-- ══ RECHERCHE & FILTRES ══ -->
+      <app-mobile-filter-sheet title="Filtres des documents">
       <div class="card filters-card">
         <div class="card-header">
           <div class="card-title"><i class='bx bx-filter-alt'></i> Recherche &amp; filtres</div>
@@ -271,6 +272,7 @@
           </div>
         </div>
       </div>
+      </app-mobile-filter-sheet>
 
       <!-- ══ LISTE DES DOCUMENTS ══ -->
       <div class="card table-card">
@@ -489,16 +491,18 @@
           <!-- Zone de dépôt -->
           <div class="upload-dropzone" (click)="fileInput.click()">
             <input #fileInput type="file" class="file-input-hidden" (change)="onFileSelected($event)"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              accept="image/*,application/pdf" capture="environment">
 
             <div class="upload-placeholder" *ngIf="!selectedFile">
-              <i class='bx bx-cloud-upload'></i>
-              <p>Cliquez pour sélectionner un fichier</p>
-              <small>PDF, DOC, JPG ou PNG — 10 MB maximum</small>
+              <i class='bx bx-camera'></i>
+              <p>Prendre une photo ou choisir un fichier</p>
+              <small>Photo ou PDF — 10 MB maximum</small>
             </div>
 
             <div class="file-preview" *ngIf="selectedFile">
-              <i class='bx bx-file'></i>
+              <img *ngIf="selectedFilePreview" class="file-preview__image"
+                [src]="selectedFilePreview" alt="Aperçu du fichier avant envoi">
+              <i class='bx' [class.bx-file]="!selectedFilePreview" [class.bx-image]="selectedFilePreview"></i>
               <div class="file-info">
                 <strong>{{ selectedFile.name }}</strong>
                 <span class="badge badge-info">{{ formatFileSize(selectedFile.size) }}</span>
@@ -814,7 +818,9 @@
           <div class="form-group">
             <label class="form-label">Nouveau fichier <span class="required">*</span></label>
             <input type="file" class="form-input" (change)="onReplacementFileSelected($event)"
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+              accept="image/*,application/pdf" capture="environment">
+            <img *ngIf="replacementFilePreview" class="replacement-preview"
+              [src]="replacementFilePreview" alt="Aperçu du nouveau fichier">
             <small class="form-hint" *ngIf="replacementFile">
               Fichier sélectionné : {{ replacementFile.name }}
             </small>
