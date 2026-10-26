@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -24,6 +25,7 @@ import { ConfirmDialogWithInput } from "../../../../../core/components/confirm-d
 import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 /**
  * Composant de gestion de la liste des tiers (clients, fournisseurs, partenaires)
  * @class TiersList
@@ -39,7 +41,8 @@ import { SidebarComponent } from "../../../../../core/components/sidebar-compone
     ConfirmDialog,
     ConfirmDialogWithInput,
     NotificationComponent,
-    SidebarComponent
+    SidebarComponent,
+    MobileFilterSheetComponent
 ],
   templateUrl: './tiers-list.html',
   styleUrls: ['./tiers-list.scss']
@@ -237,7 +240,7 @@ export class TiersList implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   /**
@@ -294,7 +297,7 @@ export class TiersList implements OnInit, OnDestroy {
   generateAvatarUrl(user: User): string {
     const name = this.formatUserName(user);
     const colorIndex = name.length % this.avatarColors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${this.avatarColors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, this.avatarColors[colorIndex]);
   }
 
   /**

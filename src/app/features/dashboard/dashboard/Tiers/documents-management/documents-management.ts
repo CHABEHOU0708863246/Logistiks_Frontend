@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import {
   FormGroup,
   FormBuilder,
@@ -32,6 +33,7 @@ import { ConfirmDialog } from "../../../../../core/components/confirm-dialog/con
 // Environnement
 import { environment } from '../../../../../../environments/environment';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 
 /**
  * Composant de gestion des documents manquants des tiers
@@ -41,7 +43,7 @@ import { SidebarComponent } from "../../../../../core/components/sidebar-compone
  */
 @Component({
   selector: 'app-documents-management',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, RouterLink, ConfirmDialog, SidebarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, RouterLink, ConfirmDialog, SidebarComponent, MobileFilterSheetComponent],
   templateUrl: './documents-management.html',
   styleUrl: './documents-management.scss',
 })
@@ -1003,7 +1005,7 @@ export class DocumentsManagement implements OnInit, OnDestroy {
     const name = this.formatUserName(user);
     const colorIndex = name.length % this.avatarColors.length;
 
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${this.avatarColors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, this.avatarColors[colorIndex]);
   }
 
   /**
@@ -1023,9 +1025,7 @@ export class DocumentsManagement implements OnInit, OnDestroy {
    * @returns URL de l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      this.userName
-    )}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   /**
