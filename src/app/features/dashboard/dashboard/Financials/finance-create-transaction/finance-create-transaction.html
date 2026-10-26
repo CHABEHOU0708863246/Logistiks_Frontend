@@ -129,7 +129,7 @@
             </div>
 
             <div class="card-body">
-              <form [formGroup]="transactionForm">
+              <form [formGroup]="transactionForm" class="iam-form">
 
                 <!-- ══ ÉTAPE 1 : TYPE & CATÉGORIE ══ -->
                 <div *ngIf="currentStep === 1" class="form-step">
@@ -459,7 +459,7 @@
                 </div>
 
                 <!-- ══ NAVIGATION ÉTAPES ══ -->
-                <div class="step-nav">
+                <div class="step-nav iam-action-bar">
                   <button type="button" class="btn btn-outline" (click)="previousStep()" *ngIf="currentStep > 1">
                     <i class="bx bx-chevron-left"></i> Précédent
                   </button>

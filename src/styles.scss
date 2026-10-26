@@ -329,6 +329,13 @@ body.iam-sheet-open {
     gap: 14px !important;
   }
 
+  .iam-form .tx-type-grid,
+  .iam-form .category-grid,
+  .iam-form .payment-method-grid,
+  .iam-form .step-content-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
   .iam-form .form-group,
   .iam-form .form-field {
     width: 100% !important;
@@ -388,7 +395,8 @@ body.iam-sheet-open {
   .modal-dialog,
   .modal-card,
   .modal-panel,
-  .modal-content {
+  .modal-content,
+  .center-modal {
     display: flex !important;
     flex-direction: column !important;
     width: 100vw !important;
@@ -397,6 +405,28 @@ body.iam-sheet-open {
     max-height: 100dvh !important;
     margin: 0 !important;
     border-radius: 0 !important;
+  }
+
+  .center-modal > .center-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .modal-form-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    background: #ffffff;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .modal-form-footer > button {
+    width: 100%;
+    min-height: 48px;
   }
 
   .modal-dialog > .modal-header,

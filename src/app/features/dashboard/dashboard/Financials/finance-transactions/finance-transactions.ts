@@ -1,4 +1,5 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -10,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 
 // ============================================================================
 // MODELS IMPORTS
@@ -134,7 +136,8 @@ interface TrendGridLine {
     ReactiveFormsModule,
     RouterModule,
     NotificationComponent,
-    SidebarComponent
+    SidebarComponent,
+    MobileFilterSheetComponent
   ],
   templateUrl: './finance-transactions.html',
   styleUrl: './finance-transactions.scss',
@@ -476,7 +479,7 @@ export class FinanceTransactions implements OnInit, OnDestroy {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   /**
@@ -493,7 +496,7 @@ export class FinanceTransactions implements OnInit, OnDestroy {
    * Obtient l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ============================================================================
