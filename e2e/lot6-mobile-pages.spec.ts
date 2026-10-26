@@ -364,7 +364,96 @@ test.describe('Lot 6 — pages mobiles', () => {
     expect(body).not.toMatch(/works!/i);
     expect(body).not.toMatch(/en cours de développement/i);
 
+    const canvasesFit = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('canvas')).every(
+        (canvas) => canvas.getBoundingClientRect().width <= window.innerWidth + 1
+      )
+    );
+    expect(canvasesFit).toBe(true);
+
     expect(received).toContain('/api/v2/dashboard');
     await expectNoHorizontalScroll(page);
+  });
+
+  test('actions de ligne : menu « … » ajouté aux tableaux sans menu existant', async ({ page }) => {
+    await openApp(page, '/dashboard/contrats/list');
+    await page.keyboard.press('Escape');
+
+    await page.evaluate(() => {
+      const table = document.createElement('table');
+      table.className = 'data-table';
+      table.innerHTML = `
+        <thead><tr><th>Référence</th><th>Libellé</th><th>Actions</th></tr></thead>
+        <tbody><tr>
+          <td>REF-1</td>
+          <td>Ligne de test</td>
+          <td>
+            <button type="button" class="action-btn">Voir</button>
+            <button type="button" class="action-btn">Modifier</button>
+          </td>
+        </tr></tbody>`;
+      document.body.appendChild(table);
+    });
+
+    const cell = page.locator('table.iam-mobile-table').last().locator('td.iam-mobile-actions');
+    await expect(cell).toHaveCount(1);
+
+    const trigger = cell.locator('.iam-mobile-actions__trigger');
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await expect(cell).toHaveClass(/is-open/);
+    await expect(cell.locator('.action-btn')).toHaveCount(2);
+  });
+
+  test('toutes les pages : aucun défilement horizontal, aucun écran inerte', async ({ page }) => {
+    const routes = [
+      '/dashboard',
+      '/dashboard/contrats/list',
+      '/dashboard/contrats/stats',
+      '/dashboard/finances/transactions',
+      '/dashboard/finances/transactions/nouvelle',
+      '/dashboard/tiers/list',
+      '/dashboard/tiers/new',
+      '/dashboard/tiers/documents-validation',
+      '/dashboard/tiers/documents-management',
+      '/dashboard/vehicules/list',
+      '/dashboard/vehicules/ajouter',
+      '/dashboard/documents/list',
+      '/dashboard/analytics/kpi-globaux',
+      '/dashboard/analytics/finance',
+      '/dashboard/rentabilite/vehicules',
+      '/dashboard/rentabilite/calculer',
+      '/dashboard/rapports/activite-mensuelle',
+      '/dashboard/rapports/depenses-categories',
+      '/dashboard/users/list',
+      '/dashboard/users/create',
+      '/dashboard/users/roles',
+      '/dashboard/settings/general',
+      '/dashboard/settings/finance',
+      '/dashboard/settings/notifications',
+      '/dashboard/audit/users',
+      '/dashboard/profiles',
+    ];
+
+    await openApp(page, '/dashboard');
+
+    for (const route of routes) {
+      await page.goto(route);
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(350);
+
+      const result = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        innerWidth: window.innerWidth,
+        text: document.body.innerText,
+      }));
+
+      expect(
+        result.scrollWidth <= result.innerWidth + 1,
+        `${route} déborde (${result.scrollWidth} > ${result.innerWidth})`
+      ).toBe(true);
+      expect(result.text, route).not.toMatch(/works!/i);
+      expect(result.text, route).not.toMatch(/en cours de développement/i);
+    }
   });
 });
