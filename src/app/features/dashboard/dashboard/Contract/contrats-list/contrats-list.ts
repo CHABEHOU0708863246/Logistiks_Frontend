@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -10,6 +11,7 @@ import { finalize, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 
 // ============================================================================
 // MODELS IMPORTS
@@ -36,12 +38,13 @@ import { Auth } from '../../../../../core/services/Auth/auth';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
 import { Token } from '../../../../../core/services/Token/token';
 import { Contract } from '../../../../../core/services/Contract/contract';
+import { ConnectivityService } from '../../../../../core/services/Connectivity/connectivity.service';
 import { Tiers } from '../../../../../core/services/Tiers/tiers';
 import { Vehicles } from '../../../../../core/services/Vehicles/vehicles';
 
 @Component({
   selector: 'app-contrats-list',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent, MobileFilterSheetComponent],
   templateUrl: './contrats-list.html',
   styleUrl: './contrats-list.scss',
 })
@@ -59,6 +62,7 @@ export class ContratsList implements OnInit, OnDestroy {
   error: string | null = null;
   isMobileView: boolean = false;
   isSidebarCollapsed: boolean = false;
+  isOnline: boolean = true;
 
   /** Subject pour la gestion des abonnements */
   private destroy$ = new Subject<void>();
@@ -316,10 +320,11 @@ export class ContratsList implements OnInit, OnDestroy {
     private vehicleService: Vehicles,
     private authService: Auth,
     private tokenService: Token,
-    private router: Router
-  ) {
+    private router: Router,
+    private connectivity: ConnectivityService
+    ) {
     this.initializeForms();
-  }
+    }
 
   /**
    * Initialise tous les formulaires du composant
@@ -412,6 +417,9 @@ export class ContratsList implements OnInit, OnDestroy {
   // ============================================================================
 
   ngOnInit(): void {
+    this.connectivity.isOnline$.pipe(takeUntil(this.destroy$)).subscribe((online) => {
+      this.isOnline = online;
+    });
     this.checkAuthentication();
     this.loadCurrentUser();
     this.loadContracts();
@@ -494,7 +502,7 @@ export class ContratsList implements OnInit, OnDestroy {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   /**
@@ -2397,7 +2405,7 @@ onWindowEvent(): void {
    * Obtient l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ============================================================================

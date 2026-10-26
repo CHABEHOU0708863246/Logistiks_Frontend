@@ -264,6 +264,7 @@
       </div>
 
       <!-- ══ BARRE RECHERCHE & FILTRES RAPIDES ══ -->
+      <app-mobile-filter-sheet title="Filtres des contrats">
       <div class="card" style="margin-top: 18px;">
         <div class="card-body" style="padding: 16px 22px;">
 
@@ -342,6 +343,7 @@
 
         </div>
       </div>
+      </app-mobile-filter-sheet>
 
       <!-- ══ TABLE DES CONTRATS ══ -->
       <div class="card" style="margin-top: 18px;">
@@ -1148,6 +1150,14 @@
   </div>
 
   <div class="modal-sheet-body">
+    <div class="modal-alert danger" *ngIf="!isOnline" role="alert">
+      <i class="bx bx-wifi-off"></i>
+      <div>
+        <strong>Hors connexion</strong><br>
+        L'enregistrement d'un paiement nécessite une connexion Internet.
+      </div>
+    </div>
+
     <div class="modal-info-banner" *ngIf="selectedContractForPayment">
       <i class="bx bx-info-circle"></i>
       <div>
@@ -1215,7 +1225,7 @@
 
       <div class="modal-sheet-footer">
         <button type="button" class="btn btn-outline" (click)="closePaymentModal()">Annuler</button>
-        <button type="submit" class="btn btn-success" [disabled]="paymentLoading">
+        <button type="submit" class="btn btn-success" [disabled]="paymentLoading || !isOnline">
           <span *ngIf="paymentLoading" class="btn-spinner"></span>
           <i class="bx bx-check" *ngIf="!paymentLoading"></i>
           {{ paymentLoading ? 'Enregistrement…' : 'Enregistrer le paiement' }}

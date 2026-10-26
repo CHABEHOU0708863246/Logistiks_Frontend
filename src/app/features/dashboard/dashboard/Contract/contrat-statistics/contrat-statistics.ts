@@ -7,6 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 // CORE IMPORTS
 // ============================================================================
 import { SidebarComponent } from '../../../../../core/components/sidebar-component/sidebar-component';
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 import { ContractStatus } from '../../../../../core/models/Enums/Logistiks-enums';
 import {
   ContractMonthlyPoint,
@@ -26,7 +27,7 @@ interface VehicleOption {
 
 @Component({
   selector: 'app-contrat-statistics',
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, MobileFilterSheetComponent],
   templateUrl: './contrat-statistics.html',
   styleUrl: './contrat-statistics.scss',
 })

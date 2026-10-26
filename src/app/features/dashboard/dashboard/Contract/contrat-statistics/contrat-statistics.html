@@ -54,6 +54,7 @@
         </div>
 
         <!-- ── FILTRES ── -->
+        <app-mobile-filter-sheet title="Filtres des statistiques">
         <div class="filters-bar">
           <div class="filter-field">
             <label for="stats-start">Du</label>
@@ -80,6 +81,7 @@
             </select>
           </div>
         </div>
+        </app-mobile-filter-sheet>
 
         <!-- ── CHARGEMENT / ERREUR ── -->
         <div class="loading-bar" *ngIf="isLoading"><div class="loading-bar-fill"></div></div>
