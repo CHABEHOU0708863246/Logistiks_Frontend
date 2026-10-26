@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, HostListener, ViewChild } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../core/utils/avatar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, RouterLink, Router } from '@angular/router';
@@ -17,6 +18,8 @@ import { Document } from '../../../core/services/Document/document';
 import { Vehicles } from '../../../core/services/Vehicles/vehicles';
 import { VehicleDto } from '../../../core/models/Vehicles/Vehicle.dtos';
 import { VehicleType, VehicleStatus } from '../../../core/models/Enums/Logistiks-enums';
+import { Dashboard as DashboardApi } from '../../../core/services/Dashboard/dashboard';
+import { DashboardSummaryDto } from '../../../core/models/Dashboard/DashboardSummaryDto';
 
 // Import de Chart.js pour les graphiques
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -56,7 +59,7 @@ export class Dashboard implements OnInit, OnDestroy {
    * @returns URL de l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   /**
@@ -154,6 +157,7 @@ export class Dashboard implements OnInit, OnDestroy {
     private vehicleService: Vehicles,
     private tokenService: Token,
     private router: Router,
+    private dashboardApi: DashboardApi,
   ) { }
 
   ngOnInit(): void {
@@ -169,7 +173,6 @@ export class Dashboard implements OnInit, OnDestroy {
     this.checkMobileView();
     this.loadCurrentUser();
     this.loadDashboardData();
-    this.loadVehicleStatistics();
   }
 
   ngOnDestroy(): void {
@@ -252,7 +255,7 @@ export class Dashboard implements OnInit, OnDestroy {
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
 
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   getUserInitials(): string {
@@ -265,34 +268,98 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   /**
-   * Charger toutes les données du dashboard
+   * Charger toutes les données du dashboard depuis l'API unique /api/v2/dashboard.
+   * Aucune donnée simulée : en cas d'erreur, les valeurs restent à zéro et
+   * l'erreur est journalisée, plutôt que d'afficher de faux chiffres.
    */
   loadDashboardData(): void {
     this.isLoading = true;
 
-    // Charger toutes les données en parallèle
     this.subscriptions.add(
-      forkJoin({
-        tiers: this.loadTiersStatistics(),
-        documents: this.loadPendingDocuments(),
-        payments: this.loadOverduePayments(),
-        contracts: this.loadActiveContracts(),
-        vehicles: this.loadVehiclesData(),
-        recovery: this.loadRecoveryRate(),
-        vehicleStats: this.loadVehicleStatistics(),
-        recentData: this.loadRecentData()
-      }).subscribe({
-        next: (results) => {
+      this.dashboardApi.getDashboardSummary().subscribe({
+        next: (response) => {
+          const summary = response?.data;
+          if (summary) {
+            this.applySummary(summary);
+          }
           this.isLoading = false;
           this.updateCharts();
+          this.loadRecentVehicles();
+          this.loadRecentData().subscribe();
         },
         error: (error) => {
-          console.error('❌ Erreur chargement dashboard:', error);
+          console.error('Erreur chargement dashboard:', error);
           this.isLoading = false;
-          this.loadSimulatedData();
         }
       })
     );
+  }
+
+  private applySummary(summary: DashboardSummaryDto): void {
+    const kpis = summary.kpis;
+    const fleet = summary.fleetStats;
+    const performance = summary.contractPerformance;
+    const alerts = summary.alerts?.items ?? [];
+
+    this.dashboardStats.totalTiers = kpis.totalClients;
+    this.dashboardStats.activeTiers = kpis.totalClients - kpis.clientsWithDebt;
+    this.dashboardStats.activeTiersCount = this.dashboardStats.activeTiers;
+    this.dashboardStats.inactiveTiersCount = kpis.clientsWithDebt;
+    this.dashboardStats.totalClients = kpis.totalClients;
+    this.dashboardStats.totalSuppliers = 0;
+
+    this.dashboardStats.activeContracts = kpis.activeContracts;
+    this.dashboardStats.totalContracts = performance?.totalContracts ?? kpis.activeContracts;
+    this.dashboardStats.contractsExpiringSoon = kpis.expiringIn30Days;
+    this.dashboardStats.recoveryRate = Math.round(performance?.collectionRate ?? 0);
+
+    this.dashboardStats.documentsPending = 0;
+    this.dashboardStats.paymentsOverdue = alerts.filter((alert) => alert.category === 'payment').length;
+    this.dashboardStats.vehiclesNeedingAttention = alerts.filter(
+      (alert) => alert.category === 'insurance'
+    ).length;
+
+    this.dashboardStats.totalVehicles = kpis.totalVehicles;
+    this.dashboardStats.availableVehicles = kpis.availableVehicles;
+    this.dashboardStats.rentedVehicles = kpis.rentedVehicles;
+    this.dashboardStats.vehiclesInMaintenance = kpis.maintenanceVehicles;
+
+    this.chartData.tiersByStatus = {
+      labels: ['Clients à jour', 'Clients avec dette'],
+      datasets: [{
+        data: [
+          Math.max(0, kpis.totalClients - kpis.clientsWithDebt),
+          kpis.clientsWithDebt
+        ],
+        backgroundColor: ['#4CAF50', '#F44336'],
+        hoverBackgroundColor: ['#66BB6A', '#EF5350']
+      }]
+    };
+
+    this.vehicleChartData.vehiclesByStatus = {
+      labels: ['Disponible', 'En location', 'En maintenance', 'Hors service'],
+      datasets: [{
+        data: [
+          fleet?.availableCount ?? 0,
+          fleet?.rentedCount ?? 0,
+          fleet?.maintenanceCount ?? 0,
+          fleet?.outOfServiceCount ?? 0
+        ],
+        backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#F44336'],
+        hoverBackgroundColor: ['#66BB6A', '#42A5F5', '#FFB74D', '#EF5350']
+      }]
+    };
+
+    if (fleet?.byType?.length) {
+      this.vehicleChartData.vehiclesByType = {
+        labels: fleet.byType.map((entry) => entry.vehicleType),
+        datasets: [{
+          data: fleet.byType.map((entry) => entry.count),
+          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+          hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+        }]
+      };
+    }
   }
 
   /**
@@ -498,35 +565,11 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   /**
-   * Calculer le taux de recouvrement
-   */
-  loadRecoveryRate(): Observable<any> {
-    return of({ success: true }).pipe(
-      map(() => {
-        const receivedPayments = 85000;
-        const expectedPayments = 100000;
-        this.dashboardStats.recoveryRate = Math.round((receivedPayments / expectedPayments) * 100);
-        return { success: true };
-      })
-    );
-  }
-
-  /**
    * Mettre à jour les graphiques
    */
   updateCharts(): void {
-    // Graphique des statuts des tiers
-    this.chartData.tiersByStatus = {
-      labels: ['Actifs', 'Inactifs'],
-      datasets: [{
-        data: [this.dashboardStats.activeTiersCount, this.dashboardStats.inactiveTiersCount],
-        backgroundColor: ['#4CAF50', '#F44336'],
-        hoverBackgroundColor: ['#66BB6A', '#EF5350']
-      }]
-    };
-
-    // Mettre à jour les graphiques des véhicules par type
-    this.updateVehicleTypeChart();
+    // Les séries sont construites une seule fois depuis la synthèse
+    // /api/v2/dashboard (voir applySummary) : aucune donnée simulée.
   }
 
   /**
@@ -584,23 +627,21 @@ export class Dashboard implements OnInit, OnDestroy {
    * Calculer la tendance des véhicules opérationnels
    */
   getVehiclesTrend(): number {
-    if (this.dashboardStats.availableVehicles === 0) return 0;
-    return +5;
+    return 0;
   }
 
   /**
    * Calculer la tendance des contrats actifs
    */
   getContractsTrend(): number {
-    if (this.dashboardStats.activeContracts === 0) return 0;
-    return +8;
+    return 0;
   }
 
   /**
    * Calculer la tendance du taux de recouvrement
    */
   getRecoveryTrend(): number {
-    return -3;
+    return 0;
   }
 
   /**
@@ -666,8 +707,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   getTiersTrend(): number {
-    if (this.dashboardStats.activeTiersCount === 0) return 0;
-    return Math.floor(Math.random() * 20) + 5;
+    return 0;
   }
 
   /**
@@ -693,32 +733,6 @@ export class Dashboard implements OnInit, OnDestroy {
     }
 
     return `Bienvenue sur votre tableau de bord Logistiks. ${parts.join(', ')} aujourd'hui.`;
-  }
-
-  loadSimulatedData(): void {
-    setTimeout(() => {
-      this.dashboardStats.activeContracts = 15;
-      this.dashboardStats.recoveryRate = 85;
-      this.dashboardStats.documentsPending = 3;
-      this.dashboardStats.paymentsOverdue = 2;
-      this.dashboardStats.vehiclesNeedingAttention = 1;
-      this.dashboardStats.totalClients = 8;
-      this.dashboardStats.totalSuppliers = 5;
-      this.dashboardStats.totalVehicles = 24;
-      this.dashboardStats.availableVehicles = 15;
-      this.dashboardStats.rentedVehicles = 6;
-      this.dashboardStats.vehiclesInMaintenance = 3;
-      this.dashboardStats.activeTiersCount = 18;
-      this.dashboardStats.inactiveTiersCount = 7;
-      this.dashboardStats.activeTiers = 18;
-
-      // Ne pas simuler les données de graphiques - elles seront chargées depuis l'API
-      // Les graphiques véhicules utilisent les vraies données des méthodes:
-      // - loadVehicleStatistics() pour vehiclesByStatus
-      // - updateVehicleTypeChart() pour vehiclesByType
-
-      this.updateCharts();
-    }, 1000);
   }
 
   toggleSidebar(): void {
@@ -765,16 +779,9 @@ export class Dashboard implements OnInit, OnDestroy {
    * Logout
    */
   logout(): void {
-    this.tokenService.logout();
-
     this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/auth/login']);
-      },
-      error: (error) => {
-        console.warn('⚠️ Erreur API déconnexion:', error);
-        this.router.navigate(['/auth/login']);
-      }
+      next: () => this.tokenService.logout(),
+      error: () => this.tokenService.logout(),
     });
   }
 }

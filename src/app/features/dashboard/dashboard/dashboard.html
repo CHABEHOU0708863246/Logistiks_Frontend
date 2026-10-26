@@ -153,7 +153,7 @@
         <div class="kpi-card purple">
           <div class="kpi-header">
             <div class="kpi-icon purple"><i class="bx bx-group"></i></div>
-            <div class="kpi-trend" [class.up]="getTiersTrend() >= 0" [class.down]="getTiersTrend() < 0">
+            <div class="kpi-trend" *ngIf="getTiersTrend() !== 0" [class.up]="getTiersTrend() >= 0" [class.down]="getTiersTrend() < 0">
               <i class="bx" [class.bx-trending-up]="getTiersTrend() >= 0" [class.bx-trending-down]="getTiersTrend() < 0"></i>
               {{ getTiersTrend() >= 0 ? '+' : '' }}{{ getTiersTrend() }}%
             </div>
@@ -167,7 +167,7 @@
         <div class="kpi-card green">
           <div class="kpi-header">
             <div class="kpi-icon green"><i class="bx bx-car"></i></div>
-            <div class="kpi-trend" [class.up]="getVehiclesTrend() >= 0" [class.down]="getVehiclesTrend() < 0">
+            <div class="kpi-trend" *ngIf="getVehiclesTrend() !== 0" [class.up]="getVehiclesTrend() >= 0" [class.down]="getVehiclesTrend() < 0">
               <i class="bx" [class.bx-trending-up]="getVehiclesTrend() >= 0" [class.bx-trending-down]="getVehiclesTrend() < 0"></i>
               {{ getVehiclesTrend() >= 0 ? '+' : '' }}{{ getVehiclesTrend() }}%
             </div>
@@ -181,7 +181,7 @@
         <div class="kpi-card amber">
           <div class="kpi-header">
             <div class="kpi-icon amber"><i class="bx bx-file"></i></div>
-            <div class="kpi-trend" [class.up]="getContractsTrend() >= 0" [class.down]="getContractsTrend() < 0">
+            <div class="kpi-trend" *ngIf="getContractsTrend() !== 0" [class.up]="getContractsTrend() >= 0" [class.down]="getContractsTrend() < 0">
               <i class="bx" [class.bx-trending-up]="getContractsTrend() >= 0" [class.bx-trending-down]="getContractsTrend() < 0"></i>
               {{ getContractsTrend() >= 0 ? '+' : '' }}{{ getContractsTrend() }}%
             </div>
@@ -195,7 +195,7 @@
         <div class="kpi-card red">
           <div class="kpi-header">
             <div class="kpi-icon red"><i class="bx bx-wallet"></i></div>
-            <div class="kpi-trend" [class.up]="getRecoveryTrend() >= 0" [class.down]="getRecoveryTrend() < 0">
+            <div class="kpi-trend" *ngIf="getRecoveryTrend() !== 0" [class.up]="getRecoveryTrend() >= 0" [class.down]="getRecoveryTrend() < 0">
               <i class="bx" [class.bx-trending-up]="getRecoveryTrend() >= 0" [class.bx-trending-down]="getRecoveryTrend() < 0"></i>
               {{ getRecoveryTrend() >= 0 ? '+' : '' }}{{ getRecoveryTrend() }}%
             </div>
@@ -214,7 +214,7 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title"><i class="bx bx-pie-chart-alt-2"></i> Répartition des Tiers</div>
+              <div class="card-title"><i class="bx bx-pie-chart-alt-2"></i> Répartition des clients</div>
             </div>
           </div>
           <div class="card-body">
@@ -291,8 +291,8 @@
               <div class="quick-stat-item">
                 <div class="quick-stat-icon amber"><i class="bx bx-package"></i></div>
                 <div class="quick-stat-info">
-                  <div class="quick-stat-value">{{ dashboardStats.totalSuppliers }}</div>
-                  <div class="quick-stat-label">Fournisseurs</div>
+                  <div class="quick-stat-value">{{ dashboardStats.inactiveTiersCount }}</div>
+                  <div class="quick-stat-label">Clients avec dette</div>
                 </div>
               </div>
 
