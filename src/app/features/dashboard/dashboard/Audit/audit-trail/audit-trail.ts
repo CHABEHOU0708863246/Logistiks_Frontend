@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -10,6 +11,7 @@ import { Subject, forkJoin, takeUntil, debounceTime, distinctUntilChanged } from
 import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { SidebarComponent } from '../../../../../core/components/sidebar-component/sidebar-component';
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 
 // ============================================================================
 // MODELS IMPORTS
@@ -86,7 +88,8 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
     FormsModule,
     RouterModule,
     NotificationComponent,
-    SidebarComponent
+    SidebarComponent,
+    MobileFilterSheetComponent
   ],
   templateUrl: './audit-trail.html',
   styleUrl: './audit-trail.scss',
@@ -255,7 +258,7 @@ export class AuditTrail implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   getUserInitials(): string {
