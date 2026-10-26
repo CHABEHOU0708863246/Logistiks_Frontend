@@ -457,8 +457,8 @@ body.iam-sheet-open {
   .usr-modal {
     display: flex !important;
     flex-direction: column !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
     margin: 0 !important;
@@ -488,8 +488,8 @@ body.iam-sheet-open {
   .center-modal {
     display: flex !important;
     flex-direction: column !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
     margin: 0 !important;
@@ -576,8 +576,8 @@ body.iam-sheet-open {
   /* Les anciennes feuilles latérales deviennent des panneaux pleine largeur. */
   .side-panel,
   .drawer-panel {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
