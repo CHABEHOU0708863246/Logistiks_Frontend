@@ -149,6 +149,7 @@
       </div>
 
       <!-- ══ FILTRES ══ -->
+      <app-mobile-filter-sheet title="Filtres des utilisateurs">
       <div class="card" style="margin-top: 18px;">
         <div class="card-body" style="padding: 16px 22px;">
           <div class="usr-filters">
@@ -190,6 +191,7 @@
           </div>
         </div>
       </div>
+      </app-mobile-filter-sheet>
 
       <!-- ══ TABLEAU ══ -->
       <div class="card" style="margin-top: 18px;">
@@ -329,9 +331,6 @@
                           <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
                         <div class="dropdown-menu" [class.show]="isDropdownOpen(user.id)" style="right:0;left:auto;top:calc(100% + 6px);">
-                          <a class="dropdown-item" (click)="resetPassword(user)">
-                            <i class="bx bx-lock-open"></i> Réinitialiser mot de passe
-                          </a>
                           <a class="dropdown-item" (click)="viewAuditLog(user)">
                             <i class="bx bx-history"></i> Historique d'activité
                           </a>

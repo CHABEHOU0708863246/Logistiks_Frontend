@@ -126,6 +126,7 @@
       </div>
 
       <!-- ══ FILTRES ══ -->
+      <app-mobile-filter-sheet title="Filtres des rôles">
       <div class="card" style="margin-top: 18px;">
         <div class="card-body" style="padding: 16px 22px;">
           <div class="usr-filters">
@@ -161,6 +162,7 @@
           </div>
         </div>
       </div>
+      </app-mobile-filter-sheet>
 
       <!-- ══ GRILLE DES RÔLES ══ -->
       <div style="margin-top: 18px;">
@@ -277,7 +279,7 @@
       <button class="topbar-icon-btn" (click)="closeModal()"><i class="bx bx-x"></i></button>
     </div>
 
-    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="iam-form">
       <div class="usr-modal__body">
 
         <!-- Informations de base -->
@@ -378,7 +380,7 @@
 
       </div>
 
-      <div class="usr-modal__footer">
+      <div class="usr-modal__footer iam-action-bar">
         <button type="button" class="btn btn-outline btn-sm" (click)="closeModal()">
           <i class="bx bx-x"></i> Annuler
         </button>

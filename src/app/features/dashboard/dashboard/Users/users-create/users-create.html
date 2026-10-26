@@ -128,7 +128,7 @@
       </div>
 
       <!-- ══ FORMULAIRE ══ -->
-      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="iam-form">
 
         <!-- ════════════════════════════════════════ -->
         <!-- ÉTAPE 1 : INFORMATIONS DE BASE          -->
@@ -310,7 +310,7 @@
           </div>
 
           <!-- Footer actions -->
-          <div class="crt-card-footer">
+          <div class="crt-card-footer iam-action-bar">
             <a [routerLink]="['/dashboard/admin/users-list']" class="btn btn-outline">
               <i class="bx bx-x"></i> Annuler
             </a>
@@ -393,7 +393,7 @@
 
           </div>
 
-          <div class="crt-card-footer">
+          <div class="crt-card-footer iam-action-bar">
             <button type="button" class="btn btn-outline" (click)="previousStep()">
               <i class="bx bx-left-arrow-alt"></i> Précédent
             </button>
@@ -508,7 +508,7 @@
 
           </div>
 
-          <div class="crt-card-footer">
+          <div class="crt-card-footer iam-action-bar">
             <button type="button" class="btn btn-outline" (click)="previousStep()">
               <i class="bx bx-left-arrow-alt"></i> Précédent
             </button>

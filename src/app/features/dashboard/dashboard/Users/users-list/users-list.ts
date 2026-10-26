@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -6,6 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../../../../environments/environment';
 import { NotificationComponent } from '../../../../../core/components/notification-component/notification-component';
 import { SidebarComponent } from '../../../../../core/components/sidebar-component/sidebar-component';
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
 import { Auth } from '../../../../../core/services/Auth/auth';
 import { NotificationService } from '../../../../../core/services/Notification/notification-service';
@@ -13,11 +15,11 @@ import { Token } from '../../../../../core/services/Token/token';
 import { Users } from '../../../../../core/services/Users/users';
 import { Roles } from '../../../../../core/services/Roles/roles';
 import { RoleDto } from '../../../../../core/models/Core/Roles/DTOs/RoleDto';
-import { Permissions } from "../../../../../core/services/Permission/permissions-with-fallback.service";
+import { Permissions } from "../../../../../core/services/Permission/permissions.service";
 
 @Component({
   selector: 'app-users-list',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NotificationComponent, SidebarComponent, MobileFilterSheetComponent],
   templateUrl: './users-list.html',
   styleUrl: './users-list.scss',
 })
@@ -733,7 +735,7 @@ export class UsersList implements OnInit, OnDestroy {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   getUserInitials(): string {
@@ -746,7 +748,7 @@ export class UsersList implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   toggleUserMenu(): void {

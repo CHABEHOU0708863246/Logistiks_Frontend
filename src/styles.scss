@@ -329,15 +329,24 @@ body.iam-sheet-open {
   }
 
   .iam-filter-body .filter-field,
-  .iam-filter-body .adv-filter-field {
+  .iam-filter-body .adv-filter-field,
+  .iam-filter-body .usr-filter-group,
+  .iam-filter-body .usr-filters > * {
     width: 100% !important;
     min-width: 0 !important;
+  }
+
+  .iam-filter-body .usr-filters {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
   }
 
   /* ── Formulaires : une colonne + barre d'action collée en bas ─── */
   .iam-form .form-grid,
   .iam-form .form-row,
   .iam-form .form-columns,
+  .iam-form .crt-form-row,
   .iam-form .two-columns,
   .iam-form .grid-2,
   .iam-form .grid-3 {
@@ -408,6 +417,37 @@ body.iam-sheet-open {
     justify-content: center !important;
     padding: 0 !important;
     overflow-y: auto;
+  }
+
+  .usr-modal-overlay {
+    padding: 0 !important;
+  }
+
+  .usr-modal {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .usr-modal form,
+  .usr-modal__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .usr-modal__footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex: 0 0 auto;
+    background: #ffffff;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .modal-dialog,
