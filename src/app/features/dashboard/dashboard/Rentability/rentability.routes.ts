@@ -24,14 +24,5 @@ export const RENTABILITE_ROUTES: Routes = [
       breadcrumb: 'Calcul'
     },
     canActivate: [authGuard]
-  },
-  {
-    path: 'comparaisons',
-    loadComponent: () => import('./period-comparison/period-comparison').then(m => m.PeriodComparison),
-    data: {
-      title: 'Comparaisons de périodes',
-      breadcrumb: 'Comparaisons'
-    },
-    canActivate: [authGuard]
   }
 ];
