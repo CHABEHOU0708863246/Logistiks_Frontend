@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -19,6 +20,7 @@ import { Contract } from '../../../../../core/services/Contract/contract';
 import { ContractDto } from '../../../../../core/models/Contracts/ContractDto';
 import { ConfirmDialog } from '../../../../../core/components/confirm-dialog/confirm-dialog';
 import { SidebarComponent } from "../../../../../core/components/sidebar-component/sidebar-component";
+import { MobileFilterSheetComponent } from '../../../../../core/components/mobile-filter-sheet/mobile-filter-sheet';
 
 /**
  * Réponse paginée du serveur pour les contrats
@@ -43,7 +45,7 @@ export interface ContractPaginatedResponse {
  */
 @Component({
   selector: 'app-vehicules-list',
-  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule, NotificationComponent, ConfirmDialog, SidebarComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ReactiveFormsModule, NotificationComponent, ConfirmDialog, SidebarComponent, MobileFilterSheetComponent],
   templateUrl: './vehicules-list.html',
   styleUrls: ['./vehicules-list.scss'],
 })
@@ -1679,7 +1681,7 @@ calculateEndDate(): string {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   /**
@@ -1698,7 +1700,7 @@ calculateEndDate(): string {
    * Obtient l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   /**

@@ -429,6 +429,27 @@ body.iam-sheet-open {
     min-height: 48px;
   }
 
+  .modal-dialog form .form-grid,
+  .modal-dialog form .form-row,
+  .modal-dialog form .grid-2,
+  .modal-card form .form-grid,
+  .modal-card form .form-row,
+  .center-modal form .form-grid,
+  .center-modal form .form-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  .modal-dialog form input,
+  .modal-dialog form select,
+  .modal-dialog form textarea,
+  .modal-card form input,
+  .modal-card form select,
+  .modal-card form textarea {
+    font-size: 16px !important;
+  }
+
   .modal-dialog > .modal-header,
   .modal-card > .modal-header,
   .modal-panel > .modal-header {
