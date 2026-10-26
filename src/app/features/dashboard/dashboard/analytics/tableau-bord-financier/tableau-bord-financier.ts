@@ -1,4 +1,5 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -544,14 +545,6 @@ private buildRankedVehicles(): void {
   // SECTION 12 : EXPORT
   // ============================================================================
 
-  exportPdf(): void {
-    this.notificationService.info('Export PDF en cours de développement…', " Patience !");
-  }
-
-  exportExcel(): void {
-    this.notificationService.info('Export Excel en cours de développement…', " Patience !" );
-  }
-
   exportCsv(): void {
     if (!this.chartData.length) return;
     const header = 'Mois,Revenus,Dépenses,Profit\n';
@@ -627,7 +620,7 @@ private buildRankedVehicles(): void {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const color  = colors[name.length % colors.length];
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, color);
   }
 
   getUserInitials(): string {
@@ -638,7 +631,7 @@ private buildRankedVehicles(): void {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ============================================================================

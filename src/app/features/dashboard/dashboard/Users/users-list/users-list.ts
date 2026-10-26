@@ -458,18 +458,6 @@ export class UsersList implements OnInit, OnDestroy {
   }
 
   /**
-   * Réinitialise le mot de passe d'un utilisateur
-   */
-  resetPassword(user: User): void {
-    if (confirm(`Voulez-vous vraiment réinitialiser le mot de passe de ${this.getFullName(user)} ?`)) {
-      this.notificationService.info(
-        'Fonctionnalité en cours de développement',
-        'Info'
-      );
-    }
-  }
-
-  /**
    * Affiche l'historique d'un utilisateur
    */
   viewAuditLog(user: User): void {
