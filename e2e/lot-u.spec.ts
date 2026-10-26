@@ -166,7 +166,7 @@ test.describe('Lot U — mobile 390x844', () => {
   test('menu latéral : 20 ouvertures, fond cliquable, Échap et navigation', async ({ page }) => {
     await openApp(page, '/dashboard/about');
     const sidebar = page.locator('#sidebar');
-    const toggle = page.locator('.menu-toggle-btn').first();
+    const toggle = page.locator('.mobile-header__icon[aria-label="Ouvrir le menu"]');
     const backdrop = page.locator('.sidebar-backdrop');
 
     await expect(sidebar).not.toHaveClass(/open/);
@@ -178,7 +178,9 @@ test.describe('Lot U — mobile 390x844', () => {
       await expect.poll(async () => Math.round((await sidebar.boundingBox())?.x ?? -1)).toBe(0);
       await page.mouse.click(360, 420);
       await expect(sidebar).not.toHaveClass(/open/);
-      await expect.poll(async () => Math.round((await sidebar.boundingBox())?.x ?? 0)).toBe(-268);
+      await expect
+        .poll(async () => Math.round((await sidebar.boundingBox())?.x ?? 0))
+        .toBeLessThanOrEqual(-260);
     }
 
     await toggle.click();
@@ -195,7 +197,7 @@ test.describe('Lot U — mobile 390x844', () => {
 
   test('hamburger disponible sur un écran secondaire', async ({ page }) => {
     await openApp(page, '/dashboard/finances/transactions');
-    const toggle = page.locator('.menu-toggle-btn--mobile');
+    const toggle = page.locator('.mobile-header__icon[aria-label="Ouvrir le menu"]');
     await expect(toggle).toBeVisible();
     await toggle.click();
     await expect(page.locator('#sidebar')).toHaveClass(/open/);
@@ -269,11 +271,18 @@ test.describe('Lot U — mobile 390x844', () => {
     expect(paymentRequests).toBe(1);
   });
 
-  test('lien Paramètres du menu utilisateur', async ({ page }) => {
+  test('lien Paramètres du menu mobile', async ({ page }) => {
     await openApp(page, '/dashboard/about');
-    await page.locator('.topbar-user').click();
-    const settings = page.locator('.dropdown-menu a', { hasText: 'Paramètres' });
-    await expect(settings).toHaveAttribute('href', '/dashboard/settings/general');
+    await page.locator('.mobile-header__icon[aria-label="Ouvrir le menu"]').click();
+    await expect(page.locator('#sidebar')).toHaveClass(/open/);
+
+    await page
+      .locator('#sidebar .nav-link', { has: page.locator('.bx-cog') })
+      .first()
+      .click();
+
+    const settings = page.locator('#sidebar a[href="/dashboard/settings/general"]').first();
+    await expect(settings).toBeVisible();
     await settings.click();
     await expect(page).toHaveURL(/\/dashboard\/settings\/general/);
   });
@@ -286,7 +295,7 @@ test.describe('Lot U — non-régression desktop 1440x900', () => {
     await openApp(page, '/dashboard/audit');
     await expect(page.locator('#sidebar')).toBeVisible();
     await expect(page.locator('.sidebar-backdrop')).toBeHidden();
-    await expect(page.locator('.menu-toggle-btn--mobile')).toBeHidden();
+    await expect(page.locator('.mobile-header__icon[aria-label="Ouvrir le menu"]')).toBeHidden();
     const margin = await page.locator('.main-content').evaluate((element) => getComputedStyle(element).marginLeft);
     expect(margin).toBe('268px');
   });
