@@ -167,7 +167,7 @@
 
           <!-- *** TAB: INFORMATIONS PERSONNELLES *** -->
           <form [formGroup]="personalForm" (ngSubmit)="savePersonalInfo()"
-            *ngIf="activeTab === 'personal' && !isLoading" class="profile-form" @tabFade>
+            *ngIf="activeTab === 'personal' && !isLoading" class="profile-form iam-form" @tabFade>
             <div class="card-header">
               <div class="card-title">
                 <i class="bx bx-user"></i> Informations personnelles
@@ -253,7 +253,7 @@
 
           <!-- *** TAB: ADRESSE *** -->
           <form [formGroup]="addressForm" (ngSubmit)="saveAddress()"
-            *ngIf="activeTab === 'address' && !isLoading" class="profile-form" @tabFade>
+            *ngIf="activeTab === 'address' && !isLoading" class="profile-form iam-form" @tabFade>
             <div class="card-header">
               <div class="card-title">
                 <i class="bx bx-home"></i> Adresse
@@ -292,7 +292,7 @@
 
           <!-- *** TAB: CONTACT D'URGENCE *** -->
           <form [formGroup]="emergencyForm" (ngSubmit)="saveEmergency()"
-            *ngIf="activeTab === 'emergency' && !isLoading" class="profile-form" @tabFade>
+            *ngIf="activeTab === 'emergency' && !isLoading" class="profile-form iam-form" @tabFade>
             <div class="card-header">
               <div class="card-title">
                 <i class="bx bx-alarm-exclamation"></i> Contact d'urgence
@@ -326,7 +326,7 @@
 
           <!-- *** TAB: SÉCURITÉ *** -->
           <form [formGroup]="securityForm" (ngSubmit)="savePassword()"
-            *ngIf="activeTab === 'security' && !isLoading" class="profile-form" @tabFade>
+            *ngIf="activeTab === 'security' && !isLoading" class="profile-form iam-form" @tabFade>
             <div class="card-header">
               <div class="card-title">
                 <i class="bx bx-lock-alt"></i> Changer le mot de passe
