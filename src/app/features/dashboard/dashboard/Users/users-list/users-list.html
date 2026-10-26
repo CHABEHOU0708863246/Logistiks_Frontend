@@ -314,23 +314,18 @@
                   <td style="text-align:right; padding-right:18px;">
                     <div class="usr-actions">
 
-                      <button class="topbar-icon-btn usr-action-btn usr-action-btn--info"
-                        (click)="viewUserDetails(user)" title="Voir détails">
-                        <i class="bx bx-show"></i>
-                      </button>
-
-                      <button *ngIf="permissions.isSuperAdmin()"
-                        class="topbar-icon-btn usr-action-btn usr-action-btn--warning"
-                        (click)="manageUserPermissions(user)" title="Gérer permissions">
-                        <i class="bx bx-shield-quarter"></i>
-                      </button>
-
-                      <!-- Dropdown actions -->
+                      <!-- Toutes les actions sont regroupées dans le menu « … » -->
                       <div class="usr-dropdown-wrap" style="position:relative;">
-                        <button class="topbar-icon-btn" (click)="toggleDropdown(user.id)">
+                        <button class="topbar-icon-btn" (click)="toggleDropdown(user.id)" aria-label="Actions de l'utilisateur">
                           <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
                         <div class="dropdown-menu" [class.show]="isDropdownOpen(user.id)" style="right:0;left:auto;top:calc(100% + 6px);">
+                          <a class="dropdown-item" (click)="viewUserDetails(user)">
+                            <i class="bx bx-show"></i> Voir détails
+                          </a>
+                          <a *ngIf="permissions.isSuperAdmin()" class="dropdown-item" (click)="manageUserPermissions(user)">
+                            <i class="bx bx-shield-quarter"></i> Gérer permissions
+                          </a>
                           <a class="dropdown-item" (click)="viewAuditLog(user)">
                             <i class="bx bx-history"></i> Historique d'activité
                           </a>

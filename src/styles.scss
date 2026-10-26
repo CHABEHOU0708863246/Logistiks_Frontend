@@ -297,6 +297,15 @@ body.iam-sheet-open {
     align-self: flex-end;
   }
 
+  .usr-actions .dropdown-menu.show {
+    position: fixed !important;
+    right: 16px !important;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 16px !important;
+    top: auto !important;
+    z-index: 1250 !important;
+  }
+
   .iam-mobile-actions__trigger {
     display: inline-flex;
     align-items: center;
