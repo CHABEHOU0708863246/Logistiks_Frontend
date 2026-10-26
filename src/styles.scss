@@ -342,6 +342,37 @@ body.iam-sheet-open {
     gap: 12px !important;
   }
 
+  /* ── Paramétrage : une colonne et enregistrement accessible ───── */
+  .settings-page .page-header {
+    flex-wrap: wrap !important;
+    gap: 12px;
+  }
+
+  .settings-page .form-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .settings-page .field-input {
+    font-size: 16px !important;
+  }
+
+  .settings-page .page-actions {
+    position: sticky;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    z-index: 20;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .settings-page .page-actions .btn {
+    flex: 1 1 0;
+    min-height: 48px;
+  }
+
   /* ── Formulaires : une colonne + barre d'action collée en bas ─── */
   .iam-form .form-grid,
   .iam-form .form-row,
