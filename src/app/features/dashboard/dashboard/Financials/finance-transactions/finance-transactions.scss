@@ -1,3 +1,4 @@
+@use 'sass:color';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Transactions Component SCSS
 // Design system aligné sur le thème dashboard
@@ -849,7 +850,7 @@ textarea.form-input { resize: vertical; }
 
   &-success {
     background: $success; color: #fff;
-    &:hover { background: darken($success, 8%); }
+    &:hover { background: color.adjust($success, $lightness: -8%); }
   }
 
   &-outline {
@@ -901,7 +902,7 @@ textarea.form-input { resize: vertical; }
   flex-shrink: 0;
 
   &--danger {
-    background: linear-gradient(135deg, $danger, darken($danger, 10%));
+    background: linear-gradient(135deg, $danger, color.adjust($danger, $lightness: -10%));
     border-bottom-color: transparent;
   }
 }

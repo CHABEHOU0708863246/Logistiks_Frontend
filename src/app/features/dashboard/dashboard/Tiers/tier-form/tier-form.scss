@@ -1,3 +1,4 @@
+@use 'sass:color';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Create Tier Component SCSS
 // Design system identique au Dashboard (variables & composants partagés)
@@ -617,14 +618,14 @@ $font-display:   'Space Grotesk', sans-serif;
 
   &.info {
     background: $info-bg;
-    color: darken($info, 10%);
+    color: color.adjust($info, $lightness: -10%);
     border: 1px solid rgba(11, 165, 236, 0.20);
     i { color: $info; }
   }
 
   &.danger {
     background: $danger-bg;
-    color: darken($danger, 8%);
+    color: color.adjust($danger, $lightness: -8%);
     border: 1px solid rgba(240, 68, 56, 0.20);
     i { color: $danger; }
   }

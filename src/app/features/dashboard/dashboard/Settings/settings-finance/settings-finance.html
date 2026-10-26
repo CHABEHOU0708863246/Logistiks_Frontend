@@ -9,6 +9,7 @@
     <!-- ══ TOPBAR ══ -->
     <header class="topbar">
       <div class="topbar-left">
+        <button type="button" class="menu-toggle-btn menu-toggle-btn--mobile" aria-label="Ouvrir le menu"><i class="bx bx-menu"></i></button>
         <div class="breadcrumb">
           <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
           <span class="breadcrumb-sep">/</span>
@@ -25,7 +26,7 @@
         </div>
 
         <!-- User dropdown -->
-        <div class="topbar-user" (click)="$event.stopPropagation(); toggleUserMenu()">
+        <div class="topbar-user dropdown-toggle" (click)="$event.stopPropagation(); toggleUserMenu()">
           <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
             {{ getUserInitials() }}
           </div>

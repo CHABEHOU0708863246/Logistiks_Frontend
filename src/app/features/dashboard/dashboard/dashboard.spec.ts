@@ -14,7 +14,6 @@ describe('Dashboard', () => {
 
     fixture = TestBed.createComponent(Dashboard);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

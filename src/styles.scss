@@ -1,2 +1,40 @@
 /* You can add global styles to this file, and also import other style files */
 @use 'tailwindcss';
+
+@media (max-width: 900px) {
+  .main-content,
+  .layout-page {
+    margin-left: 0 !important;
+  }
+}
+
+.menu-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.menu-toggle-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.menu-toggle-btn:focus-visible {
+  outline: 2px solid #696cff;
+  outline-offset: 2px;
+}
+
+@media (min-width: 901px) {
+  .menu-toggle-btn--mobile {
+    display: none;
+  }
+}

@@ -1,3 +1,4 @@
+@use 'sass:color';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Profile Component SCSS
 // Design aligné sur le dashboard (variables identiques)
@@ -875,7 +876,7 @@ $font-display:   'Space Grotesk', sans-serif;
 .skeleton-line {
   height: 14px;
   border-radius: 6px;
-  background: linear-gradient(90deg, $surface2 25%, darken($surface2, 3%) 50%, $surface2 75%);
+  background: linear-gradient(90deg, $surface2 25%, color.adjust($surface2, $lightness: -3%) 50%, $surface2 75%);
   background-size: 800px 100%;
   animation: skeleton-shimmer 1.4s infinite;
 

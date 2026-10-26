@@ -1,4 +1,6 @@
-<aside class="sidebar" id="sidebar">
+<div class="sidebar-backdrop" [class.show]="mobileOpen" (click)="closeMobile()"></div>
+
+<aside class="sidebar" id="sidebar" [class.open]="mobileOpen">
 
   <!-- ══ BRAND ══════════════════════════════════════════════════════ -->
   <div class="sidebar-brand">
@@ -12,7 +14,7 @@
   </div>
 
   <!-- ══ NAV ════════════════════════════════════════════════════════ -->
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" aria-label="Navigation principale" (click)="onNavClick($event)">
     <ul>
 
       <!-- ─────────────────────────────────────────────────────── -->

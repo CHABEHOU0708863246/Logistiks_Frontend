@@ -30,7 +30,7 @@
           <span class="notif-dot"></span>
         </button>
 
-        <div class="topbar-user" (click)="toggleUserMenu()">
+        <div class="topbar-user dropdown-toggle" (click)="toggleUserMenu()">
           <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">{{ getUserInitials() }}</div>
           <img *ngIf="userPhotoUrl && userPhotoUrl !== ''" class="user-avatar"
             [src]="userPhotoUrl" [alt]="userName" (error)="userPhotoUrl = getDefaultAvatar()" />
@@ -45,7 +45,7 @@
             </div>
             <hr class="dropdown-divider" />
             <a [routerLink]="['/dashboard/profiles']" class="dropdown-item"><i class="bx bx-user"></i> Mon profil</a>
-            <a [routerLink]="['/settings']" class="dropdown-item"><i class="bx bx-cog"></i> Paramètres</a>
+            <a [routerLink]="['/dashboard/settings/general']" class="dropdown-item"><i class="bx bx-cog"></i> Paramètres</a>
             <hr class="dropdown-divider" />
             <a (click)="logout()" class="dropdown-item dropdown-item--danger"><i class="bx bx-log-out"></i> Déconnexion</a>
           </div>

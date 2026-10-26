@@ -1902,6 +1902,44 @@ $font-display:   'Space Grotesk', 'Inter', sans-serif;
   .pagination-bar { flex-direction: column; align-items: center; }
   .card-header { flex-direction: column; align-items: flex-start; }
   .modal-sheet { width: 95%; margin: 16px; }
+
+  .modal-sheet--payment {
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+    animation: none;
+  }
+
+  .modal-sheet--payment .modal-sheet-header {
+    padding-top: calc(18px + env(safe-area-inset-top, 0px));
+  }
+
+  .modal-sheet--payment .modal-sheet-body {
+    padding: 16px;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-sheet--payment .form-input,
+  .modal-sheet--payment .form-select,
+  .modal-sheet--payment .form-textarea {
+    font-size: 16px;
+  }
+
+  .modal-sheet--payment .modal-sheet-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: $surface;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 576px) {

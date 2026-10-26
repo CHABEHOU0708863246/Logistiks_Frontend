@@ -1,3 +1,4 @@
+@use 'sass:color';
 // chatbot-widget.component.scss
 // ── Neural AI · Dark Glassmorphism · 3D Design ─────────────────────────────
 
@@ -48,10 +49,10 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
   // Fond dégradé 3D
   background: radial-gradient(
     circle at 35% 35%,
-    lighten(#696CFF, 15%) 0%,
+    color.adjust(#696CFF, $lightness: 15%) 0%,
     $violet 40%,
     $violet-dk 80%,
-    darken($violet-dk, 15%) 100%
+    color.adjust($violet-dk, $lightness: -15%) 100%
   );
 
   // Ombre portée visible sur FOND BLANC ET FOND SOMBRE
@@ -81,9 +82,9 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
   &.is-open {
     background: radial-gradient(
       circle at 35% 35%,
-      lighten(#4A4DB5, 10%) 0%,
+      color.adjust(#4A4DB5, $lightness: 10%) 0%,
       $violet-dk 50%,
-      darken($violet-dk, 20%) 100%
+      color.adjust($violet-dk, $lightness: -20%) 100%
     );
   }
 
@@ -679,7 +680,7 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
     i { font-size: 17px; color: white; }
 
     &:hover:not(:disabled) {
-      background: linear-gradient(135deg, lighten($violet, 8%), $violet);
+      background: linear-gradient(135deg, color.adjust($violet, $lightness: 8%), $violet);
       box-shadow: 0 0 20px rgba(105,108,255,0.5);
       transform: scale(1.05);
     }

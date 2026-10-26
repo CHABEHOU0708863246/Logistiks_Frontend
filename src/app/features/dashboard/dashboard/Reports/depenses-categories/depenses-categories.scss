@@ -1,3 +1,4 @@
+@use 'sass:color';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Dépenses par Catégorie Component SCSS
 // Design system aligné sur le thème dashboard (variables partagées)
@@ -352,7 +353,7 @@ $font-display:   'Space Grotesk', sans-serif;
   &:hover { transform: translateY(-3px); box-shadow: $shadow-lg; }
 
   &--skeleton {
-    background: linear-gradient(90deg, $surface2 25%, darken($surface2, 3%) 50%, $surface2 75%);
+    background: linear-gradient(90deg, $surface2 25%, color.adjust($surface2, $lightness: -3%) 50%, $surface2 75%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s infinite;
     min-height: 130px;

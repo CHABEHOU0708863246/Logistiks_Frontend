@@ -44,7 +44,7 @@
         </button>
 
         <!-- User dropdown -->
-        <div class="topbar-user" (click)="toggleUserMenu()">
+        <div class="topbar-user dropdown-toggle" (click)="toggleUserMenu()">
           <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
             {{ getUserInitials() }}
           </div>
@@ -65,7 +65,7 @@
             <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
               <i class="bx bx-user"></i> Mon profil
             </a>
-            <a [routerLink]="['/settings']" class="dropdown-item">
+            <a [routerLink]="['/dashboard/settings/general']" class="dropdown-item">
               <i class="bx bx-cog"></i> Paramètres
             </a>
             <hr class="dropdown-divider" />
@@ -1141,7 +1141,7 @@
 <!-- MODAL — ENREGISTREMENT DE PAIEMENT                                  -->
 <!-- ════════════════════════════════════════════════════════════════════ -->
 <div class="modal-backdrop" *ngIf="showPaymentModal" (click)="closePaymentModal()"></div>
-<div class="modal-sheet modal-sheet--sm" *ngIf="showPaymentModal" (click)="$event.stopPropagation()">
+<div class="modal-sheet modal-sheet--sm modal-sheet--payment" *ngIf="showPaymentModal" (click)="$event.stopPropagation()">
   <div class="modal-sheet-header success">
     <div class="modal-sheet-title"><i class="bx bx-dollar-circle"></i> Enregistrer un paiement</div>
     <button class="modal-sheet-close" (click)="closePaymentModal()"><i class="bx bx-x"></i></button>
@@ -1182,7 +1182,7 @@
       <div class="form-field">
         <label class="form-label">Montant à payer *</label>
         <div class="input-with-suffix">
-          <input type="number" class="form-input" formControlName="amountPaid" min="0.01" step="0.01">
+          <input type="number" class="form-input" formControlName="amountPaid" min="0.01" step="0.01" inputmode="decimal">
           <span class="input-suffix">FCFA</span>
         </div>
         <small class="form-hint">
@@ -1213,7 +1213,7 @@
           placeholder="Notes additionnelles…"></textarea>
       </div>
 
-      <div class="modal-sheet-footer" style="padding: 0; margin-top: 16px; border: none;">
+      <div class="modal-sheet-footer">
         <button type="button" class="btn btn-outline" (click)="closePaymentModal()">Annuler</button>
         <button type="submit" class="btn btn-success" [disabled]="paymentLoading">
           <span *ngIf="paymentLoading" class="btn-spinner"></span>

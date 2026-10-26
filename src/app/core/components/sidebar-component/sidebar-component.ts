@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { Router, RouterModule } from "@angular/router";
 import { Subject, takeUntil } from "rxjs";
 import { Auth } from "../../services/Auth/auth";
@@ -26,6 +26,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
    */
   isCollapsed: boolean = false;
 
+  mobileOpen: boolean = false;
+
+  private readonly onMenuToggleClick = (event: MouseEvent): void => {
+    if (!this.isMobileViewport()) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.menu-toggle-btn')) {
+      event.stopPropagation();
+      this.toggleMobile();
+    }
+  };
+
   constructor(
     private authService: Auth,
     private tokenService: Token,
@@ -36,11 +47,52 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Recharger les permissions au démarrage
     this.permission.reloadPermissions();
+    document.addEventListener('click', this.onMenuToggleClick, true);
   }
 
   ngOnDestroy(): void {
+    document.removeEventListener('click', this.onMenuToggleClick, true);
+    this.closeMobile();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeMobile();
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    if (!this.isMobileViewport()) {
+      this.closeMobile();
+    }
+  }
+
+  onNavClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('a[href]')) {
+      this.closeMobile();
+    }
+  }
+
+  toggleMobile(): void {
+    this.mobileOpen = !this.mobileOpen;
+    this.syncBodyScroll();
+  }
+
+  closeMobile(): void {
+    if (!this.mobileOpen) return;
+    this.mobileOpen = false;
+    this.syncBodyScroll();
+  }
+
+  private syncBodyScroll(): void {
+    document.body.style.overflow = this.mobileOpen ? 'hidden' : '';
+  }
+
+  private isMobileViewport(): boolean {
+    return window.matchMedia('(max-width: 900px)').matches;
   }
 
   /**

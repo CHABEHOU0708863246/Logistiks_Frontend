@@ -1,3 +1,4 @@
+@use 'sass:color';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Documents Validation Component SCSS
 // Design system aligné sur le thème dashboard
@@ -659,7 +660,7 @@ $font-display:   'Space Grotesk', sans-serif;
     background: $success;
     color: #fff;
 
-    &:hover { background: darken($success, 8%); }
+    &:hover { background: color.adjust($success, $lightness: -8%); }
     &:disabled { opacity: .5; cursor: not-allowed; }
   }
 
@@ -667,7 +668,7 @@ $font-display:   'Space Grotesk', sans-serif;
     background: $danger;
     color: #fff;
 
-    &:hover { background: darken($danger, 8%); }
+    &:hover { background: color.adjust($danger, $lightness: -8%); }
     &:disabled { opacity: .5; cursor: not-allowed; }
   }
 
@@ -1075,7 +1076,7 @@ $font-display:   'Space Grotesk', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, $success, darken($success, 10%));
+    background: linear-gradient(135deg, $success, color.adjust($success, $lightness: -10%));
     color: #fff;
     border-radius: 50%;
     font-weight: 700;

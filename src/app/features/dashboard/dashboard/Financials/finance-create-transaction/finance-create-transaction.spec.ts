@@ -14,7 +14,6 @@ describe('FinanceCreateTransaction', () => {
 
     fixture = TestBed.createComponent(FinanceCreateTransaction);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

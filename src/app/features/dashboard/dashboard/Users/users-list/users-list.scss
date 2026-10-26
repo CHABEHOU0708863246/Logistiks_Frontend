@@ -1,3 +1,4 @@
+@use 'sass:color';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Users List Component SCSS
 // Design system aligné sur le thème dashboard (variables partagées)
@@ -402,7 +403,7 @@ $font-display:   'Space Grotesk', sans-serif;
   &-danger {
     background: $danger; color: #fff;
     box-shadow: 0 4px 14px rgba(240,68,56,0.30);
-    &:hover { background: lighten($danger, 8%); }
+    &:hover { background: color.adjust($danger, $lightness: 8%); }
   }
 
   &-sm { padding: 6px 13px; font-size: 12.5px; }

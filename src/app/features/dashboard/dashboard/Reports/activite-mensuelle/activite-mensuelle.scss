@@ -1,3 +1,4 @@
+@use 'sass:color';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Rapport d'activité Component SCSS
 // Design system aligné sur le thème dashboard (variables partagées)
@@ -539,7 +540,7 @@ $font-display:   'Space Grotesk', sans-serif;
     background: linear-gradient(
       90deg,
       $surface2 25%,
-      darken($surface2, 3%) 50%,
+      color.adjust($surface2, $lightness: -3%) 50%,
       $surface2 75%
     );
     background-size: 200% 100%;
@@ -1008,9 +1009,9 @@ $font-display:   'Space Grotesk', sans-serif;
     transition: width 0.6s ease;
 
     &--maint { background: linear-gradient(90deg, $warning, $accent-light); }
-    &--fuel  { background: linear-gradient(90deg, $info, lighten($info, 15%)); }
+    &--fuel  { background: linear-gradient(90deg, $info, color.adjust($info, $lightness: 15%)); }
     &--ins   { background: linear-gradient(90deg, $primary, $primary-light); }
-    &--other { background: linear-gradient(90deg, $text-3, lighten($text-3, 10%)); }
+    &--other { background: linear-gradient(90deg, $text-3, color.adjust($text-3, $lightness: 10%)); }
   }
 }
 

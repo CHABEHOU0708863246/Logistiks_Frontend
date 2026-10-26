@@ -1171,6 +1171,10 @@ onWindowEvent(): void {
    * Soumet le formulaire de paiement
    */
   onPaymentSubmit(): void {
+    if (this.paymentLoading) {
+      return;
+    }
+
     this.paymentSubmitted = true;
 
     if (this.paymentForm.invalid || !this.selectedContractForPayment) {

@@ -1,3 +1,5 @@
+@use 'sass:color';
+@use 'sass:list';
 // ══════════════════════════════════════════════════════════════════════
 // LOGISTIK v2 — Missing Documents Component SCSS
 // Design system identique au Dashboard (variables & composants partagés)
@@ -545,7 +547,7 @@ $font-display:   'Space Grotesk', sans-serif;
   > i { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
 
   &.info {
-    background: $info-bg; color: darken($info, 10%);
+    background: $info-bg; color: color.adjust($info, $lightness: -10%);
     border: 1px solid rgba(11, 165, 236, 0.22);
     > i { color: $info; }
   }
@@ -906,7 +908,7 @@ $confetti-colors: ($primary, $accent, $success, $warning, $danger, #EC4899);
     &:nth-child(#{$i}) {
       left: #{($i - 1) * 8.5 + 2}%;
       animation-delay: #{$i * 0.09}s;
-      background: nth($confetti-colors, (($i - 1) % 6) + 1);
+      background: list.nth($confetti-colors, (($i - 1) % 6) + 1);
     }
   }
 }

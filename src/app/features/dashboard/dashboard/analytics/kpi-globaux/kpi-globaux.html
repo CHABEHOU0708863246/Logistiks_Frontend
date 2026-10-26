@@ -12,9 +12,7 @@
     <!-- ══ TOPBAR ══ -->
     <header class="topbar">
       <div class="topbar-left">
-        <!-- <button class="menu-toggle-btn" (click)="toggleSidebar()">
-          <i class="bx bx-menu"></i>
-        </button> -->
+                <button type="button" class="menu-toggle-btn menu-toggle-btn--mobile" aria-label="Ouvrir le menu"><i class="bx bx-menu"></i></button>
         <div class="breadcrumb">
           <span class="breadcrumb-home"><i class="bx bx-home-alt-2"></i></span>
           <span class="breadcrumb-sep">/</span>
@@ -31,7 +29,7 @@
         </div>
 
         <!-- User dropdown -->
-        <div class="topbar-user" (click)="$event.stopPropagation(); toggleUserMenu()">
+        <div class="topbar-user dropdown-toggle" (click)="$event.stopPropagation(); toggleUserMenu()">
           <div class="user-avatar" *ngIf="!userPhotoUrl || userPhotoUrl === ''">
             {{ getUserInitials() }}
           </div>
@@ -52,7 +50,7 @@
             <a [routerLink]="['/dashboard/profiles']" class="dropdown-item">
               <i class="bx bx-user"></i> Mon profil
             </a>
-            <a [routerLink]="['/settings']" class="dropdown-item">
+            <a [routerLink]="['/dashboard/settings/general']" class="dropdown-item">
               <i class="bx bx-cog"></i> Paramètres
             </a>
             <hr class="dropdown-divider" />
