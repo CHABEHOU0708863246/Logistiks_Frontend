@@ -151,6 +151,24 @@ body.iam-sheet-open {
     max-width: 100% !important;
   }
 
+  /* Sélecteurs de période des rapports : jamais de débordement. */
+  .rpt-period-selector {
+    flex-wrap: wrap !important;
+    max-width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .rpt-period-selector__controls {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .rpt-period-selector__select {
+    flex: 1 1 0;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
   /* ── Tableaux transformés en cartes ───────────────────────────── */
   table.iam-mobile-table {
     display: block !important;
