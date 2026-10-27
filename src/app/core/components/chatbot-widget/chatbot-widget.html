@@ -6,6 +6,8 @@
     class="chat-fab"
     [class.has-notif]="hasNewMessage"
     [class.is-open]="isOpen"
+    [attr.aria-label]="isOpen ? 'Fermer l’assistant' : 'Ouvrir l’assistant'"
+    [attr.aria-expanded]="isOpen"
     (click)="toggleChat()">
 
     <!-- Anneaux orbitaux 3D -->
@@ -142,6 +144,7 @@
           autocomplete="off"/>
         <button
           class="send-btn"
+          aria-label="Envoyer le message"
           (click)="sendMessage()"
           [disabled]="!inputText.trim() || isTyping"
           type="button">

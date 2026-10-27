@@ -1,17 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Auth } from '../../../core/services/Auth/auth';;
 import { Token } from '../../../core/services/Token/token';
 import { jwtDecode } from 'jwt-decode';
 import { NotificationService } from '../../../core/services/Notification/notification-service';
 import { NotificationComponent } from "../../../core/components/notification-component/notification-component";
-import { ChatbotWidget } from "../../../core/components/chatbot-widget/chatbot-widget";
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, NotificationComponent, ChatbotWidget],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, NotificationComponent],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -19,12 +18,14 @@ export class Login {
   loginForm!: FormGroup;
   isLoading = false;
   hidePassword = true;
+  formError = '';
   private tokenService = inject(Token);
 
   constructor(
     private fb: FormBuilder,
     private authService: Auth,
     private router: Router,
+    private route: ActivatedRoute,
     private notificationService: NotificationService
   ) {}
 
@@ -34,146 +35,144 @@ export class Login {
       password: ['', Validators.required],
       rememberMe: [true],
     });
+
+    const sessionExpired =
+      this.route.snapshot.queryParamMap.get('sessionExpired') === '1' ||
+      this.route.snapshot.queryParamMap.get('expired') === 'true';
+
+    if (sessionExpired) {
+      this.notificationService.warning(
+        'Session expirée',
+        'Votre session a expiré. Veuillez vous reconnecter.'
+      );
+
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true,
+      });
+    }
   }
 
   goToForgotPassword(): void {
     this.router.navigate(['/auth/forgot-password']);
   }
 
+  clearFormError(): void {
+    this.formError = '';
+  }
+
   onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      const { email, password, rememberMe } = this.loginForm.value;
+    this.formError = '';
 
-      const loginRequest = {
-        email: email,
-        password: password,
-        rememberMe: rememberMe,
-      };
-
-      // Utilisation de la méthode authenticate() du service
-      this.authService.authenticate(loginRequest).subscribe({
-        next: (response: any) => {
-          this.isLoading = false;
-
-          // Vérification basée sur la structure de LoginResponse
-          if (response && (response.token || response.accessToken || response.data?.token)) {
-            const token = response.token || response.accessToken || response.data?.token;
-
-            // Décodage du token pour extraire le rôle
-            let userRole = 'user'; // Rôle par défaut
-
-            try {
-              if (token) {
-                const decodedToken: any = jwtDecode(token);
-
-                // CORRECTION : Extrayez le rôle de la propriété correcte
-                // Le rôle est dans 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
-                userRole =
-                  decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-                  decodedToken.role ||
-                  decodedToken.roles?.[0] ||
-                  decodedToken.authorities?.[0] ||
-                  decodedToken.scope ||
-                  'user';
-              }
-            } catch (error) {
-              console.error('Erreur lors du décodage du token:', error);
-            }
-
-            // Stockage du token avec le service Token
-            if (token) {
-              // CORRECTION CRITIQUE : Utilisez saveToken du service Token
-              this.tokenService.saveToken(token, userRole);
-
-              if (response.refreshToken) {
-                localStorage.setItem('refresh_token', response.refreshToken);
-              }
-
-              // Si rememberMe, stocker plus longtemps
-              if (rememberMe) {
-                localStorage.setItem('remember_me', 'true');
-              }
-
-              // Vérifiez que le token est bien stocké
-              const storedToken = this.tokenService.getToken();
-            }
-
-            // Notification de succès
-            this.notificationService.success(
-              'Connexion réussie',
-              'Bienvenue ! Redirection vers votre tableau de bord...'
-            );
-
-            // Redirection après un court délai
-            setTimeout(() => {
-
-              // Naviguez d'abord, puis rechargez pour forcer la vérification du guard
-              this.router.navigate(['/dashboard']).then(
-                (success) => {
-                  if (!success) {
-                    // Si la navigation échoue, rechargez la page
-                    window.location.href = '/dashboard';
-                  }
-                },
-                (error) => {
-                  console.error('Erreur de navigation:', error);
-                  // Fallback: rechargez la page
-                  window.location.href = '/dashboard';
-                }
-              );
-            }, 1000);
-          } else {
-            this.notificationService.error(
-              'Échec de la connexion',
-              'Réponse du serveur invalide. Token manquant.'
-            );
-            console.error('Réponse sans token:', response);
-          }
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.handleLoginError(err);
-        },
-      });
-    } else {
+    if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.notificationService.warning(
-        'Formulaire incomplet',
-        'Veuillez remplir correctement tous les champs obligatoires.'
-      );
+      this.formError = 'Veuillez saisir votre email et votre mot de passe.';
+      return;
     }
+
+    this.isLoading = true;
+    const { email, password, rememberMe } = this.loginForm.value;
+
+    this.authService.authenticate({ email, password, rememberMe }).subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+
+        const token = response?.token || response?.accessToken || response?.data?.token;
+
+        if (!token) {
+          this.formError = 'La réponse du serveur est invalide. Veuillez réessayer.';
+          console.error('Réponse sans token:', response);
+          return;
+        }
+
+        let userRole = 'user';
+        try {
+          const decodedToken: any = jwtDecode(token);
+          userRole =
+            decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+            decodedToken.role ||
+            decodedToken.roles?.[0] ||
+            decodedToken.authorities?.[0] ||
+            decodedToken.scope ||
+            'user';
+        } catch (error) {
+          console.error('Erreur lors du décodage du token:', error);
+        }
+
+        const refreshToken = response.refreshToken || response.data?.refreshToken || null;
+        this.tokenService.saveSession(token, refreshToken, !!rememberMe, userRole);
+
+        this.notificationService.success(
+          'Connexion réussie',
+          'Bienvenue ! Redirection vers votre tableau de bord...'
+        );
+
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']).then(
+            (success) => {
+              if (!success) {
+                window.location.href = '/dashboard';
+              }
+            },
+            (error) => {
+              console.error('Erreur de navigation:', error);
+              window.location.href = '/dashboard';
+            }
+          );
+        }, 1000);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.handleLoginError(err);
+      },
+    });
   }
 
   /**
-   * Gestion centralisée des erreurs de login
+   * Gestion centralisée des erreurs de login.
+   * Les messages restent volontairement courts et explicites : identifiants
+   * faux, compte verrouillé/désactivé, hors ligne, trop de tentatives.
    */
   private handleLoginError(err: any): void {
-    let errorTitle = 'Erreur de connexion';
-    let errorMessage = 'Une erreur est survenue lors de la connexion.';
+    const status = Number(err?.status ?? 0);
+    const serverMessage = this.readServerMessage(err);
+    const probe = serverMessage.toLowerCase();
 
-    if (err.status === 400) {
-      errorTitle = 'Données invalides';
-      errorMessage = err.error?.message || 'Veuillez vérifier votre email et mot de passe.';
-    } else if (err.status === 401) {
-      errorTitle = 'Identifiants invalides';
-      errorMessage = err.error?.message || 'Email ou mot de passe incorrect.';
-    } else if (err.status === 403) {
-      errorTitle = 'Accès refusé';
-      errorMessage = err.error?.message || "Votre compte n'a pas les droits nécessaires.";
-    } else if (err.status === 404) {
-      errorTitle = 'Service indisponible';
-      errorMessage = "Le service d'authentification est momentanément indisponible.";
-    } else if (err.status === 429) {
-      errorTitle = 'Trop de tentatives';
-      errorMessage = 'Veuillez réessayer dans quelques minutes.';
-    } else if (err.status >= 500) {
-      errorTitle = 'Erreur serveur';
-      errorMessage = 'Le serveur rencontre des difficultés. Veuillez réessayer plus tard.';
+    if (status === 0) {
+      this.formError =
+        'Vous êtes hors ligne. Vérifiez votre connexion internet puis réessayez.';
+    } else if (status === 423 || /verrouill|locked|bloqu/.test(probe)) {
+      this.formError =
+        'Votre compte est verrouillé. Contactez un administrateur pour le débloquer.';
+    } else if (status === 401) {
+      this.formError = 'Email ou mot de passe incorrect.';
+    } else if (status === 403) {
+      this.formError =
+        'Votre compte est désactivé ou ne dispose pas des droits nécessaires.';
+    } else if (status === 400) {
+      this.formError = serverMessage || 'Les informations saisies sont invalides.';
+    } else if (status === 404) {
+      this.formError = "Le service de connexion est momentanément indisponible.";
+    } else if (status === 429) {
+      this.formError = 'Trop de tentatives. Réessayez dans quelques minutes.';
+    } else if (status >= 500) {
+      this.formError = 'Le serveur rencontre un problème. Réessayez plus tard.';
+    } else {
+      this.formError = 'La connexion a échoué. Veuillez réessayer.';
     }
 
-    this.notificationService.error(errorTitle, errorMessage);
     console.error('Login error:', err);
+  }
+
+  private readServerMessage(err: any): string {
+    const body = err?.error;
+    if (typeof body === 'string' && body.trim()) {
+      return body.trim();
+    }
+
+    const message = body?.message || body?.detail || body?.title;
+    return typeof message === 'string' ? message.trim() : '';
   }
 
   /**

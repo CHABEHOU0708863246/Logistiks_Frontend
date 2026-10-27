@@ -1,4 +1,4 @@
-<div class="logistiks-premium-container">
+<main class="logistiks-premium-container">
   <!-- Grille de fond -->
   <div class="background-grid"></div>
 
@@ -68,19 +68,32 @@
 
       <!-- Carte du formulaire -->
       <div class="form-card">
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+          @if (formError) {
+            <div class="form-alert" role="alert" aria-live="assertive">
+              <i class='bx bx-error-circle' aria-hidden="true"></i>
+              <span>{{ formError }}</span>
+            </div>
+          }
 
           <!-- Email -->
           <div class="input-group-card">
             <label for="email">Email</label>
             <div class="input-with-icon">
-              <i class='bx bx-envelope'></i>
+              <i class='bx bx-envelope' aria-hidden="true"></i>
               <input
                 type="email"
                 id="email"
+                name="username"
                 formControlName="email"
                 placeholder="nom@entreprise.ci"
+                autocomplete="username"
+                inputmode="email"
+                autocapitalize="none"
+                spellcheck="false"
                 [class.input-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                (input)="clearFormError()"
                 required>
             </div>
             @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
@@ -99,20 +112,30 @@
           <div class="input-group-card">
             <label for="password">Mot de passe</label>
             <div class="input-with-icon">
-              <i class='bx bx-lock-alt'></i>
+              <i class='bx bx-lock-alt' aria-hidden="true"></i>
               <input
                 [type]="hidePassword ? 'password' : 'text'"
                 id="password"
+                name="password"
                 formControlName="password"
                 placeholder="••••••••"
+                autocomplete="current-password"
                 [class.input-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                (input)="clearFormError()"
                 required>
-              <i
-                class='bx password-toggle'
-                [class.bx-hide]="hidePassword"
-                [class.bx-show]="!hidePassword"
+              <button
+                type="button"
+                class="password-toggle"
+                [attr.aria-label]="hidePassword ? 'Afficher le mot de passe' : 'Masquer le mot de passe'"
+                [attr.aria-pressed]="!hidePassword"
                 (click)="togglePasswordVisibility()">
-              </i>
+                <i
+                  class='bx'
+                  [class.bx-hide]="hidePassword"
+                  [class.bx-show]="!hidePassword"
+                  aria-hidden="true">
+                </i>
+              </button>
             </div>
             @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
               <div class="error-message">
@@ -141,7 +164,8 @@
           <button
             type="submit"
             class="btn-primary-card"
-            [disabled]="loginForm.invalid || isLoading">
+            [attr.aria-busy]="isLoading"
+            [disabled]="isLoading">
             @if (isLoading) {
               <i class='bx bx-loader-alt bx-spin btn-icon'></i>
               <span>CONNEXION EN COURS...</span>
@@ -176,5 +200,4 @@
 
   <!-- Notification Component -->
   <app-notification-component></app-notification-component>
-</div>
-<app-chatbot-widget></app-chatbot-widget>
+</main>

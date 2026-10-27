@@ -1,0 +1,452 @@
+<style>
+  #iam-static-login {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 100dvh;
+    padding: max(20px, env(safe-area-inset-top, 0px)) 16px max(20px, env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(135deg, #0e0a2e 0%, #1a0e5c 45%, #090720 100%);
+    color: #ffffff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  #iam-static-login[hidden] { display: none !important; }
+
+  .isl-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px 24px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 22px;
+    background: rgba(14, 10, 46, 0.94);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
+  }
+
+  .isl-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    border: 1px solid rgba(139, 142, 255, 0.45);
+    border-radius: 18px;
+    background: linear-gradient(135deg, #696cff 0%, #3c3489 100%);
+    box-shadow: 0 12px 30px rgba(105, 108, 255, 0.35);
+  }
+
+  .isl-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+
+  .isl-sub {
+    margin: 6px 0 22px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.92rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .isl-field { position: relative; margin-bottom: 14px; }
+
+  .isl-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .isl-field input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 52px;
+    padding: 14px 46px 14px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    background: rgba(9, 7, 32, 0.9);
+    color: #ffffff;
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .isl-field input::placeholder { color: rgba(255, 255, 255, 0.32); }
+  .isl-field input:focus {
+    outline: none;
+    border-color: #8b8eff;
+    box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.18);
+  }
+
+  .isl-toggle {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #8b8eff;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .isl-toggle:focus-visible { outline: 2px solid #8b8eff; outline-offset: 1px; }
+
+  .isl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 6px 0 18px;
+    font-size: 0.86rem;
+  }
+
+  .isl-row label { display: inline-flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.72); }
+  .isl-row input[type='checkbox'] { width: 18px; height: 18px; accent-color: #696cff; }
+  .isl-row a { color: #a5a7ff; font-weight: 700; text-decoration: none; }
+  .isl-row a:hover { text-decoration: underline; }
+
+  .isl-submit {
+    width: 100%;
+    min-height: 52px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #696cff 0%, #3c3489 100%);
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    box-shadow: 0 10px 24px rgba(105, 108, 255, 0.35);
+  }
+
+  .isl-submit:disabled { opacity: 0.6; }
+
+  .isl-alert {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(240, 68, 56, 0.45);
+    border-radius: 12px;
+    background: rgba(240, 68, 56, 0.14);
+    color: #ffd5d2;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .isl-install {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 14px;
+    border: 1px solid rgba(139, 142, 255, 0.45);
+    border-radius: 12px;
+    background: transparent;
+    color: #c9caff;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .isl-install[hidden] { display: none !important; }
+
+  .isl-foot {
+    margin: 18px 0 0;
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  @media (min-width: 600px) {
+    .isl-card { padding: 34px 32px 26px; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .isl-card { animation: isl-rise 0.4s ease-out both; }
+    @keyframes isl-rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  }
+</style>
+
+<div id="iam-static-login" hidden>
+  <main class="isl-card">
+    <div class="isl-logo" aria-hidden="true">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6.5h10v9H3z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M13 9.5h4.2l2.8 3.1v2.9H13z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+        <circle cx="7" cy="17.5" r="1.7" stroke="#fff" stroke-width="1.6"/>
+        <circle cx="17" cy="17.5" r="1.7" stroke="#fff" stroke-width="1.6"/>
+      </svg>
+    </div>
+
+    <h1 class="isl-title">LOGISTIK</h1>
+    <p class="isl-sub">Accédez à votre espace sécurisé</p>
+
+    <form id="isl-form" novalidate>
+      <div id="isl-error" class="isl-alert" role="alert" aria-live="assertive" hidden></div>
+
+      <div class="isl-field">
+        <label for="isl-email">Email</label>
+        <input id="isl-email" name="username" type="email" autocomplete="username" inputmode="email"
+          autocapitalize="none" spellcheck="false" placeholder="nom@entreprise.ci" required />
+      </div>
+
+      <div class="isl-field">
+        <label for="isl-password">Mot de passe</label>
+        <input id="isl-password" name="password" type="password" autocomplete="current-password"
+          placeholder="••••••••" required />
+        <button type="button" class="isl-toggle" id="isl-toggle" aria-label="Afficher le mot de passe"
+          aria-pressed="false">Afficher</button>
+      </div>
+
+      <div class="isl-row">
+        <label><input type="checkbox" id="isl-remember" checked /> Se souvenir de moi</label>
+        <a href="/auth/forgot-password">Mot de passe oublié ?</a>
+      </div>
+
+      <button type="submit" class="isl-submit" id="isl-submit">Se connecter</button>
+    </form>
+
+    <button type="button" class="isl-install" id="isl-install" hidden>Installer l'application</button>
+    <p class="isl-foot">© 2026 Logistik — Version 1.0.0</p>
+  </main>
+</div>
+
+<script>
+  (function () {
+    if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+      return;
+    }
+
+    var API_URL = __API_URL__;
+    var STORAGE_KEY = 'logistiks_auth_data';
+    var REFRESH_KEY = 'refresh_token';
+    var REMEMBER_KEY = 'remember_me';
+
+    var root = document.getElementById('iam-static-login');
+    var form = document.getElementById('isl-form');
+    var email = document.getElementById('isl-email');
+    var password = document.getElementById('isl-password');
+    var remember = document.getElementById('isl-remember');
+    var toggle = document.getElementById('isl-toggle');
+    var submit = document.getElementById('isl-submit');
+    var errorBox = document.getElementById('isl-error');
+    var installBtn = document.getElementById('isl-install');
+    var splash = document.getElementById('iam-splash');
+    var installEvent = null;
+
+    if (splash) {
+      splash.remove();
+    }
+    root.removeAttribute('hidden');
+    document.body.classList.add('iam-static-login-active');
+
+    function readSession() {
+      try {
+        return (
+          JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') ||
+          JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null')
+        );
+      } catch (error) {
+        return null;
+      }
+    }
+
+    if (readSession() && readSession().token) {
+      window.location.replace('/dashboard');
+      return;
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.hidden = false;
+    }
+
+    function clearError() {
+      errorBox.hidden = true;
+      errorBox.textContent = '';
+    }
+
+    function decodeRole(token) {
+      try {
+        var part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        var payload = JSON.parse(
+          decodeURIComponent(
+            Array.prototype.map
+              .call(atob(part), function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join('')
+          )
+        );
+        return (
+          payload.role ||
+          payload.roles?.[0] ||
+          payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+          'user'
+        );
+      } catch (error) {
+        return 'user';
+      }
+    }
+
+    function saveSession(token, refreshToken, rememberMe) {
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(REFRESH_KEY);
+      sessionStorage.removeItem(REFRESH_KEY);
+      localStorage.removeItem(REMEMBER_KEY);
+      sessionStorage.removeItem(REMEMBER_KEY);
+
+      var storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ token: token, role: decodeRole(token), rememberMe: rememberMe })
+      );
+      if (refreshToken) {
+        storage.setItem(REFRESH_KEY, refreshToken);
+      }
+      storage.setItem(REMEMBER_KEY, rememberMe ? 'true' : 'false');
+    }
+
+    function messageFor(status, body) {
+      var serverMessage = body && (body.message || body.title || body.detail);
+      var probe = String(serverMessage || '').toLowerCase();
+
+      if (status === 0) {
+        return 'Vous êtes hors ligne. Vérifiez votre connexion internet puis réessayez.';
+      }
+      if (status === 423 || /verrouill|locked|bloqu/.test(probe)) {
+        return 'Votre compte est verrouillé. Contactez un administrateur pour le débloquer.';
+      }
+      if (status === 401) {
+        return 'Email ou mot de passe incorrect.';
+      }
+      if (status === 403) {
+        return 'Votre compte est désactivé ou ne dispose pas des droits nécessaires.';
+      }
+      if (status === 429) {
+        return 'Trop de tentatives. Réessayez dans quelques minutes.';
+      }
+      if (status >= 500) {
+        return 'Le serveur rencontre un problème. Réessayez plus tard.';
+      }
+      return typeof serverMessage === 'string' && serverMessage.trim()
+        ? serverMessage
+        : 'La connexion a échoué. Veuillez réessayer.';
+    }
+
+    toggle.addEventListener('click', function () {
+      var hidden = password.type === 'password';
+      password.type = hidden ? 'text' : 'password';
+      toggle.textContent = hidden ? 'Masquer' : 'Afficher';
+      toggle.setAttribute('aria-label', hidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+      toggle.setAttribute('aria-pressed', String(hidden));
+    });
+
+    [email, password].forEach(function (input) {
+      input.addEventListener('input', clearError);
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      clearError();
+
+      if (!email.value.trim() || !password.value) {
+        showError('Veuillez saisir votre email et votre mot de passe.');
+        return;
+      }
+
+      submit.disabled = true;
+      submit.textContent = 'Connexion en cours…';
+
+      fetch(API_URL + '/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.value.trim(),
+          password: password.value,
+          rememberMe: remember.checked,
+        }),
+      })
+        .then(function (response) {
+          return response
+            .json()
+            .catch(function () {
+              return null;
+            })
+            .then(function (body) {
+              if (!response.ok) {
+                throw { status: response.status, body: body };
+              }
+              return body;
+            });
+        })
+        .then(function (body) {
+          var token =
+            (body && (body.token || body.accessToken || (body.data && body.data.token))) || null;
+          var refreshToken =
+            (body && (body.refreshToken || (body.data && body.data.refreshToken))) || null;
+
+          if (!token) {
+            showError('La réponse du serveur est invalide. Veuillez réessayer.');
+            return;
+          }
+
+          saveSession(token, refreshToken, remember.checked);
+          window.location.assign('/dashboard');
+        })
+        .catch(function (error) {
+          showError(messageFor(error.status || 0, error.body));
+        })
+        .finally(function () {
+          submit.disabled = false;
+          submit.textContent = 'Se connecter';
+        });
+    });
+
+    window.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      installEvent = event;
+      installBtn.hidden = false;
+    });
+
+    installBtn.addEventListener('click', function () {
+      if (!installEvent) {
+        return;
+      }
+      installEvent.prompt();
+      installEvent = null;
+      installBtn.hidden = true;
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('ngsw-worker.js').catch(function () {
+          /* l'installation reste possible quand le SW est déjà pris en charge */
+        });
+      });
+    }
+
+    email.focus({ preventScroll: true });
+  })();
+</script>

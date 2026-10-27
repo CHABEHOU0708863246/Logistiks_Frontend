@@ -1,2 +1,8 @@
+@if (isDashboard()) {
+  <app-mobile-header></app-mobile-header>
+}
 <router-outlet></router-outlet>
-
+@if (isDashboard()) {
+  <app-mobile-bottom-nav></app-mobile-bottom-nav>
+  <app-pwa-status></app-pwa-status>
+}
