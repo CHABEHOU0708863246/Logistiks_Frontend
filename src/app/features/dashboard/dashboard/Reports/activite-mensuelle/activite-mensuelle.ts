@@ -1,4 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { NotificationComponent } from "../../../../../core/components/notification-component/notification-component";
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
@@ -394,7 +395,7 @@ export class ActiviteMensuelle implements OnInit, OnDestroy {
     const name   = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const idx    = name.length % colors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[idx]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[idx]);
   }
 
   getUserInitials(): string {
@@ -405,7 +406,7 @@ export class ActiviteMensuelle implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   toggleUserMenu(): void  { this.showUserMenu = !this.showUserMenu; }

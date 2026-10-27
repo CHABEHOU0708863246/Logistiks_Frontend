@@ -17,10 +17,9 @@ $glass:        rgba(255, 255, 255, 0.04);
 $glass-border: rgba(105, 108, 255, 0.2);
 $text-primary: #E8EAFF;
 $text-muted:   rgba(180, 185, 220, 0.6);
-$font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
+$font:         'Public Sans', system-ui, sans-serif;
 
 // ── Import Google Fonts ──────────────────────────────────────────────────────
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&display=swap');
 
 // ── Wrapper ──────────────────────────────────────────────────────────────────
 .chatbot-wrapper {
@@ -28,7 +27,7 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
   bottom: 28px;
   right: 28px;
   z-index: 99999;
-  font-family: 'Exo 2', system-ui, sans-serif;
+  font-family: 'Public Sans', system-ui, sans-serif;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -329,7 +328,7 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
     align-items: center;
     gap: 7px;
     color: $text-primary;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: 'Public Sans', sans-serif;
     font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -574,7 +573,7 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
   background: rgba(105,108,255,0.08);
   color: rgba(180,185,255,0.9);
   font-size: 12px;
-  font-family: 'Exo 2', sans-serif;
+  font-family: 'Public Sans', sans-serif;
   cursor: pointer;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -657,7 +656,7 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
     outline: none;
     color: $text-primary;
     font-size: 13.5px;
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Public Sans', sans-serif;
     padding: 6px 0;
 
     &::placeholder { color: rgba(130,140,180,0.4); }
@@ -705,7 +704,7 @@ $font:         'Rajdhani', 'Orbitron', system-ui, sans-serif;
   font-size: 10px;
   color: rgba(105,108,255,0.4);
   letter-spacing: 0.05em;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Public Sans', sans-serif;
   flex-shrink: 0;
 
   strong { color: rgba(105,108,255,0.7); font-weight: 600; }

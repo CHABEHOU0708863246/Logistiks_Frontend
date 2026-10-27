@@ -1,4 +1,5 @@
 import { CommonModule, DecimalPipe, DatePipe, SlicePipe } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
@@ -360,7 +361,7 @@ export class KpiGlobaux implements OnInit, OnDestroy {
     if (user.photoUrl?.startsWith('http')) return user.photoUrl;
     const name = this.formatUserName(user);
     const colors = ['1D9E75', '378ADD', '7F77DD', 'BA7517', 'E24B4A'];
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[name.length % colors.length]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[name.length % colors.length]);
   }
 
   // ═══════════════════════════════════════════
@@ -384,7 +385,7 @@ export class KpiGlobaux implements OnInit, OnDestroy {
  * @returns URL de l'avatar par défaut
  */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   /**

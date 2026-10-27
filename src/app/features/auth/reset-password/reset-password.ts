@@ -77,15 +77,13 @@ export class ResetPassword implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.isValidating = false;
-          console.log('Réponse validation token:', response); // Debug
 
-          // Vérifier la structure de la réponse
           if (response.success === true) {
             this.tokenValid = true;
-            this.errorMessage = ''; // Effacer les erreurs précédentes
+            this.errorMessage = '';
           } else {
             this.tokenValid = false;
-            this.errorMessage = response.message || 'Token invalide ou expiré.';
+            this.errorMessage = response.message || 'Lien de réinitialisation invalide ou expiré.';
           }
         },
         error: (error) => {
@@ -128,14 +126,23 @@ export class ResetPassword implements OnInit, OnDestroy {
   handleTokenValidationError(error: any): void {
     this.isValidating = false;
     this.tokenValid = false;
+    const status = Number(error?.status ?? 0);
 
-    if (error.status === 0) {
-      this.errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
-    } else if (error.status === 400 || error.status === 404) {
+    if (this.isOffline(error)) {
+      this.errorMessage =
+        'Vous êtes hors ligne. Vérifiez votre connexion internet puis réessayez.';
+    } else if (status === 400 || status === 404 || status === 410) {
       this.errorMessage = 'Lien de réinitialisation invalide ou expiré.';
+    } else if (status >= 500) {
+      this.errorMessage = 'Le serveur rencontre un problème. Réessayez plus tard.';
     } else {
-      this.errorMessage = 'Erreur lors de la validation du token.';
+      this.errorMessage = 'La validation du lien a échoué. Demandez un nouveau lien.';
     }
+  }
+
+  private isOffline(error: any): boolean {
+    const status = Number(error?.status ?? 0);
+    return status === 0 || (typeof navigator !== 'undefined' && navigator.onLine === false);
   }
 
   onSubmit(): void {
@@ -188,16 +195,30 @@ export class ResetPassword implements OnInit, OnDestroy {
 
   handleResetError(error: any): void {
     this.isLoading = false;
+    const status = Number(error?.status ?? 0);
 
-    if (error.status === 0) {
-      this.errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
-    } else if (error.status === 400) {
-      this.errorMessage = error.error?.message || 'Données invalides.';
-    } else if (error.status === 404) {
-      this.errorMessage = 'Token invalide ou expiré.';
+    if (this.isOffline(error)) {
+      this.errorMessage =
+        'Vous êtes hors ligne. Vérifiez votre connexion internet puis réessayez.';
+    } else if (status === 400) {
+      this.errorMessage = error.error?.message || 'Les informations saisies sont invalides.';
+    } else if (status === 404 || status === 410) {
+      this.errorMessage = 'Lien de réinitialisation invalide ou expiré.';
+    } else if (status === 429) {
+      this.errorMessage = 'Trop de tentatives. Réessayez dans quelques minutes.';
+    } else if (status >= 500) {
+      this.errorMessage = 'Le serveur rencontre un problème. Réessayez plus tard.';
     } else {
-      this.errorMessage = 'Erreur lors de la réinitialisation du mot de passe.';
+      this.errorMessage = 'La réinitialisation du mot de passe a échoué. Réessayez.';
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.hideConfirmPassword = !this.hideConfirmPassword;
   }
 
   // Validateurs personnalisés
@@ -255,7 +276,9 @@ export class ResetPassword implements OnInit, OnDestroy {
   }
 
   get hasPasswordMismatch(): boolean {
-    return this.resetPasswordForm.errors?.['passwordMismatch'] &&
-      this.confirmPassword?.touched === true;
+    return (
+      !!this.resetPasswordForm.errors?.['passwordMismatch'] &&
+      (this.confirmPassword?.dirty === true || this.confirmPassword?.touched === true)
+    );
   }
 }

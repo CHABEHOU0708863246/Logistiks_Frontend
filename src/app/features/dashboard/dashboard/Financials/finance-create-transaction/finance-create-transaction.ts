@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../../../environments/environment';
@@ -180,7 +181,8 @@ descriptionSuggestions: DescriptionSuggestion[] = [
     private authService: Auth,
     private vehiclesService: Vehicles,
     private tokenService: Token,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.initializeForm();
   }
@@ -197,6 +199,18 @@ descriptionSuggestions: DescriptionSuggestion[] = [
     this.loadCurrentUser();
     this.loadAvailableVehicles();
     this.setupFormListeners();
+
+    // Raccourci mobile « Encaisser » : ouvre directement un revenu de location.
+    this.route.queryParamMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        if (params.get('type') === 'revenue') {
+          this.transactionForm.patchValue({
+            type: TransactionType.Revenue,
+            category: TransactionCategory.RentalIncome,
+          });
+        }
+      });
   }
 
   /**
@@ -852,9 +866,7 @@ getVehicleStatusClass(status: VehicleStatus): string {
     ];
     const colorIndex = name.length % colors.length;
 
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      name
-    )}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   /**
@@ -873,7 +885,7 @@ getVehicleStatusClass(status: VehicleStatus): string {
    * Obtient l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ============================================================================

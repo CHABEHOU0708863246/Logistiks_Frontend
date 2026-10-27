@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -252,7 +253,7 @@ export class SettingsNotifications implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   getUserInitials(): string {

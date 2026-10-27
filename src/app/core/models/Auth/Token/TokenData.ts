@@ -1,4 +1,5 @@
 export interface TokenData {
   token: string;
-  role: string;
+  role?: string;
+  rememberMe?: boolean;
 }

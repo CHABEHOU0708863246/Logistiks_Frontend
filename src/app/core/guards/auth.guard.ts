@@ -1,75 +1,73 @@
-import { inject } from "@angular/core";
-import { CanActivateFn, Router } from "@angular/router";
-import { Auth } from "../services/Auth/auth";
-import { Token } from "../services/Token/token";
+import { inject } from '@angular/core';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { Observable, catchError, map, of } from 'rxjs';
+import { Token } from '../services/Token/token';
+import { TokenRefreshService } from '../services/Token/token-refresh.service';
+
+type SessionResolution = boolean | UrlTree | Observable<boolean | UrlTree>;
+
+const loginUrlTree = (router: Router, expired: boolean): UrlTree =>
+  expired
+    ? router.createUrlTree(['/auth/login'], { queryParams: { sessionExpired: '1' } })
+    : router.createUrlTree(['/auth/login']);
 
 /**
- * `authGuard` : Fonction de garde pour protéger les routes en fonction de l'authentification et des rôles.
- *
- * Cette garde vérifie si l'utilisateur est authentifié, si son token n'est pas expiré,
- * et s'il possède les rôles requis pour accéder à une route spécifique.
- *
- * @param route - Informations sur la route à laquelle l'utilisateur tente d'accéder.
- * @param state - L'état de navigation actuel (non utilisé ici mais disponible).
- * @returns `true` si l'utilisateur est autorisé, sinon une URL pour rediriger l'utilisateur.
+ * Résout la session avant d'activer une route :
+ * - token valide : accès immédiat ;
+ * - token expiré + refresh token : rafraîchissement transparent ;
+ * - sinon : retour au login, avec message si une session existait.
  */
-export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(Auth);
+const resolveSession = (): SessionResolution => {
   const tokenService = inject(Token);
   const router = inject(Router);
+  const tokenRefreshService = inject(TokenRefreshService);
 
-  if (tokenService.isLogged() && !tokenService.isTokenExpired()) {
-    console.log('✅ AuthGuard: Accès autorisé');
+  if (tokenService.hasValidAccessToken()) {
     return true;
-  } else {
-    console.log('❌ AuthGuard: Accès refusé - Redirection vers login');
-    tokenService.logout();
-    return router.parseUrl('/auth/login');
   }
+
+  const hasAccessToken = !!tokenService.getToken();
+  const hasRefreshToken = tokenService.hasRefreshToken();
+
+  if (hasAccessToken && hasRefreshToken) {
+    return tokenRefreshService.refresh().pipe(
+      map(() => true),
+      catchError(() => {
+        tokenService.clearSession();
+        return of(loginUrlTree(router, true));
+      })
+    );
+  }
+
+  tokenService.clearSession();
+  return loginUrlTree(router, hasAccessToken || hasRefreshToken);
 };
 
 /**
- * Vérifie si l'utilisateur possède un des rôles requis.
- *
- * @param userRole - Le rôle de l'utilisateur.
- * @param requiredRoles - Les rôles requis pour accéder à la route.
- * @returns `true` si l'utilisateur possède un des rôles requis, `false` sinon.
+ * `authGuard` : protège les routes authentifiées et restaure la session au besoin.
  */
-const hasRequiredRole = (userRole: string, requiredRoles: string[]): boolean => {
-  // Si aucun rôle requis n'est spécifié, autoriser l'accès
-  if (!requiredRoles || requiredRoles.length === 0) {
-    return true;
-  }
-  return requiredRoles.includes(userRole);
-};
+export const authGuard: CanActivateFn = (): SessionResolution => resolveSession();
 
 /**
- * Guard pour vérifier uniquement l'authentification (sans vérification de rôle)
+ * Guard pour vérifier uniquement l'authentification (sans vérification de rôle).
  */
-export const simpleAuthGuard: CanActivateFn = (route, state) => {
+export const simpleAuthGuard: CanActivateFn = (): SessionResolution => resolveSession();
+
+/**
+ * Guard pour la page de login : empêche l'accès si une session est déjà disponible.
+ */
+export const loginGuard: CanActivateFn = () => {
   const tokenService = inject(Token);
   const router = inject(Router);
 
-  if (tokenService.isLogged() && !tokenService.isTokenExpired()) {
-    return true;
-  } else {
-    tokenService.logout();
-    return router.parseUrl('/auth/login');
-  }
-};
-
-/**
- * Guard pour la page de login - Empêche l'accès si déjà connecté
- * NOUVEAU: Empêche également le retour arrière vers le login après connexion
- */
-export const loginGuard: CanActivateFn = (route, state) => {
-  const tokenService = inject(Token);
-  const router = inject(Router);
-
-  if (tokenService.isLogged() && !tokenService.isTokenExpired()) {
-    console.log('✅ Utilisateur déjà connecté - Redirection vers dashboard');
+  if (tokenService.hasValidAccessToken()) {
     return router.parseUrl('/dashboard');
   }
 
+  if (tokenService.getToken() && tokenService.hasRefreshToken()) {
+    return router.parseUrl('/dashboard');
+  }
+
+  tokenService.clearSession();
   return true;
 };

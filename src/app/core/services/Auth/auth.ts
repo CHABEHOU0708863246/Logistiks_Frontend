@@ -27,10 +27,9 @@ export class Auth {
    * Authentifie un utilisateur et génère un token JWT
    */
   authenticate(loginRequest: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, loginRequest)
-      .pipe(
-        catchError(this.handleError)
-      );
+    // Erreurs HTTP brutes volontairement : l'écran de connexion doit pouvoir
+    // distinguer 401, 429 (rate limit) et le verrouillage du compte.
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, loginRequest);
   }
 
   /**
@@ -60,11 +59,10 @@ export class Auth {
   /**
    * Rafraîchir le token
    */
-  refreshToken(refreshTokenRequest: RefreshTokenRequest): Observable<RefreshTokenRequest> {
-    return this.http.post<RefreshTokenRequest>(`${this.baseUrl}/refresh-token`, refreshTokenRequest)
-      .pipe(
-        catchError(this.handleError)
-      );
+  refreshToken(refreshTokenRequest: RefreshTokenRequest): Observable<LoginResponse> {
+    // Le rafraîchissement automatique passe par TokenRefreshService (HttpBackend).
+    // Cette méthode reste disponible pour les appels explicites.
+    return this.http.post<LoginResponse>(`${this.baseUrl}/refresh-token`, refreshTokenRequest);
   }
 
   /**
@@ -133,34 +131,29 @@ export class Auth {
    * Obtenir les informations de l'utilisateur connecté
    */
   getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/me`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-      .pipe(
-        map(user => {
-          return user;
-        }),
-        catchError(this.handleError)
-      );
+    // AuthInterceptor ajoute le Bearer et gère le refresh 401.
+    return this.http.get<User>(`${this.baseUrl}/me`);
   }
 
   /**
    * Gestion centralisée des erreurs
    */
   private handleError(error: any): Observable<never> {
+    const status = Number(error?.status ?? 0);
     let errorMessage = 'Une erreur est survenue';
 
-    if (error.error instanceof ErrorEvent) {
+    if (error?.error instanceof ErrorEvent) {
       errorMessage = `Erreur: ${error.error.message}`;
     } else {
-      switch (error.status) {
+      switch (status) {
+        case 0:
+          errorMessage = 'Vous êtes hors ligne ou le serveur est injoignable.';
+          break;
         case 400:
           errorMessage = error.error?.message || 'Données invalides';
           break;
         case 401:
-          errorMessage = 'Non autorisé. Veuillez vous reconnecter.';
+          errorMessage = 'Email ou mot de passe incorrect.';
           break;
         case 403:
           errorMessage = 'Accès refusé';
@@ -168,15 +161,27 @@ export class Auth {
         case 404:
           errorMessage = 'Ressource non trouvée';
           break;
+        case 423:
+          errorMessage = 'Votre compte est verrouillé.';
+          break;
+        case 429:
+          errorMessage = 'Trop de tentatives. Réessayez dans quelques minutes.';
+          break;
         case 500:
           errorMessage = 'Erreur serveur interne';
           break;
         default:
-          errorMessage = `Erreur ${error.status}: ${error.message}`;
+          errorMessage = `Erreur ${status}: ${error.message}`;
       }
     }
 
     console.error('AuthService error:', error);
-    return throwError(() => new Error(errorMessage));
+
+    // Le statut est conservé : les écrans doivent pouvoir distinguer un
+    // identifiant faux (401), un compte verrouillé (423) et le hors-ligne (0).
+    const normalized: any = new Error(errorMessage);
+    normalized.status = status;
+    normalized.error = error?.error;
+    return throwError(() => normalized);
   }
 }

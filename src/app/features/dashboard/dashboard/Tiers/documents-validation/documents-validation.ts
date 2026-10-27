@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../../../../environments/environment';
 import { User } from '../../../../../core/models/Core/Users/Entities/User';
@@ -996,7 +997,7 @@ export class DocumentsValidation implements OnInit, OnDestroy {
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
 
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   getUserInitials(): string {
@@ -1009,7 +1010,7 @@ export class DocumentsValidation implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   logout(): void {

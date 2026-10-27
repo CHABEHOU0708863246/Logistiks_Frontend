@@ -1,4 +1,5 @@
 import { Component, HostListener } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -23,7 +24,7 @@ import { SidebarComponent } from '../../../../../core/components/sidebar-compone
 export class AboutHome {
 
   // ============================================================================
-  // SECTION 2: PROPRIÉTÉS DE DONNÉES ET D'ÉTAT
+  // SECTION 2: PROPRIÃ‰TÃ‰S DE DONNÃ‰ES ET D'Ã‰TAT
   // ============================================================================
 
   /** Statistiques du tableau de bord (pour affichage) */
@@ -70,10 +71,10 @@ export class AboutHome {
   Math = Math;
 
   // ============================================================================
-  // SECTION 3: PROPRIÉTÉS DE GESTION UTILISATEUR
+  // SECTION 3: PROPRIÃ‰TÃ‰S DE GESTION UTILISATEUR
   // ============================================================================
 
-  /** Utilisateur actuellement connecté */
+  /** Utilisateur actuellement connectÃ© */
   currentUser: any = null;
 
   /** Nom d'affichage de l'utilisateur */
@@ -82,21 +83,21 @@ export class AboutHome {
   /** URL de la photo de profil de l'utilisateur */
   userPhotoUrl: string = '';
 
-  /** Contrôle l'affichage du menu utilisateur */
+  /** ContrÃ´le l'affichage du menu utilisateur */
   showUserMenu: boolean = false;
 
   // ============================================================================
-  // SECTION 4: PROPRIÉTÉS D'INTERFACE UTILISATEUR
+  // SECTION 4: PROPRIÃ‰TÃ‰S D'INTERFACE UTILISATEUR
   // ============================================================================
 
-  /** État de réduction de la barre latérale */
+  /** Ã‰tat de rÃ©duction de la barre latÃ©rale */
   isSidebarCollapsed: boolean = false;
 
   // ============================================================================
-    // SECTION 5: ÉNUMÉRATIONS ET SERVICES
+    // SECTION 5: Ã‰NUMÃ‰RATIONS ET SERVICES
     // ============================================================================
 
-    /** Types de véhicules disponibles */
+    /** Types de vÃ©hicules disponibles */
     vehicleType = VehicleType;
 
     /** Types de carburant disponibles */
@@ -118,7 +119,7 @@ export class AboutHome {
 
   /**
    * Initialise le composant
-   * Vérifie l'authentification et charge les données utilisateur
+   * VÃ©rifie l'authentification et charge les donnÃ©es utilisateur
    */
   ngOnInit(): void {
     this.checkAuthentication();
@@ -126,8 +127,8 @@ export class AboutHome {
   }
 
   /**
-     * Nettoie les ressources à la destruction du composant
-     * Désabonne tous les observables
+     * Nettoie les ressources Ã  la destruction du composant
+     * DÃ©sabonne tous les observables
      */
     ngOnDestroy(): void {
       this.destroy$.next();
@@ -139,7 +140,7 @@ export class AboutHome {
     // ============================================================================
 
     /**
-     * Vérifie la présence d'un token d'authentification
+     * VÃ©rifie la prÃ©sence d'un token d'authentification
      * Redirige vers la page de login si absent
      */
     private checkAuthentication(): void {
@@ -169,7 +170,7 @@ export class AboutHome {
     }
 
     /**
-     * Gère les erreurs de chargement de l'utilisateur
+     * GÃ¨re les erreurs de chargement de l'utilisateur
      * @param error - Erreur survenue
      */
     private handleUserLoadError(error: any): void {
@@ -181,7 +182,7 @@ export class AboutHome {
     }
 
     /**
-     * Définit les valeurs par défaut pour l'utilisateur
+     * DÃ©finit les valeurs par dÃ©faut pour l'utilisateur
      */
     private setDefaultUser(): void {
       this.userName = 'Utilisateur Logistiks';
@@ -191,7 +192,7 @@ export class AboutHome {
     /**
      * Formate le nom d'utilisateur pour l'affichage
      * @param user - Objet utilisateur
-     * @returns Nom formaté pour l'affichage
+     * @returns Nom formatÃ© pour l'affichage
      */
     formatUserName(user: any): string {
       if (user.firstName && user.lastName) {
@@ -224,16 +225,16 @@ export class AboutHome {
     }
 
     /**
-     * Génère une URL d'avatar à partir du nom de l'utilisateur
+     * GÃ©nÃ¨re une URL d'avatar Ã  partir du nom de l'utilisateur
      * @param user - Objet utilisateur
-     * @returns URL de l'avatar généré
+     * @returns URL de l'avatar gÃ©nÃ©rÃ©
      */
     generateAvatarUrl(user: User): string {
       const name = this.formatUserName(user);
       const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
       const colorIndex = name.length % colors.length;
 
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+      return buildAvatarDataUrl(name, colors[colorIndex]);
     }
 
     /**
@@ -250,11 +251,11 @@ export class AboutHome {
     }
 
     /**
-     * Obtient l'avatar par défaut
-     * @returns URL de l'avatar par défaut
+     * Obtient l'avatar par dÃ©faut
+     * @returns URL de l'avatar par dÃ©faut
      */
     getDefaultAvatar(): string {
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+      return buildAvatarDataUrl(this.userName, '696cff');
     }
 
 
@@ -270,8 +271,8 @@ export class AboutHome {
   }
 
   /**
-   * Écouteur d'événement pour fermer le menu utilisateur
-   * @param event - Événement de clic
+   * Ã‰couteur d'Ã©vÃ©nement pour fermer le menu utilisateur
+   * @param event - Ã‰vÃ©nement de clic
    */
   @HostListener('document:click', ['$event'])
   closeUserMenu(event: MouseEvent): void {
@@ -282,15 +283,15 @@ export class AboutHome {
   }
 
   /**
-   * Bascule l'état de réduction de la barre latérale
+   * Bascule l'Ã©tat de rÃ©duction de la barre latÃ©rale
    */
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
   /**
-   * Bascule l'état d'ouverture d'un menu
-   * @param event - Événement de clic
+   * Bascule l'Ã©tat d'ouverture d'un menu
+   * @param event - Ã‰vÃ©nement de clic
    */
   toggleMenu(event: MouseEvent): void {
     const element = event.currentTarget as HTMLElement;
@@ -300,36 +301,19 @@ export class AboutHome {
   }
 
   // ============================================================================
-  // SECTION 12: GESTION DE LA DÉCONNEXION
+  // SECTION 12: GESTION DE LA DÃ‰CONNEXION
   // ============================================================================
 
   /**
-   * Gère le processus de déconnexion
+   * GÃ¨re le processus de dÃ©connexion
    * Nettoie le token et redirige vers la page de login
    */
   logout(): void {
-    this.tokenService.logout();
-
     this.authService.logout()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.router.navigate(['/auth/login']);
-        },
-        error: (error) => {
-          console.warn('⚠️ Erreur API déconnexion (ignorée):', error);
-          this.router.navigate(['/auth/login']);
-        }
+        next: () => this.tokenService.logout(),
+        error: () => this.tokenService.logout(),
       });
   }
-
-
-
-
-
-
-
-
-
 }
-

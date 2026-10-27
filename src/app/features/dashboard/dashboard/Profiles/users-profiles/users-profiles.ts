@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   FormsModule, ReactiveFormsModule, FormBuilder, FormGroup,
@@ -475,7 +476,7 @@ export class UsersProfiles implements OnInit, OnDestroy {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
     const colorIndex = name.length % colors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[colorIndex]);
   }
 
   getUserInitials(): string {
@@ -485,7 +486,7 @@ export class UsersProfiles implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   private formatDateForInput(date: Date): string {

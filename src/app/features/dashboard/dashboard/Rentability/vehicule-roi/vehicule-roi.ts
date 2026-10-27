@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -468,7 +469,7 @@ export class VehiculeRoi implements OnInit, OnDestroy {
     const name   = this.formatUserName(user);
     const colors = ['FF6B6B','4ECDC4','FFD166','06D6A0','118AB2','EF476F','7209B7','3A86FF'];
     const color  = colors[name.length % colors.length];
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, color);
   }
 
   getUserInitials(): string {
@@ -479,7 +480,7 @@ export class VehiculeRoi implements OnInit, OnDestroy {
   }
 
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ══════════════════════════════════════════════════════════════════════════

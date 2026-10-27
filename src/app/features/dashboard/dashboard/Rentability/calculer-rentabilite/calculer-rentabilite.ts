@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -458,7 +459,7 @@ export class CalculerRentabilite implements OnInit, OnDestroy {
   generateAvatarUrl(user: User): string {
     const name = this.formatUserName(user);
     const colors = ['FF6B6B', '4ECDC4', 'FFD166', '06D6A0', '118AB2', 'EF476F', '7209B7', '3A86FF'];
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${colors[name.length % colors.length]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, colors[name.length % colors.length]);
   }
 
   /**
@@ -475,7 +476,7 @@ export class CalculerRentabilite implements OnInit, OnDestroy {
    * Obtient l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ============================================================================

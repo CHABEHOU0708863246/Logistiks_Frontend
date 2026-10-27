@@ -80,14 +80,19 @@ export class ForgotPasswordForm implements OnDestroy {
 
   handleError(error: any): void {
     this.isLoading = false;
-    if (error.status === 0) {
-      this.errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
-    } else if (error.status >= 400 && error.status < 500) {
-      this.errorMessage = error.error?.message || 'Données invalides.';
-    } else if (error.status >= 500) {
-      this.errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
+    const status = Number(error?.status ?? 0);
+
+    if (status === 0) {
+      this.errorMessage =
+        'Vous êtes hors ligne. Vérifiez votre connexion internet puis réessayez.';
+    } else if (status === 429) {
+      this.errorMessage = 'Trop de demandes. Réessayez dans quelques minutes.';
+    } else if (status >= 400 && status < 500) {
+      this.errorMessage = error.error?.message || 'Email invalide ou introuvable.';
+    } else if (status >= 500) {
+      this.errorMessage = 'Le serveur rencontre un problème. Réessayez plus tard.';
     } else {
-      this.errorMessage = 'Une erreur inattendue s\'est produite.';
+      this.errorMessage = "Une erreur inattendue s'est produite.";
     }
   }
 

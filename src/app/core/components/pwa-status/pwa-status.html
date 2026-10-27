@@ -1,0 +1,43 @@
+<div class="pwa-layer">
+  <div class="pwa-install" *ngIf="showInstallCard && isOnline">
+    <div class="pwa-install-icon">
+      <i class="bx bx-download"></i>
+    </div>
+    <div class="pwa-install-text">
+      <strong>Installer LOGISTIK</strong>
+      <span>Accès rapide depuis votre écran d'accueil.</span>
+    </div>
+    <div class="pwa-install-actions">
+      <button type="button" class="pwa-btn pwa-btn--primary" (click)="install()">
+        Installer l'application
+      </button>
+      <button type="button" class="pwa-btn pwa-btn--ghost" (click)="dismissInstall()">
+        Plus tard
+      </button>
+    </div>
+  </div>
+
+  <div class="pwa-banner pwa-banner--update" *ngIf="updateAvailable" role="status" aria-live="polite">
+    <span><i class="bx bx-refresh"></i> Nouvelle version disponible.</span>
+    <button type="button" class="pwa-btn pwa-btn--light" (click)="reload()">Recharger</button>
+  </div>
+
+  <div class="pwa-banner pwa-banner--offline" *ngIf="!isOnline" role="status" aria-live="polite">
+    <i class="bx bx-wifi-off"></i>
+    <span>Hors connexion — les actions d'écriture sont désactivées.</span>
+  </div>
+</div>
+
+<div class="pwa-modal-backdrop" *ngIf="showIosInstructions" (click)="closeIosInstructions()"></div>
+<div class="pwa-modal" *ngIf="showIosInstructions" role="dialog" aria-modal="true" aria-labelledby="pwa-ios-title">
+  <h2 id="pwa-ios-title">Installer sur iPhone / iPad</h2>
+  <ol>
+    <li>Ouvrez cette page dans <strong>Safari</strong>.</li>
+    <li>Appuyez sur l'icône <strong>Partager</strong>.</li>
+    <li>Choisissez <strong>« Sur l'écran d'accueil »</strong>.</li>
+    <li>Appuyez sur <strong>Ajouter</strong>.</li>
+  </ol>
+  <button type="button" class="pwa-btn pwa-btn--primary" (click)="closeIosInstructions()">
+    J'ai compris
+  </button>
+</div>

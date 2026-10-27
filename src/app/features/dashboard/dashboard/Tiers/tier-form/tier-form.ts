@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { buildAvatarDataUrl } from '../../../../../core/utils/avatar';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -304,7 +305,7 @@ export class TierForm implements OnInit, OnDestroy {
   generateAvatarUrl(user: User): string {
     const name = this.formatUserName(user);
     const colorIndex = name.length % this.avatarColors.length;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${this.avatarColors[colorIndex]}&color=fff&size=128`;
+    return buildAvatarDataUrl(name, this.avatarColors[colorIndex]);
   }
 
   /**
@@ -324,7 +325,7 @@ export class TierForm implements OnInit, OnDestroy {
    * @returns URL de l'avatar par défaut
    */
   getDefaultAvatar(): string {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=696cff&color=fff&size=128`;
+    return buildAvatarDataUrl(this.userName, '696cff');
   }
 
   // ===========================================================================
